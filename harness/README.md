@@ -64,7 +64,7 @@ Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl (AGENTS §3 / §Sensors) existiert im Makefile — fängt halluzinierte Gates | Modul 13 |
 | `make arch-check` | hexagonale Schichtung: Kern importiert kein Qt/OCC/SQLite/`adapters/`; kein Adapter importiert einen anderen | ADR-0001 |
 | `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001 §Fitness (AGENTS.md §2.4) |
-| `make test` | GoogleTest grün; beweist Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
+| `make test` | GoogleTest-Suite: prüft Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
 | `make coverage-gate` | Line-Coverage ≥ Schwelle (bootstrap-aware, Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 (siehe AGENTS.md §3) |
 | `make build` | Target-Kette kompiliert; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
 | `make gates` | Aggregat: docs-check · gate-consistency · arch-check · lint · test · coverage-gate | — |
