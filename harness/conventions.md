@@ -181,7 +181,7 @@ Inklusions-Achsen aus (Schwelle ≥ 2 von 3: 1 Konventions-Härte ·
 | GUI-Adapter | `src/adapters/ui/` (geplant) | 1 (Qt-Adapter-Konvention, nur Driving-Ports) · 2 (UI↔Driving-Port-Inventur) · 3 (`src/adapters/ui/`) → **3/3** | Greenfield |
 | Plugin-Host | `src/adapters/plugin/`, `plugins/` (geplant) | 1 (Plugin-API-/Lifecycle-/Sandbox-Konvention) · 2 (ABI-/API-Vertrags-Inventur) · 3 (`src/adapters/plugin/`) → **3/3** | Greenfield |
 | Import/Export-Adapter | `src/adapters/io/` (geplant) | 1 (Format-Adapter-Konvention je IFC/DXF/STEP/STL hinter Importer/Exporter-Port) · 2 (Round-Trip-Inventur) · 3 (`src/adapters/io/`) → **3/3** | Greenfield |
-| Build & Toolchain | `Makefile`, `tools/` (existieren: docs-check-Gate); `CMakeLists.txt`, `.devcontainer/` (geplant, slice-001/002) | 1 (CMake-/Container-/docs-check-Konvention, MR-003) · 2 (Reproduzierbarkeits-Inventur) · 3 (Build-Datei-Familie) → **3/3** | Greenfield |
+| Build & Toolchain | `Makefile`, `tools/`, `CMakeLists.txt`, `src/*/CMakeLists.txt`, `.devcontainer/` (existieren seit slice-001: docs-check- + build-Gate) | 1 (CMake-/Container-/docs-check-Konvention, MR-003, ADR-0001) · 2 (Reproduzierbarkeits-Inventur) · 3 (Build-Datei-Familie) → **3/3** | Greenfield |
 | Test-Infrastruktur | `tests/` (geplant) | 1 (GoogleTest-/Determinismus-Konvention) · 2 (Test-ohne-`LH`-ID als Diskrepanz) · 3 (`tests/`) → **3/3** | Greenfield |
 
 **Sub-Area-Aspirantinnen** (< 2 Achsen, bewusst *nicht* als Sub-Area

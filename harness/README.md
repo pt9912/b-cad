@@ -15,12 +15,12 @@ Sub-Area, Zusatzklassen für Sensors-Bindung) sowie Adaptionen ggü. der
 Baseline leben in [`conventions.md`](conventions.md). Diese Datei
 dupliziert sie nicht.
 
-**Bootstrap-Stand:** b-cad hat den **Greenfield-Bootstrap** (Kurs-Modul
-2) durchlaufen und ist **bereit für erste Code-Slices**. Es existiert
-Doku (Spec, ADRs, Roadmap) und **genau ein reales Gate** (`docs-check`,
-Doku-Validator), aber **noch kein Anwendungscode**. Code-Gates stehen
-daher im „Nicht behauptet"-Block (§Sensors) und werden mit dem ersten
-Code-Slice gepromotet.
+**Stand:** Greenfield-Bootstrap (Kurs-Modul 2) abgeschlossen; **slice-001**
+(Build-Skelett & DevContainer) ist umgesetzt und verifiziert. Reale
+Gates: `make docs-check` und `make build` (DevContainer-Build + ctest).
+Die übrigen Code-Gates (`lint`/`arch-check`/`test`/`coverage`) stehen
+noch im „Nicht behauptet"-Block (§Sensors) und werden in **slice-002**
+gepromotet.
 
 ## Source precedence
 
@@ -57,14 +57,13 @@ Code-Slice gepromotet.
 | Target | Vertrag | Bindung |
 |---|---|---|
 | `make docs-check` | interne Markdown-Links, Anker und ID-Pfade konsistent; kein Pfad führt aus dem Repo | [`MR-003`](conventions.md#mr-003-docs-check-als-vendored-doku-sensor) |
-| `make gates` | Aggregat — **derzeit nur** `docs-check` | — |
+| `make build` | DevContainer-Build kompiliert die Target-Kette und führt `ctest` aus; erzwingt CMake-Target-Trennung (Kern ohne Adapter-/Qt-/OCC-/SQLite-Deps) | ADR-0001 |
+| `make gates` | Aggregat — **derzeit nur** `docs-check` (`build` läuft eigenständig, da schwer) | — |
 
-**Nicht behauptet (geplant, entstehen mit dem ersten Code-Slice —
+**Nicht behauptet (geplant, entstehen mit dem nächsten Code-Slice —
 Promotion-Trigger).** Sobald ein Target real im Makefile steht, wandert
 es mit Vertrag und Bindung in die obige Tabelle:
 
-- `make build` — Container-Build, erzwingt CMake-Target-Trennung (Kern
-  ohne Adapter-/Qt-/OCC-/SQLite-Deps). Bindung: ADR-0001.
 - `make arch-check` — hexagonale Layering-Constraints. Bindung: ADR-0001/0002/0003.
 - `make lint` — clang-tidy + Suppression-Gate.
 - `make test` — GoogleTest inkl. Crash-Recovery (LH-QA-005) und

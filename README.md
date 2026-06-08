@@ -40,6 +40,10 @@ Precedence und Hard Rules in [`AGENTS.md`](AGENTS.md).
 b-cad/
 ├── README.md                 (diese Datei)
 ├── AGENTS.md                 Hard Rules + Source Precedence
+├── LICENSE                   MIT
+├── Makefile                  Gates (real: docs-check, build; Code-Gates folgen)
+├── CMakeLists.txt            hexagonale Target-Trennung (ADR-0001)
+├── .devcontainer/            Qt6+OpenCascade+SQLite-Build (make build)
 ├── harness/
 │   ├── README.md             Harness-Einstieg: Guides, Sensors, Safety
 │   └── conventions.md        repo-lokale Strukturregeln (MR-*, Modus pro Sub-Area)
@@ -47,7 +51,11 @@ b-cad/
 │   ├── lastenheft.md         LH-FA-*/LH-QA-*-Anforderungen, Akzeptanzkriterien
 │   ├── spezifikation.md      Wertebereiche, Fehler-Codes, OTel-Spans
 │   └── architecture.md       hexagonale Zerlegung, Ports, CMake-Targets
-├── Makefile                  Gates (real: docs-check; Code-Gates folgen)
+├── src/
+│   ├── hexagon/              Kern (model/ ports/ services/) — framework-frei
+│   ├── adapters/             Qt/OCC/SQLite (Skelett-Proben ab slice-001)
+│   └── main.cpp              Composition Root
+├── tests/                    GoogleTest (Kern-Smoke-Test ab slice-001)
 ├── tools/                    docs-check (Doku-Link-Validator) + Dockerfile
 └── docs/
     ├── glossar.md
@@ -56,11 +64,11 @@ b-cad/
         ├── adr/              ADR-Index + ADR-0001..0003
         ├── planning/         Slice-Lifecycle (open/next/in-progress/done) + Roadmap
         └── carveouts/        dokumentierte Gate-Ausnahmen (derzeit keine)
-
-(src/, tests/, CMakeLists.txt und der Qt/OCC-DevContainer-Dockerfile
- entstehen mit welle-1-mvp — siehe spec/architecture.md §2.1 für das
- Ziel-Layout.)
 ```
+
+> Stand: **slice-001** (Build-Skelett & DevContainer) umgesetzt; `make build`
+> grün. Fachlogik (Domain, Wände, Extrusion) folgt ab slice-003 — siehe
+> [`spec/architecture.md` §2.1](spec/architecture.md#21-verzeichnis--und-build-struktur).
 
 ## Quick start (für Agenten und Menschen)
 

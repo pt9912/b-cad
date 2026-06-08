@@ -54,7 +54,8 @@ Build und Gates laufen über den reproduzierbaren Docker-DevContainer
 lokales Qt-/OCC-SDK.
 
 **Begründung:** Toolchain-Reproduzierbarkeit + Supply-Chain-Defense.
-*(Container und Makefile entstehen im ersten Code-Slice — siehe §3.)*
+*(DevContainer + `make build` existieren seit slice-001; weitere
+Code-Gates folgen in slice-002 — siehe §3.)*
 
 ### 2.4 Suppression-Verbot
 
@@ -120,13 +121,13 @@ existiert für den Lauf nicht.
 | Target | Zweck | Bindung |
 |---|---|---|
 | `make docs-check` | Doku-Konsistenz: interne Markdown-Links/Anker/ID-Pfade (im Container) | MR-003 |
+| `make build` | DevContainer-Build der Target-Kette + `ctest`; erzwingt CMake-Target-Trennung (Kern ohne Adapter-/Qt-/OCC-/SQLite-Deps) | ADR-0001 |
 | `make gates` | alle inneren Gates — **derzeit nur** `docs-check` | — |
 
-**Geplant (noch NICHT behauptet — entstehen mit slice-001/002):**
+**Geplant (noch NICHT behauptet — entstehen mit slice-002):**
 
 | Target (geplant) | Zweck | Bindung |
 |---|---|---|
-| `make build` | Container-Build; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
 | `make lint` | clang-tidy + Suppression-Gate | — |
 | `make arch-check` | hexagonale Layering-Constraints | ADR-0001, ADR-0002, ADR-0003 |
 | `make test` | GoogleTest inkl. Crash-Recovery/Determinismus | LH-QA-005 |
