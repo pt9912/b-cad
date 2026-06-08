@@ -42,7 +42,7 @@ b-cad/
 ├── AGENTS.md                 Hard Rules + Source Precedence
 ├── LICENSE                   MIT
 ├── CHANGELOG.md              Keep a Changelog (MR-004)
-├── Makefile                  Gates (real: docs-check, build; Code-Gates folgen)
+├── Makefile                  Gate-Targets (make gates / make help; Liste: harness/README §Sensors)
 ├── CMakeLists.txt            hexagonale Target-Trennung (ADR-0001)
 ├── .devcontainer/            Qt6+OpenCascade+SQLite-Build (make build)
 ├── harness/
@@ -67,9 +67,10 @@ b-cad/
         └── carveouts/        dokumentierte Gate-Ausnahmen (derzeit keine)
 ```
 
-> Stand: **slice-001** (Build-Skelett & DevContainer) umgesetzt; `make build`
-> grün. Fachlogik (Domain, Wände, Extrusion) folgt ab slice-003 — siehe
-> [`spec/architecture.md` §2.1](spec/architecture.md#21-verzeichnis--und-build-struktur).
+> Stand: **slice-001/002** umgesetzt (Build-Skelett & DevContainer +
+> Code-Gates). Fachlogik (Domain, Wände, Extrusion) folgt ab slice-003
+> — siehe [`spec/architecture.md` §2.1](spec/architecture.md#21-verzeichnis--und-build-struktur).
+> Aktueller Stand der Slices: [`docs/plan/planning/README.md`](docs/plan/planning/README.md).
 
 ## Quick start (für Agenten und Menschen)
 
