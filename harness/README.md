@@ -16,11 +16,12 @@ Baseline leben in [`conventions.md`](conventions.md). Diese Datei
 dupliziert sie nicht.
 
 **Stand:** Greenfield-Bootstrap (Kurs-Modul 2) abgeschlossen; **slice-001**
-(Build-Skelett & DevContainer) ist umgesetzt und verifiziert. Reale
-Gates: `make docs-check` und `make build` (DevContainer-Build + ctest).
-Die übrigen Code-Gates (`lint`/`arch-check`/`test`/`coverage`) stehen
-noch im „Nicht behauptet"-Block (§Sensors) und werden in **slice-002**
-gepromotet.
+(Build-Skelett & DevContainer) und **slice-002** (Code-Gates) sind
+umgesetzt und verifiziert. **Reale Gates** (jeweils Dockerfile-Target-
+Stage, keine Bind-Mounts): `make docs-check`, `make arch-check`,
+`make lint`, `make test`, `make coverage-gate`, `make build` —
+aggregiert in `make gates`. Details und Verträge: §Sensors. Geplant
+(noch nicht behauptet): `coverage-gate-critical`, `ci`, `fullbuild`.
 
 ## Source precedence
 
