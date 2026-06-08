@@ -27,6 +27,7 @@ folgt" = Slice noch in der Welle zu schneiden):
 - slice-003 done — Wände mit Grenzwert-Verhalten (`LH-FA-WAL-001/002/003`) + 3D-Extrusion (`LH-FA-D3-001`).
 - Raum-Autoerkennung (`LH-FA-ROM-001`) und 3D-Echtzeit (`LH-FA-D3-002`) — *Slice folgt*.
 - ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar, LH-QA-005) — *Slice folgt*.
+- slice-004 done — reproduzierbare, gepinnte Toolchain (ADR-0004): Migration 26.04/node24, Digest+Snapshot. (Toolchain-Härtung; gatet nicht die Feature-Funktion, aber den reproduzierbaren MVP-Build.)
 - Closure-Notiz in `done/welle-1-results.md`.
 
 ## Nächste Wellen
