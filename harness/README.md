@@ -67,7 +67,20 @@ Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
 | `make test` | GoogleTest-Suite: prüft Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
 | `make coverage-gate` | Line-Coverage ≥ Schwelle (bootstrap-aware, Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 (siehe AGENTS.md §3) |
 | `make build` | Target-Kette kompiliert; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
-| `make gates` | Aggregat: docs-check · gate-consistency · arch-check · lint · test · coverage-gate | — |
+| `make gates` | Aggregat: docs-check · gate-consistency · arch-check · lint · test · coverage-gate (+ `record-gates`-Nachweis) | — |
+
+**Warum `build` nicht in `gates`:** `test`, `lint` und `coverage-gate`
+sind Dockerfile-Stages `FROM build` und **kompilieren die Target-Kette
+bereits** (inkl. der Target-Trennung). `make build` ist daher ein
+eigenständiger Einzel-Sensor (reines Kompilieren ohne Tests), nicht
+separat in `gates` — ein Aufnehmen wäre redundanter Rebuild.
+
+**Gate-Nachweis (Stop-Hook):** `make gates` schreibt nach Erfolg
+`.harness/state/gates-passed.diffsha` (Hash des aktuellen `git diff`,
+via `record-gates`). Der Stop-Hook (`.claude/hooks/stop-require-gates.sh`)
+gibt nur frei, wenn der Arbeitsbaum committet ist **oder** dieser Hash
+zum aktuellen Diff passt. `.harness/state/` ist Laufzeit-State
+(gitignored).
 
 **Nicht behauptet (geplant).** Sobald real, wandern sie mit Vertrag und
 Bindung in die obige Tabelle:

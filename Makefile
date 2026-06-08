@@ -17,7 +17,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency gates
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -49,4 +49,13 @@ docs-check: ## Doku-Konsistenz — interne Markdown-Links/Anker/ID-Pfade (Modul 
 gate-consistency: ## Modul 13 — jeder als real dokumentierte make-Befehl existiert (Doku↔Makefile)
 	$(GATE) --target gate-consistency -t $(IMAGE):gate-consistency .
 
-gates: docs-check gate-consistency arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)
+record-gates: ## Nachweis schreiben: Hash des aktuellen Diffs (für den Stop-Hook)
+	@mkdir -p .harness/state
+	@git diff | sha256sum | awk '{print $$1}' > .harness/state/gates-passed.diffsha
+
+# `build` ist NICHT separat gelistet: test/lint/coverage-gate sind
+# Dockerfile-Stages FROM build und kompilieren die Target-Kette bereits
+# (Variante B, siehe harness/README §Sensors). record-gates läuft als
+# LETZTER Prerequisite — der Nachweis entsteht nur, wenn alle Gates grün
+# sind (sonst bricht make vorher ab).
+gates: docs-check gate-consistency arch-check lint test coverage-gate record-gates ## alle inneren Gates (mandatory vor PR)
