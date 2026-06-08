@@ -24,9 +24,11 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 | `in-progress/` | — (nur `roadmap.md`) |
 | `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit) |
 
-slice-001/002 sind abgeschlossen und grün (`make gates`); spike-001 hat
-die Toolchain-Reproduzierbarkeit untersucht → ADR-0004 (Proposed) +
-slice-004 (Umsetzung: Digest+Snapshot-Pinning, Migration 26.04/node24).
+slice-001/002 sind abgeschlossen (DoD erfüllt, Closure-Notiz vorhanden;
+die `make gates`-Verifikation ist dort als Punkt-in-Zeit belegt — der
+aktuelle Lauf-Status gehört in CI, nicht in diese Doku, Modul 13).
+spike-001 hat die Toolchain-Reproduzierbarkeit untersucht → ADR-0004
+(Proposed) + slice-004 (Digest+Snapshot-Pinning, Migration 26.04/node24).
 Offen: slice-003 (erste Fachlogik) und slice-004.
 
 ## Roadmap
