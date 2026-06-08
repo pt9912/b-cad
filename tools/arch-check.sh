@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
 # arch-check — hexagonale Schichtung durchsetzen (ADR-0001).
-# Computational feedback (Modul 13). Läuft im DevContainer über die
-# gemounteten Quellen; rein textbasiert, keine Toolchain nötig.
+# Computational feedback (Modul 13). Läuft als Dockerfile-Target-Stage
+# über die per COPY eingebackenen Quellen (kein Bind-Mount); rein
+# textbasiert, keine Toolchain nötig.
 #
 # Regel A: Der Kern src/hexagon/ ist framework-frei — kein Qt, kein
 #          OpenCascade (*.hxx), kein SQLite, kein Import aus adapters/.
 # Regel B: Kein Adapter importiert einen anderen Adapter.
+#
+# HINWEIS: Heuristik, kein C++-Parser. Das Qt-Muster `Q[A-Za-z]` würde
+# einen künftigen framework-freien Kern-Header wie `Queue.h` falsch
+# anschlagen (False Positive). Heute unkritisch (Kern ist Qt-frei); bei
+# Bedarf auf eine Include-Allowlist umstellen.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

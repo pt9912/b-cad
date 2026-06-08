@@ -99,6 +99,19 @@ mündet in ADR-0004 (Container-/Dependency-Pinning).
 den Kern) ist mit diesem Slice **verkörpert**; zusammen mit der
 Modus-Tabelle in `harness/conventions.md` ist die Sub-Area damit GF.
 
+**Nachtrag (Review) — dritter Steering-Loop-Eintrag:** Ein Review fand
+**Doku-Drift im selben Slice**: `tools/README.md` zeigte noch den alten
+Mount-Befehl (`docker build … tools/` + `docker run -v …`), den dieser
+Slice gerade abgeschafft hat — also genau die „Doku behauptet einen
+Befehl, der nicht läuft"-Klasse, die das Projekt als Vertragsbruch
+behandelt. Ebenso ein stale „läuft über gemountete Quellen"-Kommentar in
+`arch-check.sh`. **Fix:** beide auf die Dockerfile-Stage-Realität
+gezogen; arch-check-Regex um einen „Heuristik, kein Parser"-Hinweis
+ergänzt. **Wurzel-Lehre:** `docs-check` prüft nur Markdown-Links, **nicht
+Shell-Beispiele** — solche Befehls-Drifts fängt es nicht. Kandidat für
+einen künftigen Sensor (Shell-/Befehls-Beispiel-Prüfung); bis dahin
+gehört die Befehls-Konsistenz in die Review-Checkliste.
+
 ## 8. Sub-Area-Modus-Begründung
 
 ### Sub-Area: Build & Toolchain

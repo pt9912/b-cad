@@ -14,18 +14,21 @@ Dependencies). Er prüft repo-weit:
 4. Explizite Inline-Code-Pfade (relative `./`/`../`-Pfade in Backticks) — Datei/Verzeichnis vorhanden?
 5. Sicherheitsnetz: relative Pfade dürfen nicht aus dem Repo führen.
 
-Das ist b-cads **erstes reales Gate** (Greenfield-Bootstrap): es prüft
-die Doku-Lieferung, die bereits existiert — anders als Code-Gates, die
-erst mit `src/` entstehen. Eingebunden als `make docs-check` /
-`make gates`.
+Das war b-cads **erstes reales Gate** (Greenfield-Bootstrap) und prüft
+die Doku-Lieferung, die bereits existiert. Seit slice-002 stehen daneben
+die Code-Gates (`arch-check`, `lint`, `test`, `coverage-gate`).
+Eingebunden als `make docs-check` / `make gates`.
 
 ### Verwendung (Docker, gemäß Hard Rule AGENTS.md §2.3)
 
+`docs-check` ist eine **Dockerfile-Target-Stage** (Quelle per `COPY` ins
+Image gebacken, Validierung als `RUN`) — **kein** Bind-Mount. Kontext
+ist das Repo-Root:
+
 ```bash
-make docs-check          # Image bauen + alle *.md prüfen
+make docs-check          # baut die docs-check-Stage; schlägt bei Fehlern fehl
 # oder direkt:
-docker build -t bcad-docs-check tools/
-docker run --rm -v "$PWD":/work bcad-docs-check
+docker build -f tools/Dockerfile --target docs-check -t bcad-docs-check .
 ```
 
 Lokal ohne Docker (nur Entwicklung, kein Vertrag — vgl. Modul 14):
