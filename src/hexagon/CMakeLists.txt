@@ -6,6 +6,7 @@
 
 add_library(bcad_hexagon
     services/bootstrap_info.cpp
+    services/greeting_service.cpp
 )
 
 target_include_directories(bcad_hexagon
