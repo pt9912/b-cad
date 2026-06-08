@@ -52,25 +52,25 @@ gepromotet.
 
 ## Sensors (Feedback-Gates)
 
-**Real existierend** (im Makefile, läuft im Container):
+**Real existierend.** Jeder Gate ist eine **Dockerfile-Target-Stage**
+(`docker build --target …`, Quelle per `COPY` eingebacken) — **keine
+Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
 
 | Target | Vertrag | Bindung |
 |---|---|---|
 | `make docs-check` | interne Markdown-Links, Anker und ID-Pfade konsistent; kein Pfad führt aus dem Repo | [`MR-003`](conventions.md#mr-003-docs-check-als-vendored-doku-sensor) |
-| `make build` | DevContainer-Build kompiliert die Target-Kette und führt `ctest` aus; erzwingt CMake-Target-Trennung (Kern ohne Adapter-/Qt-/OCC-/SQLite-Deps) | ADR-0001 |
-| `make gates` | Aggregat — **derzeit nur** `docs-check` (`build` läuft eigenständig, da schwer) | — |
+| `make arch-check` | hexagonale Schichtung: Kern importiert kein Qt/OCC/SQLite/`adapters/`; kein Adapter importiert einen anderen | ADR-0001 |
+| `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001 §Fitness (AGENTS.md §2.4) |
+| `make test` | GoogleTest grün; beweist Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
+| `make coverage-gate` | Line-Coverage ≥ Schwelle (bootstrap-aware, Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 (siehe AGENTS.md §3) |
+| `make build` | Target-Kette kompiliert; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
+| `make gates` | Aggregat: docs-check · arch-check · lint · test · coverage-gate | — |
 
-**Nicht behauptet (geplant, entstehen mit dem nächsten Code-Slice —
-Promotion-Trigger).** Sobald ein Target real im Makefile steht, wandert
-es mit Vertrag und Bindung in die obige Tabelle:
+**Nicht behauptet (geplant).** Sobald real, wandern sie mit Vertrag und
+Bindung in die obige Tabelle:
 
-- `make arch-check` — hexagonale Layering-Constraints. Bindung: ADR-0001/0002/0003.
-- `make lint` — clang-tidy + Suppression-Gate.
-- `make test` — GoogleTest inkl. Crash-Recovery (LH-QA-005) und
-  Determinismus. Bindung (LH-Klasse, siehe
-  [`conventions.md` §Zusatzklassen](conventions.md#zusatzklassen-deklaration-für-sensors-bindung)): LH-QA-005, LH-FA-WAL-002.
-- `make coverage-gate` / `make coverage-gate-critical` — Coverage, bootstrap-aware (Critical: Persistenz/Recovery).
-- `make ci` / `make fullbuild` — weitere Aggregat-Gates.
+- `make coverage-gate-critical` — Critical-Path-Coverage (Persistenz/Recovery, LH-QA-005), höhere Schwelle. Bindung: LH-QA-005.
+- `make ci` / `make fullbuild` — weitere Aggregat-/Closure-Gates (inkl. Image-Hash, Modul 14).
 
 **Aktueller Lauf-Status:** wird hier **nicht** geführt — Lauf-Wahrheit
 pro Commit gehört in CI, nicht in diese Datei (Rang 9; Kurs-Modul 13).

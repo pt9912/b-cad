@@ -108,30 +108,28 @@ existiert für den Lauf nicht.
 
 ## 3. Quality Gates
 
-> **Bootstrap-Hinweis (ehrlich).** b-cad ist im Greenfield-Bootstrap.
-> Es existiert **genau ein reales Gate** (`docs-check`, Doku-Validator)
-> und **noch kein Code**. Code-Gates sind **geplant, nicht behauptet**;
-> sie werden mit dem ersten Code-Slice real (Promotion-Trigger,
-> Kurs-Modul 2). Ein Agent darf **keinen** geplanten Befehl als
-> existierend ausgeben, bevor er im Makefile steht — und `make gates`
-> darf nur real existierende Sub-Targets aggregieren.
+> **Honesty-Hinweis.** Jeder hier als *real* gelistete Gate existiert
+> als `make`-Target (Dockerfile-Stage, **kein** Bind-Mount). Ein Agent
+> darf **keinen** geplanten Befehl als existierend ausgeben, bevor er im
+> Makefile steht — und `make gates` aggregiert nur real existierende
+> Sub-Targets (Kurs-Modul 13).
 
-**Real (existieren im Makefile, mit ID-Kommentar):**
+**Real (existieren im Makefile als Dockerfile-Target-Stage):**
 
 | Target | Zweck | Bindung |
 |---|---|---|
-| `make docs-check` | Doku-Konsistenz: interne Markdown-Links/Anker/ID-Pfade (im Container) | MR-003 |
-| `make build` | DevContainer-Build der Target-Kette + `ctest`; erzwingt CMake-Target-Trennung (Kern ohne Adapter-/Qt-/OCC-/SQLite-Deps) | ADR-0001 |
-| `make gates` | alle inneren Gates — **derzeit nur** `docs-check` | — |
+| `make docs-check` | Doku-Konsistenz: interne Markdown-Links/Anker/ID-Pfade | MR-003 |
+| `make arch-check` | hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/`adapters/`; kein Adapter→Adapter) | ADR-0001 |
+| `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001, AGENTS §2.4 |
+| `make test` | GoogleTest: Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
+| `make coverage-gate` | bootstrap-aware Line-Coverage ≥ `COVERAGE_THRESHOLD` (Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 |
+| `make build` | Target-Kette kompilieren; CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
+| `make gates` | docs-check · arch-check · lint · test · coverage-gate | — |
 
-**Geplant (noch NICHT behauptet — entstehen mit slice-002):**
+**Geplant (noch NICHT behauptet):**
 
 | Target (geplant) | Zweck | Bindung |
 |---|---|---|
-| `make lint` | clang-tidy + Suppression-Gate | — |
-| `make arch-check` | hexagonale Layering-Constraints | ADR-0001, ADR-0002, ADR-0003 |
-| `make test` | GoogleTest inkl. Crash-Recovery/Determinismus | LH-QA-005 |
-| `make coverage-gate` | Gesamt-Coverage (bootstrap-aware, mit dokumentierter Hochschalt-Schwelle) | — |
 | `make coverage-gate-critical` | Critical-Path-Coverage: Persistenz/Crash-Recovery (Datenverlust = schärfster Fehlerfall) | LH-QA-005 |
 | `make ci` | gates + Extras | — |
 | `make fullbuild` | volle Closure inkl. Runtime-Image + Image-Hash | — |

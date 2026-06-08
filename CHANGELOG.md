@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MIT-Lizenz.
 - slice-001 — hexagonales C++-Build-Skelett: CMake-Target-Trennung Kern/Adapter
   (ADR-0001), Qt6/OpenCascade/SQLite-DevContainer, `make build` (Build + ctest).
+- slice-002 — Code-Gates als Dockerfile-Target-Stages (keine Bind-Mounts):
+  `make arch-check` (hexagonale Schichtung), `make lint` (clang-tidy +
+  Suppression-Gate), `make test`, `make coverage-gate` (bootstrap-aware);
+  Hello-Hexagon-Port-Roundtrip; Sensors gepromotet.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die
