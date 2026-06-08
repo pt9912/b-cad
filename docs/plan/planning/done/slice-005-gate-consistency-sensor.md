@@ -1,7 +1,7 @@
 ---
 id: slice-005
 titel: Gate-Consistency-Sensor (Doku ↔ Makefile)
-status: in-progress
+status: done
 welle: welle-1-mvp
 lastenheft_refs: []
 req_tec_refs: []
@@ -10,7 +10,7 @@ adr_refs: [ADR-0001]
 
 # Slice 005: Gate-Consistency-Sensor (Doku ↔ Makefile)
 
-**Status:** in-progress
+**Status:** done
 
 **Welle:** welle-1-mvp
 
@@ -29,11 +29,11 @@ slice-001/002 zweimal per Review auffiel.
 
 ## 2. Definition of Done
 
-- [ ] `tools/gate-consistency.sh`: jeder als **real** dargestellte `make <target>` in `AGENTS.md` und `harness/README.md` (außerhalb von „Geplant/Nicht behauptet"-Abschnitten) existiert als Makefile-Target.
-- [ ] **Negativtest** belegt: ein behaupteter, nicht existenter Gate → rot.
-- [ ] `make gate-consistency` als Dockerfile-Target-Stage (kein Mount); in `make gates` aggregiert.
-- [ ] Als realer Sensor promotet (`harness/README.md` §Sensors, `AGENTS.md` §3).
-- [ ] `make gates` grün; Closure-Notiz.
+- [x] `tools/gate-consistency.sh`: jeder als **real** dargestellte `make <target>` in `AGENTS.md` und `harness/README.md` (außerhalb von „Geplant/Nicht behauptet"-Abschnitten) existiert als Makefile-Target.
+- [x] **Negativtest** belegt: injizierter `make frobnicate` in realer Tabelle → rot (exit 1).
+- [x] `make gate-consistency` als Dockerfile-Target-Stage (kein Mount); in `make gates` aggregiert.
+- [x] Als realer Sensor promotet (`harness/README.md` §Sensors + Stand-Absatz, `AGENTS.md` §3).
+- [x] `make gates` grün (6 Gates); Closure-Notiz (§7).
 
 ## 3. Plan (vor Code)
 
@@ -59,7 +59,30 @@ slice-001/002 zweimal per Review auffiel.
 
 ## 7. Closure-Notiz
 
-<!-- Erst nach Abschluss füllen. -->
+**Abgeschlossen am:** 2026-06-08.
+
+**Was funktioniert hat:** `make gate-consistency` ist grün und Teil von
+`make gates` (jetzt 6 Gates). Positiv-Lauf bestätigt alle real
+dokumentierten `make`-Befehle; Negativtest (injizierter `make frobnicate`
+in der realen Sensors-Tabelle) wird korrekt rot (exit 1).
+
+**Steering-Loop:** Dieser Sensor schließt die Drift-Klasse, die in
+slice-001 (Review: kaputter `tools/README.md`-Befehl), slice-002 und
+zuletzt am `harness/README.md`-Stand-Absatz + `planning/README.md`-
+Lauf-Status je per **Review** auffiel — `docs-check` (nur Links) fängt sie
+nicht. Aus „gehört in die Review-Checkliste" wird damit ein
+**maschineller Gate** (Modul 13: was prüfbar wird, muss nicht im Review
+landen).
+
+**Bewusste Grenze (Heuristik, kein Parser):** Die „real vs geplant"-
+Erkennung kippt an Text-Markern (`**Real…`, `Geplant`, `Nicht behauptet`,
+`##`-Überschrift). Bei Umbau der Doku-Struktur müssen die Marker
+mitgeführt werden; der Negativtest sichert die Wirksamkeit ab. Die
+Reverse-Richtung (jedes Makefile-Gate ist dokumentiert) ist bewusst
+out-of-scope (rauschanfälliger) — Kandidat für einen Folge-Slice, falls
+undokumentierte Gates auftreten.
+
+**Folge-Slice:** keiner nötig.
 
 ## 8. Sub-Area-Modus-Begründung
 

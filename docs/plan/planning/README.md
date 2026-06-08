@@ -22,7 +22,7 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 | `open/` | slice-003 (Domain-Kern & Wände), slice-004 (Toolchain-Pinning + 26.04/node24) |
 | `next/` | — |
 | `in-progress/` | — (nur `roadmap.md`) |
-| `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit) |
+| `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit), slice-005 (Gate-Consistency-Sensor) |
 
 slice-001/002 sind abgeschlossen (DoD erfüllt, Closure-Notiz vorhanden;
 die `make gates`-Verifikation ist dort als Punkt-in-Zeit belegt — der
