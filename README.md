@@ -69,3 +69,8 @@ b-cad/
    [`docs/plan/adr/README.md`](docs/plan/adr/README.md) für das *warum so*.
 3. Aktuelle Welle: [`docs/plan/planning/in-progress/roadmap.md`](docs/plan/planning/in-progress/roadmap.md).
 4. Offene Slices: [`docs/plan/planning/open/`](docs/plan/planning/open/).
+
+## Lizenz
+
+MIT — siehe [`LICENSE`](LICENSE). `tools/docs-check.js` ist aus dem
+AI-Harness-Kurs übernommen (ebenfalls MIT, [`harness/conventions.md` MR-003](harness/conventions.md#mr-003-docs-check-als-vendored-doku-sensor)).
