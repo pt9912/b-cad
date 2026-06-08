@@ -106,6 +106,10 @@ Abhängigkeiten.
 Modul 14) und Supply-Chain-Defense. Was nicht im Container gepinnt ist,
 existiert für den Lauf nicht.
 
+**Durchsetzung (computational feedforward, Modul 9):** der PreToolUse-Hook
+`.claude/hooks/pretooluse-command-guard.sh` blockt direkte Host-Aufrufe
+der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
+
 ## 3. Quality Gates
 
 > **Honesty-Hinweis.** Jeder hier als *real* gelistete Gate existiert
