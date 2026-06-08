@@ -1,7 +1,7 @@
 ---
 id: slice-002
 titel: Code-Gates & Sensors-Promotion
-status: open
+status: done
 welle: welle-1-mvp
 lastenheft_refs: []
 req_tec_refs: [REQ-TEC-005]
@@ -10,7 +10,7 @@ adr_refs: [ADR-0001]
 
 # Slice 002: Code-Gates & Sensors-Promotion
 
-**Status:** open
+**Status:** done
 
 **Welle:** welle-1-mvp
 
@@ -30,9 +30,10 @@ Driven-Port-Stub).
 
 ## 2. Definition of Done
 
-- [ ] `make lint` (clang-tidy + Suppression-Gate), `make arch-check` (Kern importiert kein `adapters/`/Qt/OCC/SQLite), `make test` (GoogleTest) existieren und sind grün — jedes Target mit ID-Kommentar `## <ADR/LH> — …`.
-- [ ] „Hello-Hexagon": ein trivialer Driving-Port + Service + Driven-Port-Stub + Test beweist die Layering-Durchsetzung.
-- [ ] Sensors in `harness/README.md` und Gate-Tabelle in `AGENTS.md` §3: die neuen Targets aus „Nicht behauptet" in die reale Tabelle promotet; `make gates` aggregiert nur real existierende Targets.
+- [x] `make arch-check`, `make lint` (clang-tidy + Suppression-Gate), `make test` existieren und sind grün — als **Dockerfile-Target-Stages ohne Bind-Mounts**, mit ID-Kommentar.
+- [x] `make coverage-gate` (bootstrap-aware, gcov, Schwelle 70 %, Composition Root ausgenommen) grün — über die ursprüngliche DoD hinaus ergänzt (cmake-xray-Alignment, siehe §7).
+- [x] „Hello-Hexagon": `GreetPort` (driving) → `GreetingService` → `GreetingSourcePort` (driven) + Test mit Double beweist die Layering-Durchsetzung.
+- [x] Sensors in `harness/README.md` und Gate-Tabelle in `AGENTS.md` §3 promotet; `make gates` aggregiert nur reale Targets.
 
 ## 3. Plan (vor Code)
 
@@ -58,7 +59,45 @@ Driven-Port-Stub).
 
 ## 7. Closure-Notiz
 
-<!-- Erst nach Abschluss füllen: Lerneintrag. -->
+**Abgeschlossen am:** 2026-06-08.
+
+**Was funktioniert hat:** Fünf reale Gates grün — `docs-check`,
+`arch-check` (inkl. Negativtest: Kern-Datei mit `<QtGlobal>` → rot),
+`lint` (clang-tidy 0 Befunde in `src/` + Suppression-Gate), `test`
+(5/5), `coverage-gate` (100 % Lines, Schwelle 70 %). Hello-Hexagon-Port-
+Roundtrip ist mit Double getestet (kein Adapter).
+
+**Steering-Loop-Eintrag 1 — Gate-Selbsttest:** Der erste `arch-check`
+gab still Exit 1 *ohne* Befund — ein `set -euo pipefail`-Bug (eine
+grep-Pipeline lieferte 1, wenn eine Datei keinen `adapters/`-Include
+hat). Gefangen durch einen **Negativtest** (bewusst eine Verletzung
+eingebaut → Gate muss rot werden). Lehre (Fortsetzung des slice-001-
+Reviews): ein Gate muss *bewiesen* fangen, nicht nur passieren — jeder
+neue Gate bekommt einen Negativtest.
+
+**Steering-Loop-Eintrag 2 — Reproduzierbarkeit der Gates:** Gates auf
+**Dockerfile-Target-Stages** umgestellt (Quelle per `COPY`, Gate als
+`RUN`) statt `docker run`-Bind-Mounts (auf Nutzer-Wunsch „Mounts
+minimieren", Vorbild cmake-xray, Modul 14). Das deckte sofort einen
+Folgefehler auf: ein stale `build-cov/` wurde per `COPY .` eingebacken
+→ `.dockerignore` auf `build*/` gehärtet.
+
+**Scope-Erweiterung (dokumentiert):** `coverage-gate` war nicht in der
+ursprünglichen DoD; ergänzt im Zuge des cmake-xray-Gate-Vergleichs
+(„das hat auch schon gates"), passt zum Slice-Thema „Code-Gates".
+
+**Offene Stelle → Folge-Slice (keine stille Lücke):** Die Lib-/
+Toolchain-**Versionen** sind über `apt-get install <name>` nicht
+gepinnt (driften mit dem Ubuntu-Archiv), und die **Base-Version**
+(24.04 vs. 26.04) ist offen. Bewusst **nicht** in slice-002 gelöst, um
+die grünen Gates nicht zu destabilisieren. Übergeben an
+[`spike-001`](../open/spike-001-toolchain-reproduzierbarkeit.md) →
+mündet in ADR-0004 (Container-/Dependency-Pinning).
+
+**§8-Prüfpunkt Test-Infrastruktur:** Die Test-Konvention (GoogleTest,
+`tests/hexagon` + `tests/adapters`, ID im Testnamen, Port-Doubles für
+den Kern) ist mit diesem Slice **verkörpert**; zusammen mit der
+Modus-Tabelle in `harness/conventions.md` ist die Sub-Area damit GF.
 
 ## 8. Sub-Area-Modus-Begründung
 

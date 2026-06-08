@@ -19,14 +19,15 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 
 | Verzeichnis | Slices |
 |---|---|
-| `open/` | slice-002 (Code-Gates & Sensors-Promotion), slice-003 (Domain-Kern & Wände) |
+| `open/` | slice-003 (Domain-Kern & Wände), spike-001 (Toolchain-Reproduzierbarkeit) |
 | `next/` | — |
 | `in-progress/` | — (nur `roadmap.md`) |
-| `done/` | slice-001 (Build-Skelett & DevContainer) |
+| `done/` | slice-001 (Build-Skelett & DevContainer), slice-002 (Code-Gates & Sensors-Promotion) |
 
-slice-001 ist der Übergang vom Bootstrap zum Workflow (Kurs-Modul 2
-§Bootstrap-Ende vs Workflow-Beginn): das erste Code-Slice, verifiziert
-grün (`make build`). slice-002/003 sind weiterhin Pläne.
+slice-001/002 sind abgeschlossen und verifiziert grün (`make gates`):
+hexagonales Skelett + fünf reale Gates ohne Bind-Mounts. slice-003
+(erste Fachlogik) und spike-001 (Base-Version/Pinning → ADR-0004) sind
+offen.
 
 ## Roadmap
 
