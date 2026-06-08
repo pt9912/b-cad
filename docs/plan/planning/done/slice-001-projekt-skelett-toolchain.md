@@ -81,6 +81,23 @@ Lehre für ADR-0002-Folgearbeit: OCC-Adapter-Builds brauchen `libtbb-dev`
 `make build` wurde regelkonform aus dem „Nicht behauptet"-Block in die
 reale Sensors-Tabelle promotet (Promotion-Trigger, Modul 13).
 
+**Nachtrag (Review, 2026-06-08) — zweiter Steering-Loop-Eintrag:** Ein
+Review fand, dass der erste `make build` Linkage nur *behauptete*: die
+Probe-Funktionen waren unreferenziert, `bcad_adapters` ist ein
+statisches Archiv, und `--as-needed` verwarf Qt/OCC/SQLite — der Gate
+prüfte faktisch nur **Kompilierung**, nicht **Linken**. Zusätzlich war
+`occ_probe` über das Compile-Time-Makro `OCC_VERSION_COMPLETE`
+realisiert, das auch bei Referenzierung kein OCC-Linken erzwungen hätte.
+**Fix:** Probe-Header; OCC-Probe über reale TKernel-Laufzeitfunktion;
+`main` referenziert die Proben (Executable linkt echt); neues
+`bcad_adapter_tests` linkt gegen `bcad_adapters` (ctest 4/4 grün).
+**Härtung des Gates:** „beweise Linkage" ist jetzt durch ein
+ausgeführtes, gegen die Adapter gelinktes Test-Target abgesichert —
+nicht durch unreferenzierte Symbole. Lehre: ein Gate, der eine
+Eigenschaft *behauptet*, muss sie durch ein referenzierendes,
+ausgeführtes Artefakt *erzwingen* (statische Archive + `--as-needed`
+machen bloßes „kompiliert" trügerisch).
+
 ## 8. Sub-Area-Modus-Begründung
 
 (Vier Pflichtkriterien je berührter Sub-Area; Modus-Quelle:
