@@ -49,9 +49,8 @@ docs-check: ## Doku-Konsistenz — interne Markdown-Links/Anker/ID-Pfade (Modul 
 gate-consistency: ## Modul 13 — jeder als real dokumentierte make-Befehl existiert (Doku↔Makefile)
 	$(GATE) --target gate-consistency -t $(IMAGE):gate-consistency .
 
-record-gates: ## Nachweis schreiben: Hash des aktuellen Diffs (für den Stop-Hook)
-	@mkdir -p .harness/state
-	@git diff | sha256sum | awk '{print $$1}' > .harness/state/gates-passed.diffsha
+record-gates: ## Nachweis schreiben: Working-Tree-Hash (für den Stop-Hook)
+	@bash tools/harness/record-gates.sh
 
 # `build` ist NICHT separat gelistet: test/lint/coverage-gate sind
 # Dockerfile-Stages FROM build und kompilieren die Target-Kette bereits

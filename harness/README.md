@@ -76,11 +76,15 @@ eigenständiger Einzel-Sensor (reines Kompilieren ohne Tests), nicht
 separat in `gates` — ein Aufnehmen wäre redundanter Rebuild.
 
 **Gate-Nachweis (Stop-Hook):** `make gates` schreibt nach Erfolg
-`.harness/state/gates-passed.diffsha` (Hash des aktuellen `git diff`,
-via `record-gates`). Der Stop-Hook (`.claude/hooks/stop-require-gates.sh`)
-gibt nur frei, wenn der Arbeitsbaum committet ist **oder** dieser Hash
-zum aktuellen Diff passt. `.harness/state/` ist Laufzeit-State
-(gitignored).
+`.harness/state/gates-passed.diffsha` — einen **Hash des gesamten
+Arbeitsbaum-Zustands** (tracked-modified, staged, **untracked**,
+gelöscht, umbenannt) via [`tools/harness/working-tree-hash.sh`](../tools/harness/working-tree-hash.sh).
+`record-gates` und der Stop-Hook (`.claude/hooks/stop-require-gates.sh`)
+teilen dieselbe Hash-Funktion (keine Logik-Dopplung). Der Stop-Hook gibt
+nur frei, wenn der Arbeitsbaum sauber ist (`git status --porcelain` leer)
+**oder** der Hash zum aktuellen Zustand passt. `.harness/state/` ist
+Laufzeit-State (gitignored). *Hinweis:* lokale Arbeitsbremse, kein
+Ersatz für `make gates` in CI (letzte Instanz).
 
 **Nicht behauptet (geplant).** Sobald real, wandern sie mit Vertrag und
 Bindung in die obige Tabelle:
