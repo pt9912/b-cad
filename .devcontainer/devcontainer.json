@@ -1,0 +1,10 @@
+{
+  "name": "b-cad",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "target": "deps",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/b-cad",
+  "remoteUser": "root"
+}

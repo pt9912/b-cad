@@ -8,12 +8,16 @@
 
 DOCKER ?= docker
 DOCS_CHECK_IMAGE ?= bcad-docs-check
+BUILD_IMAGE ?= bcad-build
 
-.PHONY: help docs-check docs-check-image gates
+.PHONY: help build docs-check docs-check-image gates
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
+
+build: ## ADR-0001 — reproduzierbarer Build im DevContainer (CMake-Target-Trennung Kern/Adapter) + ctest
+	$(DOCKER) build -f .devcontainer/Dockerfile --target build -t $(BUILD_IMAGE) .
 
 docs-check-image: ## Doku-Validator-Image bauen (tools/Dockerfile)
 	$(DOCKER) build -t $(DOCS_CHECK_IMAGE) tools/

@@ -1,0 +1,11 @@
+.git/
+build/
+out/
+cmake-build-*/
+.cache/
+.vscode/
+.idea/
+.tmp/
+.claude/
+.agents/
+.codex/
