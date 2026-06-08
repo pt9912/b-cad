@@ -1,7 +1,7 @@
 ---
 id: slice-001
 titel: Build-Skelett & DevContainer
-status: open
+status: done
 welle: welle-1-mvp
 lastenheft_refs: []
 req_tec_refs: [REQ-TEC-001, REQ-TEC-004, REQ-TEC-009]
@@ -10,7 +10,7 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0003]
 
 # Slice 001: Build-Skelett & DevContainer
 
-**Status:** open
+**Status:** done
 
 **Welle:** welle-1-mvp
 
@@ -28,10 +28,10 @@ baut grün, ohne dass schon Fachlogik existiert.
 
 ## 2. Definition of Done
 
-- [ ] Verzeichnis-Layout gemäß [`spec/architecture.md` §2.1](../../../../spec/architecture.md#21-verzeichnis--und-build-struktur) angelegt (`src/hexagon/*`, `src/adapters/*`, `tests/*`, leer).
-- [ ] CMake-Targets `bcad_hexagon` (ohne externe Deps), `bcad_adapters` (Qt/OCC/SQLite), `b-cad`, `bcad_tests`; `make build` grün im DevContainer.
-- [ ] DevContainer-Dockerfile (Multi-Stage, Qt 6 + OpenCascade + SQLite) baut reproduzierbar (REQ-TEC-009).
-- [ ] Closure-Notiz mit Steering-Loop-Eintrag.
+- [x] Verzeichnis-Layout gemäß [`spec/architecture.md` §2.1](../../../../spec/architecture.md#21-verzeichnis--und-build-struktur) angelegt (`src/hexagon/*`, `src/adapters/*`, `tests/*`).
+- [x] CMake-Targets `bcad_hexagon` (ohne externe Deps), `bcad_adapters` (Qt/OCC/SQLite), `b-cad`, `bcad_tests`; `make build` grün im DevContainer (verifiziert, inkl. `ctest` 1/1).
+- [x] DevContainer-Dockerfile (Multi-Stage, Qt 6 + OpenCascade + SQLite) baut reproduzierbar (REQ-TEC-009).
+- [x] Closure-Notiz mit Steering-Loop-Eintrag (siehe §7).
 
 ## 3. Plan (vor Code)
 
@@ -56,7 +56,30 @@ baut grün, ohne dass schon Fachlogik existiert.
 
 ## 7. Closure-Notiz
 
-<!-- Erst nach Abschluss füllen: Lerneintrag (geschärfte Regel / neuer Sensor / Spec-Lücke). -->
+**Abgeschlossen am:** 2026-06-08.
+
+**Was funktioniert hat:** Die hexagonale Target-Trennung (ADR-0001) ist
+doppelt belegt — der dependency-freie Kern `bcad_hexagon` kompiliert
+mit reinem `g++` ohne Qt/OCC/SQLite (Host-Verifikation), und der
+vollständige DevContainer-Build (`make build`) übersetzt die ganze
+Kette inkl. `bcad_adapters` (Qt6/OCC/SQLite-Proben) und läuft `ctest`
+1/1 grün. Image-Build erfolgreich.
+
+**Was anders lief als geplant — Steering-Loop-Eintrag:** Der erste
+`make build` brach mit `ninja: error: '/usr/lib/.../libtbb.so' …
+missing` ab. Ursache: OpenCascades CMake-Target `TKernel` zieht
+transitiv **TBB**, aber das Ubuntu-OCC-Paket installiert nur die
+Runtime-`libtbb.so.12`, nicht den Dev-Symlink. **Sensor-Wirkung:** Der
+neue `make build`-Gate hat genau diese Toolchain-Lücke gefangen, bevor
+sie in einen späteren Slice geleckt wäre. **Härtung:** `libtbb-dev` in
+die `deps`-Stage des DevContainers aufgenommen. → Generalisierbare
+Lehre für ADR-0002-Folgearbeit: OCC-Adapter-Builds brauchen `libtbb-dev`
+(Dev-Symlinks), nicht nur die Runtime-Libs.
+
+**Folge-Slices:** keine neuen `open/`-Einträge nötig — slice-002
+(Code-Gates) und slice-003 (Domain & Wände) standen bereits geplant.
+`make build` wurde regelkonform aus dem „Nicht behauptet"-Block in die
+reale Sensors-Tabelle promotet (Promotion-Trigger, Modul 13).
 
 ## 8. Sub-Area-Modus-Begründung
 
