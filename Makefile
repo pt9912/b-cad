@@ -17,7 +17,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gates
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency gates
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -46,4 +46,7 @@ coverage-gate: ## bootstrap-aware Coverage (Schwelle $(COVERAGE_THRESHOLD)%, gco
 docs-check: ## Doku-Konsistenz — interne Markdown-Links/Anker/ID-Pfade (Modul 11/13)
 	$(DOCKER) build -f tools/Dockerfile --target docs-check -t $(IMAGE):docs-check .
 
-gates: docs-check arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)
+gate-consistency: ## Modul 13 — jeder als real dokumentierte make-Befehl existiert (Doku↔Makefile)
+	$(GATE) --target gate-consistency -t $(IMAGE):gate-consistency .
+
+gates: docs-check gate-consistency arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)

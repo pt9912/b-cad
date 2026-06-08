@@ -64,3 +64,9 @@ FROM ubuntu:24.04 AS arch-check
 WORKDIR /src
 COPY . .
 RUN bash tools/arch-check.sh
+
+# --- gate-consistency: Doku↔Makefile-Konsistenz (Modul 13), textbasiert ---
+FROM ubuntu:24.04 AS gate-consistency
+WORKDIR /src
+COPY . .
+RUN bash tools/gate-consistency.sh
