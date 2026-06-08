@@ -91,7 +91,7 @@ Toolchain-**Versionen** sind über `apt-get install <name>` nicht
 gepinnt (driften mit dem Ubuntu-Archiv), und die **Base-Version**
 (24.04 vs. 26.04) ist offen. Bewusst **nicht** in slice-002 gelöst, um
 die grünen Gates nicht zu destabilisieren. Übergeben an
-[`spike-001`](../open/spike-001-toolchain-reproduzierbarkeit.md) →
+[`spike-001`](../done/spike-001-toolchain-reproduzierbarkeit.md) →
 mündet in ADR-0004 (Container-/Dependency-Pinning).
 
 **§8-Prüfpunkt Test-Infrastruktur:** Die Test-Konvention (GoogleTest,

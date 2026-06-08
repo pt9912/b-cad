@@ -19,15 +19,15 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 
 | Verzeichnis | Slices |
 |---|---|
-| `open/` | slice-003 (Domain-Kern & Wände), spike-001 (Toolchain-Reproduzierbarkeit) |
+| `open/` | slice-003 (Domain-Kern & Wände), slice-004 (Toolchain-Pinning + 26.04/node24) |
 | `next/` | — |
 | `in-progress/` | — (nur `roadmap.md`) |
-| `done/` | slice-001 (Build-Skelett & DevContainer), slice-002 (Code-Gates & Sensors-Promotion) |
+| `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit) |
 
-slice-001/002 sind abgeschlossen und verifiziert grün (`make gates`):
-hexagonales Skelett + fünf reale Gates ohne Bind-Mounts. slice-003
-(erste Fachlogik) und spike-001 (Base-Version/Pinning → ADR-0004) sind
-offen.
+slice-001/002 sind abgeschlossen und grün (`make gates`); spike-001 hat
+die Toolchain-Reproduzierbarkeit untersucht → ADR-0004 (Proposed) +
+slice-004 (Umsetzung: Digest+Snapshot-Pinning, Migration 26.04/node24).
+Offen: slice-003 (erste Fachlogik) und slice-004.
 
 ## Roadmap
 

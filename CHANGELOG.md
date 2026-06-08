@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `make arch-check` (hexagonale Schichtung), `make lint` (clang-tidy +
   Suppression-Gate), `make test`, `make coverage-gate` (bootstrap-aware);
   Hello-Hexagon-Port-Roundtrip; Sensors gepromotet.
+- spike-001 — Toolchain-Reproduzierbarkeit untersucht (Ubuntu 24.04 vs
+  26.04, node-Base, Pinning) → ADR-0004 (Proposed: Digest + apt-Snapshot,
+  Migration 26.04/node24) + Folge-slice-004.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die
