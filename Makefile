@@ -1,28 +1,49 @@
 # b-cad — Harness-Gates.
 #
-# Stand: Greenfield-Bootstrap. Es existiert genau EIN echtes Gate
-# (docs-check, Doku-Link-Validator). Code-Gates (build, lint, arch-check,
-# test, coverage-gate) entstehen mit dem ersten Code-Slice (slice-002,
-# Promotion-Trigger) — sie sind hier bewusst NICHT als Targets behauptet,
-# damit `make gates` kein halluziniertes Aggregat wird (Kurs-Modul 13).
+# Jeder Gate ist eine Dockerfile-Target-Stage (Quelle per COPY ins Image
+# gebacken, Gate als RUN) — KEINE Bind-Mounts, maximal reproduzierbar
+# (Modul 14, Vorbild cmake-xray). `make gates` aggregiert nur real
+# existierende Targets (Kurs-Modul 13).
 
 DOCKER ?= docker
-DOCS_CHECK_IMAGE ?= bcad-docs-check
-BUILD_IMAGE ?= bcad-build
+IMAGE ?= bcad
+DOCKERFILE ?= .devcontainer/Dockerfile
 
-.PHONY: help build docs-check docs-check-image gates
+# Gate-Kalibrierung (Threshold-as-Variable; "Kalibrierungs-Bindung"
+# Modul 13). coverage-gate ist bootstrap-aware: niedrige Anfangsschwelle,
+# Ramp-Trigger dokumentiert in AGENTS.md §3.
+COVERAGE_THRESHOLD ?= 70
+
+# Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
+GATE = $(DOCKER) build -f $(DOCKERFILE)
+
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gates
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
 
-build: ## ADR-0001 — reproduzierbarer Build im DevContainer (CMake-Target-Trennung Kern/Adapter) + ctest
-	$(DOCKER) build -f .devcontainer/Dockerfile --target build -t $(BUILD_IMAGE) .
+dev-image: ## Toolchain-Image (deps-Stage) — z. B. für die IDE/DevContainer
+	$(GATE) --target deps -t $(IMAGE):deps .
 
-docs-check-image: ## Doku-Validator-Image bauen (tools/Dockerfile)
-	$(DOCKER) build -t $(DOCS_CHECK_IMAGE) tools/
+build: ## ADR-0001 — Target-Kette kompilieren (Kern ohne Adapter-Deps)
+	$(GATE) --target build -t $(IMAGE):build .
 
-docs-check: docs-check-image ## Doku-Konsistenz — interne Markdown-Links/Anker/ID-Pfade (Modul 11/13)
-	$(DOCKER) run --rm -v "$(CURDIR)":/work $(DOCS_CHECK_IMAGE)
+test: ## REQ-TEC-005 — GoogleTest (Kern + Adapter-Linkage)
+	$(GATE) --target test -t $(IMAGE):test .
 
-gates: docs-check ## alle inneren Gates (derzeit nur docs-check; Code-Gates folgen mit slice-002)
+lint: ## clang-tidy + Suppression-Gate (AGENTS.md §2.4)
+	$(GATE) --target lint -t $(IMAGE):lint .
+
+arch-check: ## ADR-0001 — hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/adapters)
+	$(GATE) --target arch-check -t $(IMAGE):arch-check .
+
+coverage-gate: ## bootstrap-aware Coverage (Schwelle $(COVERAGE_THRESHOLD)%, gcov; Composition Root ausgenommen)
+	$(GATE) --target coverage-check \
+		--build-arg BCAD_COVERAGE_THRESHOLD=$(COVERAGE_THRESHOLD) \
+		-t $(IMAGE):coverage-check .
+
+docs-check: ## Doku-Konsistenz — interne Markdown-Links/Anker/ID-Pfade (Modul 11/13)
+	$(DOCKER) build -f tools/Dockerfile --target docs-check -t $(IMAGE):docs-check .
+
+gates: docs-check arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)

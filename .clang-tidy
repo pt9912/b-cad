@@ -1,0 +1,19 @@
+# clang-tidy-Konfiguration (slice-002). Konservativer Check-Satz; jeder
+# aktivierte Befund ist ein Fehler (der lint-Gate ist rot/grün, kein
+# Vorschlag — Modul 13). Inline-Suppression ist verboten (AGENTS.md §2.4,
+# zusätzlich durch tools/suppression-gate.sh erzwungen); echte Ausnahmen
+# werden hier zentral mit ADR-/Slice-Bezug eingetragen.
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  readability-function-cognitive-complexity
+WarningsAsErrors: >
+  bugprone-*,
+  clang-analyzer-*,
+  readability-function-cognitive-complexity
+HeaderFilterRegex: '^src/'
+FormatStyle: none
+CheckOptions:
+  - key: readability-function-cognitive-complexity.Threshold
+    value: '20'

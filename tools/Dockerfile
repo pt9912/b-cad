@@ -1,18 +1,20 @@
-# b-cad Doku-Validator — reproduzierbares, dependency-freies Node-Skript.
-# Vendored aus dem AI-Harness-Kurs (tools/docs-check.js). Single-Purpose:
-# nur der Markdown-Link-Validator (b-cad nutzt den alignment-check des
-# Kurses nicht).
+# b-cad Doku-Validator — Build-Stage-Gate, KEIN Bind-Mount.
+# Bauen mit Repo-Root als Kontext; die Validierung läuft als RUN:
 #
-#   docker build -t bcad-docs-check tools/
-#   docker run --rm -v "$PWD":/work bcad-docs-check
+#   docker build -f tools/Dockerfile --target docs-check -t bcad-docs-check .
 #
-# Hinweis (Modul 14): Zielzustand ist Pinning der Base per @sha256-Digest.
-# Solange b-cad keinen eigenen Image-Hash-Vertrag hat (erster Code-Slice),
-# bleibt der Tag — bewusst, dokumentiert, nicht stillschweigend.
+# Schlägt docs-check fehl, schlägt der Build fehl. Vendored aus dem
+# AI-Harness-Kurs (MR-003); Single-Purpose (kein alignment-check).
+#
+# Hinweis (Modul 14): Base-Pinning per @sha256 ist Zielzustand.
 
-FROM node:22-alpine AS docs-check
-WORKDIR /work
-COPY docs-check.js /usr/local/bin/docs-check.js
+FROM node:22-alpine AS base
+COPY tools/docs-check.js /usr/local/bin/docs-check.js
 RUN node --check /usr/local/bin/docs-check.js \
  && chmod +x /usr/local/bin/docs-check.js
-ENTRYPOINT ["node", "/usr/local/bin/docs-check.js"]
+
+# --- docs-check: Repo einbacken und Links/Anker/Pfade validieren ---
+FROM base AS docs-check
+WORKDIR /work
+COPY . .
+RUN node /usr/local/bin/docs-check.js

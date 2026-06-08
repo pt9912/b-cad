@@ -1,5 +1,6 @@
 # Build
 /build/
+/build-cov/
 /out/
 /cmake-build-*/
 CMakeCache.txt
