@@ -6,12 +6,12 @@ nach `done/` (reiner `git mv`).
 
 ## Aktive Carveouts
 
-**Keine.** b-cad ist soeben durch den Greenfield-Bootstrap gegangen — es
-gibt noch keine Gates und keinen Code, also auch keine zu schwächende
-Regel. Ein Carveout ohne reales Gate wäre sinnlos.
+**Keine.** Gates und Code existieren inzwischen (slice-001/002), aber
+**kein Gate ist strukturell rot** — es gibt also keine zu schwächende
+Regel. Ein Carveout ohne rotes Gate wäre sinnlos.
 
-Sobald Gates existieren (erster Code-Slice) und ein Gate strukturell rot
-ist (z. B. Bootstrap-Coverage unter Zielschwelle), entsteht hier ein
+Sobald ein Gate strukturell rot ist (z. B. Coverage unter Zielschwelle
+nach einem Schwellen-Hochschalt), entsteht hier ein
 `CO-<NNN>`-Eintrag mit Trigger und Folge-Slice.
 
 ## Konventionen

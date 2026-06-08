@@ -54,8 +54,8 @@ Build und Gates laufen über den reproduzierbaren Docker-DevContainer
 lokales Qt-/OCC-SDK.
 
 **Begründung:** Toolchain-Reproduzierbarkeit + Supply-Chain-Defense.
-*(DevContainer + `make build` existieren seit slice-001; weitere
-Code-Gates folgen in slice-002 — siehe §3.)*
+*(DevContainer + alle Code-Gates existieren seit slice-001/002 —
+siehe §3.)*
 
 ### 2.4 Suppression-Verbot
 

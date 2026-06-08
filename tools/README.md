@@ -16,8 +16,8 @@ Dependencies). Er prüft repo-weit:
 
 Das war b-cads **erstes reales Gate** (Greenfield-Bootstrap) und prüft
 die Doku-Lieferung, die bereits existiert. Seit slice-002 stehen daneben
-die Code-Gates (`arch-check`, `lint`, `test`, `coverage-gate`).
-Eingebunden als `make docs-check` / `make gates`.
+die Code-Gates (Liste: `harness/README.md` §Sensors). Eingebunden als
+`make docs-check` / `make gates`.
 
 ### Verwendung (Docker, gemäß Hard Rule AGENTS.md §2.3)
 
