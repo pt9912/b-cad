@@ -1,0 +1,25 @@
+# Build
+/build/
+/out/
+/cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+compile_commands.json
+
+# Coverage / test artifacts
+*.gcda
+*.gcno
+/coverage/
+
+# Editor / OS
+.cache/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Agent-/Tooling-lokale Verzeichnisse (nicht versioniert)
+.claude/
+.agents/
+.codex/
+.tmp/
