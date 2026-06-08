@@ -41,6 +41,7 @@ b-cad/
 ├── README.md                 (diese Datei)
 ├── AGENTS.md                 Hard Rules + Source Precedence
 ├── LICENSE                   MIT
+├── CHANGELOG.md              Keep a Changelog (MR-004)
 ├── Makefile                  Gates (real: docs-check, build; Code-Gates folgen)
 ├── CMakeLists.txt            hexagonale Target-Trennung (ADR-0001)
 ├── .devcontainer/            Qt6+OpenCascade+SQLite-Build (make build)

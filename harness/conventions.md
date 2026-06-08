@@ -145,6 +145,27 @@ sie.
   (Entropy Management).
 - **Auflösungs-Trigger:** permanent (solange b-cad Markdown-Doku trägt).
 
+### MR-004 — Top-level CHANGELOG.md (Keep a Changelog)
+
+- **Datum:** 2026-06-08
+- **Geltungsbereich:** [`CHANGELOG.md`](../CHANGELOG.md)
+- **Adaption:** b-cad führt ein repo-weites `CHANGELOG.md` im Format
+  [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) mit
+  [Semantic Versioning](https://semver.org/). Der Kurs sieht das
+  **nicht** vor — er hält Änderungs-Historie verteilt (Spec-§Historie,
+  ADR-Geschichte, Slice-Closure-Notizen, `welle-N-results.md`).
+- **Begründung:** ausdrückliche Projektentscheidung für ein einzelnes,
+  release-orientiertes Überblicks-Artefakt zusätzlich zur verteilten
+  Historie.
+- **Drift-Disziplin (gegen das Duplikations-Risiko, vor dem der Kurs
+  warnt):** `CHANGELOG.md` ist **kuratiert und grobkörnig** — ein
+  Eintrag pro Slice/Welle/Release unter `## [Unreleased]`, **keine**
+  Spiegelung jedes Commits und **keine** Wiederholung der
+  Akzeptanzkriterien. Die feinkörnige, auditierbare Wahrheit bleibt in
+  den kanonischen Quellen; das CHANGELOG verweist auf sie, ersetzt sie
+  nicht.
+- **Auflösungs-Trigger:** permanent.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·
