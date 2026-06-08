@@ -20,7 +20,7 @@ compile_commands.json
 .DS_Store
 
 # Agent-/Tooling-lokale Verzeichnisse (nicht versioniert)
-.claude/
+.claude/settings.local.json
 .agents/
 .codex/
 .tmp/
