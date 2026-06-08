@@ -24,10 +24,10 @@ automatische Raumerkennung, 3D-Extrusion in Echtzeit.
 folgt" = Slice noch in der Welle zu schneiden):
 - slice-001 done — Build-Skelett & DevContainer (`make build` grün).
 - slice-002 done — Code-Gates real & gepromotet (`make gates` grün).
-- slice-003 done — Wände mit Grenzwert-Verhalten (`LH-FA-WAL-001/002/003`) + 3D-Extrusion (`LH-FA-D3-001`).
+- slice-003 open — Wände mit Grenzwert-Verhalten (`LH-FA-WAL-001/002/003`) + 3D-Extrusion (`LH-FA-D3-001`).
 - Raum-Autoerkennung (`LH-FA-ROM-001`) und 3D-Echtzeit (`LH-FA-D3-002`) — *Slice folgt*.
 - ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar, LH-QA-005) — *Slice folgt*.
-- slice-004 done — reproduzierbare, gepinnte Toolchain (ADR-0004): Migration 26.04/node24, Digest+Snapshot. (Toolchain-Härtung; gatet nicht die Feature-Funktion, aber den reproduzierbaren MVP-Build.)
+- slice-004 open — reproduzierbare, gepinnte Toolchain (ADR-0004): Migration 26.04/node24, Digest+Snapshot. (Toolchain-Härtung; gatet nicht die Feature-Funktion, aber den reproduzierbaren MVP-Build.)
 - Closure-Notiz in `done/welle-1-results.md`.
 
 ## Nächste Wellen
