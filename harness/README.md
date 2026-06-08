@@ -18,10 +18,11 @@ dupliziert sie nicht.
 **Stand:** Greenfield-Bootstrap (Kurs-Modul 2) abgeschlossen; **slice-001**
 (Build-Skelett & DevContainer) und **slice-002** (Code-Gates) sind
 umgesetzt und verifiziert. **Reale Gates** (jeweils Dockerfile-Target-
-Stage, keine Bind-Mounts): `make docs-check`, `make arch-check`,
-`make lint`, `make test`, `make coverage-gate`, `make build` —
-aggregiert in `make gates`. Details und Verträge: §Sensors. Geplant
-(noch nicht behauptet): `coverage-gate-critical`, `ci`, `fullbuild`.
+Stage, keine Bind-Mounts): `make docs-check`, `make gate-consistency`,
+`make arch-check`, `make lint`, `make test`, `make coverage-gate`,
+`make build` — aggregiert in `make gates`. Details und Verträge:
+§Sensors. Geplant (noch nicht behauptet): `coverage-gate-critical`,
+`ci`, `fullbuild`.
 
 ## Source precedence
 
@@ -60,12 +61,13 @@ Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
 | Target | Vertrag | Bindung |
 |---|---|---|
 | `make docs-check` | interne Markdown-Links, Anker und ID-Pfade konsistent; kein Pfad führt aus dem Repo | [`MR-003`](conventions.md#mr-003-docs-check-als-vendored-doku-sensor) |
+| `make gate-consistency` | jeder als real dokumentierte `make`-Befehl (AGENTS §3 / §Sensors) existiert im Makefile — fängt halluzinierte Gates | Modul 13 |
 | `make arch-check` | hexagonale Schichtung: Kern importiert kein Qt/OCC/SQLite/`adapters/`; kein Adapter importiert einen anderen | ADR-0001 |
 | `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001 §Fitness (AGENTS.md §2.4) |
 | `make test` | GoogleTest grün; beweist Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
 | `make coverage-gate` | Line-Coverage ≥ Schwelle (bootstrap-aware, Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 (siehe AGENTS.md §3) |
 | `make build` | Target-Kette kompiliert; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
-| `make gates` | Aggregat: docs-check · arch-check · lint · test · coverage-gate | — |
+| `make gates` | Aggregat: docs-check · gate-consistency · arch-check · lint · test · coverage-gate | — |
 
 **Nicht behauptet (geplant).** Sobald real, wandern sie mit Vertrag und
 Bindung in die obige Tabelle:

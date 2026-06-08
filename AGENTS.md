@@ -119,12 +119,13 @@ existiert für den Lauf nicht.
 | Target | Zweck | Bindung |
 |---|---|---|
 | `make docs-check` | Doku-Konsistenz: interne Markdown-Links/Anker/ID-Pfade | MR-003 |
+| `make gate-consistency` | jeder als real dokumentierte `make`-Befehl existiert im Makefile (fängt halluzinierte Gates) | Modul 13 |
 | `make arch-check` | hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/`adapters/`; kein Adapter→Adapter) | ADR-0001 |
 | `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001, AGENTS §2.4 |
 | `make test` | GoogleTest: Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
 | `make coverage-gate` | bootstrap-aware Line-Coverage ≥ `COVERAGE_THRESHOLD` (Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 |
 | `make build` | Target-Kette kompilieren; CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
-| `make gates` | docs-check · arch-check · lint · test · coverage-gate | — |
+| `make gates` | docs-check · gate-consistency · arch-check · lint · test · coverage-gate | — |
 
 **Geplant (noch NICHT behauptet):**
 

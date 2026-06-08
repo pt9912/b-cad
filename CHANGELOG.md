@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - spike-001 — Toolchain-Reproduzierbarkeit untersucht (Ubuntu 24.04 vs
   26.04, node-Base, Pinning) → ADR-0004 (Proposed: Digest + apt-Snapshot,
   Migration 26.04/node24) + Folge-slice-004.
+- slice-005 — `make gate-consistency`: Doku↔Makefile-Sensor (jeder als
+  real dokumentierte `make`-Befehl existiert) — schließt die Drift-Klasse,
+  die `docs-check` (nur Links) nicht fängt.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die
