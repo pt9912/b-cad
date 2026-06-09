@@ -7,6 +7,8 @@
 # Regel A: Der Kern src/hexagon/ ist framework-frei — kein Qt, kein
 #          OpenCascade (*.hxx), kein SQLite, kein Import aus adapters/.
 # Regel B: Kein Adapter importiert einen anderen Adapter.
+# Regel C: OCC-Header (*.hxx) NUR in src/adapters/geometry/ (ADR-0002 —
+#          OCC bleibt im Geometrie-Adapter gekapselt).
 #
 # HINWEIS: Heuristik, kein C++-Parser. Das Qt-Muster `Q[A-Za-z]` würde
 # einen künftigen framework-freien Kern-Header wie `Queue.h` falsch
@@ -18,7 +20,7 @@ cd "$(dirname "$0")/.."
 status=0
 
 # --- Regel A: Kern-Reinheit ---
-a_hits="$(grep -rnE '#include[[:space:]]*[<"](Q[A-Za-z]|sqlite3\.h)|#include[[:space:]]*"adapters/|#include[[:space:]]*<[A-Za-z0-9_]+\.hxx>' src/hexagon 2>/dev/null || true)"
+a_hits="$(grep -rnE '#include[[:space:]]*[<"](Q[A-Za-z]|sqlite3\.h)|#include[[:space:]]*"adapters/|#include[[:space:]]*[<"][^>"]*\.hxx[>"]' src/hexagon 2>/dev/null || true)"
 if [ -n "$a_hits" ]; then
     echo "ARCH-CHECK FAIL (ADR-0001, Regel A): Kern src/hexagon/ importiert Qt/OpenCascade/SQLite/adapters:"
     echo "$a_hits"
@@ -38,7 +40,19 @@ while IFS= read -r f; do
     fi
 done < <(find src/adapters -type f \( -name '*.cpp' -o -name '*.h' \) 2>/dev/null)
 
+# --- Regel C: OCC-Header (*.hxx) nur in src/adapters/geometry/ (ADR-0002) ---
+# Erfasst jede angled/quoted .hxx-Include-Form, auch mit Pfad-Präfix:
+#   <Foo.hxx>, "Foo.hxx", <opencascade/Foo.hxx>, "opencascade/Foo.hxx".
+c_hits="$(grep -rnE '#include[[:space:]]*[<"][^>"]*\.hxx[>"]' src \
+    --include='*.cpp' --include='*.h' 2>/dev/null \
+    | grep -vE '^src/adapters/geometry/' || true)"
+if [ -n "$c_hits" ]; then
+    echo "ARCH-CHECK FAIL (ADR-0002, Regel C): OCC-Header (*.hxx) außerhalb src/adapters/geometry/:"
+    echo "$c_hits"
+    status=1
+fi
+
 if [ "$status" -eq 0 ]; then
-    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001)"
+    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter gekapselt (ADR-0002)"
 fi
 exit "$status"

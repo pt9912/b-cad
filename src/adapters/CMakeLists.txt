@@ -9,6 +9,7 @@ find_package(SQLite3 REQUIRED)               # REQ-TEC-007, ADR-0003
 add_library(bcad_adapters
     ui/qt_probe.cpp
     geometry/occ_probe.cpp
+    geometry/occ_geometry_adapter.cpp
     persistence/sqlite_probe.cpp
 )
 
@@ -21,6 +22,9 @@ target_link_libraries(bcad_adapters
         bcad_hexagon          # Adapter -> Kern (erlaubte Richtung)
         Qt6::Core
         SQLite::SQLite3
-        TKernel               # OpenCascade Foundation (Standard_Version)
+        # OCC-Modeling-Toolkits (gezielt; nicht ${OpenCASCADE_LIBRARIES},
+        # das auch nicht-installierte DRAW-/Viewer-Toolkits listet):
+        # Footprint-Fläche + Prisma + Volumen-Properties.
+        TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim
 )
 target_compile_features(bcad_adapters PUBLIC cxx_std_20)

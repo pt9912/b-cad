@@ -18,6 +18,7 @@ target_link_libraries(bcad_tests PRIVATE bcad_hexagon GTest::gtest_main)
 # slice-001: der Build-Gate muss Linken beweisen, nicht nur Kompilieren).
 add_executable(bcad_adapter_tests
     adapters/test_probes.cpp
+    adapters/test_occ_geometry_adapter.cpp
 )
 target_link_libraries(bcad_adapter_tests PRIVATE bcad_adapters GTest::gtest_main)
 
