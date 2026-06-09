@@ -52,7 +52,7 @@ ist eine LTS-Generation alt.
 - [x] Findings-Tabelle: 24.04 vs 26.04 (Paket-Verfügbarkeit, Versionen, `make gates`-Ergebnis) — siehe §9.
 - [x] Empfehlung Base + Pinning-Strategie mit Begründung — §9 + ADR-0004.
 - [x] **ADR-0004** (Container-/Dependency-Pinning) als `Proposed` entworfen; ADR-Index aktualisiert.
-- [x] Folge-Slice angelegt: [`slice-004`](../open/slice-004-toolchain-pinning-26.04.md).
+- [x] Folge-Slice angelegt: [`slice-004`](../done/slice-004-toolchain-pinning-26.04.md).
 
 ## 5. Trigger
 
@@ -113,7 +113,7 @@ schwer ohne Binary-Cache (Qt6/OCC aus Source).
 
 **Empfehlung → ADR-0004 (Proposed):** Option A (Digest + Snapshot),
 Migration auf 26.04 + node 24, mit clang-tidy-21-Lint-Fix.
-**Umsetzung:** [`slice-004`](../open/slice-004-toolchain-pinning-26.04.md).
+**Umsetzung:** [`slice-004`](../done/slice-004-toolchain-pinning-26.04.md).
 
 **Erfasste Digests:** `ubuntu:24.04` `sha256:786a8b55…`, `ubuntu:26.04`
 `sha256:f3d28607…` (node-Digest in slice-004 beim Build erfassen).
