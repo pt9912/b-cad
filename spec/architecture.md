@@ -243,5 +243,5 @@ Vollständige Liste in
 [`../docs/plan/adr/README.md`](../docs/plan/adr/README.md).
 
 - [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) — Hexagonale Architektur (Ports & Adapters); Abhängigkeitsrichtung über getrennte CMake-Targets erzwungen. **Accepted.**
-- [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md) — Geometrie-Kern OpenCascade hinter `GeometryKernelPort`. **Proposed.**
+- [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md) — Geometrie-Kern OpenCascade hinter `GeometryKernelPort` (Backend: Solids/Extrusion/Booleans/Wandöffnungen; STEP-Export ausgegliedert in künftige IO/Export-ADR). **Accepted.**
 - [ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md) — Projekt-Persistenz SQLite, atomar geschrieben. **Proposed.**

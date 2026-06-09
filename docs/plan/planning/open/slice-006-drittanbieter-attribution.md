@@ -73,7 +73,7 @@ zurückgestellte Distributions-Aspekt eingelöst.
 - **slice-002 done** — Gate-Framework + AGENTS-§3-Promotions-Mechanik stehen (`suppression-gate.sh`, `arch-check.sh`, `make gates`-Aggregation); `make license-check` ist ein Geschwister-Sensor.
 - **Reales Release-Binary existiert** — `bin/b-cad` mit echt gelinkten Drittanbieter-Deps (Qt/OCC/SQLite), d. h. `make fullbuild` herstellbar. *Ohne reales Binary ist Attribution Fiktion* — harter Sequenz-Constraint (AGENTS §3: „noch kein Code").
 - **ADR-Kette accepted + LH-QA-007 im Lastenheft** — die Attribution begründet sich aus einer Kette noch *Proposed*er bzw. ungeschriebener Entscheidungen, die alle vor Aktivierung **Accepted** sein müssen (Annahme-, kein Schreib-Trigger für die existierenden):
-  - [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md) — OCC-Bindung = Lizenz-Prämisse (LGPL-2.1 + OCCT-exception). *Proposed.*
+  - [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md) — OCC-Bindung = Lizenz-Prämisse (LGPL-2.1 + OCCT-exception). *Accepted (2026-06-09).*
   - **Qt-Framework-Bindung** — liefert die LGPL-3.0-Prämisse, ist aber **noch kein ADR** (offenes ADR-Thema, [adr/README §Offene Themen](../../adr/README.md)). Reale Vorbedingungs-Lücke.
   - [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md) — gepinnte Versionen = Manifest-Grundlage (Dep→Version). *Proposed.*
   - [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) — Tooling + Layout. *Proposed* (existiert; offen nur die Annahme).
