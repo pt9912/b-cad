@@ -1,6 +1,6 @@
 # ADR-0003: Projekt-Persistenz mit SQLite, atomar geschrieben
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Datum:** 2026-06-08
 
@@ -59,10 +59,11 @@ Schreiben erfolgt **atomar** (Schreiben in Temp-Datei, dann Rename).
 
 ## Fitness Function
 
-| Tooling | Regel | Make-Target (geplant) |
+| Tooling | Regel | Make-Target |
 |---|---|---|
-| Crash-Recovery-Test | `kill -9` während `save` → nach Neustart letzter konsistenter Stand ladbar | `make test` (Determinismus-/Recovery-Suite) |
-| Architekturtest | SQLite-Header nur in `src/adapters/persistence/` | `make arch-check` |
+| Architekturtest | SQLite-Header nur in `src/adapters/persistence/` | `make arch-check` **Regel D** (real, slice-008a) |
+| Round-Trip | `save`→`load` ergibt feldgleiches Modell (BLD-002/003) | `make test` (real, slice-008a) |
+| Crash-Recovery-Test | `kill -9` während `save` → nach Neustart letzter konsistenter Stand ladbar | `make test` (Recovery-Suite, **slice-008b**) |
 
 ## Re-Evaluierungs-Trigger
 
@@ -75,3 +76,4 @@ Schreiben erfolgt **atomar** (Schreiben in Temp-Datei, dann Rename).
 | Datum | Ereignis | Verweis |
 |---|---|---|
 | 2026-06-08 | Proposed (aus Architektur-Outline, Bootstrap) | spec/architecture.md §3 |
+| 2026-06-09 | Accepted — umgesetzt in slice-008a: `ProjectRepositoryPort` + SQLite-Adapter (atomar via Temp+Rename), Round-Trip grün, arch-check Regel D. Crash-Recovery-Fitness (LH-QA-005) als Folgepflicht slice-008b | slice-008a |

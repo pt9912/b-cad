@@ -1,0 +1,12 @@
+#pragma once
+
+// AUTO-GENERIERT via CMake `configure_file` aus
+// src/adapters/persistence/schema.sql — NICHT von Hand editieren.
+// Quelle der Wahrheit: spec/data-model.yaml (d-migrate, ADR-0006).
+// Drift-Gate: `make schema-check`.
+
+namespace bcad::adapters::persistence {
+
+inline constexpr const char* kSchemaSql = R"BCADSCHEMA(@BCAD_SCHEMA_SQL@)BCADSCHEMA";
+
+}  // namespace bcad::adapters::persistence

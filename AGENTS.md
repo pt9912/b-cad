@@ -124,12 +124,13 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 |---|---|---|
 | `make docs-check` | Doku-Konsistenz: interne Markdown-Links/Anker/ID-Pfade | MR-003 |
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl existiert im Makefile (fängt halluzinierte Gates) | Modul 13 |
-| `make arch-check` | hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/`adapters/`; kein Adapter→Adapter; OCC-`.hxx` nur in `adapters/geometry/`, Regel C) | ADR-0001, ADR-0002 |
+| `make arch-check` | hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/`adapters/`; kein Adapter→Adapter; OCC-`.hxx` nur in `adapters/geometry/`, Regel C; `sqlite3*` nur in `adapters/persistence/`, Regel D) | ADR-0001, ADR-0002, ADR-0003 |
 | `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001, AGENTS §2.4 |
 | `make test` | GoogleTest: Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite) | — |
 | `make coverage-gate` | bootstrap-aware Line-Coverage ≥ `COVERAGE_THRESHOLD` (Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 |
 | `make build` | Target-Kette kompilieren; CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
 | `make gates` | docs-check · gate-consistency · arch-check · lint · test · coverage-gate | — |
+| `make schema-check` | ADR-0006-Drift: `schema.sql` == d-migrate(`data-model.yaml`); **nicht** in `gates` (d-migrate aus dem Gate-Pfad) → CI-Befehlsliste | ADR-0006 |
 
 **Geplant (noch NICHT behauptet):**
 

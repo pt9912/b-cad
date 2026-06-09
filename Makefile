@@ -9,6 +9,11 @@ DOCKER ?= docker
 IMAGE ?= bcad
 DOCKERFILE ?= .devcontainer/Dockerfile
 
+# slice-008a/ADR-0006: d-migrate als externe Tool-Dependency per @sha256
+# gepinnt (ADR-0004-Prinzip auf externe Tools angewandt; ein Floating-Tag
+# erzeugte sonst nicht reproduzierbare DDL).
+DMIGRATE ?= ghcr.io/pt9912/d-migrate:0.9.7@sha256:69afc2147754c23b2d34c6a5ad8fbaae3787a5c061efd32f45d1c953bbc52fd9
+
 # Gate-Kalibrierung (Threshold-as-Variable; "Kalibrierungs-Bindung"
 # Modul 13). coverage-gate ist bootstrap-aware: niedrige Anfangsschwelle,
 # Ramp-Trigger dokumentiert in AGENTS.md §3.
@@ -17,7 +22,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -65,6 +70,20 @@ versions: ## ADR-0004 — gepinnte Toolchain-Versionen (Reproduzierbarkeits-Bele
 		libocct-foundation-dev libocct-modeling-data-dev \
 		libocct-modeling-algorithms-dev libocct-data-exchange-dev \
 		libtbb-dev libsqlite3-dev libgtest-dev ca-certificates | sort
+
+# ADR-0006-Drift: die committete SQLite-DDL muss exakt das sein, was
+# d-migrate aus spec/data-model.yaml erzeugt. BEWUSST NICHT in `make gates`
+# (d-migrate bleibt aus dem hermetischen Gate-Build-Pfad) — gehört aber in
+# die CI-Befehlsliste, sonst feuert das Drift-Gate nie automatisch.
+schema-check: ## ADR-0006 — Drift: schema.sql == d-migrate(data-model.yaml) (NICHT in gates; in CI)
+	@$(DOCKER) run --rm -v $(CURDIR)/spec:/work:ro $(DMIGRATE) \
+		schema generate --source=/work/data-model.yaml --target=sqlite \
+		--deterministic --report=/dev/null \
+		| diff -u src/adapters/persistence/schema.sql - \
+		&& echo "schema-check ok: schema.sql == d-migrate(data-model.yaml)"
+# Hinweis: d-migrate-stderr (u. a. W200-DEZIMAL→REAL-Hinweise) bleibt
+# sichtbar — Pull-/Image-Fehler so diagnostizierbar; der Diff vergleicht
+# nur stdout (die reine DDL).
 
 # `build` ist NICHT separat gelistet: test/lint/coverage-gate sind
 # Dockerfile-Stages FROM build und kompilieren die Target-Kette bereits

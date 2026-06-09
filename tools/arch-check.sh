@@ -9,6 +9,8 @@
 # Regel B: Kein Adapter importiert einen anderen Adapter.
 # Regel C: OCC-Header (*.hxx) NUR in src/adapters/geometry/ (ADR-0002 —
 #          OCC bleibt im Geometrie-Adapter gekapselt).
+# Regel D: SQLite-Header (sqlite3*) NUR in src/adapters/persistence/
+#          (ADR-0003 — SQLite bleibt im Persistenz-Adapter gekapselt).
 #
 # HINWEIS: Heuristik, kein C++-Parser. Das Qt-Muster `Q[A-Za-z]` würde
 # einen künftigen framework-freien Kern-Header wie `Queue.h` falsch
@@ -52,7 +54,18 @@ if [ -n "$c_hits" ]; then
     status=1
 fi
 
+# --- Regel D: SQLite-Header (sqlite3*) nur in src/adapters/persistence/ (ADR-0003) ---
+# Erfasst <sqlite3.h>/"sqlite3.h" und Varianten wie <sqlite3ext.h>.
+d_hits="$(grep -rnE '#include[[:space:]]*[<"]sqlite3[A-Za-z0-9_]*\.h[>"]' src \
+    --include='*.cpp' --include='*.h' 2>/dev/null \
+    | grep -vE '^src/adapters/persistence/' || true)"
+if [ -n "$d_hits" ]; then
+    echo "ARCH-CHECK FAIL (ADR-0003, Regel D): SQLite-Header außerhalb src/adapters/persistence/:"
+    echo "$d_hits"
+    status=1
+fi
+
 if [ "$status" -eq 0 ]; then
-    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter gekapselt (ADR-0002)"
+    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter (ADR-0002) + SQLite im Persistenz-Adapter (ADR-0003) gekapselt"
 fi
 exit "$status"
