@@ -60,10 +60,10 @@ zurückgestellte Distributions-Aspekt eingelöst.
 | Datei / Komponente | Änderungs-Art | Begründung |
 |---|---|---|
 | `tools/licenses-manifest.*` | neu | kuratierte Dep→SPDX-Liste (Single Source of Truth), z. B. YAML |
-| `LICENSES/*.txt` | neu | kanonische Volltexte (REUSE + manueller OCCT-exception) |
+| `LICENSES/*.txt` | neu | kanonische Volltexte an der **Repo-Wurzel** (REUSE-Quelle + manueller OCCT-exception); CMake-`install()` kopiert sie nach `share/doc/b-cad/LICENSES/` (Auslieferungs-Ziel §1) — *ein* Baum, zwei Rollen (Implementierer pflegt nicht zwei) |
 | `tools/gen-attribution.*` | neu | rendert `NOTICE` + `THIRD_PARTY_LICENSES.md` aus Manifest/Scan |
 | `tools/license-check.*` | neu | Allowlist- + Vollständigkeits-Gate (Geschwister zu `suppression-gate.sh`/`arch-check.sh`) |
-| `CMakeLists.txt` / `cmake/install.cmake` | Änderung | `install(TARGETS …)` + `install(DIRECTORY share/doc/b-cad/…)` |
+| `CMakeLists.txt` / `cmake/*.cmake` | Änderung | `install(TARGETS …)` + `install(DIRECTORY share/doc/b-cad/…)` |
 | `Makefile` | Änderung | `make license-check` real; in `gates`/`fullbuild` aggregieren |
 | `AGENTS.md` §3 | Änderung | Target von „Geplant" → „Real" promoten |
 | `docs/user/releasing.md` | Änderung | Checkliste um Attributions-Punkt ergänzen |
@@ -75,7 +75,7 @@ zurückgestellte Distributions-Aspekt eingelöst.
 - **ADR-Kette accepted + LH-QA-007 im Lastenheft** — die Attribution begründet sich aus einer Kette noch *Proposed*er bzw. ungeschriebener Entscheidungen, die alle vor Aktivierung **Accepted** sein müssen (Annahme-, kein Schreib-Trigger für die existierenden):
   - [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md) — OCC-Bindung = Lizenz-Prämisse (LGPL-2.1 + OCCT-exception). *Accepted (2026-06-09).*
   - **Qt-Framework-Bindung** — liefert die LGPL-3.0-Prämisse, ist aber **noch kein ADR** (offenes ADR-Thema, [adr/README §Offene Themen](../../adr/README.md)). Reale Vorbedingungs-Lücke.
-  - [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md) — gepinnte Versionen = Manifest-Grundlage (Dep→Version). *Proposed.*
+  - [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md) — gepinnte Versionen = Manifest-Grundlage (Dep→Version). *Accepted (2026-06-09).*
   - [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) — Tooling + Layout. *Proposed* (existiert; offen nur die Annahme).
   - **LH-QA-007** (Attributions-Pflicht, abnahmebindend) — real noch nicht im Lastenheft. Dieser Slice setzt um, schreibt das Requirement nicht.
 
