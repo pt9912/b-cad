@@ -2,13 +2,21 @@
 // Atomar (Temp + fsync + Rename); SQLite-Typen bleiben hier gekapselt
 // (arch-check Regel D). Schema-DDL aus spec/data-model.yaml generiert
 // (d-migrate, ADR-0006), eingebettet als kSchemaSql.
+//
+// Fehlercodes (slice-008b, Spec-Familie E-IO-*): gemappt nach SQLite-
+// Result-Code bzw. errno — Öffnen/Anlegen/Rechte → E-IO-001, Schreiben/
+// Medium-voll/IO → E-IO-002. `sqlite3_open` ist *lazy*; der „kann nicht
+// öffnen"-Fehler taucht erst beim ersten Zugriff (exec) auf, trägt dann
+// aber SQLITE_CANTOPEN — daher mappen wir am Result-Code, nicht an der Phase.
 
 #include "adapters/persistence/sqlite_project_repository.h"
 
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <filesystem>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <system_error>
@@ -27,16 +35,50 @@ namespace {
 // byte-stabil). Echte Zeitstempel sind eine spätere Domänen-Erweiterung.
 constexpr const char* kSentinelTs = "1970-01-01T00:00:00Z";
 
+// Interner Fehlertyp mit SQLite-Result-Code. Verlässt den Adapter NIE —
+// `save`/`load` übersetzen ihn in eine neutrale `std::runtime_error` mit
+// Spec-Fehlercode (ADR-0001).
+struct SqliteError {
+    int rc{};
+    std::string context;
+};
+
+// SQLite-Result-Code → Spec-Fehlercode. Öffnen/Anlegen/Rechte → E-IO-001,
+// sonst (FULL/IOERR/…) → E-IO-002 (Schreibfehler/Medium voll).
+std::string ioCodeFor(int rc) {
+    switch (rc & 0xFF) {
+        case SQLITE_CANTOPEN:
+        case SQLITE_PERM:
+        case SQLITE_READONLY:
+        case SQLITE_AUTH:
+            return "E-IO-001";
+        default:
+            return "E-IO-002";
+    }
+}
+
+// errno (aus fs::rename) → Spec-Fehlercode.
+std::string ioCodeForErrno(int err) {
+    switch (err) {
+        case EACCES:
+        case EPERM:
+        case EROFS:
+            return "E-IO-001";
+        default:  // ENOSPC, EIO, … → Schreib-/Finalisierungs-Fehler
+            return "E-IO-002";
+    }
+}
+
 // RAII für sqlite3*.
 class Db {
 public:
     explicit Db(const fs::path& path) {
-        if (sqlite3_open(path.string().c_str(), &db_) != SQLITE_OK) {
+        const int rc = sqlite3_open(path.string().c_str(), &db_);
+        if (rc != SQLITE_OK) {
             const std::string msg = db_ != nullptr ? sqlite3_errmsg(db_)
                                                     : "open failed";
             sqlite3_close(db_);
-            throw std::runtime_error("E-IO: SQLite open '" + path.string() +
-                                     "': " + msg);
+            throw SqliteError{rc, "open '" + path.string() + "': " + msg};
         }
     }
     ~Db() { sqlite3_close(db_); }
@@ -47,10 +89,11 @@ public:
 
     void exec(const char* sql) {
         char* err = nullptr;
-        if (sqlite3_exec(db_, sql, nullptr, nullptr, &err) != SQLITE_OK) {
+        const int rc = sqlite3_exec(db_, sql, nullptr, nullptr, &err);
+        if (rc != SQLITE_OK) {
             const std::string msg = err != nullptr ? err : "exec failed";
             sqlite3_free(err);
-            throw std::runtime_error("E-IO: SQLite exec: " + msg);
+            throw SqliteError{rc, "exec: " + msg};
         }
     }
 
@@ -64,10 +107,11 @@ private:
 class Stmt {
 public:
     Stmt(Db& db, const char* sql) {
-        if (sqlite3_prepare_v2(db.handle(), sql, -1, &stmt_, nullptr) !=
-            SQLITE_OK) {
-            throw std::runtime_error(std::string("E-IO: SQLite prepare: ") +
-                                     sqlite3_errmsg(db.handle()));
+        const int rc =
+            sqlite3_prepare_v2(db.handle(), sql, -1, &stmt_, nullptr);
+        if (rc != SQLITE_OK) {
+            throw SqliteError{rc, std::string("prepare: ") +
+                                      sqlite3_errmsg(db.handle())};
         }
     }
     ~Stmt() { sqlite3_finalize(stmt_); }
@@ -85,7 +129,7 @@ public:
         if (rc == SQLITE_DONE) {
             return false;
         }
-        throw std::runtime_error("E-IO: SQLite step fehlgeschlagen");
+        throw SqliteError{rc, "step"};
     }
     void reset() {
         sqlite3_reset(stmt_);
@@ -208,6 +252,17 @@ void loadWalls(Db& db, hexagon::model::Building& building) {
     }
 }
 
+// Stale Temp-Artefakte entfernen (Recovery nach Absturz): das Temp-DB plus
+// ein evtl. zurückgebliebenes -journal/-wal eines getöteten `save`. Sonst
+// sähe ein neues sqlite3_open ein „hot journal" zu einer frisch angelegten
+// Temp-DB (Wiederverwendung desselben Pfads) → Rollback-Konflikt.
+void removeTempArtifacts(const fs::path& tmp) {
+    std::error_code ec;
+    fs::remove(tmp, ec);
+    fs::remove(fs::path(tmp.string() + "-journal"), ec);
+    fs::remove(fs::path(tmp.string() + "-wal"), ec);
+}
+
 // Best-effort-Durability: Datei bzw. Verzeichnis auf Platte zwingen.
 void fsyncPath(const fs::path& path, bool is_dir) {
     const int flags = O_RDONLY | (is_dir ? O_DIRECTORY : 0);
@@ -224,29 +279,44 @@ void fsyncPath(const fs::path& path, bool is_dir) {
 void SqliteProjectRepository::save(const hexagon::model::Building& building,
                                    const fs::path& path) const {
     const fs::path tmp = path.string() + ".tmp";
-    std::error_code ec;
-    fs::remove(tmp, ec);
+    removeTempArtifacts(tmp);
 
-    try {
-        Db db(tmp);
-        db.exec(kSchemaSql);
-        db.exec("PRAGMA foreign_keys=ON;");
-        db.exec("BEGIN;");
-        insertProject(db);
-        insertStoreys(db, building);
-        insertWalls(db, building);
-        db.exec("COMMIT;");
-    } catch (...) {
-        fs::remove(tmp, ec);  // vorherige Zieldatei bleibt unangetastet
-        throw;
+    {
+        std::optional<Db> db;
+        try {
+            db.emplace(tmp);
+            db->exec(kSchemaSql);
+            db->exec("PRAGMA foreign_keys=ON;");
+            db->exec("BEGIN;");
+            insertProject(*db);
+            insertStoreys(*db, building);
+            insertWalls(*db, building);
+            db->exec("COMMIT;");
+            db.reset();  // schließen vor fsync/rename
+        } catch (const SqliteError& e) {
+            db.reset();
+            removeTempArtifacts(tmp);  // vorherige Zieldatei bleibt intakt
+            throw std::runtime_error(ioCodeFor(e.rc) +
+                                     ": Speichern fehlgeschlagen ('" +
+                                     tmp.string() + "'): " + e.context);
+        } catch (...) {
+            // Nicht-SQLite-Wurf (z. B. std::bad_alloc): Aufräum-Garantie wie
+            // slice-008a wahren — Orphan-Temp entfernen, Fehler unverändert
+            // weiterreichen (kein E-IO-Wrap, da kein klassifizierter IO-Fehler).
+            db.reset();
+            removeTempArtifacts(tmp);
+            throw;
+        }
     }
 
     fsyncPath(tmp, /*is_dir=*/false);
+    std::error_code ec;
     fs::rename(tmp, path, ec);
     if (ec) {
-        fs::remove(tmp, ec);
-        throw std::runtime_error("E-IO: rename '" + tmp.string() + "' -> '" +
-                                 path.string() + "': " + ec.message());
+        removeTempArtifacts(tmp);
+        throw std::runtime_error(ioCodeForErrno(ec.value()) + ": rename '" +
+                                 tmp.string() + "' -> '" + path.string() +
+                                 "': " + ec.message());
     }
     const fs::path dir = path.parent_path();
     fsyncPath(dir.empty() ? fs::path(".") : dir, /*is_dir=*/true);
@@ -258,11 +328,16 @@ hexagon::model::Building SqliteProjectRepository::load(
         throw std::runtime_error("E-IO: Projektdatei nicht gefunden: " +
                                  path.string());
     }
-    hexagon::model::Building building;
-    Db db(path);
-    loadStoreys(db, building);
-    loadWalls(db, building);
-    return building;
+    try {
+        hexagon::model::Building building;
+        Db db(path);
+        loadStoreys(db, building);
+        loadWalls(db, building);
+        return building;
+    } catch (const SqliteError& e) {
+        throw std::runtime_error("E-IO: Projektdatei nicht lesbar ('" +
+                                 path.string() + "'): " + e.context);
+    }
 }
 
 }  // namespace bcad::adapters::persistence

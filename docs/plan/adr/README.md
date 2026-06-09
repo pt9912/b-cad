@@ -20,7 +20,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 |---|---|---|
 | ADR-0002 | `arch-check` **Regel C** (OCC-`.hxx` nur in `src/adapters/geometry/`) | **erfüllt** durch [slice-003b](../planning/done/slice-003b-occ-extrusion.md) (2026-06-09) |
 | ADR-0003 | `arch-check` **Regel D** (`sqlite3*` nur in `src/adapters/persistence/`) | **erfüllt** durch slice-008a (2026-06-09) |
-| ADR-0003 | Crash-Recovery-Test (`kill -9`, LH-QA-005) | **offen** → slice-008b |
+| ADR-0003 | Crash-Recovery-Test (`kill -9`, LH-QA-005) | **erfüllt** durch slice-008b (2026-06-09) |
 
 ## Konventionen
 

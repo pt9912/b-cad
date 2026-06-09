@@ -20,6 +20,7 @@ add_executable(bcad_adapter_tests
     adapters/test_probes.cpp
     adapters/test_occ_geometry_adapter.cpp
     adapters/test_sqlite_project_repository.cpp
+    adapters/test_sqlite_crash_recovery.cpp
 )
 target_link_libraries(bcad_adapter_tests PRIVATE bcad_adapters GTest::gtest_main)
 
