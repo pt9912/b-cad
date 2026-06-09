@@ -7,6 +7,7 @@
 | [0003](0003-persistenz-sqlite.md) | Projekt-Persistenz SQLite, atomar | Proposed (2026-06-08) | REQ-TEC-007, LH-FA-BLD-*, LH-QA-005 |
 | [0004](0004-toolchain-dependency-pinning.md) | Container-/Dependency-Pinning + Base-Version (24.04→26.04, node 24, Digest+Snapshot) | Accepted (2026-06-09) | REQ-TEC-009, Modul 14, spike-001 |
 | [0005](0005-drittanbieter-lizenz-attribution.md) | Drittanbieter-Lizenz-Attribution & Auslieferungs-Layout (ScanCode+REUSE, kuratiertes Manifest, dist-Layout) | Proposed (2026-06-08) | LH-QA-007 (vorgeschlagen), ADR-0002/0004, slice-006 |
+| [0006](0006-relationales-schema-design.md) | Relationales Schema-Design des Gebäudemodells (per-Typ-Tabellen, `openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack) | Accepted (2026-06-09) | OBJ-003, ADR-0001/0003, LH-QA-003 |
 
 ## ADR-Folgepflichten (Status)
 

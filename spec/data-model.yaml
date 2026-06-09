@@ -1,0 +1,282 @@
+# b-cad — Logisches Datenmodell (Persistenz-Schema).
+#
+# Status: Proposed (slice-007). Format: d-migrate Neutral-Schema "1.0"
+# (GitHub github.com/pt9912/d-migrate, spec/schema-reference.md). d-migrate
+# generiert daraus die dialekt-spezifische DDL (Ziel: SQLite, ADR-0003).
+# Normativ beschrieben in spec/spezifikation.md §2; Design-Entscheidung in
+# docs/plan/adr/0006-relationales-schema-design.md.
+#
+# WICHTIG (Hexagonal, ADR-0001): Wahrheit des Domaenen-Modells ist der Kern
+# (src/hexagon/model/: Building/Storey/Wall ...). Dieses Schema ist die
+# Persistenz-Abbildung — es bildet das Domaenen-Modell ab, treibt es nicht.
+#
+# Naming: Domaenen-Begriffe sind kanonisch (Storey -> `storeys`,
+# Wandstaerke -> `thickness_mm`).
+#
+# precision/scale-Konvention (decimal ist im Format Pflicht-attributiert):
+#   Laengen/Koordinaten *_mm : precision 12, scale 3  (bis ~10^9 mm, 1 µm)
+#   Flaechen *_m2 / Volumen *_m3 : precision 14, scale 4
+#   Winkel *_deg : precision 7, scale 3
+#   u_value : 6,3 · density : 10,3 · kosten *_per_* : 12,2 · scale_* : 8,4
+
+schema_format: "1.0"
+name: "b-cad"
+version: "1.0.0"
+description: "Parametrisches Gebaeudemodell (Wohngebaeude) — Persistenz-Schema."
+
+tables:
+
+  projects:
+    description: "Projekt-Wurzel (ein Gebaeudemodell pro Projekt)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      name: { type: text, max_length: 255, required: true }
+      file_version: { type: integer, default: 1 }
+      unit: { type: text, max_length: 16, default: "mm" }  # nur Anzeige; Speicherung ist kanonisch mm
+      created_at: { type: datetime, required: true }
+      updated_at: { type: datetime, required: true }
+    primary_key: [id]
+
+  storeys:
+    description: "Geschoss (LH-FA-FLR-*)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      name: { type: text, max_length: 255, required: true }
+      level_index: { type: integer, required: true }
+      elevation_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      height_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      created_at: { type: datetime, required: true }
+      updated_at: { type: datetime, required: true }
+    primary_key: [id]
+    constraints:
+      - { name: uq_storeys_project_level, type: unique, columns: [project_id, level_index] }
+    indices:
+      - { name: idx_storeys_project, columns: [project_id] }
+
+  materials:
+    description: "Material-Bibliothek (LH-FA-MAT-*)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      name: { type: text, max_length: 255, required: true }
+      category: { type: text, max_length: 64, required: true }
+      color_hex: { type: text, max_length: 16 }
+      texture_path: { type: text, max_length: 1024 }
+      density: { type: decimal, precision: 10, scale: 3 }
+      u_value: { type: decimal, precision: 6, scale: 3 }
+      cost_per_m2: { type: decimal, precision: 12, scale: 2 }
+      cost_per_m3: { type: decimal, precision: 12, scale: 2 }
+    primary_key: [id]
+
+  wall_types:
+    description: "Parametrische Wandtyp-Bibliothek (LH-FA-WAL-007). Getrennt von der Klassifikation walls.classification."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      name: { type: text, max_length: 255, required: true }
+      default_thickness_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      is_load_bearing: { type: boolean, default: false }
+      # geteilte Referenz -> restrict (Material nicht loeschbar solange referenziert)
+      material_id: { type: integer, references: { table: materials, column: id, on_delete: restrict } }
+    primary_key: [id]
+
+  walls:
+    description: "Wand als Einzelsegment (welle-1; Wandzuege/Polylines folgen)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: cascade } }
+      wall_type_id: { type: integer, references: { table: wall_types, column: id, on_delete: restrict } }
+      # Domaenen-Pflichtfeld Wall.type (WallType-Enum) — Review-Finding 1:
+      classification: { type: enum, values: [innen, aussen, trag], required: true }
+      name: { type: text, max_length: 255 }
+      start_x_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      start_y_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      end_x_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      end_y_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      thickness_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      height_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      base_z_mm: { type: decimal, precision: 12, scale: 3, default: 0 }
+      material_id: { type: integer, references: { table: materials, column: id, on_delete: restrict } }
+      created_at: { type: datetime, required: true }
+      updated_at: { type: datetime, required: true }
+    primary_key: [id]
+    indices:
+      - { name: idx_walls_storey, columns: [storey_id] }
+
+  rooms:
+    description: "Raum aus geschlossenem Wandzug (LH-FA-ROM-*). Polygon als JSON."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: cascade } }
+      name: { type: text, max_length: 255, required: true }
+      room_type: { type: text, max_length: 64, required: true }
+      area_m2: { type: decimal, precision: 14, scale: 4 }
+      perimeter_mm: { type: decimal, precision: 12, scale: 3 }
+      volume_m3: { type: decimal, precision: 14, scale: 4 }
+      polygon_json: { type: json, required: true }
+      created_at: { type: datetime, required: true }
+      updated_at: { type: datetime, required: true }
+    primary_key: [id]
+    indices:
+      - { name: idx_rooms_storey, columns: [storey_id] }
+
+  openings:
+    description: "Wandoeffnung; Basis fuer doors/windows (Class-Table-Inheritance)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      wall_id: { type: integer, required: true, references: { table: walls, column: id, on_delete: cascade } }
+      opening_type: { type: enum, values: [door, window], required: true }
+      offset_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      width_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      height_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      sill_height_mm: { type: decimal, precision: 12, scale: 3, default: 0 }
+      name: { type: text, max_length: 255 }
+      created_at: { type: datetime, required: true }
+      updated_at: { type: datetime, required: true }
+    primary_key: [id]
+    indices:
+      - { name: idx_openings_wall, columns: [wall_id] }
+
+  doors:
+    description: "Tuer-Spezialisierung einer Oeffnung (1:1, opening_id ist PK)."
+    columns:
+      opening_id: { type: integer, required: true, references: { table: openings, column: id, on_delete: cascade } }
+      swing_direction: { type: enum, values: [left, right], required: true }
+      swing_angle_deg: { type: decimal, precision: 7, scale: 3, default: 90 }
+      is_external: { type: boolean, default: false }
+    primary_key: [opening_id]
+
+  windows:
+    description: "Fenster-Spezialisierung einer Oeffnung (1:1, opening_id ist PK)."
+    columns:
+      opening_id: { type: integer, required: true, references: { table: openings, column: id, on_delete: cascade } }
+      frame_material: { type: text, max_length: 64 }
+      glazing_type: { type: text, max_length: 64 }
+      u_value: { type: decimal, precision: 6, scale: 3 }
+    primary_key: [opening_id]
+
+  roofs:
+    description: "Dach (LH-FA-ROF-*). Footprint als JSON."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: cascade } }
+      roof_type: { type: enum, values: [sattel, walm, pult], required: true }
+      pitch_deg: { type: decimal, precision: 7, scale: 3, default: 30 }
+      overhang_mm: { type: decimal, precision: 12, scale: 3, default: 500 }
+      height_mm: { type: decimal, precision: 12, scale: 3 }
+      footprint_json: { type: json, required: true }
+      material_id: { type: integer, references: { table: materials, column: id, on_delete: restrict } }
+    primary_key: [id]
+
+  slabs:
+    description: "Decke/Bodenplatte (LH-FA-SLB-*). Polygon als JSON."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: cascade } }
+      slab_type: { type: text, max_length: 32, required: true }
+      thickness_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      polygon_json: { type: json, required: true }
+      material_id: { type: integer, references: { table: materials, column: id, on_delete: restrict } }
+    primary_key: [id]
+    indices:
+      - { name: idx_slabs_storey, columns: [storey_id] }
+
+  stairs:
+    description: "Treppe (LH-FA-STR-*). Spannt zwei Geschosse -> restrict (kein Cascade)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      from_storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: restrict } }
+      to_storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: restrict } }
+      name: { type: text, max_length: 255 }
+      stair_type: { type: text, max_length: 32, required: true }
+      start_x_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      start_y_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      width_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      step_count: { type: integer, required: true }
+      rise_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      tread_mm: { type: decimal, precision: 12, scale: 3, required: true }
+    primary_key: [id]
+
+  objects:
+    description: "Generisches platziertes Objekt (Moeblierung etc.). Parameter als JSON."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: cascade } }
+      object_type: { type: text, max_length: 64, required: true }
+      name: { type: text, max_length: 255, required: true }
+      x_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      y_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      z_mm: { type: decimal, precision: 12, scale: 3, default: 0 }
+      rotation_deg: { type: decimal, precision: 7, scale: 3, default: 0 }
+      scale_x: { type: decimal, precision: 8, scale: 4, default: 1 }
+      scale_y: { type: decimal, precision: 8, scale: 4, default: 1 }
+      scale_z: { type: decimal, precision: 8, scale: 4, default: 1 }
+      params_json: { type: json }
+    primary_key: [id]
+    indices:
+      - { name: idx_objects_storey, columns: [storey_id] }
+
+  # ── Forward-declared: spaetere Wellen (DRW/Zeichnung, Dokumente). Vorab
+  #    deklariert fuer ein durchgaengiges Schema; welle-1 nutzt sie nicht
+  #    (siehe spezifikation.md §2.2). ──────────────────────────────────────
+
+  layers:
+    description: "Layer-Verwaltung (LH-FA-DRW-006; forward-declared, welle-3)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      name: { type: text, max_length: 255, required: true }
+      visible: { type: boolean, default: true }
+      locked: { type: boolean, default: false }
+      color_hex: { type: text, max_length: 16 }
+    primary_key: [id]
+    constraints:
+      - { name: uq_layers_project_name, type: unique, columns: [project_id, name] }
+
+  entity_layers:
+    description: >
+      Layer-Zuordnung (forward-declared). BEWUSSTE Ausnahme zu ADR-0006
+      #1/#5: cross-cutting ueber N Bauteiltypen -> polymorphe Assoziation
+      (entity_type + entity_id) statt je-Typ-Junction. entity_id traegt
+      KEINEN FK; Integritaet app-seitig. Begruendung in ADR-0006.
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      entity_type: { type: text, max_length: 64, required: true }
+      entity_id: { type: integer, required: true }  # polymorph: kein FK (zeigt je entity_type auf walls/rooms/...)
+      layer_id: { type: integer, required: true, references: { table: layers, column: id, on_delete: cascade } }
+    primary_key: [id]
+
+  documents:
+    description: "Plaene/Zeichnungen (LH-FA-DRW-*; forward-declared, welle-3/4)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      document_type: { type: text, max_length: 32, required: true }
+      name: { type: text, max_length: 255, required: true }
+      scale: { type: text, max_length: 32 }
+      settings_json: { type: json }
+    primary_key: [id]
+
+  undo_commands:
+    description: "Persistierter Undo/Redo-Stack (LH-QA-003, >=1000 Schritte)."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      command_index: { type: integer, required: true }
+      command_type: { type: text, max_length: 128, required: true }
+      payload_json: { type: json, required: true }
+      created_at: { type: datetime, required: true }
+    primary_key: [id]
+    constraints:
+      - { name: uq_undo_project_index, type: unique, columns: [project_id, command_index] }
+    indices:
+      - { name: idx_undo_project_index, columns: [project_id, command_index] }

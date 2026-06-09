@@ -43,27 +43,55 @@ inkrementellen Rebuild des betroffenen Solids (Echtzeit, LH-FA-D3-002).
 
 ## 2. Datenstrukturen und Schemas
 
-### Projektdatei
+Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
+(ADR-0001 — die Abhängigkeit zeigt nach innen):
 
-Persistiert über `ProjectRepositoryPort` (SQLite, ADR-0003). Schema
-(Outline, wird im Persistenz-Slice geschärft):
+1. **Domänen-Modell (Kern, Wahrheit)** — pure Werttypen in
+   `src/hexagon/model/`, framework-frei. Quelle der Wahrheit für *was* ein
+   Bauteil ist.
+2. **Persistenz-Schema (Adapter-Abbildung)** — wie das Domänen-Modell in
+   SQLite gespeichert wird (ADR-0003). **Es bildet das Domänen-Modell ab,
+   treibt es nicht.**
+
+### 2.1 Domänen-Modell (Kern)
+
+Pure Werttypen in `src/hexagon/model/`, framework-frei. Implementiert
+(slice-003a): `Building`, `Storey`, `Wall`, `Point2D`, `Segment`, `Solid`,
+`WallType`. Wand-Auszug (Stand: Einzelsegment, welle-1):
+`{ id, storey_id, start: Point2D, end: Point2D, thickness_mm, height_mm, type ∈ {Innen, Aussen, Trag} }`.
+
+*Wandzüge/Polylines* (mehrere verbundene Segmente, LH-FA-WAL-001/006)
+folgen als Erweiterung; `Storey` gewinnt später `level_index`/`elevation`
+aus dem Persistenz-Schema (§2.2).
+
+### 2.2 Persistenz-Schema (SQLite, ADR-0003 / ADR-0006)
+
+Maschinenlesbare **Quelle der Wahrheit**: [`data-model.yaml`](data-model.yaml)
+im **d-migrate Neutral-Format** (`schema_format: "1.0"`) — d-migrate
+generiert daraus die dialekt-spezifische DDL (Ziel: SQLite, kein
+hand-geschriebenes SQL). Design (per-Typ-Tabellen,
+`openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack):
+[ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md).
+
+Kerntabellen (welle-1) — vollständig in `data-model.yaml`:
 
 | Tabelle | Inhalt |
 |---|---|
-| `project` | Projekt-Metadaten, Schema-Version |
-| `storey` | Geschosse (Höhe, Reihenfolge) |
-| `element` | Bauteile (Typ, Geschoss, Parameter, Geometrie-Referenz) |
-| `material` | Materialbibliothek-Einträge (U-Wert, Kostenkennwert) |
-| `history` | Änderungshistorie (LH-FA-BLD-004) |
+| `projects` | Projekt-Metadaten, `file_version`, Einheit |
+| `storeys` | Geschosse (`level_index`, `elevation_mm`, `height_mm`) |
+| `walls` | Wände (Segment `start/end`, `thickness_mm`, `height_mm`, Typ/Material) |
+| `rooms` | Räume (Polygon als `polygon_json`, Fläche/Volumen) |
+| `openings` → `doors`/`windows` | Wandöffnungen mit 1:1-Spezialisierung |
+| `materials`, `wall_types` | Material- und Wandtyp-Bibliothek |
+| `undo_commands` | persistierter Undo-Stack (LH-QA-003) |
 
-**Migrationsregel:** Schema-Version steigt monoton; jede Erhöhung
-braucht eine getestete Aufwärts-Migration (vgl. `releasing.md`).
+**Migrationsregel:** Schema-Version steigt monoton; jede Erhöhung braucht
+eine getestete Aufwärts-Migration (vgl. `releasing.md`, ADR-0003).
 
-### Bauteil (Domain-Modell, Auszug)
-
-Pure Werttypen in `src/hexagon/model/`, framework-frei. Konkrete
-Felder werden pro Bauteil-Slice ergänzt; Beispiel Wand:
-`{ id, storeyId, polyline, thickness_mm, height_mm, type∈{innen,außen,trag} }`.
+**Offene Punkte:** (a) `wall_types`-Bibliothek vs. `WallType`-Enum
+(Klassifikation, LH-FA-WAL-007) — Koexistenz, Auflösung im WAL-007-Slice;
+(b) **LH-FA-BLD-004 Projektversionierung** (frühere Stände) ist **nicht**
+im Schema (nur Undo) — eigener Slice.
 
 ## 3. Defaults und Konstanten
 
