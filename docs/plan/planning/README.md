@@ -22,7 +22,7 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 | `open/` | slice-006 (Drittanbieter-Attribution) |
 | `next/` | — |
 | `in-progress/` | — (nur `roadmap.md`) |
-| `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit), slice-005 (Gate-Consistency-Sensor), slice-003a (Domain-Kern & Wände, OCC-frei), slice-003b (OCC-Extrusion + arch-check Regel C), slice-004 (Toolchain-Pinning 26.04/node24 + Snapshot), slice-007 (Datenmodell-Definition + ADR-0006) |
+| `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit), slice-005 (Gate-Consistency-Sensor), slice-003a (Domain-Kern & Wände, OCC-frei), slice-003b (OCC-Extrusion + arch-check Regel C), slice-004 (Toolchain-Pinning 26.04/node24 + Snapshot), slice-007 (Datenmodell-Definition + ADR-0006), slice-008a (Persistenz: SQLite-Adapter + arch-check Regel D) |
 
 slice-001/002 sind abgeschlossen (DoD erfüllt, Closure-Notiz vorhanden;
 die `make gates`-Verifikation ist dort als Punkt-in-Zeit belegt — der
@@ -33,8 +33,10 @@ slice-003a (Domain-Kern & Wände, OCC-frei) ist abgeschlossen; der
 ursprüngliche slice-003 wurde in 003a (Kern) + 003b (OCC-Extrusion)
 geschnitten (Roadmap §Historische Trigger-Verschiebungen). slice-003b
 (erster OCC-Code + arch-check Regel C), slice-004 (gepinnte 26.04/node24-
-Toolchain + apt-Snapshot) und slice-007 (Datenmodell-Definition,
-d-migrate-validiert + ADR-0006) sind abgeschlossen; offen: slice-006.
+Toolchain + apt-Snapshot), slice-007 (Datenmodell-Definition,
+d-migrate-validiert + ADR-0006) und slice-008a (SQLite-Persistenz hinter
+`ProjectRepositoryPort`, atomar + arch-check Regel D) sind abgeschlossen;
+offen: slice-006, slice-008b (Crash-Recovery + `E-IO-002`).
 
 ## Roadmap
 
