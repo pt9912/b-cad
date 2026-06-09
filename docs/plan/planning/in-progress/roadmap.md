@@ -25,7 +25,7 @@ folgt" = Slice noch in der Welle zu schneiden):
 - slice-001 done — Build-Skelett & DevContainer (`make build` grün).
 - slice-002 done — Code-Gates real & gepromotet (`make gates` grün).
 - slice-003a done — Domain-Kern & Wände mit Grenzwert-Verhalten (`LH-FA-WAL-001/002/003`, `LH-FA-BLD-001`, `LH-FA-FLR-001`), OCC-frei.
-- slice-003b open — OCC-Extrusion (`LH-FA-D3-001`) hinter `GeometryKernelPort` + arch-check Regel C (ADR-0002-Folgepflicht). Trigger: slice-003a done.
+- slice-003b done — OCC-Extrusion (`LH-FA-D3-001`) hinter `GeometryKernelPort` + arch-check Regel C (ADR-0002-Folgepflicht erfüllt). Trigger: slice-003a done.
 - Raum-Autoerkennung (`LH-FA-ROM-001`) und 3D-Echtzeit (`LH-FA-D3-002`) — *Slice folgt*.
 - ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar, LH-QA-005) — *Slice folgt*.
 - slice-004 open — reproduzierbare, gepinnte Toolchain (ADR-0004): Migration 26.04/node24, Digest+Snapshot. (Toolchain-Härtung; gatet nicht die Feature-Funktion, aber den reproduzierbaren MVP-Build.)

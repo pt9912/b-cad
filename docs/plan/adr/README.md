@@ -8,6 +8,17 @@
 | [0004](0004-toolchain-dependency-pinning.md) | Container-/Dependency-Pinning + Base-Version (24.04→26.04, node 24, Digest+Snapshot) | Proposed (2026-06-08) | REQ-TEC-009, Modul 14, spike-001 |
 | [0005](0005-drittanbieter-lizenz-attribution.md) | Drittanbieter-Lizenz-Attribution & Auslieferungs-Layout (ScanCode+REUSE, kuratiertes Manifest, dist-Layout) | Proposed (2026-06-08) | LH-QA-007 (vorgeschlagen), ADR-0002/0004, slice-006 |
 
+## ADR-Folgepflichten (Status)
+
+Benannte Folge-Aufgaben aus akzeptierten ADRs. Da `Accepted`-ADRs
+**immutable** sind, wird ihr *Erfüllungsstatus* hier (mutabler Index)
+geführt — nicht im ADR-Body. Das Abhaken einer Folge-Aufgabe ändert die
+Entscheidung nicht und braucht daher keine Supersedes-ADR.
+
+| ADR | Folgepflicht | Status |
+|---|---|---|
+| ADR-0002 | `arch-check` **Regel C** (OCC-`.hxx` nur in `src/adapters/geometry/`) | **erfüllt** durch [slice-003b](../planning/done/slice-003b-occ-extrusion.md) (2026-06-09) |
+
 ## Konventionen
 
 - ADRs sind nach `Accepted` **immutable** (Hard Rule, siehe

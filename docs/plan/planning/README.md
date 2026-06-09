@@ -19,10 +19,10 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 
 | Verzeichnis | Slices |
 |---|---|
-| `open/` | slice-003b (OCC-Extrusion + arch-check Regel C), slice-004 (Toolchain-Pinning + 26.04/node24), slice-006 (Drittanbieter-Attribution) |
+| `open/` | slice-004 (Toolchain-Pinning + 26.04/node24), slice-006 (Drittanbieter-Attribution) |
 | `next/` | — |
 | `in-progress/` | — (nur `roadmap.md`) |
-| `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit), slice-005 (Gate-Consistency-Sensor), slice-003a (Domain-Kern & Wände, OCC-frei) |
+| `done/` | slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit), slice-005 (Gate-Consistency-Sensor), slice-003a (Domain-Kern & Wände, OCC-frei), slice-003b (OCC-Extrusion + arch-check Regel C) |
 
 slice-001/002 sind abgeschlossen (DoD erfüllt, Closure-Notiz vorhanden;
 die `make gates`-Verifikation ist dort als Punkt-in-Zeit belegt — der
@@ -31,8 +31,9 @@ spike-001 hat die Toolchain-Reproduzierbarkeit untersucht → ADR-0004
 (Proposed) + slice-004 (Digest+Snapshot-Pinning, Migration 26.04/node24).
 slice-003a (Domain-Kern & Wände, OCC-frei) ist abgeschlossen; der
 ursprüngliche slice-003 wurde in 003a (Kern) + 003b (OCC-Extrusion)
-geschnitten (Roadmap §Historische Trigger-Verschiebungen). Offen:
-slice-003b (erster OCC-Code), slice-004, slice-006.
+geschnitten (Roadmap §Historische Trigger-Verschiebungen). slice-003b
+(erster OCC-Code + arch-check Regel C) ist abgeschlossen; offen:
+slice-004, slice-006.
 
 ## Roadmap
 
