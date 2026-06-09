@@ -73,6 +73,7 @@ Felder werden pro Bauteil-Slice ergänzt; Beispiel Wand:
 | `WALL_THICKNESS_MAX_MM` | 1000 | Obergrenze Wandstärke | LH-FA-WAL-002 |
 | `WALL_HEIGHT_MIN_MM` | 500 | Untergrenze Wandhöhe | LH-FA-WAL-003 |
 | `WALL_HEIGHT_MAX_MM` | 10000 | Obergrenze Wandhöhe | LH-FA-WAL-003 |
+| `DEFAULT_WALL_THICKNESS_MM` | 240 | Default-Wandstärke bei Wand-Anlage (typ. Außenwand 24 cm) | LH-FA-WAL-001 |
 | `DEFAULT_STOREY_HEIGHT_MM` | 2500 | Default-Geschosshöhe bei Projekt/Geschoss-Anlage | LH-FA-BLD-001, LH-FA-FLR-004 |
 | `GEOMETRY_TOLERANCE_MM` | 0.1 | Toleranz für Punkt-Gleichheit / Wandverbindung | LH-FA-WAL-006, LH-FA-ROM-001 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
@@ -80,6 +81,11 @@ Felder werden pro Bauteil-Slice ergänzt; Beispiel Wand:
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
 | `MEMORY_BUDGET_GB` | 2 | RAM-Budget Standardprojekt | LH-QA-002 |
 | `SUPPORTED_LOCALES` | `de`, `en` | Mehrsprachigkeit | LH-QA-006 |
+
+Die Default-**Wandhöhe** bei Anlage ist die **Höhe des Geschosses**
+(parametrisch, kein eigener Konstant; LH-FA-WAL-001). `slice-003a` hat
+`DEFAULT_WALL_THICKNESS_MM` ergänzt (zuvor Spec-Lücke: das Lastenheft
+fordert eine Default-Stärke, §3 nannte keinen Wert).
 
 ## 4. Fehler-Codes und Logging-Felder
 
