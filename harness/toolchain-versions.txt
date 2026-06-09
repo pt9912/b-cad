@@ -1,0 +1,14 @@
+build-essential 12.12ubuntu2
+ca-certificates 20260223
+clang-tidy 1:21.1.6-71
+cmake 4.2.3-2ubuntu2
+gcovr 7.2+really-2
+libgtest-dev 1.17.0-1build1
+libocct-data-exchange-dev 7.9.2+dfsg-4
+libocct-foundation-dev 7.9.2+dfsg-4
+libocct-modeling-algorithms-dev 7.9.2+dfsg-4
+libocct-modeling-data-dev 7.9.2+dfsg-4
+libsqlite3-dev 3.46.1-9
+libtbb-dev 2022.3.0-2
+ninja-build 1.13.2-1
+qt6-base-dev 6.10.2+dfsg-7

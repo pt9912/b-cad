@@ -17,7 +17,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -51,6 +51,20 @@ gate-consistency: ## Modul 13 — jeder als real dokumentierte make-Befehl exist
 
 record-gates: ## Nachweis schreiben: Working-Tree-Hash (für den Stop-Hook)
 	@bash tools/harness/record-gates.sh
+
+# ADR-0004 Fitness Function: gepinnte Toolchain-Versionen. Zwei Läufe
+# (gleicher Digest + Snapshot) müssen dieselbe Liste liefern. Beleg-
+# Manifest: harness/toolchain-versions.txt (committet).
+#   make versions > harness/toolchain-versions.txt   # neu erzeugen
+#   diff <(make versions) harness/toolchain-versions.txt  # Drift prüfen
+versions: ## ADR-0004 — gepinnte Toolchain-Versionen (Reproduzierbarkeits-Beleg)
+	@$(GATE) $(NOCACHE) --target deps -t $(IMAGE):deps . >/dev/null
+	@$(DOCKER) run --rm $(IMAGE):deps dpkg-query -W \
+		-f='$${Package} $${Version}\n' \
+		build-essential clang-tidy cmake gcovr ninja-build qt6-base-dev \
+		libocct-foundation-dev libocct-modeling-data-dev \
+		libocct-modeling-algorithms-dev libocct-data-exchange-dev \
+		libtbb-dev libsqlite3-dev libgtest-dev ca-certificates | sort
 
 # `build` ist NICHT separat gelistet: test/lint/coverage-gate sind
 # Dockerfile-Stages FROM build und kompilieren die Target-Kette bereits

@@ -1,6 +1,6 @@
 # ADR-0004: Container-/Dependency-Pinning und Base-Version
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Datum:** 2026-06-08
 
@@ -86,10 +86,10 @@ clang-21/gcc-15-Include-Mismatch). `snapshot.ubuntu.com` ist erreichbar;
 
 ## Fitness Function
 
-| Tooling | Regel | Make-Target (geplant) |
+| Tooling | Regel | Make-Target |
 |---|---|---|
-| Reproduzierbarkeits-Check | zwei `make build`-Läufe (gleicher Digest + Snapshot) → identische `dpkg-query`-Versionsliste | (slice-004) |
-| Image-Hash | `harness/image-hash.txt` aus pinned Build (Modul 14) | `make fullbuild` (später) |
+| Reproduzierbarkeits-Check | zwei Läufe (gleicher Digest + Snapshot) → identische `dpkg-query`-Versionsliste; Beleg-Manifest `harness/toolchain-versions.txt` | `make versions` (real, slice-004) |
+| Image-Hash | `harness/image-hash.txt` aus pinned Build (Modul 14) | `make fullbuild` (geplant) |
 
 ## Re-Evaluierungs-Trigger
 
@@ -101,3 +101,4 @@ clang-21/gcc-15-Include-Mismatch). `snapshot.ubuntu.com` ist erreichbar;
 | Datum | Ereignis | Verweis |
 |---|---|---|
 | 2026-06-08 | Proposed (Ergebnis von spike-001) | spike-001 |
+| 2026-06-09 | Accepted — umgesetzt in slice-004: 26.04@digest + node:24@digest + apt-Snapshot `20260601T000000Z`; lint-Blocker (clang-tidy 21) via `--gcc-install-dir` gelöst; `make versions` + Manifest belegen Reproduzierbarkeit | slice-004 |
