@@ -29,6 +29,7 @@ folgt" = Slice noch in der Welle zu schneiden):
 - Raum-Autoerkennung (`LH-FA-ROM-001`) und 3D-Echtzeit (`LH-FA-D3-002`) — *Slice folgt*.
 - ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar, LH-QA-005) — *Slice folgt*.
 - slice-004 done — reproduzierbare, gepinnte Toolchain (ADR-0004): Migration 26.04/node24, Digest+Snapshot, `make versions`-Beleg. (Toolchain-Härtung; gatet nicht die Feature-Funktion, aber den reproduzierbaren MVP-Build.)
+- slice-007 done — Datenmodell-Definition (`spec/data-model.yaml`, d-migrate-validiert) + ADR-0006 (relationales Schema). (Spec-Grundlage für Persistenz/Bauteile; gatet nicht die Feature-Funktion.)
 - Closure-Notiz in `done/welle-1-results.md`.
 
 ## Nächste Wellen
