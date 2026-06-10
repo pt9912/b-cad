@@ -87,7 +87,9 @@ schema-check: ## ADR-0006 — Drift: schema.sql == d-migrate(data-model.yaml) (N
 
 # `build` ist NICHT separat gelistet: test/lint/coverage-gate sind
 # Dockerfile-Stages FROM build und kompilieren die Target-Kette bereits
-# (Variante B, siehe harness/README §Sensors). record-gates läuft als
-# LETZTER Prerequisite — der Nachweis entsteht nur, wenn alle Gates grün
-# sind (sonst bricht make vorher ab).
-gates: docs-check gate-consistency arch-check lint test coverage-gate record-gates ## alle inneren Gates (mandatory vor PR)
+# (Variante B, siehe harness/README §Sensors). record-gates läuft im
+# REZEPT statt als letzter Prerequisite — unter `make -j` liefen
+# Prerequisites parallel und der Nachweis entstünde trotz roter Gates
+# (MR-005); das Rezept läuft erst, wenn ALLE Prerequisites grün sind.
+gates: docs-check gate-consistency arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)
+	@bash tools/harness/record-gates.sh

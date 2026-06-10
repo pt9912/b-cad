@@ -166,6 +166,35 @@ sie.
   nicht.
 - **Auflösungs-Trigger:** permanent.
 
+### MR-005 — Harness-Hook-Härtung (Rückport aus d-check)
+
+- **Datum:** 2026-06-10
+- **Geltungsbereich:** [`tools/harness/working-tree-hash.sh`](../tools/harness/working-tree-hash.sh),
+  `.claude/`, [`Makefile`](../Makefile) (`gates`-Target)
+- **Adaption:** Übernahme der im Schwester-Repo d-check (dortiges
+  `MR-005`) entwickelten Härtungen der ursprünglich von b-cad
+  stammenden Gate-Nachweis-Mechanik:
+  (a) Working-Tree-Hash **inhaltsbasiert** (sha256 über getrackte +
+  untracked Dateiinhalte) statt diff-basiert — der Gate-Nachweis gilt
+  über Commits hinweg, ein Commit *ohne* Gate-Lauf macht den Stop-Hook
+  nicht mehr grün (Restlücke: frischer Klon/gelöschter `.harness`-State
+  mit cleanem Tree; CI als Netz).
+  (b) PreToolUse-Guard: fail-closed ohne `node`; im Pass-Fall keine
+  Ausgabe statt `approve` (das übersprang das Permission-System);
+  Prüfung nur an Befehlsposition (keine False-Positives durch
+  Commit-Messages/Argumente); rekursive Prüfung von
+  `bash/sh -c`-Strings inkl. Flag-Bündeln (`-lc`/`-ec`/`-cx`).
+  (c) Stop-Hook: Schleifen-Schutz via `stop_hook_active`.
+  (d) `record-gates` läuft im `gates`-**Rezept** statt als letzter
+  Prerequisite — unter `make -j` entstand der Nachweis sonst trotz
+  roter Gates.
+  (e) Hook-Pfade in `.claude/settings.json` über
+  `$CLAUDE_PROJECT_DIR` statt cwd-relativ.
+- **Begründung:** Review-Befunde aus dem d-check-Bootstrap
+  (drei HIGHs: fail-open, Permission-Bypass, `-j`-Race; zwei
+  R2/R3-Beobachtungen: Commit-Bypass, Sub-Shell-/Flag-Bündel-Umgehung).
+- **Auflösungs-Trigger:** permanent.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

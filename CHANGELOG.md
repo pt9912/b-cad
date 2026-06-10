@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - slice-005 — `make gate-consistency`: Doku↔Makefile-Sensor (jeder als
   real dokumentierte `make`-Befehl existiert) — schließt die Drift-Klasse,
   die `docs-check` (nur Links) nicht fängt.
+- Harness-Hook-Härtung (MR-005, Rückport aus d-check): inhaltsbasierter
+  Gate-Nachweis (Commit ohne Gate-Lauf wird vom Stop-Hook geblockt),
+  Guard fail-closed + ohne Permission-Bypass + Sub-Shell-/Flag-Bündel-
+  Rekursion, `record-gates` parallel-sicher im `gates`-Rezept.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

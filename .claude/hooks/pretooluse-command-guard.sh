@@ -1,39 +1,78 @@
 #!/usr/bin/env bash
 # pretooluse-command-guard — verbietet direkte Host-Build/Test/Package-
-# Tools (b-cad ist Docker/make-only, AGENTS.md §2.9). Nur das
-# tool_input.command-Feld wird geprüft (nicht description/tool_name),
-# damit ein legitimes `make`-Command nicht blockiert wird, bloß weil
-# seine Beschreibung z. B. "cmake" enthält.
+# Tools (b-cad ist Docker/make-only, AGENTS.md §2.9).
+#
+# Geprüft wird die Befehlsposition jedes Kommando-Segments (Trennung
+# an ; && || | $( ` ( und Zeilenenden) — `git commit -m "cmake-Doku"`
+# oder `docker run img ctest` bleiben erlaubt; `/usr/bin/cmake` und
+# `sudo apt` werden erkannt. Sub-Shell-Strings (`bash -c "…"`, auch in
+# Flag-Bündeln wie `-lc`/`-ec`/`-cx`) werden rekursiv geprüft
+# (harness/conventions.md MR-005, Rückport aus d-check).
+# Bewusst NICHT geprüft: andere Interpreter (`python -c`, `perl -e`,
+# `find -exec`) — der Guard ist ein Stolperdraht gegen versehentliche
+# Host-Toolchain-Nutzung, keine Sandbox.
+#
+# Im Pass-Fall: KEINE Ausgabe — "approve" würde das Permission-System
+# überspringen; ohne Ausgabe läuft die normale Permission-Entscheidung.
 set -euo pipefail
+
+# Fail-closed: ohne node keine Prüfung möglich → Tool-Call blockieren.
+if ! command -v node >/dev/null 2>&1; then
+  echo "pretooluse-command-guard: node not found on host — blocking (fail-closed)." >&2
+  exit 2
+fi
 
 input="$(cat)"
 
-# Command robust aus dem JSON ziehen (Wortgrenzen sollen am Command-
-# Anfang greifen, nicht am führenden JSON-Quote).
-cmd="$(printf '%s' "$input" | node -e '
+verdict="$(printf '%s' "$input" | node -e '
+  const BLOCKED = new Set(["cmake","ctest","clang-tidy","clang++","clang",
+    "apt","apt-get","vcpkg","conan"]);
+  const PREFIXES = new Set(["sudo","env","command","exec","nice","time",
+    "xargs","eval"]);
+  const SHELLS = new Set(["bash","sh","zsh","dash","ksh"]);
+  const stripQuotes = t => t.replace(/^["'\'']+|["'\'']+$/g, "");
+
+  function scan(cmd, depth) {
+    if (depth > 3) return true; // zu tief verschachtelt → fail-closed
+    const segments = cmd.split(/(?:;|&&|\|\||\||\$\(|`|\(|\r?\n)/);
+    for (const seg of segments) {
+      const tokens = seg.trim().split(/\s+/).filter(Boolean).map(stripQuotes);
+      let i = 0;
+      while (i < tokens.length &&
+             (/^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[i]) || PREFIXES.has(tokens[i]))) i++;
+      if (i >= tokens.length) continue;
+      const head = tokens[i].replace(/^.*\//, ""); // /usr/bin/cmake → cmake
+      if (BLOCKED.has(head)) return true;
+      if (SHELLS.has(head)) {
+        // -c auch in Flag-Bündeln erkennen (-lc, -ec, -cx, …): bei
+        // sh/bash ist c das einzige Single-Letter-Flag mit
+        // Kommando-String-Semantik, das Bündel ist also eindeutig.
+        const cIdx = tokens.findIndex((t, k) => k > i && /^-[a-z]*c[a-z]*$/.test(t));
+        if (cIdx !== -1 && cIdx + 1 < tokens.length &&
+            scan(tokens.slice(cIdx + 1).join(" "), depth + 1)) return true;
+      }
+    }
+    return false;
+  }
+
   let s = "";
   process.stdin.on("data", d => s += d);
   process.stdin.on("end", () => {
-    try { const j = JSON.parse(s); process.stdout.write(String((j.tool_input && j.tool_input.command) || "")); }
-    catch { process.stdout.write(""); }
+    let cmd = "";
+    try {
+      const j = JSON.parse(s);
+      cmd = String((j.tool_input && j.tool_input.command) || "");
+    } catch { process.stdout.write("block"); return; } // unlesbar → fail-closed
+    process.stdout.write(scan(cmd, 0) ? "block" : "ok");
   });
 ')"
 
-# Verbotene Befehlsnamen an Wortgrenzen (Start | Separator | Klammer |
-# Whitespace) … (Whitespace | Separator | Ende). Längere Varianten
-# zuerst. `make`/`docker`/`git` sind erlaubt und stehen NICHT in der Liste.
-blocked='(^|[;&|]|[[:space:]]|\()(cmake|ctest|clang-tidy|clang\+\+|clang|apt-get|apt|vcpkg|conan)([[:space:]]|[;&|]|$)'
-
-if printf '%s' "$cmd" | grep -Eq "$blocked"; then
+if [ "$verdict" = "block" ]; then
   cat <<'JSON'
 {
   "decision": "block",
   "reason": "b-cad is Docker/make-only (AGENTS.md §2.9). Use make targets, not direct host build/test/package commands (cmake/clang/ctest/apt/vcpkg/conan)."
 }
 JSON
-  exit 0
 fi
-
-cat <<'JSON'
-{"decision": "approve"}
-JSON
+# Pass-Fall: keine Ausgabe — normale Permission-Prüfung übernimmt.
