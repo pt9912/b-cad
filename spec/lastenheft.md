@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -218,8 +218,31 @@ Default-Material und Auswertungs-Kategorie.
 ### Modul 3D-Modellierung (`D3`)
 
 - **LH-FA-D3-001 — Automatische Extrusion** (2D-Elemente → 3D-Körper).
-- **LH-FA-D3-002 — Echtzeitaktualisierung** (Parameteränderung sofort
-  in 3D sichtbar — vgl. LH-QA-001).
+
+#### LH-FA-D3-002 — Echtzeitaktualisierung
+
+**Beschreibung:** Änderungen am Gebäudemodell (Bauteil anlegen,
+Parameter ändern) sind **sofort** in der 3D-Darstellung sichtbar —
+ohne expliziten Aktualisierungs-Schritt des Benutzers.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Gebäude mit 3D-Darstellung und eine Wand,
+  when der Benutzer die Wandstärke ändert, then zeigt die
+  3D-Darstellung den geänderten Wandkörper, ohne dass der Benutzer
+  einen Aktualisierungs-/Refresh-Schritt ausführt.
+- **Boundary:** Given eine Parameteränderung, die auf einen Grenzwert
+  geklemmt wird (vgl. LH-FA-WAL-002), when die Klemmung greift, then
+  zeigt die 3D-Darstellung den geklemmten — tatsächlich übernommenen —
+  Stand.
+- **Negative:** Given eine abgelehnte Parameteränderung (ungültige
+  Eingabe, vgl. `E-VAL-001`), when die Ablehnung erfolgt, then ändert
+  sich die 3D-Darstellung nicht.
+
+**Out-of-Scope (LH-FA-D3-002):** Latenz-/Performance-Budget (bei
+Bedarf eigene `LH-QA`-Anforderung); gleichzeitige Aktualisierung
+mehrerer unabhängiger Ansichten (LH-FA-UI-004).
+
 - **LH-FA-D3-003 — Perspektivansicht.**
 - **LH-FA-D3-004 — Orthogonale Ansichten.**
 - **LH-FA-D3-005 — Schnittebenen.**
@@ -364,3 +387,4 @@ Default-Material und Auswertungs-Kategorie.
 | Version | Datum | Änderung | Verweis |
 |---|---|---|---|
 | 0.1.0 | 2026-06-08 | Initiale Outline-Fassung aus Domänen-Vorlage; ID-Schema `LH-FA-<BEREICH>-<NNN>` etabliert | Greenfield-Bootstrap (Kurs-Modul 2) |
+| 0.1.1 | 2026-06-11 | LH-FA-D3-002 von Outline auf AK-Niveau geschärft (Reifephase-Klausel §1/§4); lösungsfreie, benutzer-beobachtbare Formulierung; irreführender Querverweis „vgl. LH-QA-001" entfernt | slice-010a |

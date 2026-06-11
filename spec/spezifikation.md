@@ -70,6 +70,37 @@ Solids extrudiert; Wandöffnungen für Türen/Fenster (LH-FA-DOR-004,
 LH-FA-WIN-005) als boolesche Subtraktion. Parameteränderung triggert
 inkrementellen Rebuild des betroffenen Solids (Echtzeit, LH-FA-D3-002).
 
+### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
+
+Präzisiert LH-FA-D3-002; Mechanik-Entscheidung in ADR-0008.
+
+**Auslösung und Synchronität:** Jede committete Modell-Mutation
+(Geschoss anlegen, Wand anlegen, Wand-Parameter ändern) wird
+**synchron im Mutationspfad** gemeldet — nach Abschluss aller
+Post-Commit-Schritte (Raum-Re-Detektion, LH-FA-ROM-001.a), sodass ein
+Beobachter im Callback einen vollständig konsistenten Stand abfragt.
+Abgelehnte/verworfene Mutationen (`E-VAL-001` Rejected,
+Null-Längen-Wand) melden nicht.
+
+**Vertrag (Push-Notify, Pull-State):** Gemeldet werden `element_id`
+und `op` (Vokabular wie OTel-Span `bcad.geometry.rebuild`, §5); den
+aktualisierten Stand holt der Beobachter über die Abfrage-Ports
+(Solid, Räume, Modell). Mehrere Meldungen pro Mutation sind zulässig
+(z. B. Wand- plus Raum-Änderung; Mehr-Element-Updates nicht verbaut).
+
+**Beobachter-Pflichten:** Mehrere Beobachter (2D-/3D-Sicht, OBJ-003)
+über Registrierung (`subscribe`/`unsubscribe`); Callbacks dürfen
+abfragen, aber keine Mutationen auslösen (Re-Entranz-Verbot); eine
+werfende Beobachter-Implementierung kippt die committete Mutation
+nicht und blockiert weitere Beobachter nicht (Kapselung im Service;
+Sichtbarkeit der Fehler später über REQ-TEC-006-Telemetrie).
+
+**Welle-1-Operationalisierung von „sichtbar":** Der Kern erfüllt
+D3-002 bis zur Benachrichtigungs-/Abfrage-Grenze; die sichtbare
+3D-Darstellung liefert der Viewer-Strang (Roadmap, `welle-1v-viewer`)
+auf dieser Basis — der Lastenheft-Wortlaut bleibt benutzer-beobachtbar
+und wird zusammen mit ACC-002 dort erfüllt.
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -203,6 +234,7 @@ nicht im Bootstrap.
 | 2026-06-08 | Initiale Outline aus Lastenheft-Wertebereichen; Fehler-Codes und OTel-Span-Skelett | Greenfield-Bootstrap |
 | 2026-06-11 | §1 LH-FA-ROM-001.a präzisiert: Innenkanten-Basis + Ring-Modell, Auslösung bei Modell-Mutation, Endpunkt-Knoten-Einschränkung (welle-1), Erkennung total (kein `E-GEO-002`); §7-Punkt Polygon-Basis geschlossen | ADR-0007 |
 | 2026-06-11 | §1 Kollaps-Kriterium präzisiert: Kantenrichtungs-Erhalt statt reiner Flächen-Prüfung (Doppel-Inversion erzeugt Phantom-Polygon positiver Fläche) | ADR-0007 |
+| 2026-06-11 | §1 LH-FA-D3-002.a ergänzt: Benachrichtigungs-Vertrag (Observer-Port, Push-Notify/Pull-State, Reihenfolge nach Re-Detektion, Beobachter-Pflichten) + welle-1-Operationalisierung „sichtbar" | ADR-0008 |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

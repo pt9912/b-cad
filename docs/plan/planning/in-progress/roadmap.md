@@ -18,7 +18,11 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-Ziel:** Ein lauffähiges b-cad, mit dem sich ein
 Einfamilienhaus im Sinne von ACC-001 in Grundzügen erstellen lässt —
 Projekt anlegen/speichern/laden, Geschosse, Wände (mit Stärke/Höhe),
-automatische Raumerkennung, 3D-Extrusion in Echtzeit.
+automatische Raumerkennung, 3D-Extrusion in Echtzeit **als
+Kern-Vertrag** (inkrementeller Rebuild + Änderungs-Benachrichtigung,
+ADR-0008; die *sichtbare* 3D-Darstellung inkl. ACC-002 liefert
+`welle-1v-viewer` — Scope-Entscheidung slice-010a, siehe
+Drift-Tabelle).
 
 **Closure-Trigger** (jeder Trigger verweist auf ≥1 Slice mit DoD; „Slice
 folgt" = Slice noch in der Welle zu schneiden):
@@ -28,9 +32,9 @@ folgt" = Slice noch in der Welle zu schneiden):
 - slice-003b done — OCC-Extrusion (`LH-FA-D3-001`) hinter `GeometryKernelPort` + arch-check Regel C (ADR-0002-Folgepflicht erfüllt). Trigger: slice-003a done.
 - slice-009a done — ADR-0007 accepted (Innenkante + Ring-Modell, Erkennung total) + Spec-§1-Schärfung Raumerkennung (`LH-FA-ROM-001`).
 - slice-009b done — Raum-Autoerkennung implementiert (`LH-FA-ROM-001`): automatisch beim Schließen, Innenkante + Ring-Modell/Netto-Fläche (ADR-0007), 5 AK-Tests grün.
-- slice-010a angelegt (`open/`) — AK-Schärfung LH-FA-D3-002 (messbares „sofort", „sichtbar"-Scope) + ADR-0008 Änderungs-Benachrichtigung Kern→Darstellung.
-- slice-010b angelegt (`open/`) — Kern-Benachrichtigung Implementierung (`LH-FA-D3-002`, Qt-/OCC-frei). Trigger: slice-010a done.
-- Sichtbarer 3D-Viewer (Qt/OCC, ACC-002): eigener Strang nach GUI-Grundsatz-ADR — Welle-Zuordnung wird in slice-010a entschieden (Drift-Tabelle).
+- slice-010a done — LH-FA-D3-002 auf AK-Niveau (lösungsfrei, benutzer-beobachtbar; Lastenheft 0.1.1) + ADR-0008 accepted (Observer-Port, Push-Notify/Pull-State) + spez. §1 D3-002.a.
+- slice-010b (`open/`, startbar) — Kern-Benachrichtigung Implementierung (`LH-FA-D3-002`, Qt-/OCC-frei). Trigger: slice-010a done ✓.
+- Sichtbarer 3D-Viewer (Qt/OCC, ACC-002): **entschieden (slice-010a)** — eigene Welle `welle-1v-viewer` nach welle-1, *kein* welle-1-Closure-Trigger; ACC-002 und die sichtbare Hälfte von LH-FA-D3-002 werden dort erfüllt.
 - slice-008a done — ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar via Temp+Rename, Round-Trip grün) hinter `ProjectRepositoryPort` (ADR-0003).
 - slice-008b done — Persistenz-Härtung: Crash-Recovery (`kill -9`, LH-QA-005, fork+SIGKILL-Test) + Fehlercodes `E-IO-001`/`E-IO-002`. Schließt die ADR-0003-Folgepflicht.
 - slice-004 done — reproduzierbare, gepinnte Toolchain (ADR-0004): Migration 26.04/node24, Digest+Snapshot, `make versions`-Beleg. (Toolchain-Härtung; gatet nicht die Feature-Funktion, aber den reproduzierbaren MVP-Build.)
@@ -41,6 +45,7 @@ folgt" = Slice noch in der Welle zu schneiden):
 
 | Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
 |---|---|---|---|
+| welle-1v-viewer | welle-1 done | GUI-Grundsatz-ADR (Qt 6, Driving Adapter) + 3D-Viewer-Adapter auf ADR-0008-Basis (ACC-002, sichtbare Hälfte `LH-FA-D3-002`) | M |
 | welle-2-bauteile | welle-1 done | Türen/Fenster mit Wandöffnung (`DOR`,`WIN`), Treppen (`STR`), Decken/Dach (`SLB`,`ROF`) | L |
 | welle-3-auswertung | welle-2 done | Material (`MAT`), Auswertungen (`EVL`), Bemaßung/Layer (`DRW`) | M |
 | welle-4-austausch | welle-3 done + ADR zu IFC-Bibliothek accepted | IFC/DXF/STEP/STL-Adapter (`IO`), PDF/PNG-Export | L |
@@ -79,3 +84,4 @@ flowchart LR
 |---|---|---|
 | 2026-06-09 | `slice-003` in `slice-003a` (Kern, OCC-frei) + `slice-003b` (OCC-Extrusion + arch-check Regel C) geschnitten | Slice zu groß für eine Review-Sitzung (Modul 5); OCC-Teil ist build-schwer/risikobehaftet und wird isoliert. ADR-0002 dabei auf Backend-Scope verengt + accepted (slice-003-Review, Findings 1–3). |
 | 2026-06-11 | `slice-009` in `slice-009a` (ADR-0007 + Spec-Schärfung) + `slice-009b` (Implementierung + Tests) geschnitten | Plan-Review-Findings H1/M1/M2: ADR-0007 trägt mehr Entscheidungsgewicht als geplant (Polygon-Basis **und** Verschachtelungs-Repräsentation), ADR-Accept ist Review-Checkpoint und gehört nicht mitten in einen Implementierungs-Slice (Präzedenz slice-007, slice-003-Split). |
+| 2026-06-11 | Sichtbarer 3D-Viewer aus welle-1 in eigene Welle `welle-1v-viewer` gelöst; Welle-Ziel und Viewer-Trigger-Zeile angepasst | Scope-Entscheidung slice-010a: GUI-Grundsatz-ADR (Qt 6) fehlt noch, M1-Trigger (ACC-001-Kern + Gates) verlangt keinen Viewer; ACC-002 wird in `welle-1v-viewer` erfüllt — kein stilles `done` über den Kern-Vertrag (Lastenheft-Wortlaut „sichtbar" bleibt unverändert benutzer-beobachtbar). |

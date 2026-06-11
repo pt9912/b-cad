@@ -1,21 +1,21 @@
 ---
 id: slice-010a
 titel: Echtzeit-3D — AK-Schärfung LH-FA-D3-002 & ADR-0008 Benachrichtigung
-status: open
+status: done
 welle: welle-1-mvp
 lastenheft_refs: [LH-FA-D3-002]
-adr_refs: [ADR-0001]
+adr_refs: [ADR-0001, ADR-0008]
 ---
 
 # Slice 010a: Echtzeit-3D — AK-Schärfung & ADR-0008 Benachrichtigung
 
-**Status:** open
+**Status:** done
 
 **Welle:** welle-1-mvp
 
-**Bezug:** LH-FA-D3-002, ADR-0001. **Liefert:** ADR-0008 (entsteht in
-diesem Slice; Frontmatter-`adr_refs` wird bei Closure ergänzt, wenn
-die ADR-Datei existiert).
+**Bezug:** LH-FA-D3-002, ADR-0001. **Geliefert:**
+[ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md) (in diesem
+Slice entstanden und accepted).
 
 **Autor:** Dietmar Burkard. **Datum:** 2026-06-11.
 
@@ -44,7 +44,7 @@ in welle-1 bedeutet.
 
 ## 2. Definition of Done
 
-- [ ] **Lastenheft LH-FA-D3-002 geschärft** (von Outline auf
+- [x] **Lastenheft LH-FA-D3-002 geschärft** (von Outline auf
       Akzeptanz-Niveau — die Schärfung pro Slice ist im
       Lastenheft-Reifephase-Block ausdrücklich vorgesehen):
       Happy/Boundary/Negative **lösungsfrei und benutzer-beobachtbar**
@@ -64,7 +64,7 @@ in welle-1 bedeutet.
       „vgl. LH-QA-001"** im LH-FA-D3-002-Eintrag wird beim Schärfen
       **gestrichen/korrigiert** (LH-QA-001 = Projektöffnung, kein
       Rebuild-Budget — Re-Review F8-Rest).
-- [ ] **ADR-0008 „Änderungs-Benachrichtigung Kern → Darstellung"
+- [x] **ADR-0008 „Änderungs-Benachrichtigung Kern → Darstellung"
       accepted** (Optionen mit Trade-offs, MADR-Form; mindestens:
       Observer-/Notifikations-Port (driven) · Polling durch den
       Adapter · Event-Queue). Entscheidungs-Pflichten:
@@ -84,7 +84,7 @@ in welle-1 bedeutet.
       LH-FA-WAL-006) nicht verbauen;
       (e) **Reihenfolge** zur bestehenden Post-Commit-Mechanik
       (`redetectRooms`). ADR-Index aktualisiert.
-- [ ] **`spec/spezifikation.md` §1 präzisiert** (Echtzeit-Absatz in
+- [x] **`spec/spezifikation.md` §1 präzisiert** (Echtzeit-Absatz in
       LH-FA-D3-001.a bzw. eigener D3-002-Block): **hier — nicht im
       Lastenheft —** leben Auslösung, Synchronität und der
       Benachrichtigungs-Vertrag gemäß ADR-0008 sowie die
@@ -148,7 +148,56 @@ in welle-1 bedeutet.
 
 ## 7. Closure-Notiz
 
-*(bei Closure zu füllen: beobachtbare Kriterien + Lerneintrag)*
+**Closure-Kriterien (beobachtbar):**
+
+- ADR-0008 mit Status `Accepted`, Index-Zeile und Folgepflicht-Eintrag
+  (Umsetzung → slice-010b); alle fünf Entscheidungs-Pflichten (a)–(e)
+  im ADR entschieden (Observer-Port synchron · Push-Notify/Pull-State
+  mit `element_id`/`op` · subscribe/unsubscribe mehrfach ·
+  Kapselung + Re-Entranz-Verbot · Meldung nach `redetectRooms`;
+  Umfang: alle committeten Mutationen inkl. Geschoss-Anlage und
+  Raum-Änderungs-Meldung).
+- Lastenheft 0.1.1: LH-FA-D3-002 auf AK-Niveau, lösungsfrei und
+  benutzer-beobachtbar (Happy/Boundary/Negative); irreführender
+  Querverweis „vgl. LH-QA-001" gestrichen (F8-Rest); Historie-Zeile.
+- `spec/spezifikation.md` §1 D3-002.a (Auslösung/Synchronität,
+  Vertrag, Beobachter-Pflichten, welle-1-Operationalisierung
+  „sichtbar") + §8-Historie.
+- Roadmap-Nachzug vollständig (F7): Welle-Ziel, Viewer-Trigger-Zeile
+  (entschieden), neue Welle `welle-1v-viewer`, Drift-Tabellen-Eintrag,
+  ADR-Index §Offene-Themen-Zeile aktualisiert.
+- `make gates` grün (docs-check über alle geänderten Artefakte).
+
+**Scope-Entscheidung (die heikle):** Sichtbarer 3D-Viewer →
+**eigene Welle `welle-1v-viewer`** nach welle-1 (kein
+welle-1-Closure-Trigger). Begründung: GUI-Grundsatz-ADR (Qt 6) fehlt
+noch; der M1-Trigger verlangt ACC-001-Kern + Gates, keinen Viewer;
+ACC-002 und die sichtbare Hälfte von LH-FA-D3-002 werden in
+`welle-1v-viewer` erfüllt — dokumentiert statt still uminterpretiert.
+*Diese Zuordnung ist per Roadmap-Drift-Eintrag revidierbar (Veto des
+Auftraggebers genügt — dann wandert die Viewer-Welle vor die
+welle-1-Closure).*
+
+**Lerneintrag:**
+
+- **MR-Entscheidung zum „Post-Commit total"-Muster: vertagt.** Zweites
+  Vorkommen ist beobachtet und kategorisiert (ADR-0008 §Konsequenzen);
+  die nötige Klassen-Verbreiterung („ableitende Berechnungen" →
+  „Post-Commit-Schritte", F9) spricht dafür, die Konvention erst beim
+  dritten Vorkommen zu schreiben — Kurs-Regel: zweimal =
+  kategorisieren, dreimal = Regel. Erwarteter dritter Kandidat:
+  Autosave-Nachlauf (LH-QA-004) oder OTel-Spans (REQ-TEC-006).
+- **Geschärfte Regel (bestätigt):** Die Review-009-Regel „Lösung
+  schärft nie das Lastenheft" hat in diesem Slice zweimal gegriffen
+  (Plan-Review F1/F2) — die Trennung „AK benutzer-beobachtbar im
+  Lastenheft, Mechanik in Spezifikation+ADR" ist jetzt zweifach
+  geprobt und Kandidat für eine AGENTS-/MR-Festschreibung beim
+  nächsten Schärfungs-Slice.
+
+**Restrisiko / Nachfolge:** Umsetzung in slice-010b (Folgepflicht);
+Viewer-Welle braucht als Erstes die GUI-Grundsatz-ADR; ein
+Latenz-Budget bleibt bewusst unvergeben (neue `LH-QA-<NNN>` bei
+Bedarf).
 
 ## 8. Sub-Area-Modus-Begründung
 

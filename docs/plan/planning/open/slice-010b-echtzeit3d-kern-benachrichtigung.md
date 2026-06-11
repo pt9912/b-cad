@@ -4,7 +4,7 @@ titel: Echtzeit-3D — Kern-Benachrichtigung (Implementierung)
 status: open
 welle: welle-1-mvp
 lastenheft_refs: [LH-FA-D3-002]
-adr_refs: [ADR-0001]
+adr_refs: [ADR-0001, ADR-0008]
 ---
 
 # Slice 010b: Echtzeit-3D — Kern-Benachrichtigung (Implementierung)
@@ -13,8 +13,9 @@ adr_refs: [ADR-0001]
 
 **Welle:** welle-1-mvp
 
-**Bezug:** LH-FA-D3-002, ADR-0001, ADR-0008 (entsteht in slice-010a;
-Frontmatter-`adr_refs` wird nach dessen Closure ergänzt).
+**Bezug:** LH-FA-D3-002, ADR-0001,
+[ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)
+(entstanden in slice-010a).
 
 **Autor:** Dietmar Burkard. **Datum:** 2026-06-11.
 
@@ -78,7 +79,10 @@ Zeilen entsprechend (Plan-Review 010, F3):
 
 ## 4. Trigger
 
-- slice-010a done — ADR-0008 `Accepted`, LH-FA-D3-002-AK geschärft.
+- slice-010a done — ADR-0008 `Accepted`, LH-FA-D3-002-AK geschärft. ✓
+  (2026-06-11; damit startbar. Entschiedene Mechanik: Observer-Port
+  synchron, Push-Notify/Pull-State — die §3-Platzhalter-Tabelle trifft
+  damit die Observer-Variante.)
 
 ## 5. Closure-Trigger
 
