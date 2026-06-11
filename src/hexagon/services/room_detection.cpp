@@ -1,5 +1,6 @@
 #include "hexagon/services/room_detection.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <utility>
@@ -64,9 +65,13 @@ struct OffsetLine {
     Point2D origin{};
     Point2D dir{};  // normiert
 
-    // Schnittpunkt mit `other`; bei (nahezu) parallelen Geraden der
-    // Fallback `other.origin` (kollineare Nachbarkanten gleicher Stärke
-    // liegen auf derselben Offset-Geraden).
+    // Schnittpunkt mit `other`. Bei (nahezu) parallelen Geraden der
+    // Fallback `other.origin`: für kollineare Nachbarkanten GLEICHER
+    // Stärke exakt (gleiche Offset-Gerade); bei UNGLEICHER Stärke eine
+    // dokumentierte Welle-1-Näherung — die Ecke springt auf den
+    // Offset-Punkt der Folgekante (lineare Überblendung statt exakter
+    // Stufenkontur; spez. §1, Code-Review M2). Exakte Stufen erst mit
+    // der Wandverschneidung (LH-FA-WAL-006).
     Point2D intersectionWith(const OffsetLine& other) const {
         const double cross =
             (dir.x_mm * other.dir.y_mm) - (dir.y_mm * other.dir.x_mm);
@@ -101,8 +106,7 @@ Ring centerlineRing(const Loop& loop) {
 // (spez. §1 Schritt 1).
 struct Graph {
     std::vector<Point2D> nodes;
-    // pro Knoten: (Kanten-Index, Nachbar-Knoten)
-    std::vector<std::vector<std::pair<std::size_t, std::size_t>>> adjacency;
+    std::vector<std::pair<std::size_t, std::size_t>> edge_nodes;
     std::vector<double> edge_thickness;
 };
 
@@ -114,7 +118,6 @@ std::size_t nodeIndexFor(Graph& graph, Point2D p) {
         }
     }
     graph.nodes.push_back(p);
-    graph.adjacency.emplace_back();
     return graph.nodes.size() - 1;
 }
 
@@ -126,84 +129,120 @@ Graph buildGraph(const std::vector<const model::Wall*>& walls) {
         if (a == b) {
             continue;  // Null-Länge — verwirft bereits LH-FA-WAL-001 Boundary
         }
-        const std::size_t edge = graph.edge_thickness.size();
+        graph.edge_nodes.emplace_back(a, b);
         graph.edge_thickness.push_back(wall->thickness_mm);
-        graph.adjacency[a].emplace_back(edge, b);
-        graph.adjacency[b].emplace_back(edge, a);
     }
     return graph;
 }
 
-// Läuft einen Grad-2-Zyklus ab Startknoten ab und sammelt Punkte plus
-// Stärke der ausgehenden Kante.
-Loop traceLoop(const Graph& graph, std::size_t start) {
-    Loop loop;
-    const auto& [first_edge, first_next] = graph.adjacency[start].front();
-    loop.push_back(LoopVertex{graph.nodes[start], graph.edge_thickness[first_edge]});
-    std::size_t via_edge = first_edge;
-    std::size_t current = first_next;
-    while (current != start) {
-        const auto& [e0, n0] = graph.adjacency[current][0];
-        const auto& [e1, n1] = graph.adjacency[current][1];
-        const std::size_t out_edge = (e0 == via_edge) ? e1 : e0;
-        const std::size_t out_node = (e0 == via_edge) ? n1 : n0;
-        loop.push_back(LoopVertex{graph.nodes[current], graph.edge_thickness[out_edge]});
-        via_edge = out_edge;
-        current = out_node;
+// Halbkante einer planaren Flächen-Traversierung: jede Wand-Kante
+// erzeugt zwei gerichtete Halbkanten (Twin = Index ^ 1).
+struct HalfEdge {
+    std::size_t from{};
+    std::size_t to{};
+    std::size_t edge{};   // Index in Graph::edge_thickness
+    double angle{};       // atan2 der Richtung from -> to
+};
+
+std::vector<HalfEdge> buildHalfEdges(const Graph& graph) {
+    std::vector<HalfEdge> half;
+    half.reserve(2 * graph.edge_nodes.size());
+    for (std::size_t e = 0; e < graph.edge_nodes.size(); ++e) {
+        const auto& [a, b] = graph.edge_nodes[e];
+        const double dx = graph.nodes[b].x_mm - graph.nodes[a].x_mm;
+        const double dy = graph.nodes[b].y_mm - graph.nodes[a].y_mm;
+        half.push_back(HalfEdge{a, b, e, std::atan2(dy, dx)});
+        half.push_back(HalfEdge{b, a, e, std::atan2(-dy, -dx)});
     }
-    return loop;
+    return half;
 }
 
-// Geschlossene Wandzüge: Zusammenhangskomponenten, in denen jeder Knoten
-// Grad 2 hat (welle-1: nur endpunkt-verbundene Zyklen — Schnittpunkte/
-// T-Stöße erst mit LH-FA-WAL-006; offene Züge haben Grad-1-Enden und
-// erzeugen keinen Raum, LH-FA-ROM-001 Negative).
+// Entfernt Stichkanten (Sackgassen) aus einem Flächen-Umlauf: eine
+// Halbkante, der unmittelbar ihr Twin folgt, ist ein Hin-und-zurück
+// ohne Flächenbeitrag. Die Wand selbst bleibt im Modell — nur das
+// Raumpolygon ignoriert den Stich (Welle-1-Einschränkung, spez. §1).
+void pruneSpurs(std::vector<std::size_t>& face) {
+    bool changed = true;
+    while (changed && face.size() >= 2) {
+        changed = false;
+        for (std::size_t i = 0; i < face.size(); ++i) {
+            const std::size_t j = (i + 1) % face.size();
+            if (face[j] == (face[i] ^ 1U)) {
+                // j zuerst entfernen, falls j > i; sonst i zuerst.
+                face.erase(face.begin() + static_cast<std::ptrdiff_t>(std::max(i, j)));
+                face.erase(face.begin() + static_cast<std::ptrdiff_t>(std::min(i, j)));
+                changed = true;
+                break;
+            }
+        }
+    }
+}
+
+// Minimale Zyklen über planare Flächen-Traversierung (spez. §1
+// Schritt 2): an jedem Knoten sind die ausgehenden Halbkanten nach
+// Winkel sortiert; der Flächen-Umlauf nimmt am Zielknoten die im
+// Uhrzeigersinn nächste Halbkante nach dem Twin. Innen liegende
+// Flächen laufen dadurch CCW (positive Fläche); die unbeschränkte
+// Außenfläche läuft CW (negativ) und entfällt. Geteilte Knoten
+// (Grad >= 3, Räume mit gemeinsamer Wand) sind damit abgedeckt —
+// Code-Review-Finding M1.
 std::vector<Loop> extractClosedLoops(const Graph& graph) {
+    const std::vector<HalfEdge> half = buildHalfEdges(graph);
+
+    // Ausgehende Halbkanten pro Knoten, nach Winkel sortiert; Position
+    // jeder Halbkante in der Liste ihres Startknotens.
+    std::vector<std::vector<std::size_t>> outgoing(graph.nodes.size());
+    for (std::size_t h = 0; h < half.size(); ++h) {
+        outgoing[half[h].from].push_back(h);
+    }
+    std::vector<std::size_t> position(half.size(), 0);
+    for (auto& list : outgoing) {
+        std::sort(list.begin(), list.end(), [&half](std::size_t a, std::size_t b) {
+            return half[a].angle < half[b].angle;
+        });
+        for (std::size_t p = 0; p < list.size(); ++p) {
+            position[list[p]] = p;
+        }
+    }
+
+    const auto nextInFace = [&half, &outgoing, &position](std::size_t h) {
+        const std::size_t twin = h ^ 1U;
+        const auto& out = outgoing[half[h].to];
+        const std::size_t p = position[twin];
+        return out[(p + out.size() - 1) % out.size()];
+    };
+
     std::vector<Loop> loops;
-    std::vector<bool> visited(graph.nodes.size(), false);
-    for (std::size_t start = 0; start < graph.nodes.size(); ++start) {
-        if (visited[start]) {
+    std::vector<bool> used(half.size(), false);
+    for (std::size_t start = 0; start < half.size(); ++start) {
+        if (used[start]) {
             continue;
         }
-        std::vector<std::size_t> stack{start};
-        visited[start] = true;
-        std::size_t component_size = 0;
-        bool all_degree_two = true;
-        while (!stack.empty()) {
-            const std::size_t node = stack.back();
-            stack.pop_back();
-            ++component_size;
-            if (graph.adjacency[node].size() != 2) {
-                all_degree_two = false;
-            }
-            for (const auto& [edge, other] : graph.adjacency[node]) {
-                if (!visited[other]) {
-                    visited[other] = true;
-                    stack.push_back(other);
-                }
-            }
+        std::vector<std::size_t> face;
+        std::size_t h = start;
+        do {
+            used[h] = true;
+            face.push_back(h);
+            h = nextInFace(h);
+        } while (h != start);
+
+        pruneSpurs(face);
+        if (face.size() < 3) {
+            continue;
         }
-        if (all_degree_two && component_size >= 3) {
-            loops.push_back(traceLoop(graph, start));
+        Loop loop;
+        loop.reserve(face.size());
+        for (const std::size_t he : face) {
+            loop.push_back(LoopVertex{graph.nodes[half[he].from],
+                                      graph.edge_thickness[half[he].edge]});
+        }
+        // Nur innen liegende Flächen (CCW, positive Fläche) sind Zyklen;
+        // die Außenfläche (negativ) und degenerierte Flächen entfallen.
+        if (signedArea(centerlineRing(loop)) >= kMinAreaMm2) {
+            loops.push_back(std::move(loop));
         }
     }
     return loops;
-}
-
-// Normalisiert auf CCW-Orientierung (Inneres links der Kanten); beim
-// Umdrehen wandert die Kanten-Stärke mit: t'[i] = t[(2k-2-i) % k].
-void normalizeCounterClockwise(Loop& loop) {
-    if (signedArea(centerlineRing(loop)) >= 0.0) {
-        return;
-    }
-    const std::size_t k = loop.size();
-    Loop reversed(k);
-    for (std::size_t i = 0; i < k; ++i) {
-        reversed[i].point = loop[k - 1 - i].point;
-        reversed[i].outgoing_thickness_mm =
-            loop[((2 * k) - 2 - i) % k].outgoing_thickness_mm;
-    }
-    loop = std::move(reversed);
 }
 
 // Offset-Ring eines CCW-Wandzugs (ADR-0007): side = +1 -> Innenkante
@@ -256,22 +295,27 @@ bool preservesEdgeDirections(const Loop& loop, const Ring& ring) {
 
 // Zyklus-Kandidat: Mittellinien-Ring (Verschachtelungs-Test), Innenkanten-
 // Ring (Raumpolygon) und Außenkontur (Loch-Ring im umschließenden Raum).
+// Kandidaten haben per Konstruktion eine nicht-degenerierte Mittellinie
+// (extractClosedLoops filtert Außen- und Null-Flächen); kollabiert nur
+// der INNEN-Offset, bleibt der Kandidat als Loch-Lieferant erhalten.
+// Mittellinien-degenerierte Züge (kollinear/überlappend) sind welle-1
+// out-of-scope und liefern auch keine Löcher (spez. §1, Review M3).
 struct Candidate {
     Ring centerline;
     Ring inner;
     Ring outer_contour;
     double inner_area{};
+
+    bool isInside(const Candidate& outer) const {
+        return pointInRing(outer.centerline, centerline.front());
+    }
 };
 
 std::vector<Candidate> buildCandidates(std::vector<Loop>&& loops) {
     std::vector<Candidate> candidates;
     for (Loop& loop : loops) {
-        normalizeCounterClockwise(loop);
         Candidate c;
         c.centerline = centerlineRing(loop);
-        if (signedArea(c.centerline) < kMinAreaMm2) {
-            continue;  // Zyklus selbst degeneriert
-        }
         c.inner = offsetRing(loop, +1.0);
         c.outer_contour = offsetRing(loop, -1.0);
         // Kollabierter Innen-Offset -> kein Raumpolygon (inner_area 0
@@ -285,22 +329,21 @@ std::vector<Candidate> buildCandidates(std::vector<Loop>&& loops) {
     return candidates;
 }
 
-bool containedIn(const Candidate& inner, const Candidate& outer) {
-    return pointInRing(outer.centerline, inner.centerline.front());
-}
-
-// Direktes Kind: in `parent` enthalten, ohne dazwischenliegenden Zyklus.
-bool isDirectChild(const std::vector<Candidate>& candidates, std::size_t child,
-                   std::size_t parent) {
-    if (child == parent || !containedIn(candidates[child], candidates[parent])) {
+// Direktes Kind: in `parent_index` enthalten, ohne dazwischenliegenden
+// Zyklus. Index-Parameter statt zweier Candidate-Referenzen — die
+// Rollen (child, parent) sind über die Namen gebunden (Review L1).
+bool isDirectChild(const std::vector<Candidate>& candidates,
+                   std::size_t child_index, std::size_t parent_index) {
+    if (child_index == parent_index ||
+        !candidates[child_index].isInside(candidates[parent_index])) {
         return false;
     }
     for (std::size_t mid = 0; mid < candidates.size(); ++mid) {
-        if (mid == child || mid == parent) {
+        if (mid == child_index || mid == parent_index) {
             continue;
         }
-        if (containedIn(candidates[child], candidates[mid]) &&
-            containedIn(candidates[mid], candidates[parent])) {
+        if (candidates[child_index].isInside(candidates[mid]) &&
+            candidates[mid].isInside(candidates[parent_index])) {
             return false;
         }
     }
@@ -331,8 +374,9 @@ std::vector<model::Room> detectRooms(const model::Building& building,
         room.outer = candidates[i].inner;
         double net = candidates[i].inner_area;
         // Direkte Kinder werden als Loch-Ringe geführt — auch dann, wenn
-        // sie selbst keinen Raum ergeben (ihre Wände stehen trotzdem im
-        // umschließenden Raum). Spez. §1 Schritt 4.
+        // ihr Innen-Offset kollabiert ist und sie selbst keinen Raum
+        // ergeben (ihre Wände stehen trotzdem im umschließenden Raum).
+        // Spez. §1 Schritt 4.
         for (std::size_t j = 0; j < candidates.size(); ++j) {
             if (!isDirectChild(candidates, j, i)) {
                 continue;

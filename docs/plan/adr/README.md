@@ -46,6 +46,8 @@ Noch nicht als ADR angelegt, in der Roadmap verortet:
 - IFC-Bibliothek und -Schema-Version (LH-FA-IO-001/002) — welle-4.
 - STEP-/Format-Export-Backend hinter `ModelExporterPort` (LH-FA-IO-005;
   aus ADR-0002 ausgegliedert) inkl. Adapter-Grenzen Geometrie↔IO — welle-4.
-- Atomare Write-Strategie / Crash-Recovery-Detail (LH-QA-005) — welle-1.
+- ~~Atomare Write-Strategie / Crash-Recovery-Detail (LH-QA-005)~~ →
+  entschieden in [ADR-0003](0003-persistenz-sqlite.md) (Temp+Rename);
+  Folgepflicht durch slice-008b erfüllt (Welle-1-Verifikation 2026-06-11).
 - Observability/OTel-Anbindung (`TracingPort`) — spätere Welle.
-- ~~Build-/Container-Strategie (REQ-TEC-009)~~ → als [ADR-0004](0004-toolchain-dependency-pinning.md) erfasst (Proposed, aus spike-001).
+- ~~Build-/Container-Strategie (REQ-TEC-009)~~ → als [ADR-0004](0004-toolchain-dependency-pinning.md) erfasst (Accepted 2026-06-09, aus spike-001).

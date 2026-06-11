@@ -8,10 +8,10 @@
 
 #include <gtest/gtest.h>
 
-#include <cmath>
 #include <limits>
 #include <stdexcept>
 
+#include "analytic_geometry_double.h"
 #include "hexagon/model/constants.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/model/solid.h"
@@ -26,24 +26,9 @@ namespace model = bcad::hexagon::model;
 namespace services = bcad::hexagon::services;
 namespace driven = bcad::hexagon::ports::driven;
 namespace driving = bcad::hexagon::ports::driving;
-
-// Analytisches Volumen einer extrudierten Wand: Länge · Stärke · Höhe.
-double analyticVolume(const model::Wall& w) {
-    const double dx = w.end.x_mm - w.start.x_mm;
-    const double dy = w.end.y_mm - w.start.y_mm;
-    const double length = std::sqrt((dx * dx) + (dy * dy));
-    return length * w.thickness_mm * w.height_mm;
-}
-
-// Deterministisches Geometrie-Double ohne OpenCascade. Der echte
-// OCC-Adapter (003b) wird gegen denselben analytischen Wert (innerhalb
-// der Toleranz) geprüft.
-class AnalyticGeometry final : public driven::GeometryKernelPort {
-public:
-    model::Solid extrudeWall(const model::Wall& w) const override {
-        return model::Solid{analyticVolume(w)};
-    }
-};
+// Gemeinsames Geometrie-Double (Review L4: vorher dreifach dupliziert).
+using bcad::testing::AnalyticGeometry;
+using bcad::testing::analyticVolume;
 
 // Steuerbares Double: `extrudeWall` wirft, wenn `failing` gesetzt ist —
 // modelliert eine fehlschlagende Geometrie-Operation (E-GEO-002-Klasse),

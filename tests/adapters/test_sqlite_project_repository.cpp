@@ -40,7 +40,7 @@ Building sampleBuilding() {
 
 fs::path tempPath(const char* name) { return fs::temp_directory_path() / name; }
 
-TEST(SqliteProjectRepository, RoundTripErhaeltModell) {
+TEST(SqliteProjectRepository_LH_FA_BLD_002_003, RoundTripErhaeltModell) {
     const SqliteProjectRepository repo;
     const Building original = sampleBuilding();
     const fs::path path = tempPath("bcad_roundtrip.bcad");
@@ -75,7 +75,7 @@ TEST(SqliteProjectRepository, RoundTripErhaeltModell) {
     fs::remove(path);
 }
 
-TEST(SqliteProjectRepository, LeeresProjektRoundTrip) {
+TEST(SqliteProjectRepository_LH_FA_BLD_002_003, LeeresProjektRoundTrip) {
     const SqliteProjectRepository repo;
     const fs::path path = tempPath("bcad_empty.bcad");
     fs::remove(path);
@@ -88,7 +88,7 @@ TEST(SqliteProjectRepository, LeeresProjektRoundTrip) {
     fs::remove(path);
 }
 
-TEST(SqliteProjectRepository, SaveErsetztSauberOhneTempRest) {
+TEST(SqliteProjectRepository_LH_FA_BLD_002_003, SaveErsetztSauberOhneTempRest) {
     const SqliteProjectRepository repo;
     const fs::path path = tempPath("bcad_overwrite.bcad");
     fs::remove(path);
@@ -106,7 +106,7 @@ TEST(SqliteProjectRepository, SaveErsetztSauberOhneTempRest) {
     fs::remove(path);
 }
 
-TEST(SqliteProjectRepository, LadenFehlendeDateiWirftNeutral) {
+TEST(SqliteProjectRepository_LH_FA_BLD_002_003, LadenFehlendeDateiWirftNeutral) {
     const SqliteProjectRepository repo;
     const fs::path path = tempPath("bcad_does_not_exist.bcad");
     fs::remove(path);

@@ -1,34 +1,31 @@
 // Akzeptanz-Tests für die Echtzeit-Änderungs-Benachrichtigung
-// (slice-010b), OCC-frei über Port-Doubles (ADR-0001 §Testbarkeit).
-// Geprüft wird LH-FA-D3-002 gegen das in slice-010a geschärfte
+// (slice-010b; erweitert um die Code-Review-Findings L2/L3 der
+// Welle-1-Prüfung), OCC-frei über Port-Doubles (ADR-0001
+// §Testbarkeit). Geprüft wird LH-FA-D3-002 gegen das geschärfte
 // Lastenheft (0.1.1) und ADR-0008 (Observer-Port, Push-Notify/
 // Pull-State, Meldung nach Re-Detektion, Kapselung):
 // - Happy: Parameteränderung -> Meldung ohne expliziten Abruf; der per
-//   Pull geholte Stand ist aktualisiert.
-// - Ordnung: Meldung kommt NACH der Raum-Re-Detektion — ein Pull im
-//   Callback sieht den konsistenten Raum-Stand.
-// - Boundary: geklemmte Änderung meldet; gepullter Stand ist der
-//   geklemmte (tatsächlich übernommene) Wert.
-// - Negative: abgelehnte (E-VAL-001 Rejected) und verworfene
-//   (Null-Länge) Mutationen melden nicht.
-// - Kapselung: ein werfender Beobachter kippt die committete Mutation
-//   nicht und blockiert Folge-Beobachter nicht (ADR-0008 #6).
+//   Pull geholte Stand ist aktualisiert (Stärke UND Höhe, je eigener op).
+// - Ordnung: Meldung kommt NACH der Raum-Re-Detektion.
+// - Boundary: geklemmte Änderung meldet; gepullter Stand = Grenzwert.
+// - Negative: abgelehnte/verworfene Mutationen melden nicht.
+// - Kapselung: werfender Beobachter kippt nichts, blockiert nicht.
+// - Registrierung: subscribe idempotent; unsubscribe (auch im
+//   Callback) beendet die Zustellung.
 // Test-Namen tragen die LH-ID.
 
 #include <gtest/gtest.h>
 
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <stdexcept>
 #include <vector>
 
+#include "analytic_geometry_double.h"
 #include "hexagon/model/constants.h"
 #include "hexagon/model/segment.h"
-#include "hexagon/model/solid.h"
 #include "hexagon/model/wall.h"
-#include "hexagon/ports/driven/geometry_kernel_port.h"
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
@@ -37,18 +34,7 @@ namespace {
 namespace model = bcad::hexagon::model;
 namespace services = bcad::hexagon::services;
 namespace driven = bcad::hexagon::ports::driven;
-
-// Deterministisches Geometrie-Double ohne OpenCascade (Muster aus
-// test_structure_edit_service.cpp): Volumen = Länge · Stärke · Höhe.
-class AnalyticGeometry final : public driven::GeometryKernelPort {
-public:
-    model::Solid extrudeWall(const model::Wall& w) const override {
-        const double dx = w.end.x_mm - w.start.x_mm;
-        const double dy = w.end.y_mm - w.start.y_mm;
-        const double length = std::sqrt((dx * dx) + (dy * dy));
-        return model::Solid{length * w.thickness_mm * w.height_mm};
-    }
-};
+using bcad::testing::AnalyticGeometry;
 
 // Zählender/aufzeichnender Beobachter (Push-Notify-Empfänger).
 class RecordingListener final : public driven::ModelChangedPort {
@@ -91,15 +77,38 @@ public:
     }
 };
 
+// Meldet sich beim ersten Callback selbst ab — prüft, dass die
+// Snapshot-Iteration ein unsubscribe im Callback verkraftet
+// (Closure-Behauptung slice-010b, Review L3).
+class SelfUnsubscribingListener final : public driven::ModelChangedPort {
+public:
+    explicit SelfUnsubscribingListener(services::StructureEditService& svc)
+        : svc_(svc) {}
+    void onModelChanged(const driven::ModelChange& /*change*/) override {
+        ++callbacks;
+        svc_.unsubscribe(*this);
+    }
+    int callbacks{0};
+
+private:
+    services::StructureEditService& svc_;
+};
+
 constexpr model::StoreyId kGroundStorey{1};
+
+model::WallId addWallChecked(services::StructureEditService& svc,
+                             model::Segment seg) {
+    const auto id = svc.addWall(kGroundStorey, seg);
+    EXPECT_TRUE(id.has_value()) << "addWall hat die Wand verworfen";
+    return id.has_value() ? *id : model::WallId{};
+}
 
 }  // namespace
 
 TEST(ModelChange_LH_FA_D3_002, ParameteraenderungMeldetOhneExplizitenAbruf) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
-    const model::WallId wall =
-        *svc.addWall(kGroundStorey, {{0.0, 0.0}, {1000.0, 0.0}});
+    const model::WallId wall = addWallChecked(svc, {{0.0, 0.0}, {1000.0, 0.0}});
 
     RecordingListener listener;
     svc.subscribe(listener);
@@ -111,6 +120,20 @@ TEST(ModelChange_LH_FA_D3_002, ParameteraenderungMeldetOhneExplizitenAbruf) {
     EXPECT_EQ(listener.countOf(driven::ModelChangeOp::RoomsChanged), 1U);
     EXPECT_DOUBLE_EQ(svc.wallSolid(wall).volume_mm3,
                      1000.0 * 300.0 * model::kDefaultStoreyHeightMm);
+}
+
+TEST(ModelChange_LH_FA_D3_002, HoehenAenderungMeldetMitEigenemOp) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const model::WallId wall = addWallChecked(svc, {{0.0, 0.0}, {1000.0, 0.0}});
+
+    RecordingListener listener;
+    svc.subscribe(listener);
+    svc.setWallHeight(wall, 3000.0);  // Review L2: eigener Notify-Pfad
+
+    EXPECT_EQ(listener.countOf(driven::ModelChangeOp::WallHeightChanged), 1U);
+    EXPECT_EQ(listener.countOf(driven::ModelChangeOp::WallThicknessChanged), 0U);
+    EXPECT_DOUBLE_EQ(svc.wall(wall).height_mm, 3000.0);
 }
 
 TEST(ModelChange_LH_FA_D3_002, MeldungKommtNachRaumReDetektion) {
@@ -134,8 +157,7 @@ TEST(ModelChange_LH_FA_D3_002, MeldungKommtNachRaumReDetektion) {
 TEST(ModelChange_LH_FA_D3_002, GeklemmteAenderungMeldetGeklemmtenStand) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
-    const model::WallId wall =
-        *svc.addWall(kGroundStorey, {{0.0, 0.0}, {1000.0, 0.0}});
+    const model::WallId wall = addWallChecked(svc, {{0.0, 0.0}, {1000.0, 0.0}});
 
     RecordingListener listener;
     svc.subscribe(listener);
@@ -148,8 +170,7 @@ TEST(ModelChange_LH_FA_D3_002, GeklemmteAenderungMeldetGeklemmtenStand) {
 TEST(ModelChange_LH_FA_D3_002, AbgelehnteUndVerworfeneMutationMeldenNicht) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
-    const model::WallId wall =
-        *svc.addWall(kGroundStorey, {{0.0, 0.0}, {1000.0, 0.0}});
+    const model::WallId wall = addWallChecked(svc, {{0.0, 0.0}, {1000.0, 0.0}});
 
     RecordingListener listener;
     svc.subscribe(listener);
@@ -166,8 +187,7 @@ TEST(ModelChange_LH_FA_D3_002, AbgelehnteUndVerworfeneMutationMeldenNicht) {
 TEST(ModelChange_LH_FA_D3_002, WerfenderBeobachterKipptNichtsUndBlockiertNicht) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
-    const model::WallId wall =
-        *svc.addWall(kGroundStorey, {{0.0, 0.0}, {1000.0, 0.0}});
+    const model::WallId wall = addWallChecked(svc, {{0.0, 0.0}, {1000.0, 0.0}});
 
     ThrowingListener thrower;
     RecordingListener recorder;
@@ -181,6 +201,37 @@ TEST(ModelChange_LH_FA_D3_002, WerfenderBeobachterKipptNichtsUndBlockiertNicht) 
     EXPECT_DOUBLE_EQ(svc.wall(wall).thickness_mm, 300.0);
     EXPECT_EQ(recorder.countOf(driven::ModelChangeOp::WallThicknessChanged), 1U);
     EXPECT_GE(svc.swallowedListenerErrors(), 1);
+}
+
+TEST(ModelChange_LH_FA_D3_002, DoppelteRegistrierungMeldetGenauEinmal) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    RecordingListener listener;
+    svc.subscribe(listener);
+    svc.subscribe(listener);  // Review L3: subscribe ist idempotent
+
+    svc.addStorey(2600.0);
+    EXPECT_EQ(listener.countOf(driven::ModelChangeOp::StoreyAdded), 1U);
+}
+
+TEST(ModelChange_LH_FA_D3_002, UnsubscribeImCallbackIstSicher) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    SelfUnsubscribingListener self_unsubscriber(svc);
+    RecordingListener recorder;
+    svc.subscribe(self_unsubscriber);
+    svc.subscribe(recorder);
+
+    // Erste Mutation: beide werden bedient (Snapshot-Iteration), der
+    // erste meldet sich dabei ab — Review L3 / Closure-Behauptung 010b.
+    svc.addStorey(2600.0);
+    EXPECT_EQ(self_unsubscriber.callbacks, 1);
+    EXPECT_EQ(recorder.countOf(driven::ModelChangeOp::StoreyAdded), 1U);
+
+    // Zweite Mutation: nur noch der verbliebene Beobachter.
+    svc.addStorey(2600.0);
+    EXPECT_EQ(self_unsubscriber.callbacks, 1);
+    EXPECT_EQ(recorder.countOf(driven::ModelChangeOp::StoreyAdded), 2U);
 }
 
 TEST(ModelChange_LH_FA_D3_002, GeschossAnlageMeldetUndUnsubscribeBeendet) {

@@ -32,10 +32,19 @@ Stand und löst selbst keine Erkennung aus.
    *Welle-1-Einschränkung:* Schnittpunkte werden erst mit der
    Wandverschneidung (LH-FA-WAL-006) zu Knoten — bis dahin schließen
    nur endpunkt-verbundene Wandzüge Räume.
-2. Geschlossene Kreise (minimale Zyklen) bestimmen.
+2. Geschlossene Kreise (**minimale Zyklen**) über planare
+   Flächen-Traversierung bestimmen (winkelsortierte Halbkanten je
+   Knoten): **geteilte Knoten** (Grad ≥ 3 — Räume mit gemeinsamer
+   Wand) sind abgedeckt; Stichkanten (Sackgassen) werden im Umlauf
+   ignoriert (die Wand bleibt im Modell, nur das Raumpolygon
+   übergeht den Stich).
 3. Pro Zyklus das **Innenkanten-Polygon** ableiten: jede Kante um die
    halbe Wandstärke ihres Segments zum Zyklus-Inneren versetzt,
    benachbarte Offset-Geraden geschnitten (ADR-0007).
+   *Welle-1-Näherung:* bei **kollinearen Nachbarkanten ungleicher
+   Stärke** springt die Ecke auf den Offset-Punkt der Folgekante
+   (lineare Überblendung statt exakter Stufenkontur); die exakte
+   Stufe kommt mit der Wandverschneidung (LH-FA-WAL-006).
 4. Verschachtelte Zyklen: der innere Zyklus erzeugt einen eigenen Raum
    (Innenkante nach innen); im umschließenden Raum wird die
    Außenkontur des inneren Zyklus als **Loch-Ring** geführt —
@@ -235,6 +244,7 @@ nicht im Bootstrap.
 | 2026-06-11 | §1 LH-FA-ROM-001.a präzisiert: Innenkanten-Basis + Ring-Modell, Auslösung bei Modell-Mutation, Endpunkt-Knoten-Einschränkung (welle-1), Erkennung total (kein `E-GEO-002`); §7-Punkt Polygon-Basis geschlossen | ADR-0007 |
 | 2026-06-11 | §1 Kollaps-Kriterium präzisiert: Kantenrichtungs-Erhalt statt reiner Flächen-Prüfung (Doppel-Inversion erzeugt Phantom-Polygon positiver Fläche) | ADR-0007 |
 | 2026-06-11 | §1 LH-FA-D3-002.a ergänzt: Benachrichtigungs-Vertrag (Observer-Port, Push-Notify/Pull-State, Reihenfolge nach Re-Detektion, Beobachter-Pflichten) + welle-1-Operationalisierung „sichtbar" | ADR-0008 |
+| 2026-06-11 | §1 ROM-001.a präzisiert (Welle-1-Code-Review M1/M2): minimale Zyklen via Flächen-Traversierung — geteilte Knoten (Grad ≥ 3) abgedeckt, Stichkanten ignoriert; Näherung für kollineare Nachbarkanten ungleicher Stärke dokumentiert | ADR-0007 |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

@@ -93,7 +93,7 @@ private:
 // LH-QA-005: kill -9 zwischen Schreibphasen → letzter konsistenter Stand
 // intakt. Eine nicht-atomare Implementierung würde über N Trials eine
 // halb-geschriebene Zieldatei hinterlassen → load wirft/liefert Unsinn.
-TEST(SqliteCrashRecovery, KillMidSaveLaesstZielKonsistent) {
+TEST(SqliteCrashRecovery_LH_QA_005, KillMidSaveLaesstZielKonsistent) {
     const SqliteProjectRepository repo;
     const fs::path path = fs::temp_directory_path() / "bcad_crash.bcad";
     cleanup(path);
@@ -137,7 +137,7 @@ TEST(SqliteCrashRecovery, KillMidSaveLaesstZielKonsistent) {
 
 // E-IO-001: Temp-Pfad mit nicht-leerem Verzeichnis besetzt → Anlegen/Öffnen
 // der Temp-DB scheitert (SQLITE_CANTOPEN). Voriger Stand A unverändert.
-TEST(SqliteCrashRecovery, OpenFehlerWirftEIO001UndLaesstStandIntakt) {
+TEST(SqliteCrashRecovery_LH_QA_005, OpenFehlerWirftEIO001UndLaesstStandIntakt) {
     const SqliteProjectRepository repo;
     const fs::path path = fs::temp_directory_path() / "bcad_eio001.bcad";
     cleanup(path);
@@ -167,7 +167,7 @@ TEST(SqliteCrashRecovery, OpenFehlerWirftEIO001UndLaesstStandIntakt) {
 // E-IO-002: echter Schreibfehler. RLIMIT_FSIZE begrenzt die Dateigröße; der
 // Temp-DB-Write überschreitet das Limit → SQLITE_FULL/IOERR. SIGXFSZ wird
 // ignoriert, sonst killt das Überschreiten den Prozess. Voriger Stand intakt.
-TEST(SqliteCrashRecovery, WriteVollWirftEIO002UndLaesstStandIntakt) {
+TEST(SqliteCrashRecovery_LH_QA_005, WriteVollWirftEIO002UndLaesstStandIntakt) {
     const SqliteProjectRepository repo;
     const fs::path path = fs::temp_directory_path() / "bcad_eio002.bcad";
     cleanup(path);
@@ -202,7 +202,7 @@ TEST(SqliteCrashRecovery, WriteVollWirftEIO002UndLaesstStandIntakt) {
 // wird erfolgreich geschrieben, aber `rename(tmp, ziel)` scheitert, weil das
 // Ziel ein nicht-leeres Verzeichnis ist → neutraler E-IO-Code aus dem
 // errno-Pfad (statt aus dem SqliteError-Pfad von open/exec).
-TEST(SqliteCrashRecovery, RenameFehlerWirftNeutralenEIOCode) {
+TEST(SqliteCrashRecovery_LH_QA_005, RenameFehlerWirftNeutralenEIOCode) {
     const SqliteProjectRepository repo;
     const fs::path path = fs::temp_directory_path() / "bcad_rename.bcad";
     cleanup(path);

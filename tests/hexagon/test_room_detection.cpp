@@ -1,54 +1,57 @@
-// Akzeptanz-Tests für die Raum-Autoerkennung (slice-009b), OCC-frei über
+// Akzeptanz-Tests für die Raum-Autoerkennung (slice-009b; erweitert um
+// die Code-Review-Findings M1/M2 der Welle-1-Prüfung), OCC-frei über
 // ein GeometryKernelPort-Double (ADR-0001 §Testbarkeit). Geprüft wird
-// LH-FA-ROM-001 gegen die in slice-009a geschärfte Spezifikation
-// (spez. §1 LH-FA-ROM-001.a) und ADR-0007:
+// LH-FA-ROM-001 gegen spez. §1 LH-FA-ROM-001.a und ADR-0007:
 // - Happy: geschlossener Wandzug -> genau ein Raum, automatisch beim
-//   Schließen (kein expliziter Abruf), Innenkanten-Polygon/Netto-Fläche
-//   analytisch korrekt.
-// - Mutation: Stärke-Änderung löst Re-Detektion aus (spez. §1 §Auslösung).
-// - Boundary: verschachtelte Wandzüge -> innerer und äußerer Raum
-//   getrennt, äußerer mit Loch-Ring, keine Flächen-Doppelzählung.
+//   Schließen, Innenkanten-Polygon/Netto-Fläche analytisch korrekt.
+// - Mutation: Stärke-Änderung löst Re-Detektion aus.
+// - Boundary: verschachtelte Wandzüge -> innen/außen getrennt, äußerer
+//   mit Loch-Ring, keine Flächen-Doppelzählung.
+// - Geteilte Wand (Review M1): zwei Räume mit gemeinsamer Wand
+//   (Grad-3-Knoten) werden beide erkannt (minimale Zyklen via
+//   Flächen-Traversierung).
+// - Kollineare Kanten ungleicher Stärke (Review M2): dokumentierte
+//   Welle-1-Näherung, Erwartungswert gepinnt.
 // - Negative: offener Wandzug -> kein Raum, kein Fehler.
 // - Degeneriert: kollabierender Innenkanten-Offset -> kein Raum, kein
-//   Fehler, Modell unverändert (Erkennung ist total, kein E-GEO-002).
+//   Fehler, Modell unverändert (Erkennung total, kein E-GEO-002).
 // Test-Namen tragen die LH-ID. Erwartungswerte: Innenkanten-Basis
-// (ADR-0007) — Rechteck-Mittellinie minus halbe Wandstärke je Seite.
+// (ADR-0007) — Mittellinie minus halbe Wandstärke je Seite.
 
 #include <gtest/gtest.h>
 
 #include <array>
-#include <cmath>
 #include <optional>
 #include <vector>
 
+#include "analytic_geometry_double.h"
 #include "hexagon/model/constants.h"
 #include "hexagon/model/room.h"
 #include "hexagon/model/segment.h"
-#include "hexagon/model/solid.h"
 #include "hexagon/model/wall.h"
-#include "hexagon/ports/driven/geometry_kernel_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
 
 namespace model = bcad::hexagon::model;
 namespace services = bcad::hexagon::services;
-namespace driven = bcad::hexagon::ports::driven;
-
-// Deterministisches Geometrie-Double ohne OpenCascade (wie in
-// test_structure_edit_service.cpp): Volumen = Länge · Stärke · Höhe.
-class AnalyticGeometry final : public driven::GeometryKernelPort {
-public:
-    model::Solid extrudeWall(const model::Wall& w) const override {
-        const double dx = w.end.x_mm - w.start.x_mm;
-        const double dy = w.end.y_mm - w.start.y_mm;
-        const double length = std::sqrt((dx * dx) + (dy * dy));
-        return model::Solid{length * w.thickness_mm * w.height_mm};
-    }
-};
+using bcad::testing::AnalyticGeometry;
 
 constexpr model::StoreyId kGroundStorey{1};
 constexpr double kAreaToleranceMm2 = 1e-6;
+
+// Fügt eine Wand hinzu und setzt ihre Stärke; schlägt der Add fehl,
+// scheitert der Test sauber statt per UB-Dereferenzierung (Review L4).
+model::WallId addWallChecked(services::StructureEditService& svc,
+                             model::Segment seg, double thickness_mm) {
+    const std::optional<model::WallId> id = svc.addWall(kGroundStorey, seg);
+    EXPECT_TRUE(id.has_value()) << "addWall hat die Wand verworfen";
+    if (!id.has_value()) {
+        return model::WallId{};
+    }
+    svc.setWallThickness(*id, thickness_mm);
+    return *id;
+}
 
 // Achsenparalleles Rechteck (Mittellinien-Koordinaten).
 struct Rect {
@@ -58,9 +61,8 @@ struct Rect {
     double y1;
 };
 
-// Fügt die vier Wände eines Rechtecks hinzu (geschlossener Wandzug) und
-// setzt jede auf `thickness_mm`. Liefert die Wand-Ids in Zeichen-
-// Reihenfolge (unten, rechts, oben, links).
+// Vier Wände eines Rechtecks (geschlossener Wandzug), je `thickness_mm`.
+// Liefert die Wand-Ids in Zeichen-Reihenfolge (unten, rechts, oben, links).
 std::vector<model::WallId> addRect(services::StructureEditService& svc, Rect r,
                                    double thickness_mm) {
     const std::array<model::Segment, 4> segments{{
@@ -71,13 +73,7 @@ std::vector<model::WallId> addRect(services::StructureEditService& svc, Rect r,
     }};
     std::vector<model::WallId> ids;
     for (const model::Segment& seg : segments) {
-        const std::optional<model::WallId> id = svc.addWall(kGroundStorey, seg);
-        if (!id.has_value()) {
-            ADD_FAILURE() << "addRect: Wand wurde verworfen";
-            continue;
-        }
-        svc.setWallThickness(*id, thickness_mm);
-        ids.push_back(*id);
+        ids.push_back(addWallChecked(svc, seg, thickness_mm));
     }
     return ids;
 }
@@ -89,14 +85,14 @@ TEST(RoomDetection_LH_FA_ROM_001, GeschlossenerWandzugErzeugtGenauEinenRaumAutom
     services::StructureEditService svc(geometry);
 
     // Drei Wände: Zug noch offen -> kein Raum.
-    svc.setWallThickness(*svc.addWall(kGroundStorey, {{0.0, 0.0}, {5000.0, 0.0}}), 200.0);
-    svc.setWallThickness(*svc.addWall(kGroundStorey, {{5000.0, 0.0}, {5000.0, 4000.0}}), 200.0);
-    svc.setWallThickness(*svc.addWall(kGroundStorey, {{5000.0, 4000.0}, {0.0, 4000.0}}), 200.0);
+    addWallChecked(svc, {{0.0, 0.0}, {5000.0, 0.0}}, 200.0);
+    addWallChecked(svc, {{5000.0, 0.0}, {5000.0, 4000.0}}, 200.0);
+    addWallChecked(svc, {{5000.0, 4000.0}, {0.0, 4000.0}}, 200.0);
     EXPECT_TRUE(svc.rooms(kGroundStorey).empty());
 
     // Vierte Wand schließt den Zug -> der Raum entsteht automatisch beim
     // Schließen (LH-FA-ROM-001 Happy); rooms() ist reine Abfrage.
-    svc.setWallThickness(*svc.addWall(kGroundStorey, {{0.0, 4000.0}, {0.0, 0.0}}), 200.0);
+    addWallChecked(svc, {{0.0, 4000.0}, {0.0, 0.0}}, 200.0);
     const std::vector<model::Room> rooms = svc.rooms(kGroundStorey);
     ASSERT_EQ(rooms.size(), 1U);
 
@@ -151,15 +147,66 @@ TEST(RoomDetection_LH_FA_ROM_001, VerschachtelteWandzuegeOhneFlaechenDoppelzaehl
                 (9800.0 * 7800.0) - (3100.0 * 2100.0), kAreaToleranceMm2);
 }
 
+TEST(RoomDetection_LH_FA_ROM_001, GeteilteWandErzeugtBeideRaeume) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+
+    // Zwei Räume mit GEMEINSAMER Mittelwand — die Eckknoten (4000,0)
+    // und (4000,4000) haben Grad 3 (Review-Finding M1: minimale Zyklen
+    // via Flächen-Traversierung, nicht nur Grad-2-Komponenten).
+    addWallChecked(svc, {{0.0, 0.0}, {4000.0, 0.0}}, 200.0);        // unten links
+    addWallChecked(svc, {{4000.0, 0.0}, {8000.0, 0.0}}, 200.0);     // unten rechts
+    addWallChecked(svc, {{8000.0, 0.0}, {8000.0, 4000.0}}, 200.0);  // rechts
+    addWallChecked(svc, {{8000.0, 4000.0}, {4000.0, 4000.0}}, 200.0);  // oben rechts
+    addWallChecked(svc, {{4000.0, 4000.0}, {0.0, 4000.0}}, 200.0);  // oben links
+    addWallChecked(svc, {{0.0, 4000.0}, {0.0, 0.0}}, 200.0);        // links
+    addWallChecked(svc, {{4000.0, 0.0}, {4000.0, 4000.0}}, 200.0);  // Mittelwand
+
+    const std::vector<model::Room> rooms = svc.rooms(kGroundStorey);
+    ASSERT_EQ(rooms.size(), 2U);
+
+    // Beide Räume: Breite 4000 - 100 (Außenwand) - 100 (Mittelwand),
+    // Höhe 4000 - 200 -> je 3800 x 3800; keine Löcher (nebeneinander,
+    // nicht verschachtelt).
+    for (const model::Room& room : rooms) {
+        EXPECT_TRUE(room.holes.empty());
+        EXPECT_NEAR(room.net_area_mm2, 3800.0 * 3800.0, kAreaToleranceMm2);
+    }
+}
+
+TEST(RoomDetection_LH_FA_ROM_001, KollineareKantenUngleicherStaerkeGepinnteNaeherung) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+
+    // Untere Seite in zwei kollineare Wände ungleicher Stärke gesplittet
+    // (Review-Finding M2): die Ecke am Übergang springt per
+    // dokumentierter Welle-1-Näherung auf den Offset-Punkt der
+    // Folgekante (lineare Überblendung statt exakter Stufe, spez. §1).
+    addWallChecked(svc, {{0.0, 0.0}, {2500.0, 0.0}}, 200.0);
+    addWallChecked(svc, {{2500.0, 0.0}, {5000.0, 0.0}}, 400.0);
+    addWallChecked(svc, {{5000.0, 0.0}, {5000.0, 4000.0}}, 200.0);
+    addWallChecked(svc, {{5000.0, 4000.0}, {0.0, 4000.0}}, 200.0);
+    addWallChecked(svc, {{0.0, 4000.0}, {0.0, 0.0}}, 200.0);
+
+    const std::vector<model::Room> rooms = svc.rooms(kGroundStorey);
+    ASSERT_EQ(rooms.size(), 1U);
+
+    // Gepinnter Erwartungswert der Näherung (Polygon (100,100),
+    // (2500,200), (4900,200), (4900,3900), (100,3900)): 17.880.000 mm²
+    // — exakte Stufenkontur wäre 18.000.000 mm² (Differenz = halbes
+    // Übergangs-Dreieck, dokumentiert; exakt erst mit LH-FA-WAL-006).
+    EXPECT_NEAR(rooms.front().net_area_mm2, 17880000.0, kAreaToleranceMm2);
+}
+
 TEST(RoomDetection_LH_FA_ROM_001, OffenerWandzugErzeugtKeinenRaumKeinFehler) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
 
     // Drei Seiten eines Rechtecks — Zug bleibt offen (LH-FA-ROM-001
     // Negative): kein Raum, kein Fehler.
-    svc.setWallThickness(*svc.addWall(kGroundStorey, {{0.0, 0.0}, {5000.0, 0.0}}), 200.0);
-    svc.setWallThickness(*svc.addWall(kGroundStorey, {{5000.0, 0.0}, {5000.0, 4000.0}}), 200.0);
-    svc.setWallThickness(*svc.addWall(kGroundStorey, {{5000.0, 4000.0}, {0.0, 4000.0}}), 200.0);
+    addWallChecked(svc, {{0.0, 0.0}, {5000.0, 0.0}}, 200.0);
+    addWallChecked(svc, {{5000.0, 0.0}, {5000.0, 4000.0}}, 200.0);
+    addWallChecked(svc, {{5000.0, 4000.0}, {0.0, 4000.0}}, 200.0);
 
     EXPECT_TRUE(svc.rooms(kGroundStorey).empty());
     // Unbekanntes Geschoss: leere Antwort, kein Fehler.
