@@ -4,7 +4,7 @@ titel: Raum-Autoerkennung — Implementierung (geschlossene Wandzüge → Räume
 status: open
 welle: welle-1-mvp
 lastenheft_refs: [LH-FA-ROM-001]
-adr_refs: [ADR-0001]
+adr_refs: [ADR-0001, ADR-0007]
 ---
 
 # Slice 009b: Raum-Autoerkennung — Implementierung
@@ -13,15 +13,15 @@ adr_refs: [ADR-0001]
 
 **Welle:** welle-1-mvp
 
-**Bezug:** LH-FA-ROM-001, ADR-0001, ADR-0007 (entsteht in
-[slice-009a](slice-009a-raumerkennung-adr-spec.md); Frontmatter-`adr_refs`
-wird ergänzt, sobald die ADR-Datei existiert).
+**Bezug:** LH-FA-ROM-001, ADR-0001,
+[ADR-0007](../../adr/0007-raumerkennung-geometrie-basis.md)
+(entstanden in slice-009a).
 
 **Autor:** Dietmar Burkard. **Datum:** 2026-06-11.
 
 **Schnitt-Herkunft:** Implementierungs-Hälfte des ursprünglichen
-`slice-009` (Split-Begründung in
-[slice-009a §Schnitt-Herkunft](slice-009a-raumerkennung-adr-spec.md)).
+`slice-009` (Split-Begründung in slice-009a §Schnitt-Herkunft,
+Roadmap-Drift-Tabelle 2026-06-11).
 
 ---
 
@@ -78,8 +78,8 @@ geschärften Fassung (Polygon-Basis, Verschachtelungs-Repräsentation,
 
 ## 4. Trigger
 
-- [slice-009a](slice-009a-raumerkennung-adr-spec.md) done — ADR-0007
-  `Accepted`, Spec §1 geschärft.
+- slice-009a done — ADR-0007 `Accepted`, Spec §1 geschärft. ✓
+  (2026-06-11; damit startbar.)
 
 ## 5. Closure-Trigger
 

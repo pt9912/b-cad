@@ -1,28 +1,28 @@
 ---
 id: slice-009a
 titel: Raumerkennung — ADR-0007 Polygon-Basis & Spec-Schärfung
-status: open
+status: done
 welle: welle-1-mvp
 lastenheft_refs: [LH-FA-ROM-001]
-adr_refs: [ADR-0001]
+adr_refs: [ADR-0001, ADR-0007]
 ---
 
 # Slice 009a: Raumerkennung — ADR-0007 Polygon-Basis & Spec-Schärfung
 
-**Status:** open
+**Status:** done
 
 **Welle:** welle-1-mvp
 
-**Bezug:** LH-FA-ROM-001, ADR-0001. **Liefert:** ADR-0007 (entsteht in
-diesem Slice; deshalb noch nicht in den Frontmatter-`adr_refs` — die
-Referenz wird bei Closure ergänzt, wenn die ADR-Datei existiert).
+**Bezug:** LH-FA-ROM-001, ADR-0001. **Geliefert:**
+[ADR-0007](../../adr/0007-raumerkennung-geometrie-basis.md) (in diesem
+Slice entstanden und accepted).
 
 **Autor:** Dietmar Burkard. **Datum:** 2026-06-11.
 
 **Schnitt-Herkunft:** Aufteilung des ursprünglichen `slice-009` in die
 Entscheidungs-/Spec-Grundlage (**009a**, dieser Slice) und die
 Implementierung
-([**009b**](slice-009b-raumerkennung-implementierung.md)) — Ergebnis
+([**009b**](../open/slice-009b-raumerkennung-implementierung.md)) — Ergebnis
 des Plan-Reviews (Findings H1/M1/M2): ADR-0007 trägt mehr
 Entscheidungsgewicht als ursprünglich geplant, und ein ADR-Accept ist
 ein Review-Checkpoint, der nicht mitten in einem Implementierungs-Slice
@@ -39,7 +39,7 @@ ADR schärft die Spezifikation, nie das Lastenheft.
 
 ## 2. Definition of Done
 
-- [ ] **ADR-0007 „Geometrie-Basis der Raumerkennung" accepted** (Optionen
+- [x] **ADR-0007 „Geometrie-Basis der Raumerkennung" accepted** (Optionen
       mit Trade-offs, MADR-Form) und im ADR-Index ergänzt. Die ADR
       entscheidet **zwei** Lösungsfragen:
       (a) **Polygon-Basis** — Wand-Mittellinie vs. Innenkante (Wirkung
@@ -53,7 +53,7 @@ ADR schärft die Spezifikation, nie das Lastenheft.
       „keine Flächen-Doppelzählung" (LH-FA-ROM-001 Boundary)
       darstellbar und testbar ist. Wirkung auf `rooms.polygon_json`
       (ADR-0006, `spec/data-model.yaml`) als Konsequenz benennen.
-- [ ] **`spec/spezifikation.md` §1 (LH-FA-ROM-001.a) präzisiert:**
+- [x] **`spec/spezifikation.md` §1 (LH-FA-ROM-001.a) präzisiert:**
       (1) Polygon-Basis und Verschachtelungs-Repräsentation gemäß
       ADR-0007;
       (2) **`E-GEO-002`-Auslösebedingung für die Raumerkennung
@@ -71,7 +71,7 @@ ADR schärft die Spezifikation, nie das Lastenheft.
       kein manueller Abruf-Schritt nötig; UI-Ereignisse sind
       Adapter-Belang. Der Lastenheft-Wortlaut bleibt unverändert
       maßgeblich.
-- [ ] **§7-Pflege:** der Offene-Punkt **„Polygon-Basis"** wird
+- [x] **§7-Pflege:** der Offene-Punkt **„Polygon-Basis"** wird
       geschlossen; der zweite Raumerkennungs-Punkt
       (Performance-Zielkomplexität, M3) bleibt ausdrücklich offen.
       `make gates` grün (docs-check über die geänderten Spec-/
@@ -84,7 +84,7 @@ ADR schärft die Spezifikation, nie das Lastenheft.
 | `docs/plan/adr/{0007-raumerkennung-geometrie-basis}.md` | neu | Lösungs-Entscheidung (a)+(b), MADR-Form, schärft `spezifikation.md` |
 | `docs/plan/adr/README.md` | ändern | ADR-Index ergänzen (AGENTS §4) |
 | `spec/spezifikation.md` | ändern | §1 präzisieren (vier Punkte aus DoD-2); §7 Punkt „Polygon-Basis" schließen |
-| diese Datei + [`slice-009b`](slice-009b-raumerkennung-implementierung.md) | ändern | Frontmatter-`adr_refs` um ADR-0007 ergänzen, sobald die Datei existiert |
+| diese Datei + [`slice-009b`](../open/slice-009b-raumerkennung-implementierung.md) | ändern | Frontmatter-`adr_refs` um ADR-0007 ergänzen, sobald die Datei existiert |
 
 ## 4. Trigger
 
@@ -94,7 +94,7 @@ ADR schärft die Spezifikation, nie das Lastenheft.
 ## 5. Closure-Trigger
 
 - DoD vollständig, ADR-0007 `Accepted`, `make gates` grün,
-  Closure-Notiz geschrieben → [slice-009b](slice-009b-raumerkennung-implementierung.md)
+  Closure-Notiz geschrieben → [slice-009b](../open/slice-009b-raumerkennung-implementierung.md)
   wird startbar.
 
 ## 6. Risiken und offene Punkte
@@ -110,7 +110,37 @@ ADR schärft die Spezifikation, nie das Lastenheft.
 
 ## 7. Closure-Notiz
 
-*(bei Closure zu füllen: beobachtbare Kriterien + Lerneintrag)*
+**Closure-Kriterien (beobachtbar):**
+
+- ADR-0007 mit Status `Accepted`, Index-Zeile und
+  Folgepflicht-Eintrag (Umsetzung → slice-009b) im ADR-Index.
+- `spec/spezifikation.md` §1: alle vier DoD-Punkte umgesetzt
+  (Innenkanten-Basis + Ring-Modell; `E-GEO-002`-Entscheidung
+  „Erkennung total, kein Fehler"; Endpunkt-Knoten-Einschränkung
+  welle-1; Auslösung bei Modell-Mutation). §7: Punkt „Polygon-Basis"
+  als entschieden markiert, Performance-Punkt (M3) bleibt offen.
+  §8-Historie-Zeile ergänzt.
+- `make gates` grün (docs-check deckt ADR, Spec, Index und beide
+  Slice-Pläne ab).
+
+**Lerneintrag:**
+
+- **Spec-Lücke geschlossen + geschärfte Regel (Kandidat):** Die offene
+  `E-GEO-002`-Frage (Plan-Review-Finding M3) löste sich nicht durch
+  eine Auslösebedingung, sondern durch eine Klassen-Entscheidung:
+  *Fehler-Codes gehören zu mutierenden Operationen; ableitende
+  Berechnungen (Erkennung, künftig Auswertungen) sind total und
+  liefern leere Ergebnisse statt Fehler.* Beim zweiten Vorkommen
+  (ROM-002/003 oder EVL) als Konvention/`MR-<NNN>` verallgemeinern
+  (Steering Loop: nicht beim ersten Mal).
+- **Konsequenz weitergereicht:** `rooms.polygon_json` (ADR-0006) muss
+  bei Persistierung die Ring-Struktur tragen — im ADR-0007
+  §Konsequenzen festgehalten; ADR-0006 bleibt unverändert gültig
+  (JSON-Form ist bewusst formvariabel).
+
+**Restrisiko / Nachfolge:** Umsetzung inkl. Boundary-Netto-Flächen-Test
+in slice-009b (ADR-Folgepflichten-Tabelle); Offset-Robustheit gegen
+T-Stöße erst mit LH-FA-WAL-006 (Re-Evaluierungs-Trigger in ADR-0007).
 
 ## 8. Sub-Area-Modus-Begründung
 

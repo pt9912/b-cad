@@ -13,20 +13,46 @@ schärfen, **nicht** das Lastenheft.
 
 ### LH-FA-ROM-001.a — Raum-Autoerkennung
 
-**Eingabe:** Menge der Wandzüge eines Geschosses.
-**Ausgabe:** Menge erkannter Räume (geschlossene Polygone) mit Fläche.
+**Eingabe:** Menge der Wände eines Geschosses.
+**Ausgabe:** Menge erkannter Räume; je Raum ein Polygon auf
+**Innenkanten-Basis** im **Ring-Modell** (äußerer Ring + 0..n
+Loch-Ringe) mit **Netto-Fläche** (ADR-0007).
 
-**Schritte (Outline):**
+**Auslösung:** Die Erkennung läuft **automatisch bei Modell-Mutation**
+(Wand anlegen/ändern/löschen) im Service — „automatisch … when er
+geschlossen wird" (LH-FA-ROM-001 Happy) braucht keinen manuellen
+Abruf-Schritt; UI-Ereignisse sind Adapter-Belang. Eine
+Abfrage-Schnittstelle (Driving-Port) liefert den zuletzt erkannten
+Stand und löst selbst keine Erkennung aus.
 
-1. Wand-Mittellinien (oder Innenkanten, siehe offener Punkt) als
-   Graph aufbauen: Knoten = Endpunkte/Schnittpunkte, Kanten = Segmente.
+**Schritte:**
+
+1. Graph über Wand-Segmente: Knoten = Segment-Endpunkte
+   (Punkt-Gleichheit über `GEOMETRY_TOLERANCE_MM`), Kanten = Segmente.
+   *Welle-1-Einschränkung:* Schnittpunkte werden erst mit der
+   Wandverschneidung (LH-FA-WAL-006) zu Knoten — bis dahin schließen
+   nur endpunkt-verbundene Wandzüge Räume.
 2. Geschlossene Kreise (minimale Zyklen) bestimmen.
-3. Pro Zyklus ein Raumpolygon; verschachtelte Zyklen als innen/außen
-   trennen (keine Doppelzählung der Fläche, LH-FA-ROM-001 Boundary).
-4. Offene Wandzüge erzeugen keinen Raum (Negative).
+3. Pro Zyklus das **Innenkanten-Polygon** ableiten: jede Kante um die
+   halbe Wandstärke ihres Segments zum Zyklus-Inneren versetzt,
+   benachbarte Offset-Geraden geschnitten (ADR-0007).
+4. Verschachtelte Zyklen: der innere Zyklus erzeugt einen eigenen Raum
+   (Innenkante nach innen); im umschließenden Raum wird die
+   Außenkontur des inneren Zyklus als **Loch-Ring** geführt —
+   Netto-Fläche = äußerer Ring minus Loch-Ringe (keine Doppelzählung
+   der Fläche, LH-FA-ROM-001 Boundary).
+5. Offene Wandzüge erzeugen keinen Raum (Negative).
 
-**Komplexität:** Zielwert für M3 zu spezifizieren; offener Punkt §7.
-**Fehlermodi:** degenerierte Geometrie → `E-GEO-002`.
+**Degenerierte Zyklen — kein Fehlerfall:** Die Raumerkennung ist
+**total** und wirft kein `E-GEO-002`. Zyklen, deren Innenkanten-Offset
+kollabiert (leeres oder selbstschneidendes Polygon, Netto-Fläche ≤ 0),
+erzeugen **keinen Raum** — gleiches Verhalten wie offene Wandzüge,
+kein Fehler. `E-GEO-002` (§4) bleibt mutierenden
+Geometrie-Operationen vorbehalten (z. B. Extrusion, LH-FA-D3-001.a).
+
+**Komplexität:** Vollerkennung pro Mutation ist Welle-1-Stand (kleine
+Modelle); Zielkomplexität/inkrementelle Erkennung bleibt offener
+Punkt (§7, M3).
 
 ### LH-FA-WAL-002.a — Parameter-Validierung und Klemmung
 
@@ -160,8 +186,9 @@ nicht im Bootstrap.
 
 ## 7. Offene Punkte
 
-- Raumerkennung: Mittellinie vs. Innenkante als Polygon-Basis
-  (beeinflusst Wohnflächenberechnung LH-FA-EVL-003).
+- ~~Raumerkennung: Mittellinie vs. Innenkante als Polygon-Basis
+  (beeinflusst Wohnflächenberechnung LH-FA-EVL-003)~~ → entschieden in
+  ADR-0007 (Innenkante, Ring-Modell; §1).
 - Performance-Zielkomplexität der Raumerkennung (M3).
 - IFC-Schema-Version und -Bibliothek (ADR in welle-4-austausch).
 - Zielplattformen (siehe `releasing.md`).
@@ -171,6 +198,7 @@ nicht im Bootstrap.
 | Datum | Änderung | ADR |
 |---|---|---|
 | 2026-06-08 | Initiale Outline aus Lastenheft-Wertebereichen; Fehler-Codes und OTel-Span-Skelett | Greenfield-Bootstrap |
+| 2026-06-11 | §1 LH-FA-ROM-001.a präzisiert: Innenkanten-Basis + Ring-Modell, Auslösung bei Modell-Mutation, Endpunkt-Knoten-Einschränkung (welle-1), Erkennung total (kein `E-GEO-002`); §7-Punkt Polygon-Basis geschlossen | ADR-0007 |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 
