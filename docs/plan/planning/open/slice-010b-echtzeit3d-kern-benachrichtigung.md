@@ -101,7 +101,7 @@ Zeilen entsprechend (Plan-Review 010, F3):
   (Qt/OCC) folgt der GUI-Grundsatz-ADR; ACC-002 bleibt offen, bis er
   geliefert ist.
 - Mehr-Element-Updates (eine Mutation, mehrere betroffene Solids — z. B.
-  künftige Wandverschneidung WAL-006) sind welle-1 nicht relevant;
+  künftige Wandverschneidung LH-FA-WAL-006) sind welle-1 nicht relevant;
   Vertrag sollte sie aber nicht verbauen (ADR-0008-Trade-off).
 
 ## 7. Closure-Notiz

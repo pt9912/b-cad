@@ -58,8 +58,12 @@ in welle-1 bedeutet.
       kein Lastenheft-Inhalt** (F2), es wird in Roadmap und
       Spezifikation dokumentiert (siehe DoD-3 und §3). Ein
       Latenz-Budget wird hier nicht vergeben — es bräuchte eine neue
-      `LH-QA-<NNN>`-ID (AGENTS §4) und ist zur
-      Performance-Zielkomplexität (M3) abgegrenzt.
+      `LH-QA-<NNN>`-ID (AGENTS §4); ggf. als eigener §7-Punkt der
+      Spezifikation parken (der bestehende M3-Punkt deckt nur die
+      Raumerkennung). Der **ererbte irreführende Querverweis
+      „vgl. LH-QA-001"** im LH-FA-D3-002-Eintrag wird beim Schärfen
+      **gestrichen/korrigiert** (LH-QA-001 = Projektöffnung, kein
+      Rebuild-Budget — Re-Review F8-Rest).
 - [ ] **ADR-0008 „Änderungs-Benachrichtigung Kern → Darstellung"
       accepted** (Optionen mit Trade-offs, MADR-Form; mindestens:
       Observer-/Notifikations-Port (driven) · Polling durch den
@@ -112,6 +116,10 @@ in welle-1 bedeutet.
 
 ## 6. Risiken und offene Punkte
 
+- **Sitzungs-Umfang an der Obergrenze:** DoD-2 bündelt fünf Facetten
+  *einer* Mechanik-Entscheidung (trägt); kippt die Review-Sitzung,
+  ist die davon unabhängige Viewer-/Welle-Scope-Entscheidung der
+  natürliche Split-Punkt (Präzedenz 003/009; Re-Review LOW-2).
 - **Scope-Entscheidung „sichtbar"/Viewer ist der heikelste Punkt:**
   ACC-002 („Gebäude wird automatisch als 3D-Modell dargestellt") hängt
   real am Viewer. Wird der Viewer-Strang aus welle-1 herausgelöst,
