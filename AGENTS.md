@@ -143,7 +143,11 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 ## 4. Dokumentations-Regeln
 
 - Requirement- und ADR-IDs müssen in PRs/Commits referenziert sein
-  (`LH-FA-*`, `LH-QA-*`, `ADR-*`).
+  (`LH-FA-*`, `LH-QA-*`, `ADR-*`). **Vergeben** werden IDs beim
+  Spec-/ADR-Schreiben nach dem in
+  [`harness/conventions.md` (MR-002)](harness/conventions.md) deklarierten
+  Schema — nie ad hoc im PR. Agenten **referenzieren** IDs nur, sie
+  **erfinden** keine.
 - Neue ADRs müssen [`docs/plan/adr/README.md`](docs/plan/adr/README.md) aktualisieren.
 - Roadmap/Status-Geschichte lebt in `docs/plan/planning/`, nicht in `spec/architecture.md`.
 - Slice-Lifecycle-Bewegung ist reiner `git mv` (siehe §2.8).
@@ -154,8 +158,8 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 2. Relevante kanonische Quelle lesen (Source Precedence beachten).
 3. Betroffene Requirement-/ADR-IDs identifizieren.
 4. Kleinste sinnvolle Änderung planen.
-5. Engsten nützlichen Sensor laufen lassen (sobald welche existieren).
-6. Repo-weiten Gate-Lauf vor Handoff (`make gates`, sobald vorhanden).
+5. Engsten nützlichen Sensor laufen lassen.
+6. Repo-weiten Gate-Lauf vor Handoff (`make gates`).
 7. Doku/Indizes aktualisieren, falls ein öffentlicher Vertrag berührt.
 8. Ausgeführte Sensors und verbleibende Risiken berichten — **keine
    Erfolgsmeldung ohne Gate-Ausführung, kein behauptetes Gate**.

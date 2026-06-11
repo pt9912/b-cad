@@ -125,8 +125,8 @@ pro Commit gehört in CI, nicht in diese Datei (Rang 9; Kurs-Modul 13).
 2. Relevante kanonische Quelle lesen (Source Precedence beachten).
 3. Betroffene IDs identifizieren.
 4. Kleinste Änderung planen.
-5. Engsten nützlichen Sensor laufen lassen (sobald Gates existieren).
-6. Repo-weiten Gate-Lauf vor Handoff (`make gates`, sobald vorhanden).
+5. Engsten nützlichen Sensor laufen lassen.
+6. Repo-weiten Gate-Lauf vor Handoff (`make gates`).
 7. Doku/Indizes aktualisieren, falls ein öffentlicher Vertrag berührt.
 8. Ausgeführte Sensors und verbleibende Risiken berichten — keine
    Erfolgsmeldung ohne Gate-Ausführung.

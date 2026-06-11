@@ -49,6 +49,12 @@ nur an den Stellen, an denen *Datenverlust am Gebäudemodell* droht
 
 ## Adaptions-Block
 
+Einträge sind chronologisch nummeriert und nach Aufnahme **inhaltlich
+unveränderlich** — Korrekturen oder Aufhebungen entstehen als neuer
+`MR-<NNN>`-Eintrag mit Verweis auf den abgelösten Eintrag (dieselbe
+Immutability-Disziplin wie bei Accepted-ADRs,
+[`AGENTS.md` §2.5](../AGENTS.md)).
+
 ### MR-000 — Baseline-Aussage
 
 - **Datum:** 2026-06-08
@@ -204,11 +210,12 @@ Schwelle · Reproduzierbarkeit) **eine** Zusatzklasse:
 |---|---|---|---|
 | LH-Bindung | `LH-FA-<…>` · `LH-QA-<…>` | Gate prüft direkt eine Anforderung aus `spec/lastenheft.md` | `LH-QA-003` als Bindung eines künftigen Undo/Redo-Tiefen-Tests; `LH-FA-WAL-002` als Bindung eines Wandstärken-Grenzwert-Tests |
 
-Solange kein Makefile existiert, ist diese Klasse nur *deklariert*, noch
-nicht *gebunden* — die Sensors-Tabelle in
-[`README.md`](README.md#sensors-feedback-gates) führt die Gates im
-"Nicht behauptet"-Block, bis der erste Code-Slice sie real einführt
-(Promotion-Trigger, Kurs-Modul 2).
+Die Klasse ist *deklariert*, aber noch *ungebunden* — keines der realen
+Gates trägt bislang eine LH-Bindung. Erster Kandidat ist das geplante
+`make coverage-gate-critical` (LH-QA-005); mit seiner Promotion aus dem
+"Nicht behauptet"-Block der Sensors-Tabelle in
+[`README.md`](README.md#sensors-feedback-gates) wird die Klasse erstmals
+real gebunden (Promotion-Trigger, Kurs-Modul 2).
 
 ## Modus-Deklaration pro Sub-Area
 
