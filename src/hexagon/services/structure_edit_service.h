@@ -2,11 +2,14 @@
 
 #include <map>
 #include <optional>
+#include <vector>
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/room.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/model/solid.h"
 #include "hexagon/ports/driven/geometry_kernel_port.h"
+#include "hexagon/ports/driving/detect_rooms_port.h"
 #include "hexagon/ports/driving/edit_structure_port.h"
 
 namespace bcad::hexagon::services {
@@ -16,7 +19,14 @@ namespace bcad::hexagon::services {
 // (LH-FA-WAL-002/003, E-VAL-001) und baut nach jeder Änderung das Solid
 // über den Driven Port `GeometryKernelPort` neu (Rebuild). Bei Anlage
 // existiert genau ein Default-Geschoss (LH-FA-BLD-001, Domänen-Teil).
-class StructureEditService final : public ports::driving::EditStructurePort {
+//
+// Räume (LH-FA-ROM-001, ADR-0007) werden AUTOMATISCH bei jeder
+// Wand-Mutation neu erkannt („when er geschlossen wird") — der
+// `DetectRoomsPort` ist reine Abfrage des zuletzt erkannten Stands
+// (spez. §1 §Auslösung). Die Erkennung ist total (wirft nicht) und
+// läuft erst NACH dem transaktionalen Commit der Mutation.
+class StructureEditService final : public ports::driving::EditStructurePort,
+                                   public ports::driving::DetectRoomsPort {
 public:
     explicit StructureEditService(const ports::driven::GeometryKernelPort& geometry);
 
@@ -26,6 +36,9 @@ public:
     ports::driving::ParamResult setWallThickness(model::WallId wall, double mm) override;
     ports::driving::ParamResult setWallHeight(model::WallId wall, double mm) override;
 
+    // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
+    std::vector<model::Room> rooms(model::StoreyId storey) const override;
+
     // Queries (für Konsumenten/Tests; nicht Teil des Command-Ports).
     const model::Building& building() const { return building_; }
     const model::Wall& wall(model::WallId id) const;
@@ -33,10 +46,12 @@ public:
 
 private:
     model::Wall& mutableWall(model::WallId id);
+    void redetectRooms(model::StoreyId storey);
 
     const ports::driven::GeometryKernelPort& geometry_;
     model::Building building_{};
     std::map<model::WallId, model::Solid> solids_{};
+    std::map<model::StoreyId, std::vector<model::Room>> rooms_{};
     int next_storey_id_{1};
     int next_wall_id_{1};
 };

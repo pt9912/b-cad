@@ -9,6 +9,7 @@ find_package(GTest REQUIRED)   # REQ-TEC-005
 add_executable(bcad_tests
     hexagon/test_bootstrap_info.cpp
     hexagon/test_greeting_service.cpp
+    hexagon/test_room_detection.cpp
     hexagon/test_structure_edit_service.cpp
 )
 target_link_libraries(bcad_tests PRIVATE bcad_hexagon GTest::gtest_main)

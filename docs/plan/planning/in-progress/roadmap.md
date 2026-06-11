@@ -27,7 +27,7 @@ folgt" = Slice noch in der Welle zu schneiden):
 - slice-003a done — Domain-Kern & Wände mit Grenzwert-Verhalten (`LH-FA-WAL-001/002/003`, `LH-FA-BLD-001`, `LH-FA-FLR-001`), OCC-frei.
 - slice-003b done — OCC-Extrusion (`LH-FA-D3-001`) hinter `GeometryKernelPort` + arch-check Regel C (ADR-0002-Folgepflicht erfüllt). Trigger: slice-003a done.
 - slice-009a done — ADR-0007 accepted (Innenkante + Ring-Modell, Erkennung total) + Spec-§1-Schärfung Raumerkennung (`LH-FA-ROM-001`).
-- slice-009b (`open/`, startbar) — Raum-Autoerkennung Implementierung (`LH-FA-ROM-001`). Trigger: slice-009a done ✓.
+- slice-009b done — Raum-Autoerkennung implementiert (`LH-FA-ROM-001`): automatisch beim Schließen, Innenkante + Ring-Modell/Netto-Fläche (ADR-0007), 5 AK-Tests grün.
 - 3D-Echtzeit (`LH-FA-D3-002`) — *Slice folgt*.
 - slice-008a done — ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar via Temp+Rename, Round-Trip grün) hinter `ProjectRepositoryPort` (ADR-0003).
 - slice-008b done — Persistenz-Härtung: Crash-Recovery (`kill -9`, LH-QA-005, fork+SIGKILL-Test) + Fehlercodes `E-IO-001`/`E-IO-002`. Schließt die ADR-0003-Folgepflicht.

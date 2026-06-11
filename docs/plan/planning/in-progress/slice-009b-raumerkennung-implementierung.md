@@ -1,7 +1,7 @@
 ---
 id: slice-009b
 titel: Raum-Autoerkennung — Implementierung (geschlossene Wandzüge → Räume)
-status: open
+status: done
 welle: welle-1-mvp
 lastenheft_refs: [LH-FA-ROM-001]
 adr_refs: [ADR-0001, ADR-0007]
@@ -9,7 +9,7 @@ adr_refs: [ADR-0001, ADR-0007]
 
 # Slice 009b: Raum-Autoerkennung — Implementierung
 
-**Status:** open
+**Status:** done
 
 **Welle:** welle-1-mvp
 
@@ -39,7 +39,7 @@ Kern-Logik (2D, OCC-frei) im Hexagon (ADR-0001).
 
 ## 2. Definition of Done
 
-- [ ] **Domain + Service:** `Room` mit starker `RoomId` (Lerneintrag
+- [x] **Domain + Service:** `Room` mit starker `RoomId` (Lerneintrag
       slice-003a), Repräsentation gemäß ADR-0007; Erkennung im
       Hexagon-Kern (Graph mit `GEOMETRY_TOLERANCE_MM`, minimale Zyklen,
       innen/außen-Trennung nach ADR-0007); **Auto-Re-Detektion**: der
@@ -48,7 +48,7 @@ Kern-Logik (2D, OCC-frei) im Hexagon (ADR-0001).
       geschlossen wird"), Abfrage über Driving-Port; Fehlerfall gemäß
       der in 009a spezifizierten `E-GEO-002`-Bedingung transaktional
       (Modell unverändert, Lerneintrag slice-003a).
-- [ ] **Akzeptanz-Tests** mit `LH-`-ID im Namen, Erwartungswerte gemäß
+- [x] **Akzeptanz-Tests** mit `LH-`-ID im Namen, Erwartungswerte gemäß
       ADR-0007-Basis: Happy (Wandzug wird durch letzte Wand geschlossen
       → genau ein Raum entsteht ohne expliziten Abruf, Polygon/Fläche
       analytisch korrekt), Boundary (verschachtelte Wandzüge → innerer
@@ -56,7 +56,7 @@ Kern-Logik (2D, OCC-frei) im Hexagon (ADR-0001).
       prüft die ADR-0007-Repräsentation), Negative (offener Wandzug →
       kein Raum, kein Fehler) + `E-GEO-002`-Fall gemäß 009a-Spec (oder
       begründeter Entfall, falls 009a „kein E-GEO-002" festlegt).
-- [ ] `make gates` grün; Closure-Notiz mit Lerneintrag;
+- [x] `make gates` grün; Closure-Notiz mit Lerneintrag;
       Roadmap-Closure-Zeile nachgezogen.
 
 ## 3. Plan (vor Code)
@@ -109,7 +109,44 @@ geschärften Fassung (Polygon-Basis, Verschachtelungs-Repräsentation,
 
 ## 7. Closure-Notiz
 
-*(bei Closure zu füllen: beobachtbare Kriterien + Lerneintrag)*
+**Closure-Kriterien (beobachtbar):**
+
+- Fünf AK-Tests mit `LH-FA-ROM-001` im Namen, alle grün: Happy
+  (Raum entsteht automatisch beim Schließen, 4800×3800 analytisch),
+  Mutation (Stärke-Änderung → Re-Detektion, 4800×3700), Boundary
+  (verschachtelt: innerer Raum 2900×1900, äußerer mit Loch-Ring
+  9800×7800 − 3100×2100 — keine Doppelzählung), Negative (offen →
+  kein Raum), Degeneriert (150×150 bei t=200 → kein Raum, kein
+  Fehler, Modell unverändert).
+- `make gates` grün: docs-check 36 Dateien 0 ERROR, arch-check
+  (Erkennung ist pure Domäne, kein OCC), lint/clang-tidy 0 Befunde +
+  suppression-gate, test 37/37, coverage 92,2 % (Schwelle 70 %).
+- Auto-Re-Detektion sitzt im `StructureEditService` nach dem
+  transaktionalen Commit jeder Wand-Mutation; `DetectRoomsPort` ist
+  reine Query (spez. §1 §Auslösung).
+
+**Lerneintrag:**
+
+- **Spec-Lücke gefunden und geschlossen (durch den provozierten
+  Degenerationstest):** „Netto-Fläche ≤ 0" war als Kollaps-Kriterium
+  unterspezifiziert — ein Zyklus, der kleiner ist als die
+  Wandstärken-Offsets in *beiden* Achsen, invertiert doppelt und
+  liefert ein Phantom-Polygon mit *positiver* Fläche. Verlässliches
+  Kriterium ist der **Kantenrichtungs-Erhalt** des Offset-Rings
+  (Skalarprodukt je Kante > 0). `spec/spezifikation.md` §1
+  §Degenerierte Zyklen entsprechend präzisiert (Technik-Stratum,
+  fortschreibbar).
+- Die in 009a notierte Klasse „ableitende Berechnungen sind total"
+  hat sich im ersten Implementierungs-Einsatz bewährt (Erkennung
+  läuft nach Commit, kann die Mutation nie zurückrollen) — weiterhin
+  Konventions-Kandidat, Verallgemeinerung erst beim zweiten Vorkommen
+  (ROM-002/003 oder EVL).
+
+**Restrisiko / Nachfolge:** Nicht-konvexe Zyklen mit Selbstschnitt
+jenseits des Richtungs-Checks sind erst mit der Wandverschneidung
+(LH-FA-WAL-006) relevant — Re-Evaluierungs-Trigger in ADR-0007.
+Raum-Persistenz (`rooms`-Tabelle, Ring-Kodierung) bleibt eigener
+Folge-Slice; OTel-Span `bcad.room.detect` mit REQ-TEC-006.
 
 ## 8. Sub-Area-Modus-Begründung
 

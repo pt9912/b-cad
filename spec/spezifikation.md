@@ -45,9 +45,12 @@ Stand und löst selbst keine Erkennung aus.
 
 **Degenerierte Zyklen — kein Fehlerfall:** Die Raumerkennung ist
 **total** und wirft kein `E-GEO-002`. Zyklen, deren Innenkanten-Offset
-kollabiert (leeres oder selbstschneidendes Polygon, Netto-Fläche ≤ 0),
-erzeugen **keinen Raum** — gleiches Verhalten wie offene Wandzüge,
-kein Fehler. `E-GEO-002` (§4) bleibt mutierenden
+kollabiert, erzeugen **keinen Raum** — gleiches Verhalten wie offene
+Wandzüge, kein Fehler. Kollaps-Kriterium ist der
+**Kantenrichtungs-Erhalt**: kehrt sich beim Offset die Richtung einer
+Kante um, ist der Ring kein gültiges Raumpolygon (eine reine
+Flächen-Prüfung „Netto-Fläche ≤ 0" genügt nicht — Doppel-Inversion in
+beiden Achsen erzeugt ein Phantom-Polygon *positiver* Fläche). `E-GEO-002` (§4) bleibt mutierenden
 Geometrie-Operationen vorbehalten (z. B. Extrusion, LH-FA-D3-001.a).
 
 **Komplexität:** Vollerkennung pro Mutation ist Welle-1-Stand (kleine
@@ -199,6 +202,7 @@ nicht im Bootstrap.
 |---|---|---|
 | 2026-06-08 | Initiale Outline aus Lastenheft-Wertebereichen; Fehler-Codes und OTel-Span-Skelett | Greenfield-Bootstrap |
 | 2026-06-11 | §1 LH-FA-ROM-001.a präzisiert: Innenkanten-Basis + Ring-Modell, Auslösung bei Modell-Mutation, Endpunkt-Knoten-Einschränkung (welle-1), Erkennung total (kein `E-GEO-002`); §7-Punkt Polygon-Basis geschlossen | ADR-0007 |
+| 2026-06-11 | §1 Kollaps-Kriterium präzisiert: Kantenrichtungs-Erhalt statt reiner Flächen-Prüfung (Doppel-Inversion erzeugt Phantom-Polygon positiver Fläche) | ADR-0007 |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

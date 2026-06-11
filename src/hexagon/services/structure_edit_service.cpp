@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "hexagon/model/constants.h"
+#include "hexagon/services/room_detection.h"
 
 namespace bcad::hexagon::services {
 
@@ -90,6 +91,7 @@ std::optional<model::WallId> StructureEditService::addWall(
     wall.id = id;
     building_.walls.push_back(wall);
     solids_[id] = solid;
+    redetectRooms(storey);  // LH-FA-ROM-001: automatisch beim Schließen
     return id;
 }
 
@@ -108,6 +110,7 @@ ports::driving::ParamResult StructureEditService::setWallThickness(
     const model::Solid solid = geometry_.extrudeWall(trial);
     target.thickness_mm = result.applied_mm;
     solids_[id] = solid;
+    redetectRooms(target.storey_id);  // Stärke verschiebt die Innenkante
     return result;
 }
 
@@ -126,7 +129,17 @@ ports::driving::ParamResult StructureEditService::setWallHeight(
     const model::Solid solid = geometry_.extrudeWall(trial);
     target.height_mm = result.applied_mm;
     solids_[id] = solid;
+    redetectRooms(target.storey_id);  // Mutation-Trigger (spez. §1 §Auslösung)
     return result;
+}
+
+std::vector<model::Room> StructureEditService::rooms(model::StoreyId storey) const {
+    const auto it = rooms_.find(storey);
+    return (it != rooms_.end()) ? it->second : std::vector<model::Room>{};
+}
+
+void StructureEditService::redetectRooms(model::StoreyId storey) {
+    rooms_[storey] = detectRooms(building_, storey);
 }
 
 const model::Wall& StructureEditService::wall(model::WallId id) const {
