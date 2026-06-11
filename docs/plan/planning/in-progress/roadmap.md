@@ -28,7 +28,9 @@ folgt" = Slice noch in der Welle zu schneiden):
 - slice-003b done — OCC-Extrusion (`LH-FA-D3-001`) hinter `GeometryKernelPort` + arch-check Regel C (ADR-0002-Folgepflicht erfüllt). Trigger: slice-003a done.
 - slice-009a done — ADR-0007 accepted (Innenkante + Ring-Modell, Erkennung total) + Spec-§1-Schärfung Raumerkennung (`LH-FA-ROM-001`).
 - slice-009b done — Raum-Autoerkennung implementiert (`LH-FA-ROM-001`): automatisch beim Schließen, Innenkante + Ring-Modell/Netto-Fläche (ADR-0007), 5 AK-Tests grün.
-- 3D-Echtzeit (`LH-FA-D3-002`) — *Slice folgt*.
+- slice-010a angelegt (`open/`) — AK-Schärfung LH-FA-D3-002 (messbares „sofort", „sichtbar"-Scope) + ADR-0008 Änderungs-Benachrichtigung Kern→Darstellung.
+- slice-010b angelegt (`open/`) — Kern-Benachrichtigung Implementierung (`LH-FA-D3-002`, Qt-/OCC-frei). Trigger: slice-010a done.
+- Sichtbarer 3D-Viewer (Qt/OCC, ACC-002): eigener Strang nach GUI-Grundsatz-ADR — Welle-Zuordnung wird in slice-010a entschieden (Drift-Tabelle).
 - slice-008a done — ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar via Temp+Rename, Round-Trip grün) hinter `ProjectRepositoryPort` (ADR-0003).
 - slice-008b done — Persistenz-Härtung: Crash-Recovery (`kill -9`, LH-QA-005, fork+SIGKILL-Test) + Fehlercodes `E-IO-001`/`E-IO-002`. Schließt die ADR-0003-Folgepflicht.
 - slice-004 done — reproduzierbare, gepinnte Toolchain (ADR-0004): Migration 26.04/node24, Digest+Snapshot, `make versions`-Beleg. (Toolchain-Härtung; gatet nicht die Feature-Funktion, aber den reproduzierbaren MVP-Build.)
