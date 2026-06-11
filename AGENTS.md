@@ -12,6 +12,13 @@ Baseline, Modus-Deklaration pro Sub-Area, Zusatzklassen für
 Sensors-Bindung) leben in
 [`harness/conventions.md`](harness/conventions.md).
 
+Das **Betriebsregelwerk der adoptierten Baseline in Agenten-Kurzform**
+ist das
+[Agents-Digest des Kurses](https://raw.githubusercontent.com/pt9912/ai-harness-course/main/kurs/de/agents-digest.md)
+— einmal pro Session lesen, bevor der Workflow (§5) startet. Derivativ:
+bei Konflikt gelten die kanonischen Quellen; adoptierter Stand steht in
+[`harness/conventions.md`](harness/conventions.md) §Baseline.
+
 ## 1. Kanonische Quellen (Source Precedence)
 
 1. [`spec/lastenheft.md`](spec/lastenheft.md) — vertraglich abnahmebindend.

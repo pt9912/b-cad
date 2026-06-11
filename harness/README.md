@@ -51,6 +51,7 @@ Stage, keine Bind-Mounts): `make docs-check`, `make gate-consistency`,
 | [`../docs/plan/planning/`](../docs/plan/planning/) | Slices und Roadmap |
 | [`../AGENTS.md`](../AGENTS.md) | Hard Rules, Workflow |
 | [`conventions.md`](conventions.md) | Strukturregeln, `MR-*`-Adaptionen, Modus-Deklaration |
+| [Agents-Digest des Kurses](https://raw.githubusercontent.com/pt9912/ai-harness-course/main/kurs/de/agents-digest.md) | adoptiertes Betriebsregelwerk in Agenten-Kurzform; derivativ, Stand siehe [`conventions.md`](conventions.md) §Baseline |
 
 ## Sensors (Feedback-Gates)
 
