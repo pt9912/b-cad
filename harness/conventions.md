@@ -11,6 +11,10 @@ bei Konflikt mit einer kanonischen Quelle gilt die kanonische Quelle
 Der Default-Ort für:
 
 - **Adaptionen** ggü. der Baseline (mit Begründung und Auflösungs-Trigger).
+- **ID-Schema-Deklaration** — welches Präfix-Schema b-cad nutzt
+  (deklariert in [MR-002](#mr-002--id-schema-für-b-cad); *vergeben*
+  werden IDs beim Spec-/ADR-Schreiben, nie ad hoc —
+  [`AGENTS.md` §4](../AGENTS.md)).
 - **Zusatzklassen-Deklarationen** für Sensors-Bindung-Klassen, die über
   die vier kanonischen (ADR, Carveout, Schwelle, Reproduzierbarkeit)
   hinausgehen.
@@ -34,6 +38,13 @@ Der Default-Ort für:
 - **Extern (Lehrmaterial):** AI-Harness-Kurs (benachbartes Repo
   *ai-harness-course*), insbesondere dessen Grundlagen-Konventionen und
   -Klassifikation. Als externe Nennung geführt, nicht als In-Repo-Link.
+- **Extern (Agenten-Destillat):**
+  [`agents-digest.md`](https://raw.githubusercontent.com/pt9912/ai-harness-course/main/kurs/de/agents-digest.md)
+  im GitHub-Repo
+  [`pt9912/ai-harness-course`](https://github.com/pt9912/ai-harness-course)
+  — das operative Kurs-Regelwerk, das ein Code-Agent statt des vollen
+  Lehrmaterials liest. Derivativ ohne eigene Normativität — bei
+  Konflikt gilt das Lehrmaterial.
 - **In-Repo (verkörperte Form):** Die ausgefüllten Artefakte unter
   [`../spec/`](../spec/), [`../docs/plan/`](../docs/plan/) und
   [`README.md`](README.md) selbst sind die in b-cad verkörperte

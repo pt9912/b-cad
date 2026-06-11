@@ -160,7 +160,9 @@ function slugify(text) {
     .replace(/[*_~]/g, "")              // Markdown-Inline-Marker weg
     .replace(/[^\p{Letter}\p{Number}\p{Emoji_Presentation}\s-]/gu, "")
     .trim()
-    .replace(/\s+/g, "-");
+    // GitHub kollabiert NICHT: jedes Whitespace-Zeichen wird ein eigener
+    // Bindestrich ("A — B" → "a--b", weil das "—" ersatzlos entfällt).
+    .replace(/\s/g, "-");
 }
 
 const headingsCache = new Map(); // absPath → { slugs:Set<string> } | "ENOENT" | "EACCES" | ...
@@ -305,6 +307,9 @@ function extractInlineCodePaths(text) {
       continue;
     }
     if (inFence) continue;
+    // Opt-out für Beispiel-Pfade (fremde Repos, Angriffs-Beispiele):
+    // ein HTML-Kommentar `docs-check:ignore` auf derselben Zeile.
+    if (rawLine.includes("docs-check:ignore")) continue;
 
     const re = /(`+)([^`]*?)\1/g;
     let m;

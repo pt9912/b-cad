@@ -41,5 +41,5 @@ node tools/docs-check.js
 
 `docs-check.js` ist **vendored** aus dem AI-Harness-Kurs
 (`ai-harness-course`, `tools/docs-check.js`), unverändert. Begründung
-und Adaptions-Eintrag: [`../harness/conventions.md` MR-003](../harness/conventions.md#mr-003-docs-check-als-vendored-doku-sensor).
+und Adaptions-Eintrag: [`../harness/conventions.md` MR-003](../harness/conventions.md#mr-003--docs-check-als-vendored-doku-sensor).
 Bei Updates der Quelle hier nachziehen (Entropy Management, Modul 15).

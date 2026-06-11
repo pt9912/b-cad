@@ -177,7 +177,7 @@ nicht im Bootstrap.
 Die technischen Rahmenbedingungen aus dem Domänen-Ursprung. Sie sind
 **fortschreibbar** (technische Schicht) — ADRs dürfen sie schärfen, das
 Lastenheft bleibt unberührt. ID-Klasse `REQ-TEC-<NNN>` deklariert in
-[`../harness/conventions.md` MR-002](../harness/conventions.md#mr-002-id-schema-für-b-cad).
+[`../harness/conventions.md` MR-002](../harness/conventions.md#mr-002--id-schema-für-b-cad).
 
 | ID | Rahmenbedingung | Wahl | ADR / Bezug |
 |---|---|---|---|

@@ -46,7 +46,7 @@ gebaut wird — Geometrie-Kern, GUI-Framework, Persistenz, Build.
 ## 4. Funktionale Anforderungen
 
 ID-Schema: `LH-FA-<BEREICH>-<NNN>` (siehe
-[`harness/conventions.md` MR-002](../harness/conventions.md#mr-002-id-schema-für-b-cad)).
+[`harness/conventions.md` MR-002](../harness/conventions.md#mr-002--id-schema-für-b-cad)).
 Vollständig ausformulierte Akzeptanzkriterien (Happy / Boundary /
 Negative) tragen die Welle-1-Anforderungen; die übrigen sind als
 Outline geführt und werden im jeweiligen Slice auf Akzeptanz-Niveau

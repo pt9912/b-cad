@@ -83,4 +83,4 @@ b-cad/
 ## Lizenz
 
 MIT — siehe [`LICENSE`](LICENSE). `tools/docs-check.js` ist aus dem
-AI-Harness-Kurs übernommen (ebenfalls MIT, [`harness/conventions.md` MR-003](harness/conventions.md#mr-003-docs-check-als-vendored-doku-sensor)).
+AI-Harness-Kurs übernommen (ebenfalls MIT, [`harness/conventions.md` MR-003](harness/conventions.md#mr-003--docs-check-als-vendored-doku-sensor)).
