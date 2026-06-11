@@ -33,7 +33,7 @@ folgt" = Slice noch in der Welle zu schneiden):
 - slice-009a done — ADR-0007 accepted (Innenkante + Ring-Modell, Erkennung total) + Spec-§1-Schärfung Raumerkennung (`LH-FA-ROM-001`).
 - slice-009b done — Raum-Autoerkennung implementiert (`LH-FA-ROM-001`): automatisch beim Schließen, Innenkante + Ring-Modell/Netto-Fläche (ADR-0007), 5 AK-Tests grün.
 - slice-010a done — LH-FA-D3-002 auf AK-Niveau (lösungsfrei, benutzer-beobachtbar; Lastenheft 0.1.1) + ADR-0008 accepted (Observer-Port, Push-Notify/Pull-State) + spez. §1 D3-002.a.
-- slice-010b (`open/`, startbar) — Kern-Benachrichtigung Implementierung (`LH-FA-D3-002`, Qt-/OCC-frei). Trigger: slice-010a done ✓.
+- slice-010b done — Kern-Benachrichtigung implementiert (`LH-FA-D3-002`/ADR-0008: Observer-Port, subscribe/unsubscribe, Meldung nach Re-Detektion, Kapselung mit beobachtbarem Fehler-Zähler; 6 AK-Tests grün).
 - Sichtbarer 3D-Viewer (Qt/OCC, ACC-002): **entschieden (slice-010a)** — eigene Welle `welle-1v-viewer` nach welle-1, *kein* welle-1-Closure-Trigger; ACC-002 und die sichtbare Hälfte von LH-FA-D3-002 werden dort erfüllt.
 - slice-008a done — ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar via Temp+Rename, Round-Trip grün) hinter `ProjectRepositoryPort` (ADR-0003).
 - slice-008b done — Persistenz-Härtung: Crash-Recovery (`kill -9`, LH-QA-005, fork+SIGKILL-Test) + Fehlercodes `E-IO-001`/`E-IO-002`. Schließt die ADR-0003-Folgepflicht.

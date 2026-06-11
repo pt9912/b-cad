@@ -9,6 +9,7 @@
 #include "hexagon/model/segment.h"
 #include "hexagon/model/solid.h"
 #include "hexagon/ports/driven/geometry_kernel_port.h"
+#include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/ports/driving/detect_rooms_port.h"
 #include "hexagon/ports/driving/edit_structure_port.h"
 
@@ -39,6 +40,15 @@ public:
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
 
+    // ADR-0008 (LH-FA-D3-002): Beobachter-Registrierung — mehrfach,
+    // nicht-besitzend; Beobachter melden sich vor ihrer Zerstörung ab.
+    void subscribe(ports::driven::ModelChangedPort& listener);
+    void unsubscribe(ports::driven::ModelChangedPort& listener);
+
+    // Verschluckte Beobachter-Fehler (ADR-0008 #6: Kapselung) — sichtbar
+    // für Tests; Telemetrie-Anschluss folgt mit REQ-TEC-006.
+    int swallowedListenerErrors() const { return swallowed_listener_errors_; }
+
     // Queries (für Konsumenten/Tests; nicht Teil des Command-Ports).
     const model::Building& building() const { return building_; }
     const model::Wall& wall(model::WallId id) const;
@@ -47,11 +57,14 @@ public:
 private:
     model::Wall& mutableWall(model::WallId id);
     void redetectRooms(model::StoreyId storey);
+    void notifyListeners(const ports::driven::ModelChange& change);
 
     const ports::driven::GeometryKernelPort& geometry_;
     model::Building building_{};
     std::map<model::WallId, model::Solid> solids_{};
     std::map<model::StoreyId, std::vector<model::Room>> rooms_{};
+    std::vector<ports::driven::ModelChangedPort*> listeners_{};
+    int swallowed_listener_errors_{0};
     int next_storey_id_{1};
     int next_wall_id_{1};
 };

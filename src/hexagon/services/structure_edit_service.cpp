@@ -56,6 +56,8 @@ StructureEditService::StructureEditService(
 model::StoreyId StructureEditService::addStorey(double height_mm) {
     const auto id = static_cast<model::StoreyId>(next_storey_id_++);
     building_.storeys.push_back(model::Storey{id, height_mm});
+    notifyListeners({.op = ports::driven::ModelChangeOp::StoreyAdded,
+                     .storey_id = id});  // ADR-0008 §Umfang
     return id;
 }
 
@@ -92,6 +94,12 @@ std::optional<model::WallId> StructureEditService::addWall(
     building_.walls.push_back(wall);
     solids_[id] = solid;
     redetectRooms(storey);  // LH-FA-ROM-001: automatisch beim Schließen
+    // ADR-0008 #4: Meldung NACH allen Post-Commit-Schritten.
+    notifyListeners({.op = ports::driven::ModelChangeOp::WallAdded,
+                     .storey_id = storey,
+                     .wall_id = id});
+    notifyListeners({.op = ports::driven::ModelChangeOp::RoomsChanged,
+                     .storey_id = storey});
     return id;
 }
 
@@ -111,6 +119,11 @@ ports::driving::ParamResult StructureEditService::setWallThickness(
     target.thickness_mm = result.applied_mm;
     solids_[id] = solid;
     redetectRooms(target.storey_id);  // Stärke verschiebt die Innenkante
+    notifyListeners({.op = ports::driven::ModelChangeOp::WallThicknessChanged,
+                     .storey_id = target.storey_id,
+                     .wall_id = id});
+    notifyListeners({.op = ports::driven::ModelChangeOp::RoomsChanged,
+                     .storey_id = target.storey_id});
     return result;
 }
 
@@ -130,6 +143,11 @@ ports::driving::ParamResult StructureEditService::setWallHeight(
     target.height_mm = result.applied_mm;
     solids_[id] = solid;
     redetectRooms(target.storey_id);  // Mutation-Trigger (spez. §1 §Auslösung)
+    notifyListeners({.op = ports::driven::ModelChangeOp::WallHeightChanged,
+                     .storey_id = target.storey_id,
+                     .wall_id = id});
+    notifyListeners({.op = ports::driven::ModelChangeOp::RoomsChanged,
+                     .storey_id = target.storey_id});
     return result;
 }
 
@@ -140,6 +158,37 @@ std::vector<model::Room> StructureEditService::rooms(model::StoreyId storey) con
 
 void StructureEditService::redetectRooms(model::StoreyId storey) {
     rooms_[storey] = detectRooms(building_, storey);
+}
+
+void StructureEditService::subscribe(ports::driven::ModelChangedPort& listener) {
+    if (std::find(listeners_.begin(), listeners_.end(), &listener) ==
+        listeners_.end()) {
+        listeners_.push_back(&listener);
+    }
+}
+
+void StructureEditService::unsubscribe(ports::driven::ModelChangedPort& listener) {
+    listeners_.erase(
+        std::remove(listeners_.begin(), listeners_.end(), &listener),
+        listeners_.end());
+}
+
+void StructureEditService::notifyListeners(
+    const ports::driven::ModelChange& change) {
+    // Kopie der Liste: ein Beobachter darf sich im Callback abmelden,
+    // ohne die Iteration zu invalidieren.
+    const std::vector<ports::driven::ModelChangedPort*> snapshot = listeners_;
+    for (ports::driven::ModelChangedPort* listener : snapshot) {
+        try {
+            listener->onModelChanged(change);
+        } catch (...) {
+            // ADR-0008 #6 (Kapselung): ein werfender Beobachter kippt die
+            // committete Mutation nicht und blockiert Folge-Beobachter
+            // nicht. Der Fehler bleibt über den Zähler beobachtbar;
+            // Telemetrie-Anschluss folgt mit REQ-TEC-006.
+            ++swallowed_listener_errors_;
+        }
+    }
 }
 
 const model::Wall& StructureEditService::wall(model::WallId id) const {

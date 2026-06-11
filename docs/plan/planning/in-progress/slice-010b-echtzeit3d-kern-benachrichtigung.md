@@ -1,7 +1,7 @@
 ---
 id: slice-010b
 titel: Echtzeit-3D — Kern-Benachrichtigung (Implementierung)
-status: open
+status: done
 welle: welle-1-mvp
 lastenheft_refs: [LH-FA-D3-002]
 adr_refs: [ADR-0001, ADR-0008]
@@ -9,7 +9,7 @@ adr_refs: [ADR-0001, ADR-0008]
 
 # Slice 010b: Echtzeit-3D — Kern-Benachrichtigung (Implementierung)
 
-**Status:** open
+**Status:** done
 
 **Welle:** welle-1-mvp
 
@@ -42,7 +42,7 @@ ADR-gemäßen Schnittstelle vertreten.
 
 ## 2. Definition of Done
 
-- [ ] **Mechanik-Umsetzung gemäß ADR-0008:** die in der ADR
+- [x] **Mechanik-Umsetzung gemäß ADR-0008:** die in der ADR
       entschiedene Benachrichtigungs-/Bereitstellungs-Mechanik
       (Observer-Port, Polling-Schnittstelle oder Event-Queue) mit dem
       dort entschiedenen Vertrag (Inhalt/Push-vs-Pull, Umfang,
@@ -51,7 +51,7 @@ ADR-gemäßen Schnittstelle vertreten.
       verankert; die transaktionale Commit-Garantie aus slice-003a
       bleibt unangetastet (eine fehlschlagende Darstellungs-Seite
       kippt keine committete Mutation — Detailform gemäß ADR-0008).
-- [ ] **Akzeptanz-Tests** mit `LH-`-ID im Namen gegen die in 010a
+- [x] **Akzeptanz-Tests** mit `LH-`-ID im Namen gegen die in 010a
       geschärften AK: Happy (Parameteränderung → der aktualisierte
       Stand ist für die Darstellungs-Seite gemäß ADR-0008-Vertrag
       verfügbar, ohne expliziten Benutzer-Schritt — ob als Push-Inhalt
@@ -60,7 +60,7 @@ ADR-gemäßen Schnittstelle vertreten.
       verworfene/abgelehnte Mutation → kein neuer Stand/keine Meldung;
       fehlschlagende Darstellungs-Seite → Modell konsistent), mit
       zählendem/prüfendem Double der ADR-gemäßen Schnittstelle.
-- [ ] `make gates` grün; Closure-Notiz mit Lerneintrag;
+- [x] `make gates` grün; Closure-Notiz mit Lerneintrag;
       Roadmap-Closure-Zeile nachgezogen.
 
 ## 3. Plan (vor Code)
@@ -110,7 +110,46 @@ Zeilen entsprechend (Plan-Review 010, F3):
 
 ## 7. Closure-Notiz
 
-*(bei Closure zu füllen: beobachtbare Kriterien + Lerneintrag)*
+**Closure-Kriterien (beobachtbar):**
+
+- Sechs AK-Tests mit `LH-FA-D3-002` im Namen, alle grün (43/43
+  gesamt): Happy (Meldung im Mutationsaufruf, Pull-Stand aktualisiert),
+  Reihenfolge (Pull im Callback sieht den re-detektierten Raum-Stand —
+  beim Schließen des Rechtecks genau einen Raum), Boundary (geklemmte
+  Änderung meldet, gepullter Stand = Grenzwert), Negative (Rejected
+  und verworfene Mutation melden nicht), Kapselung (werfender
+  Beobachter: Mutation committed, Folge-Beobachter bedient, Fehler
+  gezählt), Umfang (Geschoss-Anlage meldet; unsubscribe beendet).
+- `make gates` grün: docs-check 39 Dateien 0 ERROR, arch-check
+  (Port liegt in `ports/driven/`, Kern bleibt framework-frei),
+  clang-tidy 0 Befunde + suppression-gate, test 43/43,
+  coverage 91,9 % (Schwelle 70 %).
+- Umsetzung deckungsgleich mit ADR-0008 #1–#6: Observer-Port synchron,
+  Push-Notify (`op`, `storey_id`, `wall_id`)/Pull-State,
+  `subscribe`/`unsubscribe` (mehrfach, nicht-besitzend), Meldung nach
+  `redetectRooms`, Rejected/verworfen meldet nicht, Kapselung je
+  Beobachter.
+
+**Lerneintrag:**
+
+- **Sensor prägt Design (computational feedback wirkt vorwärts):** Das
+  Lint-Gate (`bugprone-*`, leerer `catch` verboten; Inline-Suppression
+  verboten per AGENTS §2.4) hat die ADR-0008-Kapselung in eine
+  **beobachtbare** Form gezwungen: verschluckte Beobachter-Fehler
+  werden gezählt (`swallowedListenerErrors()`-Query) statt still
+  geschluckt — testbar heute, Telemetrie-Counter-Anschluss morgen
+  (REQ-TEC-006). Stilles Schlucken hätte das Gate gar nicht passiert.
+- **Robustheit über Vertrag hinaus:** `notifyListeners` iteriert über
+  eine Kopie der Beobachter-Liste — ein `unsubscribe` im Callback
+  (Grauzone des Re-Entranz-Verbots) invalidiert die Iteration nicht.
+
+**Restrisiko / Nachfolge:** Re-Entranz-Verbot (Mutationen im Callback)
+ist nur vertraglich durchgesetzt — technische Durchsetzung mit dem
+Plugin-System (LH-FA-PLG-004, Re-Evaluierungs-Trigger ADR-0008).
+`RoomsChanged` wird je Wand-Mutation unconditional gemeldet (auch bei
+unveränderter Raum-Menge) — bewusst simpel; Delta-Erkennung erst bei
+Bedarf (M3-Performance-Punkt). Die Viewer-Welle (`welle-1v-viewer`)
+konsumiert den Port als ersten echten Adapter.
 
 ## 8. Sub-Area-Modus-Begründung
 
