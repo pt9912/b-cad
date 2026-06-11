@@ -26,7 +26,8 @@ folgt" = Slice noch in der Welle zu schneiden):
 - slice-002 done — Code-Gates real & gepromotet (`make gates` grün).
 - slice-003a done — Domain-Kern & Wände mit Grenzwert-Verhalten (`LH-FA-WAL-001/002/003`, `LH-FA-BLD-001`, `LH-FA-FLR-001`), OCC-frei.
 - slice-003b done — OCC-Extrusion (`LH-FA-D3-001`) hinter `GeometryKernelPort` + arch-check Regel C (ADR-0002-Folgepflicht erfüllt). Trigger: slice-003a done.
-- slice-009 angelegt (`open/`) — Raum-Autoerkennung (`LH-FA-ROM-001`) inkl. ADR-0007 Polygon-Basis.
+- slice-009a angelegt (`open/`) — ADR-0007 (Polygon-Basis + Verschachtelungs-Repräsentation) + Spec-§1-Schärfung Raumerkennung (`LH-FA-ROM-001`).
+- slice-009b angelegt (`open/`) — Raum-Autoerkennung Implementierung (`LH-FA-ROM-001`). Trigger: slice-009a done.
 - 3D-Echtzeit (`LH-FA-D3-002`) — *Slice folgt*.
 - slice-008a done — ACC-005 speichern/laden (`LH-FA-BLD-002/003`, atomar via Temp+Rename, Round-Trip grün) hinter `ProjectRepositoryPort` (ADR-0003).
 - slice-008b done — Persistenz-Härtung: Crash-Recovery (`kill -9`, LH-QA-005, fork+SIGKILL-Test) + Fehlercodes `E-IO-001`/`E-IO-002`. Schließt die ADR-0003-Folgepflicht.
@@ -75,3 +76,4 @@ flowchart LR
 | Datum | Was wurde geändert? | Warum? |
 |---|---|---|
 | 2026-06-09 | `slice-003` in `slice-003a` (Kern, OCC-frei) + `slice-003b` (OCC-Extrusion + arch-check Regel C) geschnitten | Slice zu groß für eine Review-Sitzung (Modul 5); OCC-Teil ist build-schwer/risikobehaftet und wird isoliert. ADR-0002 dabei auf Backend-Scope verengt + accepted (slice-003-Review, Findings 1–3). |
+| 2026-06-11 | `slice-009` in `slice-009a` (ADR-0007 + Spec-Schärfung) + `slice-009b` (Implementierung + Tests) geschnitten | Plan-Review-Findings H1/M1/M2: ADR-0007 trägt mehr Entscheidungsgewicht als geplant (Polygon-Basis **und** Verschachtelungs-Repräsentation), ADR-Accept ist Review-Checkpoint und gehört nicht mitten in einen Implementierungs-Slice (Präzedenz slice-007, slice-003-Split). |
