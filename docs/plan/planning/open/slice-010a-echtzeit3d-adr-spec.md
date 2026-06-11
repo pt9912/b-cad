@@ -47,28 +47,47 @@ in welle-1 bedeutet.
 - [ ] **Lastenheft LH-FA-D3-002 geschärft** (von Outline auf
       Akzeptanz-Niveau — die Schärfung pro Slice ist im
       Lastenheft-Reifephase-Block ausdrücklich vorgesehen):
-      Happy/Boundary/Negative mit **messbarem „sofort"** (Vorschlag:
-      Rebuild und Benachrichtigung laufen *synchron im Mutationspfad*,
-      kein expliziter Refresh-Schritt; konkrete Festlegung im Slice,
-      Abgrenzung zum Performance-Budget LH-QA-001) und **explizitem
-      „sichtbar"-Scope für welle-1**: Kern-Vertrag (Benachrichtigung an
-      die Darstellungs-Schicht) jetzt, sichtbares 3D-Fenster mit dem
-      Viewer-Strang — keine stille Uminterpretation des Wortlauts
-      (Lehre aus Review-Finding M4, slice-009); die Welle-Zuordnung des
-      Viewer-Strangs wird dabei entschieden und in der Roadmap
-      (Drift-Tabelle) dokumentiert.
+      Happy/Boundary/Negative **lösungsfrei und benutzer-beobachtbar**
+      formuliert — „sofort" heißt: die Darstellung folgt der
+      Parameteränderung **ohne expliziten Aktualisierungs-Schritt des
+      Benutzers** (kein Refresh-Befehl). **Keine Lösungsmechanik**
+      (Benachrichtigung, Synchronität, Port) im Lastenheft-Text — die
+      gehört in DoD-3/ADR-0008; sonst würde die ADR-Entscheidung ins
+      Lastenheft vorgezogen (Plan-Review 010, F1). Der Wortlaut
+      „sichtbar" bleibt benutzer-beobachtbar — das **Welle-Scoping ist
+      kein Lastenheft-Inhalt** (F2), es wird in Roadmap und
+      Spezifikation dokumentiert (siehe DoD-3 und §3). Ein
+      Latenz-Budget wird hier nicht vergeben — es bräuchte eine neue
+      `LH-QA-<NNN>`-ID (AGENTS §4) und ist zur
+      Performance-Zielkomplexität (M3) abgegrenzt.
 - [ ] **ADR-0008 „Änderungs-Benachrichtigung Kern → Darstellung"
       accepted** (Optionen mit Trade-offs, MADR-Form; mindestens:
       Observer-/Notifikations-Port (driven) · Polling durch den
-      Adapter · Event-Queue): Vertrag (was wird gemeldet — Element-Id,
-      Operations-Art?), Fehlerverhalten der Hörer-Seite (ein werfender
-      Beobachter darf die committete Mutation nicht kippen) und
-      Verhältnis zur bestehenden Post-Commit-Mechanik
-      (Raum-Re-Detektion, slice-009b). ADR-Index aktualisiert.
+      Adapter · Event-Queue). Entscheidungs-Pflichten:
+      (a) **Vertrag/Inhalt** — was wird gemeldet (Element-Id,
+      Operations-Art; **Push** des neuen Stands vs. **Pull** per
+      Query), Vokabular konsistent zum OTel-Span
+      `bcad.geometry.rebuild` (`element_id`, `op` — spez. §5);
+      (b) **Hörer-Multiplizität und Registrierung** (OBJ-003: 2D- und
+      3D-Sicht hören auf dasselbe Modell; Konstruktor-Injektion vs.
+      subscribe, Lebenszyklus);
+      (c) **Fehlerverhalten und Re-Entranz** der Hörer-Seite (ein
+      fehlschlagender Beobachter darf die committete Mutation nicht
+      kippen; darf ein Hörer im Callback in den Service zurückrufen?);
+      (d) **Umfang** — welche Mutationen werden gemeldet (auch
+      Geschoss-Anlage?), werden Raum-Änderungen (Re-Detektion,
+      slice-009b) mitgemeldet, Mehr-Element-Updates (künftige
+      LH-FA-WAL-006) nicht verbauen;
+      (e) **Reihenfolge** zur bestehenden Post-Commit-Mechanik
+      (`redetectRooms`). ADR-Index aktualisiert.
 - [ ] **`spec/spezifikation.md` §1 präzisiert** (Echtzeit-Absatz in
-      LH-FA-D3-001.a bzw. eigener D3-002-Block: Auslösung, Synchronität,
-      Benachrichtigungs-Vertrag gemäß ADR-0008) + §8-Historie-Zeile;
-      `make gates` grün; Closure-Notiz mit Lerneintrag.
+      LH-FA-D3-001.a bzw. eigener D3-002-Block): **hier — nicht im
+      Lastenheft —** leben Auslösung, Synchronität und der
+      Benachrichtigungs-Vertrag gemäß ADR-0008 sowie die
+      welle-1-Operationalisierung von „sichtbar" (Kern-Vertrag an die
+      Darstellungs-Schicht; das sichtbare 3D-Fenster liefert der
+      Viewer-Strang). + §8-Historie-Zeile; `make gates` grün;
+      Closure-Notiz mit Lerneintrag.
 
 ## 3. Plan (vor Code)
 
@@ -78,7 +97,7 @@ in welle-1 bedeutet.
 | `docs/plan/adr/README.md` | ändern | Index-Zeile + ggf. Folgepflicht (slice-010b) |
 | `spec/lastenheft.md` | ändern | LH-FA-D3-002 von Outline auf AK-Niveau (Reifephase-Klausel) |
 | `spec/spezifikation.md` | ändern | §1 Echtzeit/Benachrichtigung präzisieren; §8 Historie |
-| `docs/plan/planning/in-progress/roadmap.md` | ändern | Scope-Entscheidung Viewer-Strang (Drift-Tabelle) |
+| `docs/plan/planning/in-progress/roadmap.md` | ändern | Scope-Entscheidung Viewer-Strang vollständig: Drift-Tabelle **+ Welle-Ziel („3D-Extrusion in Echtzeit") + Viewer-Zeile der Closure-Trigger + „Letzte Änderung"-Kopf** (Plan-Review 010, F7) |
 | diese Datei + slice-010b | ändern | Frontmatter-`adr_refs` um ADR-0008 ergänzen, sobald die Datei existiert |
 
 ## 4. Trigger
@@ -96,18 +115,28 @@ in welle-1 bedeutet.
 - **Scope-Entscheidung „sichtbar"/Viewer ist der heikelste Punkt:**
   ACC-002 („Gebäude wird automatisch als 3D-Modell dargestellt") hängt
   real am Viewer. Wird der Viewer-Strang aus welle-1 herausgelöst,
-  braucht das einen ehrlichen Roadmap-Eintrag (Drift-Tabelle) — kein
-  stilles `done` über den Kern-Vertrag.
-- **„Sofort" vs. Budget:** Synchronität (kein Refresh-Schritt) und
-  Latenz-Budget (LH-QA-001-Familie) nicht vermischen — das Budget für
-  den Rebuild großer Modelle gehört eher zur
-  Performance-Zielkomplexität (M3), nicht in die welle-1-AK.
+  braucht das einen **vollständigen** Roadmap-Nachzug (Drift-Tabelle,
+  Welle-Ziel, Viewer-Zeile der Closure-Trigger; F7) — kein stilles
+  `done` über den Kern-Vertrag. Der Lastenheft-Wortlaut bleibt davon
+  unberührt (F2).
+- **„Sofort" vs. Budget:** Benutzer-Beobachtbarkeit (kein
+  Refresh-Schritt) und Latenz-Budget nicht vermischen — ein
+  Rebuild-Latenz-Budget existiert bisher als Anforderung nicht; falls
+  nötig, bräuchte es eine neue `LH-QA-<NNN>`-ID (Vergabe beim
+  Spec-Schreiben, AGENTS §4) und gehört zur Performance-
+  Zielkomplexität (M3), nicht in die welle-1-AK. (Der ererbte
+  Lastenheft-Querverweis „vgl. LH-QA-001" betrifft die Projektöffnung,
+  kein Rebuild-Budget; F8.)
 - **Wiederholungsfall „Post-Commit-Schritt":** Die Benachrichtigung ist
   nach der Raum-Re-Detektion (slice-009b) das **zweite Vorkommen**
-  einer nicht-werfenden Nachlauf-Mechanik nach transaktionalem Commit —
-  Kandidat, die Konvention „ableitende/nachgelagerte Schritte sind
-  total" jetzt zu verallgemeinern (Steering Loop: zweites Vorkommen
-  beobachtet, im Slice entscheiden, ob `MR-<NNN>` oder noch warten).
+  einer nicht-werfenden Nachlauf-Mechanik nach transaktionalem Commit.
+  Achtung bei der MR-Entscheidung: der 009-Lerneintrag fasste die
+  Klasse enger („**ableitende Berechnungen** sind total") — eine
+  Benachrichtigung ist keine ableitende Berechnung; die Verbreiterung
+  auf „Post-Commit-Schritte sind total/nicht-werfend" ist selbst Teil
+  der Verallgemeinerungs-Entscheidung und gehört explizit in deren
+  Begründung (F9). Steering Loop: zweites Vorkommen beobachtet, im
+  Slice entscheiden, ob `MR-<NNN>` oder noch warten.
 
 ## 7. Closure-Notiz
 

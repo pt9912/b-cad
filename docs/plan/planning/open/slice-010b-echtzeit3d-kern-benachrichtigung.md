@@ -28,36 +28,46 @@ GUI-Grundsatz-ADR (Scope-Entscheidung aus slice-010a).
 ## 1. Ziel
 
 Der Hexagon-Kern erfüllt den in slice-010a geschärften
-Echtzeit-Vertrag: Jede committete Modell-Mutation (Wand anlegen,
-Parameter ändern) führt **synchron im Mutationspfad** — gemäß
-ADR-0008 — zu einer Benachrichtigung an die Darstellungs-Schicht
-(driven Port), mit dem inkrementell aktualisierten Solid-Stand aus dem
-bestehenden Rebuild (slice-003a). Kein Qt, kein OCC: Die
-Darstellungs-Seite wird im Test durch ein Port-Double vertreten.
+Echtzeit-Vertrag **mit der dort in ADR-0008 entschiedenen Mechanik**:
+Committete Wand-Mutationen (Anlage, Parameteränderung; der genaue
+Melde-Umfang — auch Geschoss-Anlage? Raum-Änderungen? — folgt
+ADR-0008 §Umfang) machen den inkrementell aktualisierten Stand des
+bestehenden Rebuilds (slice-003a) für die Darstellungs-Schicht
+verfügbar. Dieser Plan ist auf das ADR-Ergebnis **parametrisiert** —
+er legt Mechanik (Observer/Polling/Queue), Push-vs-Pull und
+Reihenfolge nicht selbst fest (Plan-Review 010, F3). Kein Qt, kein
+OCC: Die Darstellungs-Seite wird im Test durch ein Double der
+ADR-gemäßen Schnittstelle vertreten.
 
 ## 2. Definition of Done
 
-- [ ] **Port + Service-Integration gemäß ADR-0008:** Notifikations-Port
-      (driven) mit dem in der ADR entschiedenen Vertrag (mindestens:
-      betroffenes Element, Operations-Art); `StructureEditService`
-      benachrichtigt **nach** dem transaktionalen Commit jeder
-      Wand-Mutation (Reihenfolge zur Raum-Re-Detektion gemäß ADR-0008);
-      ein werfender Beobachter kippt die committete Mutation nicht
-      (Fehlerverhalten gemäß ADR-0008).
+- [ ] **Mechanik-Umsetzung gemäß ADR-0008:** die in der ADR
+      entschiedene Benachrichtigungs-/Bereitstellungs-Mechanik
+      (Observer-Port, Polling-Schnittstelle oder Event-Queue) mit dem
+      dort entschiedenen Vertrag (Inhalt/Push-vs-Pull, Umfang,
+      Multiplizität/Registrierung, Re-Entranz- und Fehlerverhalten,
+      Reihenfolge zur Raum-Re-Detektion) im `StructureEditService`
+      verankert; die transaktionale Commit-Garantie aus slice-003a
+      bleibt unangetastet (eine fehlschlagende Darstellungs-Seite
+      kippt keine committete Mutation — Detailform gemäß ADR-0008).
 - [ ] **Akzeptanz-Tests** mit `LH-`-ID im Namen gegen die in 010a
-      geschärften AK: Happy (Parameteränderung → Benachrichtigung mit
-      aktualisiertem Solid, synchron, ohne expliziten Abruf), Boundary
+      geschärften AK: Happy (Parameteränderung → der aktualisierte
+      Stand ist für die Darstellungs-Seite gemäß ADR-0008-Vertrag
+      verfügbar, ohne expliziten Benutzer-Schritt — ob als Push-Inhalt
+      oder Pull-Query folgt der ADR, Plan-Review 010, F6), Boundary
       und Negative gemäß geschärftem Lastenheft (z. B.
-      verworfene/abgelehnte Mutation → keine Benachrichtigung;
-      werfender Beobachter → Modell konsistent), mit Double, das
-      Benachrichtigungen zählt und prüft.
+      verworfene/abgelehnte Mutation → kein neuer Stand/keine Meldung;
+      fehlschlagende Darstellungs-Seite → Modell konsistent), mit
+      zählendem/prüfendem Double der ADR-gemäßen Schnittstelle.
 - [ ] `make gates` grün; Closure-Notiz mit Lerneintrag;
       Roadmap-Closure-Zeile nachgezogen.
 
 ## 3. Plan (vor Code)
 
-Outline — der implementierende Lauf verfeinert in Schritt 4 (Modul 9);
-Port-Name und Vertrag folgen ADR-0008:
+Outline — der implementierende Lauf verfeinert in Schritt 4 (Modul 9).
+Die Tabelle zeigt die **Observer-Port-Variante als Platzhalter**;
+fällt ADR-0008 anders aus (Polling/Event-Queue), ersetzt der Lauf die
+Zeilen entsprechend (Plan-Review 010, F3):
 
 | Datei / Komponente | Änderungs-Art | Begründung |
 |---|---|---|
@@ -77,11 +87,13 @@ Port-Name und Vertrag folgen ADR-0008:
 
 ## 6. Risiken und offene Punkte
 
-- **Hörer-Fehlverhalten:** Wirft der Beobachter, darf die committete
-  Mutation nicht kippen — drittes Vorkommen der „total"-Klasse nach
-  Raum-Re-Detektion (009b) und ADR-0007-Entscheidung; falls 010a die
-  Konvention als `MR-<NNN>` festschreibt, hier erstmals dagegen
-  implementieren.
+- **Hörer-/Abnehmer-Fehlverhalten:** Eine fehlschlagende
+  Darstellungs-Seite darf die committete Mutation nicht kippen —
+  zusammen mit der Raum-Re-Detektion das **zweite Vorkommen** der
+  Post-Commit-Klasse (Zählung wie slice-010a §6: ADR-0007-Entscheidung
+  und 009b-Implementierung sind *ein* Vorkommen; Plan-Review 010, F5).
+  Falls 010a die Konvention als `MR-<NNN>` festschreibt, hier erstmals
+  dagegen implementieren.
 - **Reihenfolge der Post-Commit-Schritte** (Re-Detektion ↔
   Benachrichtigung): muss in ADR-0008 entschieden sein, sonst rät die
   Implementierung.
