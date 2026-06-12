@@ -212,6 +212,31 @@ sie.
   R2/R3-Beobachtungen: Commit-Bypass, Sub-Shell-/Flag-Bündel-Umgehung).
 - **Auflösungs-Trigger:** permanent.
 
+### MR-006 — Unabhängiges Plan-Review vor Implementierungs-Start
+
+- **Datum:** 2026-06-12
+- **Geltungsbereich:** Planning-Lifecycle
+  ([`docs/plan/planning/`](../docs/plan/planning/)),
+  [`AGENTS.md` §5](../AGENTS.md) (Workflow-Schritt 5)
+- **Adaption:** Vor dem Implementierungs-Start eines Slice wird der
+  Slice-Plan einem **unabhängigen Plan-Review** unterzogen (Reviewer
+  ≠ Plan-Autor; bei AI-Sessions: getrennter Agent/Session ohne
+  Autoren-Kontext). Findings werden vor dem Start eingearbeitet;
+  **HIGH-Findings blockieren den Start.** Das Review prüft
+  mindestens: (a) Quellen-Konsistenz — IDs, Pfade, Zitate,
+  Vertrags-Behauptungen gegen die kanonischen Quellen; (b)
+  Plan-Qualität — DoD-Beobachtbarkeit, Schnitt/Sitzungs-Umfang,
+  Lösungsfreiheit der Ebenen, reale Sensor-Deckung jeder DoD-Zeile.
+- **Begründung:** Drittes Vorkommen der Praxis mit jeweils
+  substanziellen Funden (Kurs-Regel: zweimal kategorisieren, dreimal
+  Regel; Zähler-Herkunft
+  [`welle-1-results.md` §5](../docs/plan/planning/done/welle-1-results.md)):
+  slice-009 (HIGH H1 → ADR-Scope + Split), slice-010 (HIGH F1 →
+  Lastenheft-Grenzverletzung abgefangen), slice-011 (Review
+  2026-06-12: 3 HIGH — Pflicht-Lücke Headless-Strategie, behauptete
+  Sensor-Deckung ohne Sensor, ACC-002-Beleg ohne Erzeugungsweg).
+- **Auflösungs-Trigger:** permanent.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

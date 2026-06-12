@@ -165,8 +165,12 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 2. Relevante kanonische Quelle lesen (Source Precedence beachten).
 3. Betroffene Requirement-/ADR-IDs identifizieren.
 4. Kleinste sinnvolle Änderung planen.
-5. Engsten nützlichen Sensor laufen lassen.
-6. Repo-weiten Gate-Lauf vor Handoff (`make gates`).
-7. Doku/Indizes aktualisieren, falls ein öffentlicher Vertrag berührt.
-8. Ausgeführte Sensors und verbleibende Risiken berichten — **keine
+5. Vor Implementierungs-Start eines Slice: **unabhängiges
+   Plan-Review** des Slice-Plans, Findings einarbeiten — HIGHs
+   blockieren den Start
+   ([`harness/conventions.md` MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)).
+6. Engsten nützlichen Sensor laufen lassen.
+7. Repo-weiten Gate-Lauf vor Handoff (`make gates`).
+8. Doku/Indizes aktualisieren, falls ein öffentlicher Vertrag berührt.
+9. Ausgeführte Sensors und verbleibende Risiken berichten — **keine
    Erfolgsmeldung ohne Gate-Ausführung, kein behauptetes Gate**.
