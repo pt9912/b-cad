@@ -43,3 +43,12 @@ höherem OG-Rand: 2700 vs. 2500 mm).
 - [ ] *Ausstehend:* „Das Gebäude wird automatisch als 3D-Modell
   dargestellt" (ACC-002) ist am Beleg-Bild benutzer-beobachtbar
   erfüllt. — Dietmar Burkard, Datum
+
+**Abnahme-Befund 2026-06-12 (Runde 1):** Abnahme zurückgestellt —
+die Wände schließen an den Außenecken nicht (fehlendes
+½×½-Stärke-Quadrat; Befund-Grundriss:
+[`acc-002-befund-2d-ecken.png`](acc-002-befund-2d-ecken.png)).
+Ursache ist fehlender LH-FA-WAL-006-Umfang, kein Viewer-Fehler →
+Eckenschluss vorgezogen als
+[slice-012](../open/slice-012-eckenschluss-wal006-teil.md); der
+Beleg wird danach regeneriert und erneut vorgelegt.
