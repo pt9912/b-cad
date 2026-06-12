@@ -14,7 +14,7 @@ Sensors-Bindung) leben in
 
 Das **Betriebsregelwerk der adoptierten Baseline in Agenten-Kurzform**
 ist das
-[Agents-Digest des Kurses](https://raw.githubusercontent.com/pt9912/ai-harness-course/main/kurs/de/agents-digest.md)
+[Agents-Regelwerk des Kurses](https://raw.githubusercontent.com/pt9912/ai-harness-course/main/kurs/de/agents-regelwerk.md)
 — einmal pro Session lesen, bevor der Workflow (§5) startet. Derivativ:
 bei Konflikt gelten die kanonischen Quellen; adoptierter Stand steht in
 [`harness/conventions.md`](harness/conventions.md) §Baseline.

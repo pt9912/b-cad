@@ -39,7 +39,7 @@ Der Default-Ort für:
   *ai-harness-course*), insbesondere dessen Grundlagen-Konventionen und
   -Klassifikation. Als externe Nennung geführt, nicht als In-Repo-Link.
 - **Extern (Agenten-Destillat):**
-  [`agents-digest.md`](https://raw.githubusercontent.com/pt9912/ai-harness-course/main/kurs/de/agents-digest.md)
+  [`agents-regelwerk.md`](https://raw.githubusercontent.com/pt9912/ai-harness-course/main/kurs/de/agents-regelwerk.md)
   im GitHub-Repo
   [`pt9912/ai-harness-course`](https://github.com/pt9912/ai-harness-course)
   — das operative Kurs-Regelwerk, das ein Code-Agent statt des vollen
