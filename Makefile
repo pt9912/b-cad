@@ -79,7 +79,10 @@ acc-002-beleg: ## ACC-002 — Beleg-Bild offscreen rendern (manueller Abnahme-Sc
 	$(GATE) --target build -t $(IMAGE):build .
 	$(DOCKER) run --rm \
 		-v $(CURDIR)/docs/plan/planning/done:/out \
-		$(IMAGE):build xvfb-run -a ./build/src/b-cad --acc-002-beleg /out/acc-002-beleg.png
+		$(IMAGE):build bash -c "timeout 120 xvfb-run -a ./build/src/b-cad --acc-002-beleg /out/acc-002-beleg.png"
+# timeout-Wrapper: xvfb-run haengt als Container-PID-1 nach App-Ende
+# (Cleanup-Race, 2x beobachtet); timeout als Prozessgruppen-Leader
+# vermeidet das und deckelt den Lauf (slice-011b Closure-Notiz).
 
 # ADR-0006-Drift: die committete SQLite-DDL muss exakt das sein, was
 # d-migrate aus spec/data-model.yaml erzeugt. BEWUSST NICHT in `make gates`

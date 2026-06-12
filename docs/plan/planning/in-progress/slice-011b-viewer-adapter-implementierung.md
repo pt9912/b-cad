@@ -204,3 +204,65 @@ framework-frei (ADR-0001).
 - **Evidenz-/Diskrepanz-Risiko:** mittel — neue Qt-Runtime-Pakete +
   neuer Sensor.
 - **Reconciliation-Aufwand:** keiner (GF).
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar):**
+
+- Sieben AK-/Smoke-Tests mit `LH-`-ID im Namen, alle grün (57/57
+  gesamt): statische Darstellung (Split i, LH-FA-D3-001 —
+  Netz-Höhe = Wandhöhe), Happy (Parameteränderung → Szene folgt
+  ohne Benutzer-Schritt/Reload), Boundary (geklemmter Stand =
+  Grenzwert; **genau ein wirksames Update je Mutation** trotz
+  Wand-Op + RoomsChanged; idempotenter Endzustand bei identischer
+  Mehrfach-Meldung), Negative (Rejected ändert nichts; unsubscribe
+  beendet das Folgen) + GL-Widget-Smoke headless (echte Pixel via
+  Xvfb/llvmpipe, Orbit-/Zoom-Events, `grabFramebuffer`).
+- `make gates` grün (2026-06-12, Commit `ba61087`): docs-check
+  0 ERROR/WARN, arch-check Regeln A–E, clang-tidy 0 Befunde +
+  suppression-gate, Tests 57/57, **Coverage 93,7 %** (715/763,
+  Schwelle 70 %) — das W2-P16-Coverage-Risiko trat dank
+  GL-Smoke-Abdeckung nicht ein.
+- arch-check **Regel E** real (Qt-Header nur `src/adapters/ui/` +
+  `src/main.cpp`); Gate-Doku nachgezogen (`harness/README.md`
+  §Sensors, `AGENTS.md` §3) — ADR-0009-Folgepflichten erfüllt.
+- Umsetzung deckungsgleich mit ADR-0009 (a)–(f): Qt Widgets;
+  Tessellation über `ViewModelPort` (Kern) ←
+  `GeometryKernelPort`-Tessellations-Query (OCC/TKMesh, kein
+  OCC-Typ verlässt den Adapter); Szenen-Surrogat (`ViewerScene`,
+  Qt-frei) + dünnes `ViewerWidget` (Callback = Pull + queued
+  Repaint, Re-Entranz strukturell unmöglich);
+  Konstruktor-Injektion + subscribe/unsubscribe in `main.cpp`.
+- `tests/e2e/` bleibt leer — **Begründung (R1-L7):** ADR-0009 (f)
+  wählte Surrogat + offscreen/Xvfb statt e2e-Treiber; ein Treiber
+  wird mit Interaktion/Selektion relevant (ADR-Trigger).
+- Spec-Drift-Prüfung (W2-P10): keine Diskrepanz — `architecture.md`-
+  Nachzüge aus slice-011a trugen unverändert; einzige Korrektur war
+  das ADR-0009-(f)-Mechanik-Detail (→ ADR-0010), keine Spec-Datei
+  betroffen.
+- ACC-002-Beleg: erzeugt via `make acc-002-beleg`
+  (`acc-002-beleg.png` + Begleit-`.md` in `done/`) — **Abnahme durch
+  den Projektinhaber ausstehend** (DoD-4 offen, manueller Schritt).
+
+**Lerneintrag:**
+
+- **ADR-Detail vs. Implementierungs-Realität:** Die accepted ADR-0009
+  enthielt eine faktisch falsche Mechanik-Detailangabe
+  (offscreen-QPA trägt kein GL) — entdeckt erst beim echten Lauf.
+  Statt stiller Umgehung: **Supersedes-Präzisierung ADR-0010**
+  (AGENTS §2.5). Verallgemeinerungs-Kandidat: *umgebungsabhängige
+  Mechanik-Details (Plattform-Fähigkeiten, Paket-Inhalte) in einer
+  ADR vor dem Accept mit einer Minimal-Probe belegen* — 1. Vorkommen,
+  kategorisiert.
+- **Surrogat-Architektur zahlt doppelt:** Die Qt-freie `ViewerScene`
+  machte die AK-Tests trivial display-frei UND hielt das Widget so
+  dünn, dass der GL-Smoke das Coverage-Risiko (W2-P16) neutralisierte
+  — die (f)-Entscheidung aus dem Plan-Review hat sich materiell
+  ausgezahlt (Steering-Bestätigung für MR-006).
+
+**Restrisiko / Nachfolge:** Kamera/Shading minimal (Erweiterung nur
+über ADR-0009-Trigger); `xvfb-run`-Hänger einmalig beobachtet (Lauf
+parallel zum Image-Rebuild, danach nicht reproduzierbar — bei
+Wiederauftreten: Beleg-Target mit `timeout` härten); Welle-Closure
+`welle-1v-viewer` als separater Schritt (unabhängige Verifikation,
+Ergebnisnotiz inkl. Carveout-Audit, Roadmap-Umbuchung — §5).
