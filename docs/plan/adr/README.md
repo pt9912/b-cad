@@ -10,6 +10,7 @@
 | [0006](0006-relationales-schema-design.md) | Relationales Schema-Design des Gebäudemodells (per-Typ-Tabellen, `openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack) | Accepted (2026-06-09) | OBJ-003, ADR-0001/0003, LH-QA-003 |
 | [0007](0007-raumerkennung-geometrie-basis.md) | Geometrie-Basis der Raumerkennung (Innenkante, Ring-Modell, Erkennung total) | Accepted (2026-06-11) | LH-FA-ROM-001/002/003, LH-FA-EVL-003, ADR-0001/0006 |
 | [0008](0008-aenderungs-benachrichtigung.md) | Änderungs-Benachrichtigung Kern → Darstellung (Observer-Port, Push-Notify/Pull-State, Kapselung) | Accepted (2026-06-11) | LH-FA-D3-002, OBJ-003, ADR-0001/0007 |
+| [0009](0009-gui-framework-qt6.md) | GUI-Framework-Bindung Qt 6 (Widgets, Tessellation über `ViewModelPort` — kein OCC in der GUI, Regel E, offscreen-Strategie) | Accepted (2026-06-12) | REQ-TEC-002, ACC-002, LH-FA-D3-001/002, ADR-0001/0002/0008 |
 
 ## ADR-Folgepflichten (Status)
 
@@ -25,6 +26,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0003 | Crash-Recovery-Test (`kill -9`, LH-QA-005) | **erfüllt** durch slice-008b (2026-06-09) |
 | ADR-0007 | Innenkanten-Offset + Ring-Modell implementieren; Boundary-Test prüft Netto-Fläche verschachtelter Wandzüge | **erfüllt** durch [slice-009b](../planning/done/slice-009b-raumerkennung-implementierung.md) (2026-06-11) |
 | ADR-0008 | Observer-Port + subscribe/unsubscribe + Meldungen im `StructureEditService` (nach `redetectRooms`), inkl. Kapselungs-Test (werfender Beobachter) | **erfüllt** durch slice-010b (2026-06-11) |
+| ADR-0009 | `arch-check` **Regel E** (Qt-Includes nur `src/adapters/ui/` + `src/main.cpp`) + Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3) + `acc-002-beleg`-Target außerhalb `gates` | offen → slice-011b |
 
 ## Konventionen
 
@@ -39,12 +41,9 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 
 Noch nicht als ADR angelegt, in der Roadmap verortet:
 
-- GUI-Framework-Bindung Qt 6 (Driving Adapter) — `welle-1v-viewer`
-  (Scope-Entscheidung slice-010a; dort entsteht auch der 3D-Viewer
-  für ACC-002 / sichtbare Hälfte LH-FA-D3-002). **Geschnitten:**
-  entsteht als ADR-0009 in
-  [slice-011a](../planning/in-progress/slice-011a-viewer-gui-adr-spec.md)
-  (in `in-progress/`, Welle gestartet 2026-06-12).
+- ~~GUI-Framework-Bindung Qt 6 (Driving Adapter)~~ → entschieden in
+  [ADR-0009](0009-gui-framework-qt6.md) (Accepted 2026-06-12,
+  slice-011a); Folgepflichten → slice-011b.
 - Plugin-API-/ABI-Vertrag und Sandbox-Modell (LH-FA-PLG-*) — welle-5.
 - IFC-Bibliothek und -Schema-Version (LH-FA-IO-001/002) — welle-4.
 - STEP-/Format-Export-Backend hinter `ModelExporterPort` (LH-FA-IO-005;

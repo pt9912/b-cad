@@ -1,15 +1,15 @@
 ---
 id: slice-011a
 titel: Sichtbarer 3D-Viewer — GUI-Grundsatz-ADR Qt 6 & Spec-Operationalisierung ACC-002
-status: in-progress
+status: done
 welle: welle-1v-viewer
 lastenheft_refs: [LH-FA-D3-002]  # sichtbare Hälfte; ACC-002 hängt an LH-FA-D3-001/002
-adr_refs: [ADR-0001, ADR-0008]  # ADR-0009 (GUI-Grundsatz) entsteht in diesem Slice
+adr_refs: [ADR-0001, ADR-0008, ADR-0009]  # ADR-0009 in diesem Slice entstanden + accepted
 ---
 
 # Slice 011a: Sichtbarer 3D-Viewer — GUI-Grundsatz-ADR & Spec
 
-**Status:** in-progress
+**Status:** done
 
 **Welle:** welle-1v-viewer (gestartet 2026-06-12 — Trigger
 „welle-1 done" erfüllt, siehe
@@ -47,7 +47,7 @@ Qt 6; die ADR entscheidet die **Bindungsform**, nicht das Ob.
 
 ## 2. Definition of Done
 
-- [ ] **ADR-0009 „GUI-Framework-Bindung Qt 6 (Driving Adapter)"
+- [x] **ADR-0009 „GUI-Framework-Bindung Qt 6 (Driving Adapter)"
       accepted** (MADR-Form, Optionen mit Trade-offs).
       Entscheidungs-Pflichten:
       (a) **UI-Technologie innerhalb Qt 6** — Qt Widgets vs.
@@ -96,14 +96,14 @@ Qt 6; die ADR entscheidet die **Bindungsform**, nicht das Ob.
       W2-P6) — slice-011b referenziert diese Entscheidung nur noch.
       ADR-Index: Index-Zeile ergänzen, §Offene-ADR-Themen-Eintrag
       auflösen, Folgepflicht → slice-011b.
-- [ ] **`spec/spezifikation.md` §1 nachgezogen:** die
+- [x] **`spec/spezifikation.md` §1 nachgezogen:** die
       welle-1v-Operationalisierung von „sichtbar" (3D-Fenster zeigt
       den extrudierten Stand; Aktualisierung über den
       ADR-0008-Vertrag ohne Benutzer-Refresh) — der
       Lastenheft-Wortlaut LH-FA-D3-002 bleibt unverändert (er ist
       seit slice-010a benutzer-beobachtbar und lösungsfrei; Regel
       „Lösung schärft nie das Lastenheft"). + §8-Historie-Zeile.
-- [ ] **`spec/architecture.md` nachgezogen:** UI-Adapter-Schicht-Zeile
+- [x] **`spec/architecture.md` nachgezogen:** UI-Adapter-Schicht-Zeile
       inkl. Import-Spalte (Observer-Konflikt, Pflicht (d)),
       `ModelChangedPort` in der Driven-Ports-Tabelle §1.2,
       `ViewModelPort`-Bezug konsistent zur ADR-0009-Entscheidung
@@ -111,7 +111,7 @@ Qt 6; die ADR entscheidet die **Bindungsform**, nicht das Ob.
       Prüfung an einer Stelle keinen Änderungsbedarf, hält die
       Closure-Notiz das mit Begründung fest — beobachtbar statt
       behauptet (R1-L3).
-- [ ] `make gates` grün; Closure-Notiz mit Lerneintrag.
+- [x] `make gates` grün; Closure-Notiz mit Lerneintrag (§8).
 
 ## 3. Plan (vor Code)
 
@@ -181,3 +181,52 @@ Qt 6; die ADR entscheidet die **Bindungsform**, nicht das Ob.
 - **Phase-Reife:** Phase 4.
 - **Evidenz-/Diskrepanz-Risiko:** niedrig.
 - **Reconciliation-Aufwand:** keiner (GF).
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar):**
+
+- [ADR-0009](../../adr/0009-gui-framework-qt6.md) mit Status
+  `Accepted`, alle sechs Pflichten entschieden: (a) **Qt Widgets**,
+  (b) **Tessellation über `ViewModelPort`** — kein OCC in der GUI,
+  keine Revision von architecture.md §2/Regel B/Regel C,
+  (c) arch-check-**Regel E** als Folgepflicht slice-011b,
+  (d) single-threaded am Qt-Event-Loop; Import-Präzisierung: UI darf
+  `ports/driven/` nur zur Implementierung von
+  Beobachter-Schnittstellen importieren (löst R1-M1),
+  (e) Konstruktor-Injektion + subscribe/unsubscribe-Lebenszyklus in
+  `main.cpp`, (f) Szenen-Surrogat + offscreen-QPA +
+  `acc-002-beleg`-Target (kein Gate) + Coverage-Umgang.
+  (a)/(b) explizit durch den Projektinhaber gewählt (2026-06-12).
+- ADR-Index: Index-Zeile, Folgepflicht-Zeile (Regel E + Gate-Doku +
+  Beleg-Target → slice-011b), §Offene-Themen-Eintrag aufgelöst.
+- `spec/spezifikation.md` §1 D3-002.a: welle-1v-Operationalisierung
+  „sichtbar" + §8-Historie-Zeile (ADR-0009).
+- `spec/architecture.md`: `ViewModelPort`-/`GeometryKernelPort`-
+  Zeilen um Tessellation präzisiert, `ModelChangedPort` in §1.2
+  nachgetragen, GUI-Import-Spalte erweitert — der
+  R1-M1-Architektur-Konflikt ist aufgelöst, ohne die
+  Abhängigkeits-Richtung zu ändern.
+- `make gates` grün (2026-06-12): docs-check 0 ERROR/WARN über alle
+  geänderten Artefakte, übrige Gates unverändert grün.
+
+**Lerneintrag:**
+
+- **Constraint-Treue entschied die schwerste Pflicht:** Bei (b) war
+  die Option ohne Constraint-Revision (Tessellation über Port)
+  zugleich die mit natürlich abfallendem Test-Surrogat — bestehende
+  Regeln zuerst lesen macht die Optionen-Bewertung billiger und
+  ehrlicher (Bestätigung der R1-M2-Verengung: nur echte Restfragen
+  in die ADR).
+- **Entscheider-Checkpoint schlank halten:** Nur (a)/(b) waren
+  echte Wahlen; (c)–(f) folgten aus Constraints und dem zweifach
+  reviewten Plan. Pflichten-Listen vorab in „echte Wahl" vs.
+  „Folge-Entscheidung" zu sortieren reduziert die Checkpoint-Last
+  des Projektinhabers auf das Tragende.
+
+**Restrisiko / Nachfolge:** Folgepflichten in slice-011b (Regel E,
+Gate-Doku-Nachzug, Beleg-Target außerhalb `gates`); Kamera/Shading
+bewusst minimal — Erweiterungen nur über die
+Re-Evaluierungs-Trigger der ADR (Selektion → AIS-Neubewertung);
+ein Render-Latenz-Budget bleibt unvergeben (neue `LH-QA-<NNN>` bei
+Bedarf).

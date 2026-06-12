@@ -76,19 +76,20 @@ nur dort werden Adapter-Instanzen injiziert.
 | `ManageProjectPort` | Projekt anlegen, speichern, laden, versionieren | LH-FA-BLD-001..004, ACC-005 |
 | `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, OBJ-002 |
 | `DetectRoomsPort` | Raum-Autoerkennung, Flächen-/Volumenberechnung | LH-FA-ROM-001..003, LH-FA-EVL-001..003 |
-| `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten | LH-FA-D3-001..006, ACC-002 |
+| `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation, ADR-0009) | LH-FA-D3-001..006, ACC-002, ADR-0009 |
 | `ExchangeModelPort` | Import/Export anstoßen (Format-neutral) | LH-FA-IO-001..008, ACC-003, ACC-004 |
 
 ### 1.2 Driven Ports (sekundär — der Kern steuert die Außenwelt)
 
 | Port | Verantwortung | Bezug |
 |---|---|---|
-| `GeometryKernelPort` | Solids, boolesche Operationen, Extrusion, Verschneidung (Wandöffnungen) | LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005 |
+| `GeometryKernelPort` | Solids, boolesche Operationen, Extrusion, Verschneidung (Wandöffnungen); Tessellations-Query (Dreiecksnetz je Solid, ADR-0009) | LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005 |
 | `ProjectRepositoryPort` | Projekt **atomar** persistieren und laden; Versionshistorie | LH-FA-BLD-002..004, LH-QA-005 |
 | `ModelImporterPort` | externes Modell (IFC/DXF) in Domain-Bauteile lesen | LH-FA-IO-001, LH-FA-IO-003 |
 | `ModelExporterPort` | Domain-Modell in Zielformat schreiben (IFC/DXF/STEP/STL/PDF/PNG) | LH-FA-IO-002,004,005,006,007,008 |
 | `MaterialLibraryPort` | Materialien/Texturen/Kennwerte verwalten | LH-FA-MAT-001..006 |
 | `TracingPort` | OTel-Spans emittieren (optional abschaltbar) | (ADR-Folge) |
+| `ModelChangedPort` | Beobachter-Schnittstelle: committete Modell-Mutationen melden (Push-Notify `element_id`/`op`, Pull-State über Abfrage-Ports); implementiert von Darstellungs-Adaptern | LH-FA-D3-002, OBJ-003, ADR-0008 |
 
 ## 2. Schichten und Constraints
 
@@ -101,7 +102,7 @@ nur dort werden Adapter-Instanzen injiziert.
 | Geometrie-Adapter | `src/adapters/geometry/` | erfüllt `GeometryKernelPort` via OpenCascade | model, ports/driven | andere Adapter, GUI | ADR-0001, ADR-0002 |
 | Persistenz-Adapter | `src/adapters/persistence/` | erfüllt `ProjectRepositoryPort` via SQLite | model, ports/driven | andere Adapter, GUI | ADR-0001, ADR-0003 |
 | IO-Adapter | `src/adapters/io/` | erfüllt Importer/Exporter-Ports | model, ports/driven | andere Adapter, GUI | ADR-0001 |
-| GUI-Adapter | `src/adapters/ui/` | Qt; ruft Driving Ports auf | model, ports/driving | Driven Adapter direkt, OCC, SQLite | ADR-0001 |
+| GUI-Adapter | `src/adapters/ui/` | Qt; ruft Driving Ports auf | model, ports/driving, ports/driven (*nur* zur Implementierung von Beobachter-Schnittstellen, z. B. `ModelChangedPort` — ADR-0009) | Driven Adapter direkt, OCC, SQLite | ADR-0001, ADR-0009 |
 | Plugin-Host | `src/adapters/plugin/` | lädt Plugins, vermittelt Driving Ports (Sandbox) | model, ports/driving | Driven Adapter direkt | ADR-0001 |
 | Composition Root | `src/main.cpp` | verdrahtet Adapter mit Kern | alles | — | ADR-0001 |
 

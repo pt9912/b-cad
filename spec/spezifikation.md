@@ -110,6 +110,20 @@ D3-002 bis zur Benachrichtigungs-/Abfrage-Grenze; die sichtbare
 auf dieser Basis — der Lastenheft-Wortlaut bleibt benutzer-beobachtbar
 und wird zusammen mit ACC-002 dort erfüllt.
 
+**Welle-1v-Operationalisierung von „sichtbar" (ADR-0009):**
+„Sichtbar" heißt: ein Qt-6-Widgets-3D-Fenster zeigt den
+**extrudierten Stand als tesselliertes Netz**, bezogen über den
+`ViewModelPort` (framework-freie Dreiecksnetze je `element_id`;
+Erzeugung per OCC-Tessellation hinter dem `GeometryKernelPort` —
+kein OCC in der GUI). Die Darstellung folgt committeten Mutationen
+über den D3-002.a-Vertrag ohne Benutzer-Refresh: der
+Viewer-Callback pullt und plant ein Repaint, löst nie Mutationen
+aus (Re-Entranz-Verbot strukturell eingehalten). Display-freie
+Prüfbarkeit über das **Szenen-Surrogat** (gehaltene Netze +
+Zähler wirksamer Szenen-Updates); der benutzer-beobachtbare
+ACC-002-Beleg entsteht als manueller Abnahme-Schritt
+(`make acc-002-beleg`, kein Gate).
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -245,6 +259,7 @@ nicht im Bootstrap.
 | 2026-06-11 | §1 Kollaps-Kriterium präzisiert: Kantenrichtungs-Erhalt statt reiner Flächen-Prüfung (Doppel-Inversion erzeugt Phantom-Polygon positiver Fläche) | ADR-0007 |
 | 2026-06-11 | §1 LH-FA-D3-002.a ergänzt: Benachrichtigungs-Vertrag (Observer-Port, Push-Notify/Pull-State, Reihenfolge nach Re-Detektion, Beobachter-Pflichten) + welle-1-Operationalisierung „sichtbar" | ADR-0008 |
 | 2026-06-11 | §1 ROM-001.a präzisiert (Welle-1-Code-Review M1/M2): minimale Zyklen via Flächen-Traversierung — geteilte Knoten (Grad ≥ 3) abgedeckt, Stichkanten ignoriert; Näherung für kollineare Nachbarkanten ungleicher Stärke dokumentiert | ADR-0007 |
+| 2026-06-12 | §1 D3-002.a ergänzt: welle-1v-Operationalisierung „sichtbar" (Qt-Widgets-Fenster, Tessellation über `ViewModelPort`, Szenen-Surrogat, ACC-002-Beleg als manueller Abnahme-Schritt) | ADR-0009 |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

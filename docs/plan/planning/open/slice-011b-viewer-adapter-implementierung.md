@@ -4,7 +4,7 @@ titel: Sichtbarer 3D-Viewer — Qt-6-Adapter (Implementierung, ACC-002)
 status: open
 welle: welle-1v-viewer
 lastenheft_refs: [LH-FA-D3-001, LH-FA-D3-002]  # sichtbare Hälfte D3-002; ACC-002
-adr_refs: [ADR-0001, ADR-0002, ADR-0008]  # + ADR-0009, sobald in slice-011a entstanden
+adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009]  # ADR-0009 accepted 2026-06-12 (slice-011a)
 ---
 
 # Slice 011b: Sichtbarer 3D-Viewer — Qt-6-Adapter (Implementierung)
