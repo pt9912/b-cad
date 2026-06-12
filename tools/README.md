@@ -39,7 +39,9 @@ node tools/docs-check.js
 
 ### Herkunft und Drift
 
-`docs-check.js` ist **vendored** aus dem AI-Harness-Kurs
-(`ai-harness-course`, `tools/docs-check.js`), unverändert. Begründung
-und Adaptions-Eintrag: [`../harness/conventions.md` MR-003](../harness/conventions.md#mr-003--docs-check-als-vendored-doku-sensor).
-Bei Updates der Quelle hier nachziehen (Entropy Management, Modul 15).
+Die Doku-Validierung läuft seit MR-007 über
+[d-check](https://github.com/pt9912/d-check) — digest-gepinntes
+Container-Image als Build-Stage (kein Bind-Mount), Konfiguration in
+[`../.d-check.yml`](../.d-check.yml). Das zuvor hier vendorte
+`docs-check.js` (MR-003, Kurs-Kopie) ist gelöscht; Historie: <!-- d-check:ignore (historisch: geloescht mit MR-007) -->
+[`../harness/conventions.md` MR-007](../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check).

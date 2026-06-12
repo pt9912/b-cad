@@ -3,18 +3,13 @@
 #
 #   docker build -f tools/Dockerfile --target docs-check -t bcad-docs-check .
 #
-# Schlägt docs-check fehl, schlägt der Build fehl. Vendored aus dem
-# AI-Harness-Kurs (MR-003); Single-Purpose (kein alignment-check).
-#
-# Hinweis (Modul 14): Base-Pinning per @sha256 ist Zielzustand.
+# Schlägt docs-check fehl, schlägt der Build fehl. Seit MR-007 läuft
+# die Validierung über das digest-gepinnte d-check-Image
+# (https://github.com/pt9912/d-check, Konfiguration: .d-check.yml);
+# das vendorte docs-check.js (MR-003) ist abgelöst. Digest-Hebungen
+# sind Routine-Pins mit Begründung im Commit-Body.
 
-FROM node:24-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14 AS base
-COPY tools/docs-check.js /usr/local/bin/docs-check.js
-RUN node --check /usr/local/bin/docs-check.js \
- && chmod +x /usr/local/bin/docs-check.js
-
-# --- docs-check: Repo einbacken und Links/Anker/Pfade validieren ---
-FROM base AS docs-check
-WORKDIR /work
+FROM ghcr.io/pt9912/d-check@sha256:7bdef75be26e808a137ad817cd7fec8bf4eccd282fa78932d2e3d3bbc0e050eb AS docs-check
+WORKDIR /repo
 COPY . .
-RUN node /usr/local/bin/docs-check.js
+RUN ["/d-check", "/repo"]

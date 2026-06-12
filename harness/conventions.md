@@ -145,8 +145,8 @@ sie.
 
 - **Datum:** 2026-06-08
 - **Geltungsbereich:** `tools/`, `Makefile`, [`harness/README.md` §Sensors](README.md#sensors-feedback-gates)
-- **Adaption:** b-cad übernimmt `tools/docs-check.js` **unverändert** aus
-  dem Baseline-Kurs (`ai-harness-course`, `tools/docs-check.js`) als
+- **Adaption:** b-cad übernimmt `tools/docs-check.js` **unverändert** aus <!-- d-check:ignore (historisch: geloescht mit MR-007) -->
+  dem Baseline-Kurs (`ai-harness-course`, `tools/docs-check.js`) als <!-- d-check:ignore (historisch: Kurs-Quelle, dort zum Rest-Sensor geschrumpft) -->
   eigenes, self-contained Werkzeug mit zweckgebundenem `tools/Dockerfile`
   (nur `docs-check`, ohne den `alignment-check` des Kurses). Aufruf über
   `make docs-check` / `make gates` im Container.
@@ -160,7 +160,38 @@ sie.
   nicht an ein Fremd-Repo koppeln darf.
 - **Folgepflicht:** Source-Drift gegen den Kurs beim Update nachziehen
   (Entropy Management).
-- **Auflösungs-Trigger:** permanent (solange b-cad Markdown-Doku trägt).
+- **Auflösungs-Trigger:** permanent (solange b-cad Markdown-Doku
+  trägt). *(Aufgelöst mit
+  [MR-007](#mr-007--auflösung-von-mr-003-docs-check-via-d-check),
+  2026-06-12 — die Quelle selbst ist zum Kurs-Rest-Sensor geschrumpft,
+  die Kopie war verwaist.)*
+
+### MR-007 — Auflösung von MR-003: docs-check via d-check
+
+- **Datum:** 2026-06-12
+- **Geltungsbereich:** `tools/`, `Makefile`,
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates),
+  [`.d-check.yml`](../.d-check.yml)
+- **Adaption:** Der vendorte Kurs-Validator (MR-003) ist abgelöst:
+  `make docs-check` läuft über das digest-gepinnte Container-Image
+  [d-check](https://github.com/pt9912/d-check) (v0.2.1) — weiterhin
+  als Build-Stage ohne Bind-Mount (`tools/Dockerfile`: `FROM d-check`
+  + `COPY . .` + `RUN`), die Hard Rule bleibt erfüllt. Konfiguration
+  deklarativ in [`.d-check.yml`](../.d-check.yml) (Module `links`,
+  `anchors`, `codepaths` mit b-cad-eigenen Wurzel-Präfixen — die
+  Kurs-Kopie prüfte nur `lab/`/`kurs/`/`tools/`, zwei davon existieren
+  hier nicht). Vergleichslauf 2026-06-12: Alt 0 Befunde (45 Dateien),
+  d-check 8 echte Mehr-Befunde aus der erweiterten
+  Inline-Code-Pfad-Abdeckung (2 Pfad-Fixes, 6 begründete
+  `d-check:ignore`-Marker an geplanten/fremden/historischen Zielen),
+  final beidseitig 0. Die MR-003-Folgepflicht (Source-Drift nachziehen)
+  entfällt — die Kurs-Quelle ist ihrerseits auf d-check migriert und
+  zum Modul-Nummern-Rest-Sensor geschrumpft.
+- **Begründung:** Eine verwaiste vendorte Kopie ist kein Sensor mehr,
+  sondern Drift-Risiko (Entropy Management, Modul 15); ein
+  digest-gepinntes Image ist genauso reproduzierbar wie Vendoring
+  (Modul 14), ohne Fremd-Repo-Kopplung zur Laufzeit.
+- **Auflösungs-Trigger:** permanent (Zielzustand).
 
 ### MR-004 — Top-level CHANGELOG.md (Keep a Changelog)
 

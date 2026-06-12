@@ -1,0 +1,12 @@
+# Doku-Referenz-Checks via d-check (ghcr.io/pt9912/d-check) — ersetzt
+# das vendorte tools/docs-check.js (MR-003-Auflösung, Rollout
+# 2026-06-12, JS-Familie). Scan über die gesamte Repo-Wurzel wie das
+# Alt-Tool. codepaths-Wurzeln an b-cad angepasst — die vendorte
+# Kurs-Kopie prüfte nur lab/, kurs/, tools/ (zwei davon existieren
+# hier nicht); ./ und ../ werden immer erkannt.
+# Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
+scan:
+  roots: ["."]
+modules: [links, anchors, codepaths]
+codepaths:
+  roots: [docs, spec, harness, tools, src]
