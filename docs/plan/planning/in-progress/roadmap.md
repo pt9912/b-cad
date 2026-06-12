@@ -11,19 +11,33 @@ Feature-Sequenz, kein Reconciliation-Plan.
 
 ## Aktuelle Welle
 
-**Derzeit keine.** `welle-1-mvp` wurde am 2026-06-12 geschlossen —
-alle Closure-Trigger erfüllt, Ergebnisnotiz und vollständige
-Trigger-/Slice-Liste:
-[`../done/welle-1-results.md`](../done/welle-1-results.md)
-(siehe §Abgeschlossene Wellen). Der Start der nächsten Welle ist
-eine Planungs-Entscheidung; Kandidaten siehe §Nächste Wellen
-(`welle-1v-viewer` braucht zuerst die GUI-Grundsatz-ADR Qt 6).
+**Welle-ID:** welle-1v-viewer
+**Start:** 2026-06-12 (Trigger „welle-1 done" erfüllt — Closure
+2026-06-12, [`../done/welle-1-results.md`](../done/welle-1-results.md))
+**Geplantes Ende:** offen (Aufwands-Schätzung M aus §Nächste Wellen)
+
+**Welle-Ziel:** Die *sichtbare* Hälfte des Echtzeit-Vertrags: ein
+Qt-6-3D-Viewer (Driving Adapter) stellt das extrudierte
+Gebäudemodell dar und folgt committeten Änderungen über den
+ADR-0008-Vertrag — erfüllt **ACC-002** und die sichtbare Hälfte von
+**LH-FA-D3-002** (Scope-Herkunft: slice-010a, Drift-Tabelle
+2026-06-11).
+
+**Closure-Trigger** (jeder Trigger beobachtbar):
+- slice-011a done — ADR-0009 „GUI-Framework-Bindung Qt 6 (Driving
+  Adapter)" accepted (Entscheidungs-Pflichten a–f) +
+  Spec-Operationalisierung „sichtbar". (Plan-Review gelaufen
+  2026-06-12, MR-006 erfüllt.)
+- slice-011b done — Viewer-Adapter implementiert: ACC-002-Beleg
+  liegt vor, arch-check-Regel E grün, display-freie AK-Tests grün.
+  Trigger: slice-011a done.
+- Closure-Notiz in `done/welle-1v-results.md` inkl. zwingendem
+  Carveout-Audit.
 
 ## Nächste Wellen
 
 | Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
 |---|---|---|---|
-| welle-1v-viewer | welle-1 done ✓ (2026-06-12) | GUI-Grundsatz-ADR (Qt 6, Driving Adapter; **slice-011a**) + 3D-Viewer-Adapter auf ADR-0008-Basis (ACC-002, sichtbare Hälfte `LH-FA-D3-002`; **slice-011b**) — geschnitten, in `open/` | M |
 | welle-2-bauteile | welle-1 done | Türen/Fenster mit Wandöffnung (`DOR`,`WIN`), Treppen (`STR`), Decken/Dach (`SLB`,`ROF`) | L |
 | welle-3-auswertung | welle-2 done | Material (`MAT`), Auswertungen (`EVL`), Bemaßung/Layer (`DRW`) | M |
 | welle-4-austausch | welle-3 done + ADR zu IFC-Bibliothek accepted | IFC/DXF/STEP/STL-Adapter (`IO`), PDF/PNG-Export | L |
@@ -44,11 +58,13 @@ eine Planungs-Entscheidung; Kandidaten siehe §Nächste Wellen
 ```mermaid
 flowchart LR
     W1[welle-1-mvp<br/>done 2026-06-12]
+    W1V[welle-1v-viewer<br/>aktiv]
     W2[welle-2-bauteile]
     W3[welle-3-auswertung]
     W4[welle-4-austausch]
     W5[welle-5-erweiterung]
 
+    W1 --> W1V
     W1 --> W2 --> W3 --> W4 --> W5
 ```
 

@@ -2,7 +2,7 @@
 id: slice-011b
 titel: Sichtbarer 3D-Viewer — Qt-6-Adapter (Implementierung, ACC-002)
 status: open
-welle: welle-1v-viewer (geplant — Welle noch nicht gestartet, Roadmap §Nächste Wellen)
+welle: welle-1v-viewer
 lastenheft_refs: [LH-FA-D3-001, LH-FA-D3-002]  # sichtbare Hälfte D3-002; ACC-002
 adr_refs: [ADR-0001, ADR-0002, ADR-0008]  # + ADR-0009, sobald in slice-011a entstanden
 ---
@@ -11,7 +11,9 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0008]  # + ADR-0009, sobald in slice-011a ent
 
 **Status:** open
 
-**Welle:** welle-1v-viewer (geplant).
+**Welle:** welle-1v-viewer (gestartet 2026-06-12; dieser Slice
+bleibt in `open/`, bis sein Trigger — slice-011a done — erfüllt
+ist).
 
 **Bezug:** ACC-002, sichtbare Hälfte LH-FA-D3-002 (AK seit
 slice-010a), LH-FA-D3-001 (extrudierter Stand), ADR-0008

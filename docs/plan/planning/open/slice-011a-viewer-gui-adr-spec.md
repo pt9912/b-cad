@@ -1,19 +1,19 @@
 ---
 id: slice-011a
 titel: Sichtbarer 3D-Viewer — GUI-Grundsatz-ADR Qt 6 & Spec-Operationalisierung ACC-002
-status: open
-welle: welle-1v-viewer (geplant — Welle noch nicht gestartet, Roadmap §Nächste Wellen)
+status: in-progress
+welle: welle-1v-viewer
 lastenheft_refs: [LH-FA-D3-002]  # sichtbare Hälfte; ACC-002 hängt an LH-FA-D3-001/002
 adr_refs: [ADR-0001, ADR-0008]  # ADR-0009 (GUI-Grundsatz) entsteht in diesem Slice
 ---
 
 # Slice 011a: Sichtbarer 3D-Viewer — GUI-Grundsatz-ADR & Spec
 
-**Status:** open
+**Status:** in-progress
 
-**Welle:** welle-1v-viewer (geplant; Start ist eine
-Roadmap-Entscheidung — Trigger „welle-1 done" ist seit 2026-06-12
-erfüllt, siehe [`welle-1-results.md`](../done/welle-1-results.md)).
+**Welle:** welle-1v-viewer (gestartet 2026-06-12 — Trigger
+„welle-1 done" erfüllt, siehe
+[`welle-1-results.md`](../done/welle-1-results.md)).
 
 **Bezug:** REQ-TEC-002 (Qt 6 gesetzt), ADR-0001 (Adapter-Grenze),
 ADR-0008 (Benachrichtigungs-Vertrag, den der Viewer konsumiert).
@@ -116,9 +116,10 @@ Qt 6; die ADR entscheidet die **Bindungsform**, nicht das Ob.
 
 ## 4. Trigger
 
-- welle-1 done ✓ (2026-06-12). **Start der Welle `welle-1v-viewer`
-  per Roadmap-Entscheidung** (Umbuchung §Nächste Wellen → §Aktuelle
-  Welle) — bis dahin bleibt der Slice in `open/`.
+- welle-1 done ✓ (2026-06-12); Welle `welle-1v-viewer` gestartet ✓
+  (Roadmap-Umbuchung 2026-06-12); unabhängiges Plan-Review gemäß
+  MR-006 gelaufen ✓ (2026-06-12, Findings eingearbeitet) →
+  startbar.
 
 ## 5. Closure-Trigger
 
