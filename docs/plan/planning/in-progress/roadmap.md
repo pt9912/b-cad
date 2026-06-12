@@ -23,7 +23,7 @@ eine Planungs-Entscheidung; Kandidaten siehe §Nächste Wellen
 
 | Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
 |---|---|---|---|
-| welle-1v-viewer | welle-1 done | GUI-Grundsatz-ADR (Qt 6, Driving Adapter) + 3D-Viewer-Adapter auf ADR-0008-Basis (ACC-002, sichtbare Hälfte `LH-FA-D3-002`) | M |
+| welle-1v-viewer | welle-1 done ✓ (2026-06-12) | GUI-Grundsatz-ADR (Qt 6, Driving Adapter; **slice-011a**) + 3D-Viewer-Adapter auf ADR-0008-Basis (ACC-002, sichtbare Hälfte `LH-FA-D3-002`; **slice-011b**) — geschnitten, in `open/` | M |
 | welle-2-bauteile | welle-1 done | Türen/Fenster mit Wandöffnung (`DOR`,`WIN`), Treppen (`STR`), Decken/Dach (`SLB`,`ROF`) | L |
 | welle-3-auswertung | welle-2 done | Material (`MAT`), Auswertungen (`EVL`), Bemaßung/Layer (`DRW`) | M |
 | welle-4-austausch | welle-3 done + ADR zu IFC-Bibliothek accepted | IFC/DXF/STEP/STL-Adapter (`IO`), PDF/PNG-Export | L |
