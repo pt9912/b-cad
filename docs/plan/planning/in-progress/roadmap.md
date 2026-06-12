@@ -29,7 +29,8 @@ ADR-0008-Vertrag — erfüllt **ACC-002** und die sichtbare Hälfte von
   Spec-Operationalisierung „sichtbar". (Plan-Review gelaufen
   2026-06-12, MR-006 erfüllt.)
 - slice-011b done — Viewer-Adapter implementiert: ACC-002-Beleg
-  liegt vor, arch-check-Regel E grün, display-freie AK-Tests grün.
+  liegt vor und ist abgenommen, Qt-Grenz-Sensor im arch-check grün
+  (Form gemäß ADR-0009 Pflicht (c)), display-freie AK-Tests grün.
   Trigger: slice-011a done.
 - Closure-Notiz in `done/welle-1v-results.md` inkl. zwingendem
   Carveout-Audit.
