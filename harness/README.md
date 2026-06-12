@@ -71,6 +71,7 @@ Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
 | `make gates` | Aggregat: docs-check · gate-consistency · arch-check · lint · test · coverage-gate (+ `record-gates`-Nachweis) | — |
 | `make schema-check` | ADR-0006-Drift: committete `schema.sql` == d-migrate(`data-model.yaml`). **Nicht** in `make gates` (d-migrate aus dem hermetischen Gate-Pfad gehalten) — gehört in die **CI-Befehlsliste** | ADR-0006 |
 | `make acc-002-beleg` | **kein Gate:** rendert das ACC-001-Kern-Demo headless (Xvfb) und schreibt das ACC-002-Beleg-Bild — manueller Abnahme-Schritt des Projektinhabers, bewusst nicht in `gates` | ADR-0009 (f), ADR-0010 |
+| `make run` | **kein Gate:** startet die App im Container am lokalen Display (X11/XWayland; GPU-Durchreichung via `/dev/dri`, sonst llvmpipe-Fallback; vorher ggf. `xhost +local:`) | ADR-0009, AGENTS §2.9 |
 
 **Warum `build` nicht in `gates`:** `test`, `lint` und `coverage-gate`
 sind Dockerfile-Stages `FROM build` und **kompilieren die Target-Kette

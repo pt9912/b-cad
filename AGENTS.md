@@ -139,6 +139,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 | `make gates` | docs-check · gate-consistency · arch-check · lint · test · coverage-gate | — |
 | `make schema-check` | ADR-0006-Drift: `schema.sql` == d-migrate(`data-model.yaml`); **nicht** in `gates` (d-migrate aus dem Gate-Pfad) → CI-Befehlsliste | ADR-0006 |
 | `make acc-002-beleg` | ACC-002-Beleg-Bild headless rendern — **kein Gate**, manueller Abnahme-Schritt, nicht in `gates` | ADR-0009 (f)/0010 |
+| `make run` | App im Container am lokalen Display starten — **kein Gate** (GPU via `/dev/dri`, sonst llvmpipe) | ADR-0009 |
 
 **Geplant (noch NICHT behauptet):**
 

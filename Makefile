@@ -22,7 +22,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check acc-002-beleg
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check acc-002-beleg run
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -70,6 +70,18 @@ versions: ## ADR-0004 — gepinnte Toolchain-Versionen (Reproduzierbarkeits-Bele
 		libocct-foundation-dev libocct-modeling-data-dev \
 		libocct-modeling-algorithms-dev libocct-data-exchange-dev \
 		libtbb-dev libsqlite3-dev libgtest-dev xvfb ca-certificates | sort
+
+# Interaktiver App-Start (ADR-0009; Docker/make-only, AGENTS §2.9):
+# X11/XWayland-Display des Hosts, GPU-Durchreichung wenn /dev/dri
+# existiert (sonst Mesa/llvmpipe-Software-Fallback). KEIN Gate.
+# Voraussetzung einmalig: `xhost +local:` (X-Zugriff fuer lokale
+# Container; Rueckbau: `xhost -local:`).
+run: ## App im Container am lokalen Display starten (kein Gate; vorher ggf. xhost +local:)
+	$(GATE) --target build -t $(IMAGE):build .
+	$(DOCKER) run --rm -e DISPLAY=$$DISPLAY -e LANG=C.UTF-8 \
+		$$( [ -e /dev/dri ] && echo "--device /dev/dri" ) \
+		-v /tmp/.X11-unix:/tmp/.X11-unix \
+		$(IMAGE):build ./build/src/b-cad
 
 # ACC-002-Beleg (ADR-0009 (f)): rendert das ACC-001-Kern-Demo-Projekt
 # offscreen (Mesa/llvmpipe) und schreibt das Beleg-Bild. MANUELLER
