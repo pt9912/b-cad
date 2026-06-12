@@ -1,7 +1,7 @@
 ---
 id: slice-012
 titel: Eckenschluss endpunkt-verbundener Wände (LH-FA-WAL-006-Teilumfang)
-status: open
+status: in-progress
 welle: welle-1v-viewer (Scope-Erweiterung per Roadmap-Drift-Eintrag 2026-06-12)
 lastenheft_refs: [LH-FA-WAL-006, LH-FA-D3-001, LH-FA-D3-002]  # Teilumfang WAL-006; sichtbar im Viewer
 adr_refs: [ADR-0001, ADR-0002, ADR-0007, ADR-0008, ADR-0009, ADR-0010]  # 0010: Beleg-Renderweg (W3-Q6)
@@ -9,7 +9,7 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0007, ADR-0008, ADR-0009, ADR-0010]  # 0010: 
 
 # Slice 012: Eckenschluss endpunkt-verbundener Wände
 
-**Status:** open
+**Status:** in-progress (seit 2026-06-12).
 
 **Welle:** welle-1v-viewer (Scope-Erweiterung — Auslöser: der
 ACC-002-Beleg zeigte offene Außenecken, der Projektinhaber hat die
@@ -57,7 +57,7 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
 
 ## 2. Definition of Done
 
-- [ ] **Lastenheft LH-FA-WAL-006 von Outline auf Teilumfang-AK
+- [x] **Lastenheft LH-FA-WAL-006 von Outline auf Teilumfang-AK
       geschärft** (Reifephase-Klausel; lösungsfrei,
       benutzer-beobachtbar): Happy (zwei Wände mit gemeinsamem
       Endpunkt im Winkel **und gleicher Höhe** → geschlossene Ecke
@@ -73,7 +73,7 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
       gemeinsamen Endpunkt → unverändert stumpf; **Vollumfang
       „Schnittpunkte als Knoten" bleibt ausdrücklich offen** und
       wird hier nicht behauptet). + Historie-Zeile.
-- [ ] **`spec/spezifikation.md` präzisiert:** (a) §1 Footprint-Regel
+- [x] **`spec/spezifikation.md` präzisiert:** (a) §1 Footprint-Regel
       (Eck-Konstruktion an Grad-2-Endpunkt-Knoten: Seitenkanten
       benachbarter Wände im Schnittpunkt verbunden — Prinzip
       **analog** der ADR-0007-Innenkante, normativ festgelegt
@@ -91,7 +91,7 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
       Wandverschneidung (LH-FA-WAL-006)" (Schritt 1 + Schritt 3) auf
       **„WAL-006-Vollumfang"** präzisiert — sie bleiben nach dem
       Teilumfang offen (W3-Q3). + §8-Historie.
-- [ ] **Kern:** `model::Footprint` (Polygon, pure Werte);
+- [x] **Kern:** `model::Footprint` (Polygon, pure Werte);
       Footprint-Berechnung im `StructureEditService` (Butt-Enden wie
       bisher; Miter an Grad-2-Knoten mit Toleranz
       `GEOMETRY_TOLERANCE_MM`, Begrenzung + Rückfall stumpf —
@@ -100,16 +100,16 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
       umgestellt; **transaktionale Garantie bleibt:** neue Solids
       (mutierte Wand + betroffene Nachbarn) werden VOR dem Commit
       berechnet — schlägt eines fehl, bleibt das Modell unverändert.
-- [ ] **Mehr-Element-Update:** Mutationen, die Nachbar-Footprints
+- [x] **Mehr-Element-Update:** Mutationen, die Nachbar-Footprints
       ändern (Wand-Anlage → Nachbar-Grad 1→2; Stärke-Änderung →
       Miter-Geometrie), rebuilden die betroffenen Nachbarn und melden
       sie einzeln (`WallGeometryChanged`, neues `op` im
       ADR-0008-Vokabular); Höhen-Änderung erzeugt KEINE
       Nachbar-Meldung (Footprint unberührt). Rejected/verworfen
       meldet weiterhin nichts.
-- [ ] **Viewer folgt:** `ViewerScene` behandelt `WallGeometryChanged`
+- [x] **Viewer folgt:** `ViewerScene` behandelt `WallGeometryChanged`
       wie die übrigen Wand-Ops (Pull + idempotentes Ersetzen).
-- [ ] **AK-Tests mit `LH-FA-WAL-006` im Namen** (Kern gegen
+- [x] **AK-Tests mit `LH-FA-WAL-006` im Namen** (Kern gegen
       analytisches Double mit Shoelace-Volumen + OCC-Adapter +
       Szene): Happy (rechter Winkel → Ecke körperlich geschlossen:
       **Netz-/Footprint-Bounding-Box überdeckt den äußeren Eckpunkt**
@@ -137,10 +137,11 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
       degeneriertes Polygon portiert). Belegt per
       `make test`-Output, keine behauptete Testzahl.
 - [ ] **ACC-002-Beleg regeneriert** (`make acc-002-beleg`):
-      geschlossene Außenecken sichtbar; Begleit-`.md` aktualisiert
-      (Eckenschluss-Anmerkung ersetzt, Abnahme-Block erneuert) —
-      Abnahme durch den Projektinhaber (bleibt manueller Schritt).
-- [ ] `make gates` grün; Closure-Notiz mit Lerneintrag;
+      geschlossene Außenecken sichtbar ✓ (Stand `8fe8dad`, 2D-
+      Verifikation committet); Begleit-`.md` aktualisiert ✓ —
+      **Abnahme durch den Projektinhaber AUSSTEHEND** (Runde 2,
+      manueller Schritt; einziger offener DoD-Punkt).
+- [x] `make gates` grün; Closure-Notiz mit Lerneintrag;
       CHANGELOG-Slice-Eintrag (MR-004).
 
 ## 3. Plan (vor Code)
@@ -246,3 +247,51 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
   gemeinsames Double mit neuem Shoelace-Orakel, Registrierung in
   `tests/CMakeLists.txt`); Risiko mittel (Orakel-Wechsel — durch
   identische Einzelwand-Werte gegengeprüft).
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar):**
+
+- 8 AK-Tests mit `LH-FA-WAL-006` im Namen, alle grün (63/63 gesamt):
+  Happy (Kerben-Probe per Punkt-im-Polygon, äußerer Eckpunkt auf der
+  Kontur, Flächen-Erhalt des symmetrischen Eckschnitts), Boundary
+  (kollinear gleich/ungleich stark → stumpf; Spitzwinkel →
+  `WALL_MITER_LIMIT` greift; Grad-2→3-Rückbau stumpf + Meldung),
+  Negative (Grad ≥ 3, fremdes Geschoss), Folge-Meldung
+  (Reihenfolge Op → Nachbar → RoomsChanged; Höhe meldet keinen
+  Nachbarn), Fehlerfall-Transaktion (W3-P2: Wurf beim
+  Nachbar-Rebuild → Modell/Solids unverändert, keine Meldung) +
+  Szene-Nachbar-Folgen (Viewer).
+- Regressions-Aussage (W3-P1) eingehalten: Tests ohne Port-Berührung
+  textlich unverändert grün; migrierte Tests (Doubles, OCC) mit
+  identischen Orakel-Werten; Beleg: `make test` 63/63.
+- `make gates` grün (2026-06-12, Commit `8fe8dad`): docs-check
+  0 ERROR/WARN, arch-check A–E, lint 0 Befunde, Coverage **94,2 %**
+  (846/898).
+- Lastenheft 0.1.2 + spez. §1 LH-FA-WAL-006.a/§3/D3-002.a +
+  architecture.md-Portzeile nachgezogen; ACC-002-Beleg regeneriert
+  (geschlossene Ecken, 2D-Verifikationsbild committet).
+
+**Lerneintrag:**
+
+- **Der Abnahme-Schritt ist ein Sensor:** Der Befund „offene Ecken"
+  war in keiner AK-Lücke der Tests, sondern nur am benutzer-
+  beobachtbaren Artefakt sichtbar — der manuelle Abnahme-Schritt
+  (ADR-0009 (f), bewusst kein Gate) hat damit seinen ersten echten
+  Fund geliefert. Bestätigt die R1-H3-Korrektur, den Beleg ernsthaft
+  zu konstruieren statt pro forma.
+- **Volumen-Intuition geprüft, bevor sie AK wurde:** Der geplante
+  Happy-AK „Summen-Volumen wächst" war geometrisch falsch (der
+  symmetrische Eckschnitt erhält die Trapez-Fläche) — beim
+  Durchrechnen vor der Implementierung entdeckt und durch die
+  Kerben-Probe ersetzt. Praxis-Kandidat: *quantitative AK vor
+  Implementierungs-Start einmal von Hand durchrechnen* (1. Vorkommen,
+  kategorisiert).
+
+**Restrisiko / Nachfolge:** DoD-7-Abnahme (Runde 2) ausstehend —
+einziger offener Punkt; danach slice-011b-DoD-4 abhaken, beide Slices
+→ done/, dann Welle-Closure `welle-1v-viewer` (separater Schritt mit
+unabhängiger Verifikation). WAL-006-Vollumfang (Schnittpunkte als
+Knoten, T-Stöße, exakte Stufe kollinearer Ungleich-Stärken) bleibt
+ausdrücklich offen; LH-FA-EVL-* müssen auf Footprint-Fläche aufsetzen
+(spez. §1-Hinweis).
