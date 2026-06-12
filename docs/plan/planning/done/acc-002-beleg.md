@@ -49,10 +49,11 @@ höherem OG-Rand: 2700 vs. 2500 mm).
 
 ## Abnahme (Projektinhaber)
 
-- [ ] *Ausstehend (Runde 2):* „Das Gebäude wird automatisch als
+- [x] **Abgenommen (Runde 2):** „Das Gebäude wird automatisch als
   3D-Modell dargestellt" (ACC-002) ist am Beleg-Bild
   benutzer-beobachtbar erfüllt; der Runde-1-Befund (offene
-  Außenecken) ist behoben. — Dietmar Burkard, Datum
+  Außenecken) ist behoben. — Dietmar Burkard, 2026-06-12
+  (erklärt im Sitzungs-Dialog).
 
 **Abnahme-Befund 2026-06-12 (Runde 1):** Abnahme zurückgestellt —
 die Wände schließen an den Außenecken nicht (fehlendes
@@ -60,5 +61,5 @@ die Wände schließen an den Außenecken nicht (fehlendes
 [`acc-002-befund-2d-ecken.png`](acc-002-befund-2d-ecken.png)).
 Ursache ist fehlender LH-FA-WAL-006-Umfang, kein Viewer-Fehler →
 Eckenschluss vorgezogen als
-[slice-012](../in-progress/slice-012-eckenschluss-wal006-teil.md); der
+[slice-012](slice-012-eckenschluss-wal006-teil.md); der
 Beleg wird danach regeneriert und erneut vorgelegt.

@@ -27,7 +27,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0003 | Crash-Recovery-Test (`kill -9`, LH-QA-005) | **erfüllt** durch slice-008b (2026-06-09) |
 | ADR-0007 | Innenkanten-Offset + Ring-Modell implementieren; Boundary-Test prüft Netto-Fläche verschachtelter Wandzüge | **erfüllt** durch [slice-009b](../planning/done/slice-009b-raumerkennung-implementierung.md) (2026-06-11) |
 | ADR-0008 | Observer-Port + subscribe/unsubscribe + Meldungen im `StructureEditService` (nach `redetectRooms`), inkl. Kapselungs-Test (werfender Beobachter) | **erfüllt** durch slice-010b (2026-06-11) |
-| ADR-0009 | `arch-check` **Regel E** (Qt-Includes nur `src/adapters/ui/` + `src/main.cpp`) + Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3) + `acc-002-beleg`-Target außerhalb `gates` | offen → slice-011b |
+| ADR-0009 | `arch-check` **Regel E** (Qt-Includes nur `src/adapters/ui/` + `src/main.cpp`) + Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3) + `acc-002-beleg`-Target außerhalb `gates` | **erfüllt** durch slice-011b (2026-06-12) |
 
 ## Konventionen
 

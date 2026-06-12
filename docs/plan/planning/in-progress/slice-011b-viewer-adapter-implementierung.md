@@ -1,15 +1,15 @@
 ---
 id: slice-011b
 titel: Sichtbarer 3D-Viewer — Qt-6-Adapter (Implementierung, ACC-002)
-status: in-progress
+status: done
 welle: welle-1v-viewer
 lastenheft_refs: [LH-FA-D3-001, LH-FA-D3-002]  # sichtbare Hälfte D3-002; ACC-002
-adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009]  # ADR-0009 accepted 2026-06-12 (slice-011a)
+adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009, ADR-0010]  # 0010 entstand in diesem Slice (Headless-GL-Befund)
 ---
 
 # Slice 011b: Sichtbarer 3D-Viewer — Qt-6-Adapter (Implementierung)
 
-**Status:** in-progress (seit 2026-06-12 — Trigger slice-011a done ✓).
+**Status:** done (2026-06-12).
 
 **Welle:** welle-1v-viewer (gestartet 2026-06-12).
 
@@ -76,7 +76,7 @@ framework-frei (ADR-0001).
       Boundary-AK"; Operationalisierung von „kein Flackern" über
       das (f)-Surrogat, W2-P9), Negative (verworfene/abgelehnte
       Mutation → Darstellung unverändert).
-- [ ] **ACC-002-Beleg** benutzer-beobachtbar dokumentiert
+- [x] **ACC-002-Beleg** benutzer-beobachtbar dokumentiert
       (3D-Darstellung eines ACC-001-Kern-Projekts) — Erzeugungsweg,
       Form und Ablage-Ort gemäß ADR-0009 Pflicht (f), **explizit
       als manueller Abnahme-Schritt deklariert, kein Gate**
@@ -97,7 +97,7 @@ framework-frei (ADR-0001).
       unprüfbar (R1-H2). Falls ADR-0009 Pflicht (b) der
       Darstellungs-Seite OCC-Sicht gewährt, wird zusätzlich
       Regel C **im Slice** nachgezogen.
-- [ ] `make gates` grün; Closure-Notiz mit Lerneintrag;
+- [x] `make gates` grün; Closure-Notiz mit Lerneintrag;
       CHANGELOG-**Slice**-Eintrag unter `[Unreleased]` (MR-004).
       **Nicht Teil dieser DoD** (W2-P1): die Welle-Closure
       `welle-1v-viewer` — Ergebnisnotiz inkl. zwingendem
@@ -241,8 +241,12 @@ framework-frei (ADR-0001).
   das ADR-0009-(f)-Mechanik-Detail (→ ADR-0010), keine Spec-Datei
   betroffen.
 - ACC-002-Beleg: erzeugt via `make acc-002-beleg`
-  (`acc-002-beleg.png` + Begleit-`.md` in `done/`) — **Abnahme durch
-  den Projektinhaber ausstehend** (DoD-4 offen, manueller Schritt).
+  (`acc-002-beleg.png` + Begleit-`.md` in `done/`). **Abnahme-Verlauf
+  (DoD-4):** Runde 1 zurückgestellt (Befund offene Außenecken →
+  slice-012, Eckenschluss LH-FA-WAL-006-Teilumfang); Runde 2 mit
+  regeneriertem Beleg am 2026-06-12 **erteilt** (Abnahme-Satz in
+  `acc-002-beleg.md`) — der manuelle Abnahme-Schritt hat damit als
+  Sensor seinen ersten Fund geliefert und ist geschlossen.
 
 **Lerneintrag:**
 

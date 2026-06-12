@@ -1,7 +1,7 @@
 ---
 id: slice-012
 titel: Eckenschluss endpunkt-verbundener Wände (LH-FA-WAL-006-Teilumfang)
-status: in-progress
+status: done
 welle: welle-1v-viewer (Scope-Erweiterung per Roadmap-Drift-Eintrag 2026-06-12)
 lastenheft_refs: [LH-FA-WAL-006, LH-FA-D3-001, LH-FA-D3-002]  # Teilumfang WAL-006; sichtbar im Viewer
 adr_refs: [ADR-0001, ADR-0002, ADR-0007, ADR-0008, ADR-0009, ADR-0010]  # 0010: Beleg-Renderweg (W3-Q6)
@@ -9,7 +9,7 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0007, ADR-0008, ADR-0009, ADR-0010]  # 0010: 
 
 # Slice 012: Eckenschluss endpunkt-verbundener Wände
 
-**Status:** in-progress (seit 2026-06-12).
+**Status:** done (2026-06-12).
 
 **Welle:** welle-1v-viewer (Scope-Erweiterung — Auslöser: der
 ACC-002-Beleg zeigte offene Außenecken, der Projektinhaber hat die
@@ -136,11 +136,11 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
       Orakel-Werte** (Länge·Stärke·Höhe; Degenerations-Fall wird auf
       degeneriertes Polygon portiert). Belegt per
       `make test`-Output, keine behauptete Testzahl.
-- [ ] **ACC-002-Beleg regeneriert** (`make acc-002-beleg`):
-      geschlossene Außenecken sichtbar ✓ (Stand `8fe8dad`, 2D-
-      Verifikation committet); Begleit-`.md` aktualisiert ✓ —
-      **Abnahme durch den Projektinhaber AUSSTEHEND** (Runde 2,
-      manueller Schritt; einziger offener DoD-Punkt).
+- [x] **ACC-002-Beleg regeneriert** (`make acc-002-beleg`):
+      geschlossene Außenecken sichtbar (Stand `8fe8dad`, 2D-
+      Verifikation committet); Begleit-`.md` aktualisiert;
+      **Abnahme durch den Projektinhaber erteilt** (Runde 2,
+      2026-06-12 — Abnahme-Satz in `acc-002-beleg.md`).
 - [x] `make gates` grün; Closure-Notiz mit Lerneintrag;
       CHANGELOG-Slice-Eintrag (MR-004).
 
@@ -288,10 +288,11 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
   Implementierungs-Start einmal von Hand durchrechnen* (1. Vorkommen,
   kategorisiert).
 
-**Restrisiko / Nachfolge:** DoD-7-Abnahme (Runde 2) ausstehend —
-einziger offener Punkt; danach slice-011b-DoD-4 abhaken, beide Slices
-→ done/, dann Welle-Closure `welle-1v-viewer` (separater Schritt mit
-unabhängiger Verifikation). WAL-006-Vollumfang (Schnittpunkte als
+**Abnahme:** Runde 2 am 2026-06-12 durch den Projektinhaber erteilt
+(Abnahme-Satz in `acc-002-beleg.md`) — DoD vollständig.
+
+**Restrisiko / Nachfolge:** Welle-Closure `welle-1v-viewer` als
+separater Schritt mit unabhängiger Verifikation. WAL-006-Vollumfang (Schnittpunkte als
 Knoten, T-Stöße, exakte Stufe kollinearer Ungleich-Stärken) bleibt
 ausdrücklich offen; LH-FA-EVL-* müssen auf Footprint-Fläche aufsetzen
 (spez. §1-Hinweis).
