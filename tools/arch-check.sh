@@ -11,10 +11,13 @@
 #          OCC bleibt im Geometrie-Adapter gekapselt).
 # Regel D: SQLite-Header (sqlite3*) NUR in src/adapters/persistence/
 #          (ADR-0003 — SQLite bleibt im Persistenz-Adapter gekapselt).
+# Regel E: Qt-Header (<Q...>) NUR in src/adapters/ui/ und in der
+#          Composition Root src/main.cpp (ADR-0009 (c) — Qt bleibt im
+#          UI-Adapter gekapselt; Plugin-Ausnahme erst mit LH-FA-PLG-*).
 #
 # HINWEIS: Heuristik, kein C++-Parser. Das Qt-Muster `Q[A-Za-z]` würde
-# einen künftigen framework-freien Kern-Header wie `Queue.h` falsch
-# anschlagen (False Positive). Heute unkritisch (Kern ist Qt-frei); bei
+# einen künftigen framework-freien Header wie `Queue.h` falsch
+# anschlagen (False Positive, Regeln A und E). Heute unkritisch; bei
 # Bedarf auf eine Include-Allowlist umstellen.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -65,7 +68,18 @@ if [ -n "$d_hits" ]; then
     status=1
 fi
 
+# --- Regel E: Qt-Header nur in src/adapters/ui/ + src/main.cpp (ADR-0009) ---
+# Erfasst angled/quoted Qt-Includes (<QWidget>, <QtGui/...>, "QString").
+e_hits="$(grep -rnE '#include[[:space:]]*[<"]Q[A-Za-z]' src \
+    --include='*.cpp' --include='*.h' 2>/dev/null \
+    | grep -vE '^src/(adapters/ui/|main\.cpp)' || true)"
+if [ -n "$e_hits" ]; then
+    echo "ARCH-CHECK FAIL (ADR-0009, Regel E): Qt-Header außerhalb src/adapters/ui/ + src/main.cpp:"
+    echo "$e_hits"
+    status=1
+fi
+
 if [ "$status" -eq 0 ]; then
-    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter (ADR-0002) + SQLite im Persistenz-Adapter (ADR-0003) gekapselt"
+    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter (ADR-0002) + SQLite im Persistenz-Adapter (ADR-0003) + Qt im UI-Adapter/Composition-Root (ADR-0009) gekapselt"
 fi
 exit "$status"

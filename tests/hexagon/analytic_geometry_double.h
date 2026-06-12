@@ -26,6 +26,20 @@ public:
     hexagon::model::Solid extrudeWall(const hexagon::model::Wall& w) const override {
         return hexagon::model::Solid{analyticVolume(w)};
     }
+
+    // Deterministisches Minimal-Netz (ein Dreieck in Wandhöhe) — die
+    // Kern-Tests prüfen Benachrichtigungs-/Query-Fluss, nicht die
+    // Tessellations-Geometrie (die testet der OCC-Adapter-Test).
+    hexagon::model::TriangleMesh tessellateWall(
+        const hexagon::model::Wall& w) const override {
+        hexagon::model::TriangleMesh mesh;
+        mesh.positions = {w.start.x_mm, w.start.y_mm, 0.0,
+                          w.end.x_mm,   w.end.y_mm,   0.0,
+                          w.end.x_mm,   w.end.y_mm,   w.height_mm};
+        mesh.normals = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
+        mesh.indices = {0, 1, 2};
+        return mesh;
+    }
 };
 
 }  // namespace bcad::testing

@@ -22,7 +22,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check acc-002-beleg
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -69,7 +69,17 @@ versions: ## ADR-0004 — gepinnte Toolchain-Versionen (Reproduzierbarkeits-Bele
 		build-essential clang-tidy cmake gcovr ninja-build qt6-base-dev \
 		libocct-foundation-dev libocct-modeling-data-dev \
 		libocct-modeling-algorithms-dev libocct-data-exchange-dev \
-		libtbb-dev libsqlite3-dev libgtest-dev ca-certificates | sort
+		libtbb-dev libsqlite3-dev libgtest-dev xvfb ca-certificates | sort
+
+# ACC-002-Beleg (ADR-0009 (f)): rendert das ACC-001-Kern-Demo-Projekt
+# offscreen (Mesa/llvmpipe) und schreibt das Beleg-Bild. MANUELLER
+# Abnahme-Schritt des Projektinhabers — KEIN Gate, bewusst nicht in
+# `make gates` aggregiert; das Begleit-.md entsteht kuratiert von Hand.
+acc-002-beleg: ## ACC-002 — Beleg-Bild offscreen rendern (manueller Abnahme-Schritt, KEIN Gate)
+	$(GATE) --target build -t $(IMAGE):build .
+	$(DOCKER) run --rm \
+		-v $(CURDIR)/docs/plan/planning/done:/out \
+		$(IMAGE):build xvfb-run -a ./build/src/b-cad --acc-002-beleg /out/acc-002-beleg.png
 
 # ADR-0006-Drift: die committete SQLite-DDL muss exakt das sein, was
 # d-migrate aus spec/data-model.yaml erzeugt. BEWUSST NICHT in `make gates`

@@ -1,7 +1,7 @@
 ---
 id: slice-011b
 titel: Sichtbarer 3D-Viewer — Qt-6-Adapter (Implementierung, ACC-002)
-status: open
+status: in-progress
 welle: welle-1v-viewer
 lastenheft_refs: [LH-FA-D3-001, LH-FA-D3-002]  # sichtbare Hälfte D3-002; ACC-002
 adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009]  # ADR-0009 accepted 2026-06-12 (slice-011a)
@@ -9,11 +9,9 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009]  # ADR-0009 accepted 2026-06-
 
 # Slice 011b: Sichtbarer 3D-Viewer — Qt-6-Adapter (Implementierung)
 
-**Status:** open
+**Status:** in-progress (seit 2026-06-12 — Trigger slice-011a done ✓).
 
-**Welle:** welle-1v-viewer (gestartet 2026-06-12; dieser Slice
-bleibt in `open/`, bis sein Trigger — slice-011a done — erfüllt
-ist).
+**Welle:** welle-1v-viewer (gestartet 2026-06-12).
 
 **Bezug:** ACC-002, sichtbare Hälfte LH-FA-D3-002 (AK seit
 slice-010a), LH-FA-D3-001 (extrudierter Stand), ADR-0008
@@ -49,7 +47,7 @@ framework-frei (ADR-0001).
 
 ## 2. Definition of Done
 
-- [ ] **Viewer-Adapter gemäß ADR-0009** unter `src/adapters/ui/`
+- [x] **Viewer-Adapter gemäß ADR-0009** unter `src/adapters/ui/`
       (Dateischnitt folgt der ADR — Pflichten a/b/e), in zwei
       prüfbaren Hälften (= Split-Pfad §6):
       **(i) Statische Darstellung:** ein geladenes/aufgebautes
@@ -61,9 +59,9 @@ framework-frei (ADR-0001).
       den Stand und zieht die Darstellung nach (LH-FA-D3-002);
       keine Mutations-Rückrufe im Callback (Re-Entranz-Verbot
       ADR-0008).
-- [ ] **Composition Root** (`src/main.cpp`) verdrahtet Kern +
+- [x] **Composition Root** (`src/main.cpp`) verdrahtet Kern +
       Viewer-Adapter gemäß ADR-0009 Pflicht (e).
-- [ ] **AK-Tests mit `LH-`-ID im Namen**, display-frei lauffähig —
+- [x] **AK-Tests mit `LH-`-ID im Namen**, display-frei lauffähig —
       Strategie und beobachtbares „dargestellt"-Surrogat gemäß
       **ADR-0009 Pflicht (f)** (hier nicht vorentschieden; R1-H1):
       **Split-Hälfte (i):** statische Darstellung — Projekt mit
@@ -88,7 +86,7 @@ framework-frei (ADR-0001).
       Erzeugungs-Kommando, Commit-Hash, Datum und einen expliziten
       Abnahme-Satz. Der Abnahme-Punkt ist *sichtbar*, nicht nur
       getestet.
-- [ ] **Ein realer arch-check-Sensor für die Qt-Grenze existiert
+- [x] **Ein realer arch-check-Sensor für die Qt-Grenze existiert
       und ist grün** (Folgepflicht aus ADR-0009 Pflicht (c), Muster
       Regel C/slice-003b) — Geltungsbereich und Ausnahme-Set
       **gemäß der ADR-Entscheidung**, nicht hier fixiert (W2-P2;

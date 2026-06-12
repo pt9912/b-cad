@@ -12,6 +12,7 @@
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/ports/driving/detect_rooms_port.h"
 #include "hexagon/ports/driving/edit_structure_port.h"
+#include "hexagon/ports/driving/view_model_port.h"
 
 namespace bcad::hexagon::services {
 
@@ -27,7 +28,8 @@ namespace bcad::hexagon::services {
 // (spez. §1 §Auslösung). Die Erkennung ist total (wirft nicht) und
 // läuft erst NACH dem transaktionalen Commit der Mutation.
 class StructureEditService final : public ports::driving::EditStructurePort,
-                                   public ports::driving::DetectRoomsPort {
+                                   public ports::driving::DetectRoomsPort,
+                                   public ports::driving::ViewModelPort {
 public:
     explicit StructureEditService(const ports::driven::GeometryKernelPort& geometry);
 
@@ -39,6 +41,12 @@ public:
 
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
+
+    // ViewModelPort (LH-FA-D3-001, ADR-0009 (b)): tessellierter Stand für
+    // die Darstellung — totale Queries (Tessellations-Fehler ⇒ leer),
+    // on demand über den GeometryKernelPort.
+    std::vector<ports::driving::WallMesh> wallMeshes() const override;
+    std::optional<model::TriangleMesh> wallMesh(model::WallId id) const override;
 
     // ADR-0008 (LH-FA-D3-002): Beobachter-Registrierung — mehrfach,
     // nicht-besitzend; Beobachter melden sich vor ihrer Zerstörung ab.

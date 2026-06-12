@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hexagon/model/solid.h"
+#include "hexagon/model/triangle_mesh.h"
 #include "hexagon/model/wall.h"
 #include "hexagon/ports/driven/geometry_kernel_port.h"
 
@@ -18,6 +19,13 @@ public:
     // `std::runtime_error` (E-GEO-002) — kein OCC-Ausnahmetyp verlässt
     // den Adapter.
     hexagon::model::Solid extrudeWall(
+        const hexagon::model::Wall& wall) const override;
+
+    // Tesselliert das extrudierte Wand-Solid zum neutralen Dreiecksnetz
+    // (ADR-0009 (b): Tessellation über Port — kein OCC in der GUI).
+    // Flat-Shading-Layout (eigene Vertices + Flächennormale je Dreieck).
+    // Fehlerverhalten wie `extrudeWall` (E-GEO-002, neutraler Wurf).
+    hexagon::model::TriangleMesh tessellateWall(
         const hexagon::model::Wall& wall) const override;
 };
 

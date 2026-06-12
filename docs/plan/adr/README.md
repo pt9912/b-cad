@@ -10,7 +10,8 @@
 | [0006](0006-relationales-schema-design.md) | Relationales Schema-Design des Gebäudemodells (per-Typ-Tabellen, `openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack) | Accepted (2026-06-09) | OBJ-003, ADR-0001/0003, LH-QA-003 |
 | [0007](0007-raumerkennung-geometrie-basis.md) | Geometrie-Basis der Raumerkennung (Innenkante, Ring-Modell, Erkennung total) | Accepted (2026-06-11) | LH-FA-ROM-001/002/003, LH-FA-EVL-003, ADR-0001/0006 |
 | [0008](0008-aenderungs-benachrichtigung.md) | Änderungs-Benachrichtigung Kern → Darstellung (Observer-Port, Push-Notify/Pull-State, Kapselung) | Accepted (2026-06-11) | LH-FA-D3-002, OBJ-003, ADR-0001/0007 |
-| [0009](0009-gui-framework-qt6.md) | GUI-Framework-Bindung Qt 6 (Widgets, Tessellation über `ViewModelPort` — kein OCC in der GUI, Regel E, offscreen-Strategie) | Accepted (2026-06-12) | REQ-TEC-002, ACC-002, LH-FA-D3-001/002, ADR-0001/0002/0008 |
+| [0009](0009-gui-framework-qt6.md) | GUI-Framework-Bindung Qt 6 (Widgets, Tessellation über `ViewModelPort` — kein OCC in der GUI, Regel E, Headless-Strategie) | Accepted (2026-06-12) | REQ-TEC-002, ACC-002, LH-FA-D3-001/002, ADR-0001/0002/0008 |
+| [0010](0010-headless-gl-xvfb.md) | Headless-GL via Xvfb + Mesa/llvmpipe — präzisiert ADR-0009 (f): offscreen-QPA trägt kein GL (Implementierungs-Befund slice-011b) | Accepted (2026-06-12) | ADR-0009, ADR-0004, LH-FA-D3-002 |
 
 ## ADR-Folgepflichten (Status)
 

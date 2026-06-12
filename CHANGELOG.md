@@ -29,6 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Gate-Nachweis (Commit ohne Gate-Lauf wird vom Stop-Hook geblockt),
   Guard fail-closed + ohne Permission-Bypass + Sub-Shell-/Flag-Bündel-
   Rekursion, `record-gates` parallel-sicher im `gates`-Rezept.
+- slice-011b — sichtbarer 3D-Viewer (welle-1v, ACC-002 / sichtbare Hälfte
+  LH-FA-D3-002): Qt-6-Widgets-Viewer mit orbitierbarer Perspektive;
+  Tessellation über `ViewModelPort` (ADR-0009 (b), kein OCC in der GUI);
+  Szenen-Surrogat + display-freie AK-Tests; arch-check **Regel E**
+  (Qt nur `adapters/ui/` + Composition Root); `make acc-002-beleg`
+  (manueller Abnahme-Schritt, kein Gate); ADR-0010 — Headless-GL via
+  Xvfb/llvmpipe (offscreen-QPA trägt kein GL); Toolchain + `make
+  versions`-Manifest um `xvfb` erweitert (ADR-0004).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

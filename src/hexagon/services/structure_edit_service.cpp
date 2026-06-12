@@ -156,6 +156,35 @@ std::vector<model::Room> StructureEditService::rooms(model::StoreyId storey) con
     return (it != rooms_.end()) ? it->second : std::vector<model::Room>{};
 }
 
+std::vector<ports::driving::WallMesh> StructureEditService::wallMeshes() const {
+    std::vector<ports::driving::WallMesh> meshes;
+    meshes.reserve(building_.walls.size());
+    for (const model::Wall& w : building_.walls) {
+        if (std::optional<model::TriangleMesh> mesh = wallMesh(w.id)) {
+            meshes.push_back(ports::driving::WallMesh{w.id, std::move(*mesh)});
+        }
+    }
+    return meshes;
+}
+
+std::optional<model::TriangleMesh> StructureEditService::wallMesh(
+    model::WallId id) const {
+    const auto it = std::find_if(
+        building_.walls.begin(), building_.walls.end(),
+        [id](const model::Wall& w) { return w.id == id; });
+    if (it == building_.walls.end()) {
+        return std::nullopt;  // unbekannte Id — Query ist total
+    }
+    try {
+        return geometry_.tessellateWall(*it);
+    } catch (const std::exception&) {
+        // E-GEO-002 in der Query-Hälfte: totale Antwort statt Wurf —
+        // committete Wände sind validiert, ein Tessellations-Fehler darf
+        // die Darstellungs-Abfrage nicht kippen (ADR-0009 (b)).
+        return std::nullopt;
+    }
+}
+
 void StructureEditService::redetectRooms(model::StoreyId storey) {
     rooms_[storey] = detectRooms(building_, storey);
 }

@@ -44,7 +44,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libtbb-dev \
         libsqlite3-dev \
         libgtest-dev \
+        xvfb \
     && rm -rf /var/lib/apt/lists/*
+# xvfb: Headless-GL für Viewer-Tests/ACC-002-Beleg — die Qt-offscreen-
+# QPA trägt kein OpenGL (ADR-0010, präzisiert ADR-0009 (f)).
 
 # --- build: kompiliert die Target-Kette (Kern + Adapter) ---
 FROM deps AS build
@@ -53,8 +56,10 @@ COPY . .
 RUN cmake -S . -B build -G Ninja && cmake --build build
 
 # --- test: GoogleTest (Kern + Adapter-Linkage), REQ-TEC-005 ---
+# xvfb-run: GL-Viewer-Tests rendern headless via Xvfb + Mesa/llvmpipe
+# (ADR-0010); die QPA-Wahl liegt beim Harness, nicht in den Tests.
 FROM build AS test
-RUN ctest --test-dir build --output-on-failure
+RUN xvfb-run -a ctest --test-dir build --output-on-failure
 
 # --- lint: clang-tidy + Suppression-Gate (AGENTS.md §2.4) ---
 # slice-004: Auf 26.04 ist g++-15 der Compiler (Header in /usr/include/c++/15),
@@ -76,7 +81,7 @@ WORKDIR /src
 COPY . .
 RUN cmake -S . -B build-cov -G Ninja -DBCAD_COVERAGE=ON >/dev/null \
  && cmake --build build-cov >/dev/null \
- && ctest --test-dir build-cov >/dev/null \
+ && xvfb-run -a ctest --test-dir build-cov >/dev/null \
  && gcovr --root . --filter 'src/' --exclude '.*/main\.cpp' \
         --fail-under-line ${BCAD_COVERAGE_THRESHOLD} --print-summary build-cov
 

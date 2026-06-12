@@ -12,3 +12,4 @@ libsqlite3-dev 3.46.1-9
 libtbb-dev 2022.3.0-2
 ninja-build 1.13.2-1
 qt6-base-dev 6.10.2+dfsg-7
+xvfb 2:21.1.22-1ubuntu1

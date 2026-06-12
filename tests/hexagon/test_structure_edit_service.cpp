@@ -42,6 +42,12 @@ public:
         }
         return model::Solid{analyticVolume(w)};
     }
+    model::TriangleMesh tessellateWall(const model::Wall& w) const override {
+        if (failing_) {
+            throw std::runtime_error("Geometrie-Operation fehlgeschlagen");
+        }
+        return AnalyticGeometry{}.tessellateWall(w);
+    }
 
 private:
     bool failing_{false};

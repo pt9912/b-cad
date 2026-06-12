@@ -2,7 +2,7 @@
 # eingebunden (ADR-0001/0002/0003). bcad_adapters hängt am Kern, nie
 # umgekehrt.
 
-find_package(Qt6 REQUIRED COMPONENTS Core)   # REQ-TEC-002, ADR-Folge GUI
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets)  # REQ-TEC-002, ADR-0009
 find_package(OpenCASCADE REQUIRED)           # REQ-TEC-003, ADR-0002
 find_package(SQLite3 REQUIRED)               # REQ-TEC-007, ADR-0003
 
@@ -23,6 +23,8 @@ configure_file(
 
 add_library(bcad_adapters
     ui/qt_probe.cpp
+    ui/viewer_scene.cpp
+    ui/viewer_widget.cpp
     geometry/occ_probe.cpp
     geometry/occ_geometry_adapter.cpp
     persistence/sqlite_probe.cpp
@@ -35,13 +37,21 @@ target_include_directories(bcad_adapters
             ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 target_link_libraries(bcad_adapters
+    PUBLIC
+        # ADR-0009: der Viewer-Header (ui/viewer_widget.h) exponiert
+        # Qt-Widget-Typen — Konsumenten (Composition Root, Adapter-Tests)
+        # brauchen die Qt-Include-Pfade.
+        Qt6::Widgets
+        Qt6::OpenGL
+        Qt6::OpenGLWidgets
     PRIVATE
         bcad_hexagon          # Adapter -> Kern (erlaubte Richtung)
         Qt6::Core
         SQLite::SQLite3
         # OCC-Modeling-Toolkits (gezielt; nicht ${OpenCASCADE_LIBRARIES},
         # das auch nicht-installierte DRAW-/Viewer-Toolkits listet):
-        # Footprint-Fläche + Prisma + Volumen-Properties.
-        TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim
+        # Footprint-Fläche + Prisma + Volumen-Properties + Tessellation
+        # (TKMesh, ADR-0009 (b)).
+        TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKMesh
 )
 target_compile_features(bcad_adapters PUBLIC cxx_std_20)
