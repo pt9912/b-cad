@@ -162,7 +162,7 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
 | `tests/{hexagon,adapters}/{**}` | neu/ändern | WAL-006-AK-Tests (Kern, OCC, Szene, Folge-Meldung, Fehlerfall) |
 | `tests/CMakeLists.txt` | ändern | neue Testdateien registrieren (W3-P8) |
 | `docs/plan/planning/done/{acc-002-beleg}.{*}` | ändern | Beleg regenerieren + Begleit-.md |
-| `docs/plan/planning/in-progress/slice-011b-viewer-adapter-implementierung.md` | ändern | DoD-4-Abnahme-Nachtrag nach regeneriertem Beleg (W3-P11) |
+| `docs/plan/planning/done/slice-011b-viewer-adapter-implementierung.md` | ändern | DoD-4-Abnahme-Nachtrag nach regeneriertem Beleg (W3-P11) |
 | `CHANGELOG.md` | ändern | Slice-Eintrag (MR-004) |
 | `docs/plan/planning/in-progress/roadmap.md` | ändern | Drift-Eintrag + Closure-Trigger-Zeile slice-012 (Scope-Erweiterung) |
 | `docs/reviews/{2026-06-12-slice-012-plan}.md` | neu | MR-006-Review-Report (W3-P12) |
