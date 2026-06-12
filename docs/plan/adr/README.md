@@ -43,8 +43,8 @@ Noch nicht als ADR angelegt, in der Roadmap verortet:
   (Scope-Entscheidung slice-010a; dort entsteht auch der 3D-Viewer
   für ACC-002 / sichtbare Hälfte LH-FA-D3-002). **Geschnitten:**
   entsteht als ADR-0009 in
-  [slice-011a](../planning/open/slice-011a-viewer-gui-adr-spec.md)
-  (in `open/`).
+  [slice-011a](../planning/in-progress/slice-011a-viewer-gui-adr-spec.md)
+  (in `in-progress/`, Welle gestartet 2026-06-12).
 - Plugin-API-/ABI-Vertrag und Sandbox-Modell (LH-FA-PLG-*) — welle-5.
 - IFC-Bibliothek und -Schema-Version (LH-FA-IO-001/002) — welle-4.
 - STEP-/Format-Export-Backend hinter `ModelExporterPort` (LH-FA-IO-005;
