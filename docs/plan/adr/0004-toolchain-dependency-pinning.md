@@ -89,7 +89,7 @@ clang-21/gcc-15-Include-Mismatch). `snapshot.ubuntu.com` ist erreichbar;
 | Tooling | Regel | Make-Target |
 |---|---|---|
 | Reproduzierbarkeits-Check | zwei Läufe (gleicher Digest + Snapshot) → identische `dpkg-query`-Versionsliste; Beleg-Manifest `harness/toolchain-versions.txt` | `make versions` (real, slice-004) |
-| Image-Hash | `harness/image-hash.txt` aus pinned Build (Modul 14) | `make fullbuild` (geplant) |
+| Image-Hash | `harness/image-hash.txt` aus pinned Build (Modul 14) | `make fullbuild` (geplant) | <!-- d-check:ignore (geplant: entsteht mit make fullbuild, Modul 14) -->
 
 ## Re-Evaluierungs-Trigger
 

@@ -57,7 +57,7 @@ Schema-Vorschlag (`spec/data-model.yaml`) wählt einen anderen Weg.
 **Schema-Autoring & Generierung.** Das Schema wird im **d-migrate
 Neutral-Format** (`schema_format: "1.0"`; GitHub
 [`pt9912/d-migrate`](https://github.com/pt9912/d-migrate),
-`spec/schema-reference.md`) in
+`spec/schema-reference.md`) in <!-- d-check:ignore (Datei im d-migrate-Repo) -->
 [`spec/data-model.yaml`](../../../spec/data-model.yaml) gepflegt;
 **d-migrate generiert** daraus die dialekt-spezifische DDL (Ziel: SQLite,
 ADR-0003) — kein hand-geschriebenes SQL. Damit ist das Schema

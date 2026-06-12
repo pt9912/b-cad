@@ -34,7 +34,7 @@ Spec-/Doku-Slice — **kein Code**; speist später den Persistenz-Slice
 - [x] `spec/data-model.yaml` committet, **format-konform zum d-migrate
       Neutral-Schema** (`schema_format: "1.0"`; GitHub
       [`pt9912/d-migrate`](https://github.com/pt9912/d-migrate),
-      `spec/schema-reference.md`): Spalten-`references`
+      `spec/schema-reference.md`): Spalten-`references` <!-- d-check:ignore (Datei im d-migrate-Repo) -->
       statt `foreign_keys`-Block, `constraints`/`indices` statt
       `unique_constraints`/top-level `indexes`, `decimal` mit
       `precision`/`scale`, Klassifikation als `enum`. Namen

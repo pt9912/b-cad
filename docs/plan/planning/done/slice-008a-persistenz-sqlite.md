@@ -52,11 +52,11 @@ Drift-Check). **Carveout:** Crash-Recovery-Test (`kill -9`, LH-QA-005) und
       reproduzierbare DDL) und difft gegen die committete `schema.sql`;
       Abweichung = Fehler. d-migrate bleibt aus dem hermetischen
       Gate-Build-Pfad, **muss aber in der CI-Befehlsliste stehen** (sonst
-      feuert das Drift-Gate nie automatisch; `harness/README`: Lauf-Wahrheit
+      feuert das Drift-Gate nie automatisch; `harness/README.md`: Lauf-Wahrheit
       pro Commit gehört in CI).
 - [x] **arch-check Regel D**: `sqlite3.h`/`<sqlite3...>` **nur** in
       `src/adapters/persistence/` (füllt ADR-0003-Fitness; analog Regel C).
-      `harness/README` + `AGENTS.md` Sensor-Zeile aktualisiert.
+      `harness/README.md` + `AGENTS.md` Sensor-Zeile aktualisiert.
 - [x] **Round-Trip-Test** `tests/adapters/test_sqlite_project_repository.cpp`:
       Building (mehrere Geschosse + Wände, alle `WallType`) → `save` → `load`
       → feldgleich (BLD-002 Happy / BLD-003). Leeres Projekt; Ids erhalten.
@@ -70,7 +70,7 @@ Drift-Check). **Carveout:** Crash-Recovery-Test (`kill -9`, LH-QA-005) und
 | `src/hexagon/ports/driven/project_repository_port.h` | neu | Driven Port (Kern-Vertrag), framework-frei |
 | `src/adapters/persistence/sqlite_project_repository.{h,cpp}` | neu | SQLite-Adapter (Transaktion + Temp+Rename) |
 | `src/adapters/persistence/schema.sql` | neu | generierte SQLite-DDL (committet) |
-| `src/adapters/persistence/CMakeLists.txt` bzw. `src/adapters/CMakeLists.txt` | Änderung | Adapter bauen, `sqlite3` linken, `schema.sql` einbetten |
+| `src/adapters/persistence/CMakeLists.txt` bzw. `src/adapters/CMakeLists.txt` | Änderung | Adapter bauen, `sqlite3` linken, `schema.sql` einbetten | <!-- d-check:ignore (historisch: Plan-Alternative, umgesetzt ist src/adapters/CMakeLists.txt) -->
 | `tools/arch-check.sh` | Änderung | Regel D (sqlite nur in persistence/) |
 | `Makefile` | Änderung | `make schema-check` (Drift-Gate, docker run d-migrate) |
 | `tests/adapters/CMakeLists.txt` + Test | Änderung/neu | Round-Trip |

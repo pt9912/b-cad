@@ -91,7 +91,7 @@ Benachrichtigungs-Vertrag ist ADR-0008.
      Treiber wird mit Interaktion/Selektion relevant).
    - **ACC-002-Beleg:** make-Target `acc-002-beleg` rendert offscreen
      ein ACC-001-Kern-Projekt und schreibt
-     `docs/plan/planning/done/acc-002-beleg.png` + Begleit-`.md`
+     `docs/plan/planning/done/acc-002-beleg.png` + Begleit-`.md` <!-- d-check:ignore (geplant: entsteht mit dem acc-002-beleg-Target) -->
      (Projekt, Soll-Merkmale, Kommando, Commit-Hash, Datum,
      Abnahme-Satz). **Manueller Abnahme-Schritt des Projektinhabers,
      kein Gate** — das Target wird nicht in `make gates` aggregiert

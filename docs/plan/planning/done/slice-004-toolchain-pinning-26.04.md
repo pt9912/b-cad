@@ -92,7 +92,7 @@ fixiert, Migration auf **Ubuntu 26.04 (resolute)** und
   internes apt gehört daher in **eigene Dockerfile-Stages** (Host-Befehl =
   `make`/`docker build`, kein verbotenes Wort).
 
-**Restrisiko / Nachfolge:** Image-Hash-Vertrag (`harness/image-hash.txt`,
+**Restrisiko / Nachfolge:** Image-Hash-Vertrag (`harness/image-hash.txt`, <!-- d-check:ignore (geplant: entsteht mit make fullbuild, Modul 14) -->
 `make fullbuild`, Modul 14) bleibt offen — der nächste Reproduzierbarkeits-
 Schritt nach dem apt-Snapshot.
 
