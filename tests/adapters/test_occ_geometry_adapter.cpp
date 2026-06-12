@@ -9,6 +9,7 @@
 
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "hexagon/model/constants.h"
+#include "hexagon/services/wall_footprint.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/model/wall.h"
 #include "hexagon/services/structure_edit_service.h"
@@ -18,6 +19,15 @@ namespace {
 namespace model = bcad::hexagon::model;
 namespace services = bcad::hexagon::services;
 using bcad::adapters::geometry::OccGeometryAdapter;
+using bcad::hexagon::services::buttFootprint;
+
+// Portierung slice-012 (W3-Q1): der Adapter extrudiert das vom Kern
+// gelieferte Footprint-Polygon — Orakel-Werte unveraendert
+// (Laenge·Staerke·Hoehe fuer den stumpfen Rechteck-Footprint).
+bcad::hexagon::model::Solid extrude(const OccGeometryAdapter& adapter,
+                                    const model::Wall& wall) {
+    return adapter.extrudeFootprint(buttFootprint(wall), wall.height_mm);
+}
 
 model::Wall makeWall(model::Point2D start, model::Point2D end,
                      double thickness_mm, double height_mm) {
@@ -35,7 +45,7 @@ TEST(OccGeometryAdapter_LH_FA_D3_001, VolumenEntsprichtAnalytischemWert) {
     const OccGeometryAdapter adapter;
     const auto wall = makeWall({0.0, 0.0}, {1000.0, 0.0}, 240.0, 2500.0);
 
-    const auto solid = adapter.extrudeWall(wall);
+    const auto solid = extrude(adapter, wall);
 
     const double expected = 1000.0 * 240.0 * 2500.0;  // Länge·Stärke·Höhe
     EXPECT_NEAR(solid.volume_mm3, expected, expected * 1e-6);
@@ -46,7 +56,7 @@ TEST(OccGeometryAdapter_LH_FA_D3_001, VolumenUnabhaengigVonSegmentRichtung) {
     // Diagonales Segment, Länge 1000 (3-4-5: 600/800).
     const auto wall = makeWall({0.0, 0.0}, {600.0, 800.0}, 300.0, 2700.0);
 
-    const auto solid = adapter.extrudeWall(wall);
+    const auto solid = extrude(adapter, wall);
 
     const double expected = 1000.0 * 300.0 * 2700.0;
     EXPECT_NEAR(solid.volume_mm3, expected, expected * 1e-6);
@@ -56,18 +66,18 @@ TEST(OccGeometryAdapter_LH_FA_D3_001, ExtrusionIstDeterministisch) {
     const OccGeometryAdapter adapter;
     const auto wall = makeWall({10.0, 20.0}, {10.0, 1020.0}, 300.0, 2700.0);
 
-    const auto first = adapter.extrudeWall(wall);
-    const auto second = adapter.extrudeWall(wall);
+    const auto first = extrude(adapter, wall);
+    const auto second = extrude(adapter, wall);
 
     EXPECT_DOUBLE_EQ(first.volume_mm3, second.volume_mm3);
 }
 
-// E-GEO-002 (Finding 2): degeneriertes Segment -> neutrale Ausnahme
-// (kein OCC-Typ verlässt den Adapter).
-TEST(OccGeometryAdapter_LH_FA_D3_001, DegeneriertesSegmentWirftNeutral) {
+// E-GEO-002 (Finding 2): degeneriertes Polygon (kollabiertes Segment)
+// -> neutrale Ausnahme (kein OCC-Typ verlässt den Adapter).
+TEST(OccGeometryAdapter_LH_FA_D3_001, DegeneriertesFootprintWirftNeutral) {
     const OccGeometryAdapter adapter;
     const auto wall = makeWall({5.0, 5.0}, {5.0, 5.0}, 240.0, 2500.0);  // Länge 0
-    EXPECT_THROW((void)adapter.extrudeWall(wall), std::runtime_error);
+    EXPECT_THROW((void)extrude(adapter, wall), std::runtime_error);
 }
 
 // Integration: volle Kette Driving -> Service -> Driven -> OCC mit dem

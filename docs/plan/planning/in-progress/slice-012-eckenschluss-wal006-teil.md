@@ -111,10 +111,13 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
       wie die übrigen Wand-Ops (Pull + idempotentes Ersetzen).
 - [ ] **AK-Tests mit `LH-FA-WAL-006` im Namen** (Kern gegen
       analytisches Double mit Shoelace-Volumen + OCC-Adapter +
-      Szene): Happy (rechter Winkel → Eck-Volumen geschlossen:
-      Summen-Volumen > Summe der Butt-Volumina; **Netz-Bounding-Box
-      überdeckt den äußeren Eckpunkt** = gemeinsamer Endpunkt ±
-      halbe Stärken, W3-P10), Boundary (kollinear gleich/ungleich
+      Szene): Happy (rechter Winkel → Ecke körperlich geschlossen:
+      **Netz-/Footprint-Bounding-Box überdeckt den äußeren Eckpunkt**
+      (gemeinsamer Endpunkt ± halbe Stärken) und ein zuvor offener
+      Kerben-Punkt liegt im Wand-Footprint, W3-P10 — *kein*
+      Volumen-Vergleich: der symmetrische Eckschnitt erhält das
+      Einzelwand-Volumen (Trapez, gleiche Mittellinie)), Boundary
+      (kollinear gleich/ungleich
       stark; Spitzwinkel → Begrenzung greift, Rückfall stumpf;
       **Grad-Übergang 2→3: dritte Wand an vermiterter Ecke →
       Bestandswände werden stumpf UND gemeldet**, W3-Q8), Negative

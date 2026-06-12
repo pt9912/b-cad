@@ -23,7 +23,8 @@ void ViewerScene::onModelChanged(const driven::ModelChange& change) {
     switch (change.op) {
         case driven::ModelChangeOp::WallAdded:
         case driven::ModelChangeOp::WallThicknessChanged:
-        case driven::ModelChangeOp::WallHeightChanged: {
+        case driven::ModelChangeOp::WallHeightChanged:
+        case driven::ModelChangeOp::WallGeometryChanged: {  // LH-FA-WAL-006
             // Pull-State (ADR-0008): aktualisierten Stand der gemeldeten
             // Wand holen. Leere Antwort (unbekannte Id/Tessellations-
             // Fehler) lässt die Szene unverändert — der Callback wirft

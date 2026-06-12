@@ -36,21 +36,29 @@ using bcad::testing::analyticVolume;
 class ControllableGeometry final : public driven::GeometryKernelPort {
 public:
     void setFailing(bool failing) { failing_ = failing; }
-    model::Solid extrudeWall(const model::Wall& w) const override {
-        if (failing_) {
+    // Fehlerinjektion fuer den Mehr-Element-Pfad (LH-FA-WAL-006, W3-P2):
+    // wirft beim n-ten extrude-Aufruf (1-basiert), 0 = nie.
+    void failOnExtrudeCall(int call_number) { fail_on_call_ = call_number; }
+    model::Solid extrudeFootprint(const model::Footprint& footprint,
+                                  double height_mm) const override {
+        ++extrude_calls_;
+        if (failing_ || extrude_calls_ == fail_on_call_) {
             throw std::runtime_error("Geometrie-Operation fehlgeschlagen");
         }
-        return model::Solid{analyticVolume(w)};
+        return model::Solid{bcad::testing::analyticVolume(footprint, height_mm)};
     }
-    model::TriangleMesh tessellateWall(const model::Wall& w) const override {
+    model::TriangleMesh tessellateFootprint(
+        const model::Footprint& footprint, double height_mm) const override {
         if (failing_) {
             throw std::runtime_error("Geometrie-Operation fehlgeschlagen");
         }
-        return AnalyticGeometry{}.tessellateWall(w);
+        return AnalyticGeometry{}.tessellateFootprint(footprint, height_mm);
     }
 
 private:
     bool failing_{false};
+    int fail_on_call_{0};
+    mutable int extrude_calls_{0};
 };
 
 constexpr model::StoreyId kGroundStorey{1};
@@ -234,4 +242,32 @@ TEST(StructureEditService, SetThicknessTransaktionalBeiGeometrieFehler) {
     EXPECT_THROW((void)svc.setWallThickness(id, 300.0), std::runtime_error);
     EXPECT_DOUBLE_EQ(svc.wall(id).thickness_mm, thicknessBefore);  // unverändert
     EXPECT_DOUBLE_EQ(svc.wallSolid(id).volume_mm3, volBefore);     // altes Solid
+}
+
+// LH-FA-WAL-006 / W3-P2: Transaktions-Garantie des Mehr-Element-Pfads —
+// wirft der NACHBAR-Rebuild (Eckenschluss), bleibt das gesamte Modell
+// unverändert und es ergeht KEINE Meldung.
+TEST(StructureEditService_LH_FA_WAL_006, NachbarRebuildFehlerTransaktional) {
+    ControllableGeometry geometry;
+    services::StructureEditService svc(geometry);
+    // Aufrufe 1-3: Wand A, Wand B (Kandidat) + Nachbar-Rebuild A.
+    const auto a = svc.addWall(kGroundStorey, {{0.0, 0.0}, {1000.0, 0.0}}).value();
+    const auto b = svc.addWall(kGroundStorey, {{1000.0, 0.0}, {1000.0, 1000.0}}).value();
+    const double volA = svc.wallSolid(a).volume_mm3;
+    const double volB = svc.wallSolid(b).volume_mm3;
+
+    struct Counting final : driven::ModelChangedPort {
+        int calls{0};
+        void onModelChanged(const driven::ModelChange&) override { ++calls; }
+    } listener;
+    svc.subscribe(listener);
+    // Aufruf 4 = Wand A (trial), Aufruf 5 = Nachbar B -> wirft.
+    geometry.failOnExtrudeCall(5);
+    EXPECT_THROW((void)svc.setWallThickness(a, 300.0), std::runtime_error);
+
+    EXPECT_DOUBLE_EQ(svc.wall(a).thickness_mm, model::kDefaultWallThicknessMm);
+    EXPECT_DOUBLE_EQ(svc.wallSolid(a).volume_mm3, volA);
+    EXPECT_DOUBLE_EQ(svc.wallSolid(b).volume_mm3, volB);
+    EXPECT_EQ(listener.calls, 0);  // keine Meldung (ADR-0008: nur Committetes)
+    svc.unsubscribe(listener);
 }

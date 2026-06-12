@@ -29,6 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Gate-Nachweis (Commit ohne Gate-Lauf wird vom Stop-Hook geblockt),
   Guard fail-closed + ohne Permission-Bypass + Sub-Shell-/Flag-Bündel-
   Rekursion, `record-gates` parallel-sicher im `gates`-Rezept.
+- slice-012 — Eckenschluss endpunkt-verbundener Wände (LH-FA-WAL-006-
+  Teilumfang, Lastenheft 0.1.2; Auslöser: ACC-002-Abnahme-Befund):
+  Footprint-Hoheit im Kern (`wall_footprint`, Grad-2-Eckschnitt mit
+  `WALL_MITER_LIMIT`-Begrenzung und Rückfall stumpf, total);
+  `GeometryKernelPort` auf `extrudeFootprint`/`tessellateFootprint`;
+  Mehr-Element-Update `WallGeometryChanged` (Nachbar-Rebuild,
+  deterministische Reihenfolge, transaktional über den ganzen Satz);
+  7 neue WAL-006-AK-Tests inkl. Fehlerfall-Transaktion.
 - slice-011b — sichtbarer 3D-Viewer (welle-1v, ACC-002 / sichtbare Hälfte
   LH-FA-D3-002): Qt-6-Widgets-Viewer mit orbitierbarer Perspektive;
   Tessellation über `ViewModelPort` (ADR-0009 (b), kein OCC in der GUI);

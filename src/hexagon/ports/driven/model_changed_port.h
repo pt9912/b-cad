@@ -12,6 +12,12 @@ enum class ModelChangeOp {
     WallAdded,
     WallThicknessChanged,
     WallHeightChanged,
+    // Footprint-Folgeänderung einer NICHT direkt mutierten Nachbar-Wand
+    // (Eckenschluss LH-FA-WAL-006: Wand-Anlage/Stärke-Änderung ändert
+    // die Eck-Geometrie der Nachbarn) — Mehr-Element-Update gemäß
+    // ADR-0008 §3; Reihenfolge: auslösende Op → Nachbarn einzeln →
+    // RoomsChanged (spez. §1 D3-002.a).
+    WallGeometryChanged,
     RoomsChanged,  // Raum-Stand des Geschosses neu erkannt (ADR-0007/0008)
 };
 

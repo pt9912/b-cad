@@ -29,9 +29,10 @@ Stand und löst selbst keine Erkennung aus.
 
 1. Graph über Wand-Segmente: Knoten = Segment-Endpunkte
    (Punkt-Gleichheit über `GEOMETRY_TOLERANCE_MM`), Kanten = Segmente.
-   *Welle-1-Einschränkung:* Schnittpunkte werden erst mit der
-   Wandverschneidung (LH-FA-WAL-006) zu Knoten — bis dahin schließen
-   nur endpunkt-verbundene Wandzüge Räume.
+   *Welle-1-Einschränkung:* Schnittpunkte werden erst mit dem
+   **WAL-006-Vollumfang** zu Knoten (der slice-012-Teilumfang behandelt
+   nur Endpunkt-Ecken) — bis dahin schließen nur endpunkt-verbundene
+   Wandzüge Räume.
 2. Geschlossene Kreise (**minimale Zyklen**) über planare
    Flächen-Traversierung bestimmen (winkelsortierte Halbkanten je
    Knoten): **geteilte Knoten** (Grad ≥ 3 — Räume mit gemeinsamer
@@ -44,7 +45,8 @@ Stand und löst selbst keine Erkennung aus.
    *Welle-1-Näherung:* bei **kollinearen Nachbarkanten ungleicher
    Stärke** springt die Ecke auf den Offset-Punkt der Folgekante
    (lineare Überblendung statt exakter Stufenkontur); die exakte
-   Stufe kommt mit der Wandverschneidung (LH-FA-WAL-006).
+   Stufe kommt mit dem **WAL-006-Vollumfang** (nicht Teil des
+   slice-012-Teilumfangs).
 4. Verschachtelte Zyklen: der innere Zyklus erzeugt einen eigenen Raum
    (Innenkante nach innen); im umschließenden Raum wird die
    Außenkontur des inneren Zyklus als **Loch-Ring** geführt —
@@ -65,6 +67,31 @@ Geometrie-Operationen vorbehalten (z. B. Extrusion, LH-FA-D3-001.a).
 **Komplexität:** Vollerkennung pro Mutation ist Welle-1-Stand (kleine
 Modelle); Zielkomplexität/inkrementelle Erkennung bleibt offener
 Punkt (§7, M3).
+
+### LH-FA-WAL-006.a — Eckenschluss (Footprint-Regel, Teilumfang)
+
+Präzisiert den LH-FA-WAL-006-Teilumfang (Lastenheft 0.1.2,
+slice-012). Die **Footprint-Hoheit liegt im Kern**: der Grundriss
+einer Wand ist ein Polygon, das der Kern aus Segment, Stärke und
+Nachbar-Wissen ableitet; der Geometrie-Adapter extrudiert/tesselliert
+nur noch das Polygon (Prisma in +Z auf Wandhöhe).
+
+**Eck-Konstruktion:** An einem Endpunkt, den im **selben Geschoss**
+genau **eine** weitere Wand teilt (Grad-2-Knoten; Punkt-Gleichheit
+über `GEOMETRY_TOLERANCE_MM`), werden die beidseitigen Seitenkanten
+der zwei Wände **im Schnittpunkt verbunden** — Prinzip analog der
+Innenkanten-Konstruktion der Raumerkennung (ADR-0007), hier auf die
+Wand-Außenkontur angewandt. Beide Wände enden an denselben
+Eck-Punkten (nahtlos, keine Überlappung, keine Kerbe).
+
+**Begrenzung und Rückfälle (total, wirft nie):** Ragt ein Eck-Punkt
+weiter als `WALL_MITER_LIMIT` (§3) über den gemeinsamen Endpunkt
+hinaus (sehr spitzer Winkel) oder sind die Richtungen kollinear
+(keine Schnittpunkte), enden die Wände **stumpf** (Segment × Stärke,
+wie vor slice-012). Grad ≠ 2 (freies Ende, T-Stoß/Stern) → stumpf.
+Die Eck-Volumina wandern dabei zwischen den Wänden; Auswertungen
+(LH-FA-EVL-*) müssen auf der **Footprint-Fläche** aufsetzen
+(Shoelace), nicht auf Länge·Stärke.
 
 ### LH-FA-WAL-002.a — Parameter-Validierung und Klemmung
 
@@ -96,6 +123,20 @@ und `op` (Vokabular wie OTel-Span `bcad.geometry.rebuild`, §5); den
 aktualisierten Stand holt der Beobachter über die Abfrage-Ports
 (Solid, Räume, Modell). Mehrere Meldungen pro Mutation sind zulässig
 (z. B. Wand- plus Raum-Änderung; Mehr-Element-Updates nicht verbaut).
+
+**Mehr-Element-Update (Eckenschluss, LH-FA-WAL-006.a/slice-012):**
+Ändert eine Mutation die Eck-Geometrie von Nachbar-Wänden
+(Wand-Anlage → Grad-Wechsel; Stärke-Änderung → Eck-Schnittpunkte),
+wird **jede tatsächlich geänderte Nachbar-Wand einzeln** mit
+`op = WallGeometryChanged` gemeldet (der Wert gehört zum
+§5-Span-Vokabular). **Reihenfolge deterministisch:** auslösende
+Wand-Op → Nachbar-Meldungen einzeln → `RoomsChanged`.
+Höhen-Änderungen lassen Footprints unberührt und erzeugen keine
+Nachbar-Meldung; unveränderte Footprints werden nicht gemeldet
+(keine Über-Meldung). Die transaktionale Garantie umfasst den
+gesamten Satz: alle neuen Solids (Wand + Nachbarn) entstehen vor dem
+Commit — schlägt eines fehl, bleibt das Modell unverändert und es
+ergeht keine Meldung.
 
 **Beobachter-Pflichten:** Mehrere Beobachter (2D-/3D-Sicht, OBJ-003)
 über Registrierung (`subscribe`/`unsubscribe`); Callbacks dürfen
@@ -187,6 +228,7 @@ im Schema (nur Undo) — eigener Slice.
 | `DEFAULT_WALL_THICKNESS_MM` | 240 | Default-Wandstärke bei Wand-Anlage (typ. Außenwand 24 cm) | LH-FA-WAL-001 |
 | `DEFAULT_STOREY_HEIGHT_MM` | 2500 | Default-Geschosshöhe bei Projekt/Geschoss-Anlage | LH-FA-BLD-001, LH-FA-FLR-004 |
 | `GEOMETRY_TOLERANCE_MM` | 0.1 | Toleranz für Punkt-Gleichheit / Wandverbindung | LH-FA-WAL-006, LH-FA-ROM-001 |
+| `WALL_MITER_LIMIT` | max(Stärke_A, Stärke_B) | Eckenschluss-Begrenzung: maximales Auskragen der Eck-Geometrie über den gemeinsamen Endpunkt; darüber stumpfes Ende (Formel, keine feste Zahl) | LH-FA-WAL-006 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
 | `UNDO_DEPTH_MIN` | 1000 | Mindesttiefe Undo/Redo | LH-QA-003 |
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
@@ -260,6 +302,7 @@ nicht im Bootstrap.
 | 2026-06-11 | §1 LH-FA-D3-002.a ergänzt: Benachrichtigungs-Vertrag (Observer-Port, Push-Notify/Pull-State, Reihenfolge nach Re-Detektion, Beobachter-Pflichten) + welle-1-Operationalisierung „sichtbar" | ADR-0008 |
 | 2026-06-11 | §1 ROM-001.a präzisiert (Welle-1-Code-Review M1/M2): minimale Zyklen via Flächen-Traversierung — geteilte Knoten (Grad ≥ 3) abgedeckt, Stichkanten ignoriert; Näherung für kollineare Nachbarkanten ungleicher Stärke dokumentiert | ADR-0007 |
 | 2026-06-12 | §1 D3-002.a ergänzt: welle-1v-Operationalisierung „sichtbar" (Qt-Widgets-Fenster, Tessellation über `ViewModelPort`, Szenen-Surrogat, ACC-002-Beleg als manueller Abnahme-Schritt) | ADR-0009 |
+| 2026-06-12 | §1 LH-FA-WAL-006.a neu (Eckenschluss-Footprint-Regel, Footprint-Hoheit im Kern, Begrenzung/Rückfälle, EVL-Hinweis Shoelace) + D3-002.a-Mehr-Element-Update (`WallGeometryChanged`, Reihenfolge, Transaktions-Satz) + §3 `WALL_MITER_LIMIT`; zwei WAL-006-Verweise auf Vollumfang präzisiert | slice-012 (Lastenheft 0.1.2) |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

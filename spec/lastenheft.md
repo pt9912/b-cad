@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.1
+**Version:** 0.1.2
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -144,7 +144,36 @@ analog LH-FA-WAL-002).
 
 - **LH-FA-WAL-004 — Wand verschieben.**
 - **LH-FA-WAL-005 — Wand teilen.**
-- **LH-FA-WAL-006 — Wand verbinden.**
+
+#### LH-FA-WAL-006 — Wand verbinden
+
+**Beschreibung:** Wände, die sich berühren, verbinden sich zu einem
+geschlossenen Wandkörper.
+
+**Teilumfang Eckenschluss (geschärft 2026-06-12, slice-012; Auslöser:
+ACC-002-Abnahme-Befund):** Gilt für Wände, die sich an einem
+**gemeinsamen Endpunkt** im **selben Geschoss** treffen — genau zwei
+Wände am Punkt.
+
+**Akzeptanzkriterien (Teilumfang):**
+
+- **Happy Path:** Given zwei Wände gleicher Höhe mit gemeinsamem
+  Endpunkt im Winkel, then zeigt die Darstellung (2D und 3D) eine
+  **geschlossene Ecke ohne Kerbe oder Loch** — der äußere Eckbereich
+  ist körperlich gefüllt.
+- **Boundary:** Given eine kollineare Fortsetzung gleicher Stärke,
+  then ein glatter Übergang; ungleicher Stärke, then ein stumpfer
+  Stoß ohne Loch. Given ein sehr spitzer Winkel, then ragt die
+  Eck-Geometrie **höchstens um die größere der beiden Wandstärken
+  über den gemeinsamen Endpunkt hinaus** — sonst enden beide Wände
+  stumpf. Given ungleiche Wandhöhen, then ist die Ecke bis zur
+  niedrigeren Wandhöhe geschlossen, darüber endet die höhere Wand
+  stumpf.
+- **Negative/Abgrenzung:** Given drei oder mehr Wände am selben
+  Punkt, oder eine Berührung ohne gemeinsamen Endpunkt (T-Stoß,
+  Kreuzung), then bleiben die Enden unverändert stumpf. Der
+  **Vollumfang** (Schnittpunkte als Verbindungs-Knoten) ist
+  ausdrücklich **nicht** Teil dieser Schärfung und bleibt offen.
 
 #### LH-FA-WAL-007 — Wandtyp wählen
 
@@ -388,3 +417,4 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 |---|---|---|---|
 | 0.1.0 | 2026-06-08 | Initiale Outline-Fassung aus Domänen-Vorlage; ID-Schema `LH-FA-<BEREICH>-<NNN>` etabliert | Greenfield-Bootstrap (Kurs-Modul 2) |
 | 0.1.1 | 2026-06-11 | LH-FA-D3-002 von Outline auf AK-Niveau geschärft (Reifephase-Klausel §1/§4); lösungsfreie, benutzer-beobachtbare Formulierung; irreführender Querverweis „vgl. LH-QA-001" entfernt | slice-010a |
+| 0.1.2 | 2026-06-12 | LH-FA-WAL-006 Teilumfang „Eckenschluss endpunkt-verbundener Wände" von Outline auf AK-Niveau geschärft (Vollumfang bleibt offen); Auslöser: ACC-002-Abnahme-Befund | slice-012 |

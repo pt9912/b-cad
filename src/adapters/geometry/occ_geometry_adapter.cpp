@@ -1,10 +1,11 @@
 // Driven-Adapter (Geometrie) — OpenCascade-Implementierung des
 // `GeometryKernelPort` (ADR-0002). OCC-Typen sind hier gekapselt; nach
 // außen gehen nur `model::Solid`/`model::TriangleMesh` (neutral).
-// Extrusion = Wand-Footprint (Segment × Stärke) als Rechteck-Fläche, per
-// Prisma auf Wandhöhe in +Z gezogen; Volumen über `BRepGProp` gemessen
-// (LH-FA-D3-001). Tessellation = `BRepMesh_IncrementalMesh` über dem
-// Prisma, Flat-Shading-Layout (ADR-0009 (b)).
+// Seit slice-012 (LH-FA-WAL-006-Teilumfang) liefert der Kern das
+// Grundriss-Polygon (`model::Footprint`) — der Adapter extrudiert es
+// per Prisma in +Z (Volumen über `BRepGProp`, LH-FA-D3-001) bzw.
+// tesselliert es (`BRepMesh_IncrementalMesh`, Flat-Shading-Layout,
+// ADR-0009 (b)).
 
 #include "adapters/geometry/occ_geometry_adapter.h"
 
@@ -39,31 +40,48 @@ namespace model = hexagon::model;
 
 namespace {
 
-// Wand-Footprint als Prisma — gemeinsamer Solid-Builder für Extrusion
-// (Volumen) und Tessellation. Wirft `std::runtime_error` (E-GEO-002)
-// bei degeneriertem Segment.
-TopoDS_Shape makeWallSolid(const model::Wall& wall) {
-    const double dx = wall.end.x_mm - wall.start.x_mm;
-    const double dy = wall.end.y_mm - wall.start.y_mm;
-    const double length = std::sqrt((dx * dx) + (dy * dy));
-    if (!std::isfinite(length) || length < model::kGeometryToleranceMm) {
-        throw std::runtime_error("OccGeometryAdapter: degeneriertes Segment (E-GEO-002)");
+// Shoelace-Fläche (vorzeichenlos) — Degenerations-Prüfung des Polygons.
+double polygonArea(const model::Footprint& footprint) {
+    double twice_area = 0.0;
+    const std::size_t n = footprint.points.size();
+    for (std::size_t i = 0; i < n; ++i) {
+        const model::Point2D& a = footprint.points[i];
+        const model::Point2D& b = footprint.points[(i + 1) % n];
+        twice_area += (a.x_mm * b.y_mm) - (b.x_mm * a.y_mm);
     }
+    return std::abs(twice_area) * 0.5;
+}
 
-    // Einheits-Normale auf das Segment in der XY-Ebene; Footprint-Eckpunkte
-    // um die halbe Stärke nach beiden Seiten versetzt.
-    const double nx = -dy / length;
-    const double ny = dx / length;
-    const double half = wall.thickness_mm * 0.5;
+bool isDegenerate(const model::Footprint& footprint, double height_mm) {
+    if (footprint.points.size() < 3 || !std::isfinite(height_mm) ||
+        height_mm <= 0.0) {
+        return true;
+    }
+    for (const model::Point2D& p : footprint.points) {
+        if (!std::isfinite(p.x_mm) || !std::isfinite(p.y_mm)) {
+            return true;
+        }
+    }
+    return polygonArea(footprint) <
+           model::kGeometryToleranceMm * model::kGeometryToleranceMm;
+}
 
-    const gp_Pnt p1(wall.start.x_mm + (nx * half), wall.start.y_mm + (ny * half), 0.0);
-    const gp_Pnt p2(wall.end.x_mm + (nx * half), wall.end.y_mm + (ny * half), 0.0);
-    const gp_Pnt p3(wall.end.x_mm - (nx * half), wall.end.y_mm - (ny * half), 0.0);
-    const gp_Pnt p4(wall.start.x_mm - (nx * half), wall.start.y_mm - (ny * half), 0.0);
-
-    BRepBuilderAPI_MakePolygon polygon(p1, p2, p3, p4, Standard_True);
+// Grundriss-Polygon als Prisma — gemeinsamer Solid-Builder für
+// Extrusion (Volumen) und Tessellation. Wirft `std::runtime_error`
+// (E-GEO-002) bei degeneriertem Polygon.
+TopoDS_Shape makeFootprintSolid(const model::Footprint& footprint,
+                                double height_mm) {
+    if (isDegenerate(footprint, height_mm)) {
+        throw std::runtime_error(
+            "OccGeometryAdapter: degeneriertes Footprint-Polygon (E-GEO-002)");
+    }
+    BRepBuilderAPI_MakePolygon polygon;
+    for (const model::Point2D& p : footprint.points) {
+        polygon.Add(gp_Pnt(p.x_mm, p.y_mm, 0.0));
+    }
+    polygon.Close();
     BRepBuilderAPI_MakeFace face(polygon.Wire());
-    const gp_Vec extrusion(0.0, 0.0, wall.height_mm);
+    const gp_Vec extrusion(0.0, 0.0, height_mm);
     return BRepPrimAPI_MakePrism(face.Face(), extrusion).Shape();
 }
 
@@ -90,12 +108,13 @@ void appendTriangle(model::TriangleMesh& mesh, const gp_Pnt& a, const gp_Pnt& b,
 
 }  // namespace
 
-model::Solid OccGeometryAdapter::extrudeWall(const model::Wall& wall) const {
+model::Solid OccGeometryAdapter::extrudeFootprint(
+    const model::Footprint& footprint, double height_mm) const {
     try {
-        const TopoDS_Shape solid = makeWallSolid(wall);
+        const TopoDS_Shape solid = makeFootprintSolid(footprint, height_mm);
         GProp_GProps properties;
         BRepGProp::VolumeProperties(solid, properties);
-        return model::Solid{properties.Mass()};
+        return model::Solid{std::abs(properties.Mass())};
     } catch (const Standard_Failure& failure) {
         // OCC-Ausnahme in einen neutralen Fehler übersetzen — kein
         // OCC-Typ verlässt den Adapter (ADR-0001/0002, E-GEO-002).
@@ -105,10 +124,10 @@ model::Solid OccGeometryAdapter::extrudeWall(const model::Wall& wall) const {
     }
 }
 
-model::TriangleMesh OccGeometryAdapter::tessellateWall(
-    const model::Wall& wall) const {
+model::TriangleMesh OccGeometryAdapter::tessellateFootprint(
+    const model::Footprint& footprint, double height_mm) const {
     try {
-        const TopoDS_Shape solid = makeWallSolid(wall);
+        const TopoDS_Shape solid = makeFootprintSolid(footprint, height_mm);
         // Lineare Ablenkung 1 mm: Wand-Prismen sind eben — die
         // Triangulation ist exakt, der Wert unkritisch (ADR-0009:
         // Granularität wird erst mit einem Latenz-Budget Thema).

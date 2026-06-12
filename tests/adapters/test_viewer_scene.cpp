@@ -139,6 +139,29 @@ TEST_F(ViewerSceneAk, LH_FA_D3_002_Negative_RejectedAendertDarstellungNicht) {
     service_.unsubscribe(scene_);
 }
 
+// LH-FA-WAL-006 (slice-012): die Stärke-Änderung einer Wand zieht den
+// Eck-Nachbarn in der Szene nach (WallGeometryChanged → Pull) — die
+// Nachbar-Bounding-Box folgt der neuen Eck-Geometrie.
+TEST_F(ViewerSceneAk, LH_FA_WAL_006_NachbarFolgtInDerSzene) {
+    const auto a = service_.addWall(eg_, seg(0, 0, 4000, 0));
+    const auto b = service_.addWall(eg_, seg(4000, 0, 4000, 3000));
+    ASSERT_TRUE(a.has_value() && b.has_value());
+    scene_.loadAll();
+    service_.subscribe(scene_);
+
+    service_.setWallThickness(*a, 500.0);
+
+    // Nachbar B reicht jetzt bis an As neue Außenkante (y = -250).
+    const auto& mesh_b = scene_.wallMeshes().at(*b);
+    double y_min = std::numeric_limits<double>::max();
+    for (std::size_t i = 1; i < mesh_b.positions.size(); i += 3) {
+        y_min = std::min(y_min, mesh_b.positions[i]);
+    }
+    EXPECT_NEAR(y_min, -250.0, 0.5);
+    EXPECT_GE(scene_.effectiveUpdates(), 2);  // A + Nachbar B
+    service_.unsubscribe(scene_);
+}
+
 // Negative (ii): nach unsubscribe folgt die Darstellung nicht mehr.
 TEST_F(ViewerSceneAk, LH_FA_D3_002_Negative_UnsubscribeBeendetFolgen) {
     const auto wall = service_.addWall(eg_, seg(0, 0, 4000, 0));

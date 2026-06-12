@@ -50,5 +50,5 @@ die Wände schließen an den Außenecken nicht (fehlendes
 [`acc-002-befund-2d-ecken.png`](acc-002-befund-2d-ecken.png)).
 Ursache ist fehlender LH-FA-WAL-006-Umfang, kein Viewer-Fehler →
 Eckenschluss vorgezogen als
-[slice-012](../open/slice-012-eckenschluss-wal006-teil.md); der
+[slice-012](../in-progress/slice-012-eckenschluss-wal006-teil.md); der
 Beleg wird danach regeneriert und erneut vorgelegt.

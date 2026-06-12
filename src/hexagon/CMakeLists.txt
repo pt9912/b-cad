@@ -9,6 +9,7 @@ add_library(bcad_hexagon
     services/greeting_service.cpp
     services/room_detection.cpp
     services/structure_edit_service.cpp
+    services/wall_footprint.cpp
 )
 
 target_include_directories(bcad_hexagon

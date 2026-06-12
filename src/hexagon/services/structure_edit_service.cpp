@@ -6,10 +6,33 @@
 
 #include "hexagon/model/constants.h"
 #include "hexagon/services/room_detection.h"
+#include "hexagon/services/wall_footprint.h"
 
 namespace bcad::hexagon::services {
 
 namespace {
+
+bool nearPoint(model::Point2D a, model::Point2D b) {
+    return std::abs(a.x_mm - b.x_mm) < model::kGeometryToleranceMm &&
+           std::abs(a.y_mm - b.y_mm) < model::kGeometryToleranceMm;
+}
+
+bool sharesEndpoint(const model::Wall& a, const model::Wall& b) {
+    return nearPoint(a.start, b.start) || nearPoint(a.start, b.end) ||
+           nearPoint(a.end, b.start) || nearPoint(a.end, b.end);
+}
+
+bool footprintsEqual(const model::Footprint& a, const model::Footprint& b) {
+    if (a.points.size() != b.points.size()) {
+        return false;
+    }
+    for (std::size_t i = 0; i < a.points.size(); ++i) {
+        if (!nearPoint(a.points[i], b.points[i])) {
+            return false;
+        }
+    }
+    return true;
+}
 
 // Geschlossenes Intervall [min, max] für die Parameter-Klemmung. Eigener
 // Typ, damit `evaluateParam` kein vertauschbares Doppel `(double, double)`
@@ -77,27 +100,38 @@ std::optional<model::WallId> StructureEditService::addWall(
         throw std::out_of_range("addWall: unbekannte Geschoss-Id");
     }
 
-    // Kandidat-Wand bauen und ZUERST extrudieren. Schlägt die Geometrie
-    // fehl (Wurf), bleibt das Modell unverändert (E-GEO-002): erst nach
-    // Erfolg wird die Wand übernommen — transaktional.
+    // Kandidat-Wand bauen und ZUERST extrudieren (inkl. der Nachbarn,
+    // deren Eck-Geometrie sich ändert — LH-FA-WAL-006). Schlägt eine
+    // Geometrie-Operation fehl (Wurf), bleibt das Modell unverändert
+    // (E-GEO-002): erst nach Erfolg wird committet — transaktional.
     model::Wall wall{};
+    wall.id = static_cast<model::WallId>(next_wall_id_);  // Commit zählt hoch
     wall.storey_id = storey;
     wall.start = seg.start;
     wall.end = seg.end;
     wall.thickness_mm = model::kDefaultWallThicknessMm;  // LH-FA-WAL-001
     wall.height_mm = sit->height_mm;  // Default-Höhe = Geschosshöhe
     wall.type = model::WallType::Innen;
-    const model::Solid solid = geometry_.extrudeWall(wall);
 
-    const auto id = static_cast<model::WallId>(next_wall_id_++);
-    wall.id = id;
+    std::vector<model::Wall> trial = building_.walls;
+    trial.push_back(wall);
+    const model::Solid solid =
+        geometry_.extrudeFootprint(wallFootprint(wall, trial), wall.height_mm);
+    const std::vector<NeighborRebuild> neighbor_rebuilds =
+        rebuildAffectedNeighbors(wall, trial);
+
+    ++next_wall_id_;
+    const model::WallId id = wall.id;
     building_.walls.push_back(wall);
     solids_[id] = solid;
+    commitNeighborRebuilds(neighbor_rebuilds);
     redetectRooms(storey);  // LH-FA-ROM-001: automatisch beim Schließen
-    // ADR-0008 #4: Meldung NACH allen Post-Commit-Schritten.
+    // ADR-0008 #4: Meldung NACH allen Post-Commit-Schritten; Reihenfolge
+    // spez. §1: auslösende Op → Nachbarn einzeln → RoomsChanged.
     notifyListeners({.op = ports::driven::ModelChangeOp::WallAdded,
                      .storey_id = storey,
                      .wall_id = id});
+    notifyNeighborRebuilds(neighbor_rebuilds);
     notifyListeners({.op = ports::driven::ModelChangeOp::RoomsChanged,
                      .storey_id = storey});
     return id;
@@ -112,16 +146,25 @@ ports::driving::ParamResult StructureEditService::setWallThickness(
     if (result.status == ports::driving::ParamStatus::Rejected) {
         return result;  // Modell unverändert
     }
-    // Transaktional: neues Solid zuerst berechnen, dann committen.
-    model::Wall trial = target;
-    trial.thickness_mm = result.applied_mm;
-    const model::Solid solid = geometry_.extrudeWall(trial);
+    // Transaktional: neue Solids (Wand + betroffene Eck-Nachbarn,
+    // LH-FA-WAL-006) zuerst berechnen, dann committen.
+    std::vector<model::Wall> trial_walls = building_.walls;
+    auto tit = std::find_if(trial_walls.begin(), trial_walls.end(),
+                            [id](const model::Wall& w) { return w.id == id; });
+    tit->thickness_mm = result.applied_mm;
+    const model::Solid solid =
+        geometry_.extrudeFootprint(wallFootprint(*tit, trial_walls), tit->height_mm);
+    const std::vector<NeighborRebuild> neighbor_rebuilds =
+        rebuildAffectedNeighbors(*tit, trial_walls);
+
     target.thickness_mm = result.applied_mm;
     solids_[id] = solid;
+    commitNeighborRebuilds(neighbor_rebuilds);
     redetectRooms(target.storey_id);  // Stärke verschiebt die Innenkante
     notifyListeners({.op = ports::driven::ModelChangeOp::WallThicknessChanged,
                      .storey_id = target.storey_id,
                      .wall_id = id});
+    notifyNeighborRebuilds(neighbor_rebuilds);
     notifyListeners({.op = ports::driven::ModelChangeOp::RoomsChanged,
                      .storey_id = target.storey_id});
     return result;
@@ -137,9 +180,12 @@ ports::driving::ParamResult StructureEditService::setWallHeight(
         return result;  // Modell unverändert
     }
     // Transaktional: neues Solid zuerst berechnen, dann committen.
+    // Höhe ändert den Footprint NICHT — keine Nachbar-Folgeänderung
+    // (LH-FA-WAL-006/spez. §1).
     model::Wall trial = target;
     trial.height_mm = result.applied_mm;
-    const model::Solid solid = geometry_.extrudeWall(trial);
+    const model::Solid solid = geometry_.extrudeFootprint(
+        wallFootprint(trial, building_.walls), trial.height_mm);
     target.height_mm = result.applied_mm;
     solids_[id] = solid;
     redetectRooms(target.storey_id);  // Mutation-Trigger (spez. §1 §Auslösung)
@@ -176,7 +222,8 @@ std::optional<model::TriangleMesh> StructureEditService::wallMesh(
         return std::nullopt;  // unbekannte Id — Query ist total
     }
     try {
-        return geometry_.tessellateWall(*it);
+        return geometry_.tessellateFootprint(
+            wallFootprint(*it, building_.walls), it->height_mm);
     } catch (const std::exception&) {
         // E-GEO-002 in der Query-Hälfte: totale Antwort statt Wurf —
         // committete Wände sind validiert, ein Tessellations-Fehler darf
@@ -187,6 +234,47 @@ std::optional<model::TriangleMesh> StructureEditService::wallMesh(
 
 void StructureEditService::redetectRooms(model::StoreyId storey) {
     rooms_[storey] = detectRooms(building_, storey);
+}
+
+std::vector<StructureEditService::NeighborRebuild>
+StructureEditService::rebuildAffectedNeighbors(
+    const model::Wall& changed, const std::vector<model::Wall>& trial) const {
+    std::vector<NeighborRebuild> rebuilds;
+    for (const model::Wall& other : trial) {
+        if (other.id == changed.id || other.storey_id != changed.storey_id ||
+            !sharesEndpoint(other, changed)) {
+            continue;
+        }
+        // Nur Nachbarn, deren Footprint sich WIRKLICH ändert (auch der
+        // Übergang Miter↔Stumpf beim Grad-Wechsel 1↔2↔3) — keine
+        // Über-Meldung (spez. §1 D3-002.a).
+        const model::Footprint before = wallFootprint(other, building_.walls);
+        const model::Footprint after = wallFootprint(other, trial);
+        if (footprintsEqual(before, after)) {
+            continue;
+        }
+        rebuilds.push_back(NeighborRebuild{
+            other.id, other.storey_id,
+            geometry_.extrudeFootprint(after, other.height_mm)});
+    }
+    return rebuilds;
+}
+
+void StructureEditService::commitNeighborRebuilds(
+    const std::vector<NeighborRebuild>& rebuilds) {
+    for (const NeighborRebuild& rebuild : rebuilds) {
+        solids_[rebuild.id] = rebuild.solid;
+    }
+}
+
+void StructureEditService::notifyNeighborRebuilds(
+    const std::vector<NeighborRebuild>& rebuilds) {
+    for (const NeighborRebuild& rebuild : rebuilds) {
+        notifyListeners(
+            {.op = ports::driven::ModelChangeOp::WallGeometryChanged,
+             .storey_id = rebuild.storey_id,
+             .wall_id = rebuild.id});
+    }
 }
 
 void StructureEditService::subscribe(ports::driven::ModelChangedPort& listener) {

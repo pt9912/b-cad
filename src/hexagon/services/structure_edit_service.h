@@ -63,9 +63,27 @@ public:
     const model::Solid& wallSolid(model::WallId id) const;
 
 private:
+    // Neu zu bauende Nachbar-Solids (LH-FA-WAL-006: Eckenschluss macht
+    // Nachbar-Footprints von der mutierten Wand abhängig).
+    struct NeighborRebuild {
+        model::WallId id{};
+        model::StoreyId storey_id{};
+        model::Solid solid{};
+    };
+
     model::Wall& mutableWall(model::WallId id);
     void redetectRooms(model::StoreyId storey);
     void notifyListeners(const ports::driven::ModelChange& change);
+    // Berechnet VOR dem Commit die Solids der Nachbarn, deren Footprint
+    // sich durch `trial` ändert (wirft bei Geometrie-Fehler — dann
+    // bleibt das Modell unverändert, transaktionale Garantie).
+    std::vector<NeighborRebuild> rebuildAffectedNeighbors(
+        const model::Wall& changed,
+        const std::vector<model::Wall>& trial) const;
+    void commitNeighborRebuilds(const std::vector<NeighborRebuild>& rebuilds);
+    // Meldet die Nachbar-Folgeänderungen (Reihenfolge spez. §1: nach der
+    // auslösenden Op, vor RoomsChanged).
+    void notifyNeighborRebuilds(const std::vector<NeighborRebuild>& rebuilds);
 
     const ports::driven::GeometryKernelPort& geometry_;
     model::Building building_{};
