@@ -45,6 +45,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (manueller Abnahme-Schritt, kein Gate); ADR-0010 — Headless-GL via
   Xvfb/llvmpipe (offscreen-QPA trägt kein GL); Toolchain + `make
   versions`-Manifest um `xvfb` erweitert (ADR-0004).
+- **Welle-1v-viewer abgeschlossen** (Closure 2026-06-13): die *sichtbare*
+  Hälfte des Echtzeit-Vertrags steht — **ACC-002 erfüllt**, sichtbare
+  Hälfte LH-FA-D3-002. slice-011a/011b + slice-012 in `done/`;
+  unabhängige Welle-Verifikation (keine HIGH/MEDIUM), `make gates` grün
+  am HEAD (63/63, Coverage 94,2 %). Ergebnisnotiz: `welle-1v-results.md`.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

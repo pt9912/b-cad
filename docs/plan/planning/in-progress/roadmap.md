@@ -1,6 +1,6 @@
 # Roadmap — b-cad
 
-**Status:** Aktiv. **Letzte Änderung:** 2026-06-12.
+**Status:** Aktiv. **Letzte Änderung:** 2026-06-13.
 
 **Format-Regel:** Reihenfolge von **Wellen**, keine Reihenfolge von
 Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
@@ -11,34 +11,12 @@ Feature-Sequenz, kein Reconciliation-Plan.
 
 ## Aktuelle Welle
 
-**Welle-ID:** welle-1v-viewer
-**Start:** 2026-06-12 (Trigger „welle-1 done" erfüllt — Closure
-2026-06-12, [`../done/welle-1-results.md`](../done/welle-1-results.md))
-**Geplantes Ende:** offen (Aufwands-Schätzung M aus §Nächste Wellen)
-
-**Welle-Ziel:** Die *sichtbare* Hälfte des Echtzeit-Vertrags: ein
-Qt-6-3D-Viewer (Driving Adapter) stellt das extrudierte
-Gebäudemodell dar und folgt committeten Änderungen über den
-ADR-0008-Vertrag — erfüllt **ACC-002** und die sichtbare Hälfte von
-**LH-FA-D3-002** (Scope-Herkunft: slice-010a, Drift-Tabelle
-2026-06-11).
-
-**Closure-Trigger** (jeder Trigger beobachtbar):
-- slice-011a done — ADR-0009 „GUI-Framework-Bindung Qt 6 (Driving
-  Adapter)" accepted (Entscheidungs-Pflichten a–f) +
-  Spec-Operationalisierung „sichtbar". (Plan-Review gelaufen
-  2026-06-12, MR-006 erfüllt.)
-- slice-011b done — Viewer-Adapter implementiert: ACC-002-Beleg
-  liegt vor und ist abgenommen, Qt-Grenz-Sensor im arch-check grün
-  (Form gemäß ADR-0009 Pflicht (c)), display-freie AK-Tests grün.
-  Trigger: slice-011a done. *(Abnahme Runde 1 zurückgestellt →
-  slice-012; Runde 2 mit regeneriertem Beleg am 2026-06-12 erteilt.)*
-- slice-012 done — Eckenschluss endpunkt-verbundener Wände
-  (LH-FA-WAL-006-Teilumfang geschärft + implementiert);
-  ACC-002-Beleg ohne offene Außenecken regeneriert. Trigger:
-  Abnahme-Befund slice-011b DoD-4 (2026-06-12).
-- Closure-Notiz in `done/welle-1v-results.md` inkl. zwingendem
-  Carveout-Audit.
+**Keine aktive Welle.** welle-1v-viewer ist abgeschlossen
+(Closure 2026-06-13, [`../done/welle-1v-results.md`](../done/welle-1v-results.md));
+**ACC-002 erfüllt**. Der Start der nächsten Welle ist eine
+Planungs-Entscheidung, kein Automatismus (Präzedenz welle-1 → -1v).
+Kandidaten siehe §Nächste Wellen: `welle-2-bauteile` (Meilenstein M2)
+oder Zwischenschritt slice-006 (Drittanbieter-Attribution, in `open/`).
 
 ## Nächste Wellen
 
@@ -64,7 +42,7 @@ ADR-0008-Vertrag — erfüllt **ACC-002** und die sichtbare Hälfte von
 ```mermaid
 flowchart LR
     W1[welle-1-mvp<br/>done 2026-06-12]
-    W1V[welle-1v-viewer<br/>aktiv]
+    W1V[welle-1v-viewer<br/>done 2026-06-13]
     W2[welle-2-bauteile]
     W3[welle-3-auswertung]
     W4[welle-4-austausch]
@@ -79,6 +57,7 @@ flowchart LR
 | Welle | Zeitraum | Ergebnis | Closure-Notiz |
 |---|---|---|---|
 | welle-1-mvp | 2026-06-08 – 2026-06-12 | Kern-MVP als Vertrag: Projekt anlegen/speichern/laden (atomar + Crash-Recovery), Geschosse, Wände, Raum-Autoerkennung, OCC-Extrusion + Echtzeit-Benachrichtigung; 13 Slices + spike-001 in `done/`; Review + Verifikation gelaufen, Findings behoben (`330d5d0`). Sichtbarer Viewer → `welle-1v-viewer`. | [`../done/welle-1-results.md`](../done/welle-1-results.md) |
+| welle-1v-viewer | 2026-06-12 – 2026-06-13 | Sichtbare Hälfte des Echtzeit-Vertrags: Qt-6-3D-Viewer (Driving Adapter) stellt das extrudierte Gebäudemodell dar und folgt committeten Änderungen — **ACC-002 erfüllt** + sichtbare Hälfte LH-FA-D3-002; slice-011a/011b + slice-012 (Eckenschluss WAL-006-Teilumfang) in `done/`. Unabhängige Verifikation gelaufen (keine HIGH/MEDIUM, 1 LOW); `make gates` grün am HEAD (63/63, Coverage 94,2 %). | [`../done/welle-1v-results.md`](../done/welle-1v-results.md) |
 
 ## Historische Trigger-Verschiebungen
 
