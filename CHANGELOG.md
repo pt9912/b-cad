@@ -78,6 +78,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Transaktion nach den Wänden, FK `wall_id`); Round-Trip-AK-Test. Kein
   Schema-Wechsel (ADR-0006 trug die Tabellen bereits). Damit ist ADR-0011
   vollständig umgesetzt (Geometrie 013b + Persistenz 013c).
+- slice-014a — Dach von Outline auf AK geschärft (LH-FA-ROF-001..005,
+  Lastenheft 0.1.4): Sattel-/Walm-/Pultdach, Neigung 5–60°, Überstand
+  0–1500 mm; **Teilumfang rechteckiger Grundriss** (komplexe Polygone
+  offen). Spezifikation §1 Dach-Geometrie (Traufrechteck, Konstruktion
+  je Typ, Höhenformeln) + §3 Neigungs-/Überstands-Bereiche + Defaults.
+  Reine Entscheidung/Spec (kein Code, kein ADR — ADR-0011-Leitplanke).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

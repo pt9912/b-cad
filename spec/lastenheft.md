@@ -328,11 +328,75 @@ ist die Wand wieder geschlossen.
 
 ### Modul Dach (`ROF`)
 
-- **LH-FA-ROF-001 — Satteldach.**
-- **LH-FA-ROF-002 — Walmdach.**
-- **LH-FA-ROF-003 — Pultdach.**
-- **LH-FA-ROF-004 — Dachneigung definieren.**
-- **LH-FA-ROF-005 — Dachüberstand definieren.**
+Geschärft 2026-06-13 (slice-014a) von Outline auf AK-Niveau
+(Reifephase-Klausel). **Teilumfang welle-2: rechteckiger
+Dach-Grundriss** — Sattel-, Walm- und Pultdach über einem rechteckigen
+Grundriss. Komplexe (L-/U-förmige) Polygon-Grundrisse bleiben
+ausdrücklich **offen** (späterer Vollumfang).
+
+#### LH-FA-ROF-001 — Satteldach
+
+**Beschreibung:** Ein Satteldach über dem rechteckigen Grundriss hat
+zwei zueinander geneigte Dachflächen, die sich an einem First treffen.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein rechteckiger Grundriss, when ein Satteldach
+  mit Neigung und Überstand erzeugt wird, then zeigt die 3D-Darstellung
+  zwei geneigte Flächen, die sich an einem First über der Mitte treffen;
+  das Dach kragt um den Überstand über den Grundriss hinaus.
+- **Boundary:** Neigung/Überstand am Grenzwert akzeptiert (Bereiche
+  siehe LH-FA-ROF-004/005).
+- **Negative:** Given ein nicht-rechteckiger oder degenerierter
+  Grundriss, then entsteht kein Dach; kein Fehler/Absturz.
+
+#### LH-FA-ROF-002 — Walmdach
+
+**Beschreibung:** Ein Walmdach ist an allen vier Seiten geneigt; der
+First ist kürzer als der Grundriss (an den Giebelseiten abgewalmt).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein rechteckiger Grundriss, when ein Walmdach
+  erzeugt wird, then sind alle vier Dachflächen geneigt und der First
+  ist kürzer als die längere Grundriss-Seite (beobachtbar in 3D).
+- **Boundary/Negative:** wie LH-FA-ROF-001.
+
+#### LH-FA-ROF-003 — Pultdach
+
+**Beschreibung:** Ein Pultdach hat eine einzige, zu einer Seite geneigte
+Dachfläche.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein rechteckiger Grundriss, when ein Pultdach
+  erzeugt wird, then zeigt die Darstellung eine einzige geneigte Fläche
+  (von der hohen Traufe zur niedrigen).
+- **Boundary/Negative:** wie LH-FA-ROF-001.
+
+#### LH-FA-ROF-004 — Dachneigung definieren
+
+**Beschreibung:** Die Dachneigung ist parametrisch im Bereich
+**5° bis 60°**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Dach, when die Neigung erhöht wird, then
+  steigt der First sichtbar (steileres Dach).
+- **Boundary:** Given Neigung am Grenzwert (5°/60°), then akzeptiert;
+  außerhalb → auf den Grenzwert geklemmt + Hinweis.
+
+#### LH-FA-ROF-005 — Dachüberstand definieren
+
+**Beschreibung:** Der Dachüberstand (Auskragung über den Grundriss) ist
+parametrisch im Bereich **0 mm bis 1500 mm**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Dach, when der Überstand gesetzt wird, then
+  kragt die Dachkante um diesen Betrag über den Grundriss hinaus.
+- **Boundary:** Given Überstand am Grenzwert, then akzeptiert; außerhalb
+  → geklemmt + Hinweis.
 
 ### Modul Decken (`SLB`)
 
@@ -521,3 +585,4 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 | 0.1.1 | 2026-06-11 | LH-FA-D3-002 von Outline auf AK-Niveau geschärft (Reifephase-Klausel §1/§4); lösungsfreie, benutzer-beobachtbare Formulierung; irreführender Querverweis „vgl. LH-QA-001" entfernt | slice-010a |
 | 0.1.2 | 2026-06-12 | LH-FA-WAL-006 Teilumfang „Eckenschluss endpunkt-verbundener Wände" von Outline auf AK-Niveau geschärft (Vollumfang bleibt offen); Auslöser: ACC-002-Abnahme-Befund | slice-012 |
 | 0.1.3 | 2026-06-13 | Module Türen (LH-FA-DOR-001..004) und Fenster (LH-FA-WIN-001..005) von Outline auf AK-Niveau geschärft (wand-gehostete Bauteile mit automatischer Wandöffnung, Brüstungshöhe; Breiten-/Höhen-/Brüstungs-Bereiche); lösungsfrei/benutzer-beobachtbar | slice-013a (welle-2-bauteile) |
+| 0.1.4 | 2026-06-13 | Modul Dach (LH-FA-ROF-001..005) von Outline auf AK-Niveau geschärft (Sattel-/Walm-/Pultdach, Neigung 5–60°, Überstand 0–1500 mm); **Teilumfang rechteckiger Grundriss**, komplexe Polygon-Grundrisse bleiben offen; lösungsfrei/benutzer-beobachtbar | slice-014a (welle-2-bauteile) |

@@ -152,6 +152,48 @@ Wandstärke, daher bleiben Raumerkennung (ADR-0007) und Footprint/
 Eckenschluss (LH-FA-WAL-006.a) unberührt; die ROM- und WAL-006-AK-Tests
 bleiben textlich unverändert grün. Abgelehnte Mutationen melden nicht.
 
+### LH-FA-ROF-001.a — Dach-Geometrie (Teilumfang Rechteck-Grundriss)
+
+Sammelblock, deckt **LH-FA-ROF-001..005** (Sattel/Walm/Pult, Neigung,
+Überstand); Reifephase-Teilumfang welle-2 (Lastenheft 0.1.4). Modell-
+Einordnung über ADR-0011 (#6, Bauteil-Erweiterungs-Muster) — keine
+eigene Grundsatz-ADR; die Geometrie wird **hier** normativ festgelegt.
+
+**Grundriss-Herkunft (welle-2):** Das Dach hat einen **expliziten
+rechteckigen Grundriss** `b × t` (Parameter; persistiert als
+`roofs.footprint_json`, ADR-0006). Die Auto-Ableitung aus dem
+Geschoss-Wandumriss bleibt späterer Ausbau (keine Kopplung an
+Wand-Mutationen in welle-2).
+
+**Traufrechteck:** der Grundriss `b × t` wird ringsum um den Überstand
+`o` (LH-FA-ROF-005) zum **Traufrechteck** `(b+2o) × (t+2o)` vergrößert;
+das Dach kragt also um `o` über den Grundriss hinaus.
+
+**Konstruktion je Typ** (Neigung `p`, LH-FA-ROF-004):
+
+1. **Pult (ROF-003):** eine Fläche, von der hohen Traufkante zur
+   gegenüberliegenden niedrigen geneigt; Firsthöhe (Hochkante) =
+   `(t+2o) · tan(p)`.
+2. **Sattel (ROF-001):** First **mittig entlang der längeren
+   Traufrechteck-Achse**; zwei symmetrisch geneigte Flächen; Firsthöhe =
+   `(kürzere Traufrechteck-Seite / 2) · tan(p)`.
+3. **Walm (ROF-002):** wie Sattel, zusätzlich an den beiden Giebelseiten
+   geneigte (abgewalmte) Flächen; der First ist beidseitig um den
+   **Einrückbetrag** `e = Firsthöhe / tan(p)` (= halbe kürzere Seite,
+   gleiche Neigung am Giebel) eingerückt — deterministisch aus Neigung
+   und Giebelbreite, keine freie Größe.
+
+**Firsthöhe abgeleitet:** `roofs.height_mm` (nullable, ADR-0006) ist
+**nicht** Eingabe, sondern die aus `p`/Überstand berechnete Firsthöhe.
+
+**Klemmung/Totalität:** Neigung `p` auf `[ROOF_PITCH_MIN_DEG,
+ROOF_PITCH_MAX_DEG]`, Überstand `o` auf `[ROOF_OVERHANG_MIN_MM,
+ROOF_OVERHANG_MAX_MM]` geklemmt (`E-VAL-001`, §3). Ein nicht-rechteckiger
+oder degenerierter Grundriss (Seite < `GEOMETRY_TOLERANCE_MM`) erzeugt
+**kein** Dach — die Sicht-Query bleibt total (kein Wurf); ein
+fehlgeschlagener mutierender Solid-Bau meldet `E-GEO-002` (Modell
+unverändert).
+
 ### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
 
 Präzisiert LH-FA-D3-002; Mechanik-Entscheidung in ADR-0008.
@@ -291,6 +333,12 @@ im Schema (nur Undo) — eigener Slice.
 | `DEFAULT_WINDOW_HEIGHT_MM` | 1300 | Default-Fensterhöhe bei Anlage | LH-FA-WIN-001 |
 | `DEFAULT_WINDOW_SILL_MM` | 900 | Default-Brüstungshöhe bei Anlage | LH-FA-WIN-001/004 |
 | `OPENING_CUT_OVERSHOOT_MM` | 1 | Überstand des Öffnungs-Schnittkörpers über die Wandgrenzen (lateral je Seite + Boundary-Höhen) für einen koplanar-freien Boolean; volumen-neutral (≥ `GEOMETRY_TOLERANCE_MM`) | LH-FA-DOR-004/WIN-005 |
+| `ROOF_PITCH_MIN_DEG` | 5 | Untergrenze Dachneigung | LH-FA-ROF-004 |
+| `ROOF_PITCH_MAX_DEG` | 60 | Obergrenze Dachneigung | LH-FA-ROF-004 |
+| `ROOF_OVERHANG_MIN_MM` | 0 | Untergrenze Dachüberstand | LH-FA-ROF-005 |
+| `ROOF_OVERHANG_MAX_MM` | 1500 | Obergrenze Dachüberstand | LH-FA-ROF-005 |
+| `DEFAULT_ROOF_PITCH_DEG` | 30 | Default-Dachneigung bei Anlage (= `roofs`-Schema-Default) | LH-FA-ROF-001 |
+| `DEFAULT_ROOF_OVERHANG_MM` | 500 | Default-Dachüberstand bei Anlage (= `roofs`-Schema-Default) | LH-FA-ROF-005 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
 | `UNDO_DEPTH_MIN` | 1000 | Mindesttiefe Undo/Redo | LH-QA-003 |
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
@@ -368,6 +416,7 @@ nicht im Bootstrap.
 | 2026-06-13 | §1 LH-FA-DOR-004.a/WIN-005.a neu (Wandöffnung als Schnitt-Prismen im Kern, boolesche Subtraktion über `GeometryKernelPort`, Klemmung/Ablehnung, Totalität/Transaktion, `WallGeometryChanged` der Wirtswand, Raumerkennung/Footprint unberührt) + §3 Tür-/Fenster-/Brüstungs-Wertebereiche | ADR-0011 (slice-013a) |
 | 2026-06-13 | §3 Default-Maße bei Tür-/Fenster-Anlage (`DEFAULT_DOOR_*`/`DEFAULT_WINDOW_*`) — Implementierung der Anlage (Muster `DEFAULT_WALL_THICKNESS_MM`) | slice-013b |
 | 2026-06-13 | §3 `OPENING_CUT_OVERSHOOT_MM` — Cutter-Überstand für koplanar-freien Boolean (Code-Review-Befund H1: §1-Überstand „je Seite" war nur in Z realisiert, jetzt auch lateral) | slice-013b Code-Review |
+| 2026-06-13 | §1 `LH-FA-ROF-001.a` neu (Dach-Geometrie Teilumfang Rechteck-Grundriss: Traufrechteck, Pult/Sattel/Walm-Konstruktion + Höhenformeln, Walm-Einrückbetrag, Firsthöhe abgeleitet, Totalität) + §3 Neigungs-/Überstands-Bereiche + Defaults (= `roofs`-Schema) | slice-014a |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 
