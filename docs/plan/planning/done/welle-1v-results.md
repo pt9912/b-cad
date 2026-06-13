@@ -117,7 +117,8 @@ akkumulierten Praxis-Zähler (Kurs-Regel: 2× kategorisieren, 3× Regel):
 
 1. **„Unabhängiges Plan-Review vor Implementierungs-Start": als
    Konvention festgeschrieben.** Der in welle-1 bei 2× stehende Zähler
-   erreichte beim 3. Vorkommen (slice-011, Review 2026-06-12: 3 HIGH)
+   (welle-1-results §5 kannte slice-011 zeitlich noch nicht) erreichte
+   beim 3. Vorkommen (slice-011, Review 2026-06-12: 3 HIGH)
    die Regel-Schwelle und wurde als
    [`MR-006`](../../../../harness/conventions.md) (+ AGENTS §5
    Workflow-Schritt 5) festgeschrieben. In dieser Welle bereits
