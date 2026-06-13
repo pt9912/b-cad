@@ -72,6 +72,18 @@ public:
     void setRoofType(model::RoofId roof, model::RoofType type) override;
     bool removeRoof(model::RoofId roof) override;
 
+    // Platten (LH-FA-SLB-*/FND-*, ADR-0011 #6): eigenständiges Element;
+    // jede Mutation meldet `SlabChanged` (storey-bezogen), KEINE
+    // RoomsChanged. Das Platten-Netz ist eine reine Query
+    // (`slab_geometry` + Port + base_z-Translation); kein gespeichertes
+    // Solid, das Volumen wird on demand gemessen.
+    std::optional<model::SlabId> addSlab(const model::Slab& prototype) override;
+    ports::driving::ParamResult setSlabThickness(model::SlabId slab,
+                                                 double mm) override;
+    bool addSlabCutout(model::SlabId slab,
+                       const model::Footprint& cutout) override;
+    bool removeSlab(model::SlabId slab) override;
+
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
 
@@ -83,6 +95,10 @@ public:
 
     // ViewModelPort (LH-FA-ROF-*): Dach-Netze (analytisch, `roof_geometry`).
     std::vector<ports::driving::RoofMesh> roofMeshes() const override;
+
+    // ViewModelPort (LH-FA-SLB-*/FND-*): Platten-Netze (Port-Extrusion +
+    // base_z-Translation, `slab_geometry`).
+    std::vector<ports::driving::SlabMesh> slabMeshes() const override;
 
     // ADR-0008 (LH-FA-D3-002): Beobachter-Registrierung — mehrfach,
     // nicht-besitzend; Beobachter melden sich vor ihrer Zerstörung ab.
@@ -103,6 +119,8 @@ public:
     const model::Opening& opening(model::OpeningId id) const;
     const std::vector<model::Roof>& roofs() const { return building_.roofs; }
     const model::Roof& roof(model::RoofId id) const;
+    const std::vector<model::Slab>& slabs() const { return building_.slabs; }
+    const model::Slab& slab(model::SlabId id) const;
 
 private:
     // Neu zu bauende Nachbar-Solids (LH-FA-WAL-006: Eckenschluss macht
@@ -133,6 +151,9 @@ private:
                                                double offset_mm);
     model::Roof& mutableRoof(model::RoofId id);
     void notifyRoofChanged(model::StoreyId storey);
+    model::Slab& mutableSlab(model::SlabId id);
+    void notifySlabChanged(model::StoreyId storey);
+    double storeyHeight(model::StoreyId id) const;
     // Berechnet VOR dem Commit die Solids der Nachbarn, deren Footprint
     // sich durch `trial` ändert (wirft bei Geometrie-Fehler — dann
     // bleibt das Modell unverändert, transaktionale Garantie).
@@ -154,6 +175,7 @@ private:
     int next_wall_id_{1};
     int next_opening_id_{1};
     int next_roof_id_{1};
+    int next_slab_id_{1};
 };
 
 }  // namespace bcad::hexagon::services

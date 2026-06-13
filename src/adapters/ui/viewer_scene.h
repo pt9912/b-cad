@@ -3,6 +3,7 @@
 #include <map>
 
 #include "hexagon/model/roof.h"  // RoofId
+#include "hexagon/model/slab.h"  // SlabId
 #include "hexagon/model/triangle_mesh.h"
 #include "hexagon/model/wall.h"  // WallId
 #include "hexagon/ports/driven/model_changed_port.h"
@@ -46,6 +47,13 @@ public:
         return roof_meshes_;
     }
 
+    // Gehaltene Platten-Netze (LH-FA-SLB-*/FND-*); auf `SlabChanged` neu
+    // geladen.
+    const std::map<hexagon::model::SlabId, hexagon::model::TriangleMesh>&
+    slabMeshes() const {
+        return slab_meshes_;
+    }
+
     // Anzahl wirksamer Szenen-Updates (Netz ersetzt/hinzugefügt/entfernt) —
     // Surrogat-Zähler für die Idempotenz-/Negative-AK.
     int effectiveUpdates() const { return effective_updates_; }
@@ -54,6 +62,7 @@ private:
     const hexagon::ports::driving::ViewModelPort& view_model_;
     std::map<hexagon::model::WallId, hexagon::model::TriangleMesh> meshes_{};
     std::map<hexagon::model::RoofId, hexagon::model::TriangleMesh> roof_meshes_{};
+    std::map<hexagon::model::SlabId, hexagon::model::TriangleMesh> slab_meshes_{};
     int effective_updates_{0};
 };
 

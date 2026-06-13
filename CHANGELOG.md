@@ -106,6 +106,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Dicke an base_z je slab_type; Ausschnitte als Boolean/`CutPrism`;
   base_z-/Port-Frage an 015b) + §3 Dicke-Bereiche. Reine Entscheidung/Spec
   (kein Code, kein ADR — ADR-0011-Leitplanke; MR-008 lösungsfrei).
+- slice-015b — Decken + Fundament implementiert (LH-FA-SLB-001..003,
+  LH-FA-FND-001..003, ADR-0011): `model::Slab` (Decke/Fundament/
+  Bodenplatte) + pure `slab_geometry` (`slabBaseZ`, `slabCutPrisms`,
+  `translateMeshZ`). **base_z ohne Port-Wechsel** (015a-HIGH-1): Kern
+  extrudiert/tesselliert unverändert (Volumen z-invariant) und verschiebt
+  das Netz auf base_z; Cutout-`CutPrism` z **relativ** `[−ε,Dicke+ε]`,
+  Translation **nach** Boolean. `ViewModelPort.slabMeshes()`,
+  `EditStructurePort` addSlab/setSlabThickness/addSlabCutout/removeSlab
+  (Dicke typabhängig geklemmt), `SlabChanged`-`op` (storey-bezogen);
+  `ViewerScene` über gemeinsamen `reloadKeyed`-Helfer (Roof+Slab).
+  Spec §1 base_z-Frage geschlossen. make gates grün (102 Tests, 91,7 %).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

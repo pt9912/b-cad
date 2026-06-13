@@ -54,8 +54,10 @@ mit MR-006-Plan-Review, erster Slice steht):
 - **Decken + Fundament** (LH-FA-SLB-001..003, LH-FA-FND-001..003):
   Platten-Solids mit Ausschnitten. **slice-015a done 2026-06-13** —
   Lastenheft auf AK geschärft + Spec-Platten-Geometrie (Polygon × Dicke,
-  Ausschnitte als Boolean, base_z je Typ); slice-015b (Implementierung)
-  + slice-015c (Persistenz) folgen.
+  Ausschnitte als Boolean, base_z je Typ). **slice-015b done
+  2026-06-13** — Platten implementiert: Extrusion + Mesh-Translation
+  auf base_z (Port unverändert, 015a-HIGH-1 gelöst), Cutout-Boolean,
+  `SlabChanged`-Viewer (`reloadKeyed`); slice-015c (Persistenz) folgt.
 - **Treppen** (LH-FA-STR-001..004) inkl. Geländer — geschärft +
   implementiert.
 - Unabhängige Welle-Verifikation (analog welle-1/-1v) + Closure-Notiz in

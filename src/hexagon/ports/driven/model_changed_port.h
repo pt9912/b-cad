@@ -23,6 +23,11 @@ enum class ModelChangeOp {
     // ADR-0011 #6 neuer Bauteil-Typ → neuer `op`). Storey-bezogen: der
     // Beobachter lädt die Dächer des Stands neu (spez. §1 D3-002.a).
     RoofChanged,
+    // Platte (Decke/Fundament, LH-FA-SLB-*/FND-*) angelegt/geändert/
+    // entfernt — storey-bezogen, neuer Bauteil-Typ (ADR-0011 #6),
+    // Beobachter lädt die Platten neu (spez. §1 D3-002.a). Kein
+    // `RoomsChanged` (Platten berühren die Raumerkennung nicht).
+    SlabChanged,
 };
 
 // Push-Notify-Meldung (ADR-0008): WAS sich geändert hat (`op`) und

@@ -8,6 +8,7 @@
 #include "hexagon/services/opening_geometry.h"
 #include "hexagon/services/roof_geometry.h"
 #include "hexagon/services/room_detection.h"
+#include "hexagon/services/slab_geometry.h"
 #include "hexagon/services/wall_footprint.h"
 
 namespace bcad::hexagon::services {
@@ -82,6 +83,26 @@ Range openingHeightRange(model::OpeningKind kind) {
     return (kind == model::OpeningKind::Door)
                ? Range{model::kDoorHeightMinMm, model::kDoorHeightMaxMm}
                : Range{model::kWindowHeightMinMm, model::kWindowHeightMaxMm};
+}
+
+// Dicke-/Tiefe-Bereich je Platten-Typ (spez. §3).
+Range slabThicknessRange(model::SlabType type) {
+    return (type == model::SlabType::Decke)
+               ? Range{model::kSlabThicknessMinMm, model::kSlabThicknessMaxMm}
+               : Range{model::kFoundationDepthMinMm, model::kFoundationDepthMaxMm};
+}
+
+// Vorzeichenlose Polygon-Fläche (Shoelace) — Degenerations-Prüfung des
+// Platten-Grundrisses.
+double polygonArea(const model::Footprint& footprint) {
+    double twice = 0.0;
+    const std::size_t n = footprint.points.size();
+    for (std::size_t i = 0; i < n; ++i) {
+        const model::Point2D& a = footprint.points[i];
+        const model::Point2D& b = footprint.points[(i + 1) % n];
+        twice += (a.x_mm * b.y_mm) - (b.x_mm * a.y_mm);
+    }
+    return std::abs(twice) * 0.5;
 }
 
 }  // namespace
@@ -671,6 +692,122 @@ model::Roof& StructureEditService::mutableRoof(model::RoofId id) {
                                  [id](const model::Roof& r) { return r.id == id; });
     if (it == building_.roofs.end()) {
         throw std::out_of_range("mutableRoof: unbekannte Dach-Id");
+    }
+    return *it;
+}
+
+// --- Platten: Decken/Fundament (LH-FA-SLB-*/FND-*, ADR-0011 #6) ---
+
+double StructureEditService::storeyHeight(model::StoreyId id) const {
+    const auto it = std::find_if(
+        building_.storeys.begin(), building_.storeys.end(),
+        [id](const model::Storey& s) { return s.id == id; });
+    return (it != building_.storeys.end()) ? it->height_mm : 0.0;
+}
+
+std::vector<ports::driving::SlabMesh> StructureEditService::slabMeshes() const {
+    std::vector<ports::driving::SlabMesh> meshes;
+    meshes.reserve(building_.slabs.size());
+    for (const model::Slab& s : building_.slabs) {
+        try {
+            // Footprint-Extrusion bei z∈[0,Dicke] (mit Ausschnitten), DANN
+            // auf die Aufstandshöhe verschieben (MED-2: Cutouts relativ,
+            // Translation nach dem Boolean).
+            model::TriangleMesh mesh = geometry_.tessellateFootprint(
+                s.footprint, s.thickness_mm, slabCutPrisms(s));
+            mesh = translateMeshZ(std::move(mesh),
+                                  slabBaseZ(s, storeyHeight(s.storey_id)));
+            if (!mesh.empty()) {
+                meshes.push_back(ports::driving::SlabMesh{s.id, std::move(mesh)});
+            }
+        } catch (const std::exception&) {
+            continue;  // E-GEO-002 in der Query-Hälfte: total, Platte überspringen
+        }
+    }
+    return meshes;
+}
+
+std::optional<model::SlabId> StructureEditService::addSlab(
+    const model::Slab& prototype) {
+    // Degenerierter Grundriss / nicht-endliche Parameter → abgelehnt.
+    if (prototype.footprint.points.size() < 3 ||
+        !std::isfinite(prototype.thickness_mm) ||
+        polygonArea(prototype.footprint) <
+            (model::kGeometryToleranceMm * model::kGeometryToleranceMm)) {
+        return std::nullopt;
+    }
+    // Bekanntes Geschoss (für die Decken-Aufstandshöhe).
+    const auto sit = std::find_if(
+        building_.storeys.begin(), building_.storeys.end(),
+        [&](const model::Storey& s) { return s.id == prototype.storey_id; });
+    if (sit == building_.storeys.end()) {
+        return std::nullopt;
+    }
+    model::Slab slab = prototype;
+    slab.id = static_cast<model::SlabId>(next_slab_id_);
+    const Range range = slabThicknessRange(slab.type);
+    slab.thickness_mm = std::clamp(prototype.thickness_mm, range.min, range.max);
+    building_.slabs.push_back(slab);
+    ++next_slab_id_;
+    notifySlabChanged(slab.storey_id);
+    return slab.id;
+}
+
+ports::driving::ParamResult StructureEditService::setSlabThickness(
+    model::SlabId id, double mm) {
+    model::Slab& target = mutableSlab(id);
+    const ports::driving::ParamResult result =
+        evaluateParam(mm, slabThicknessRange(target.type), target.thickness_mm);
+    if (result.status != ports::driving::ParamStatus::Rejected) {
+        target.thickness_mm = result.applied_mm;
+        notifySlabChanged(target.storey_id);
+    }
+    return result;
+}
+
+bool StructureEditService::addSlabCutout(model::SlabId id,
+                                         const model::Footprint& cutout) {
+    const auto it = std::find_if(building_.slabs.begin(), building_.slabs.end(),
+                                 [id](const model::Slab& s) { return s.id == id; });
+    if (it == building_.slabs.end()) {
+        return false;
+    }
+    it->cutouts.push_back(cutout);  // auf den Umriss begrenzt der Boolean
+    notifySlabChanged(it->storey_id);
+    return true;
+}
+
+bool StructureEditService::removeSlab(model::SlabId id) {
+    const auto it = std::find_if(building_.slabs.begin(), building_.slabs.end(),
+                                 [id](const model::Slab& s) { return s.id == id; });
+    if (it == building_.slabs.end()) {
+        return false;
+    }
+    const model::StoreyId storey = it->storey_id;
+    building_.slabs.erase(it);
+    notifySlabChanged(storey);
+    return true;
+}
+
+void StructureEditService::notifySlabChanged(model::StoreyId storey) {
+    notifyListeners({.op = ports::driven::ModelChangeOp::SlabChanged,
+                     .storey_id = storey});
+}
+
+const model::Slab& StructureEditService::slab(model::SlabId id) const {
+    const auto it = std::find_if(building_.slabs.begin(), building_.slabs.end(),
+                                 [id](const model::Slab& s) { return s.id == id; });
+    if (it == building_.slabs.end()) {
+        throw std::out_of_range("slab: unbekannte Platten-Id");
+    }
+    return *it;
+}
+
+model::Slab& StructureEditService::mutableSlab(model::SlabId id) {
+    const auto it = std::find_if(building_.slabs.begin(), building_.slabs.end(),
+                                 [id](const model::Slab& s) { return s.id == id; });
+    if (it == building_.slabs.end()) {
+        throw std::out_of_range("mutableSlab: unbekannte Platten-Id");
     }
     return *it;
 }

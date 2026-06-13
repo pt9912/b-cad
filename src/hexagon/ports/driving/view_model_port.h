@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "hexagon/model/roof.h"  // RoofId
+#include "hexagon/model/slab.h"  // SlabId
 #include "hexagon/model/triangle_mesh.h"
 #include "hexagon/model/wall.h"  // WallId
 
@@ -21,6 +22,13 @@ struct WallMesh {
 // erfüllt (ADR-0009).
 struct RoofMesh {
     model::RoofId roof_id{};
+    model::TriangleMesh mesh;
+};
+
+// Netz je Platte (Decke/Fundament, LH-FA-SLB-*/FND-*, slice-015b) —
+// Footprint-Extrusion (über den Port) auf die Aufstandshöhe verschoben.
+struct SlabMesh {
+    model::SlabId slab_id{};
     model::TriangleMesh mesh;
 };
 
@@ -45,6 +53,10 @@ public:
     // Netze ALLER Dächer (LH-FA-ROF-*); Pull nach einer `RoofChanged`-
     // Meldung. Total (degeneriertes Dach → kein Eintrag).
     virtual std::vector<RoofMesh> roofMeshes() const = 0;
+
+    // Netze ALLER Platten (LH-FA-SLB-*/FND-*); Pull nach `SlabChanged`.
+    // Total (degenerierte Platte → kein Eintrag).
+    virtual std::vector<SlabMesh> slabMeshes() const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

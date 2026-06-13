@@ -1,7 +1,7 @@
 ---
 id: slice-015b
 titel: Decken + Fundament implementieren — Platten (base_z via Kern-Translation)
-status: next
+status: done
 welle: welle-2-bauteile
 lastenheft_refs: [LH-FA-SLB-001, LH-FA-SLB-002, LH-FA-SLB-003, LH-FA-FND-001, LH-FA-FND-002, LH-FA-FND-003]
 adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009, ADR-0011]
@@ -9,9 +9,10 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009, ADR-0011]
 
 # Slice 015b: Decken + Fundament implementieren — Platten
 
-**Status:** next (Plan geschrieben; **MR-006-Plan-Review gelaufen
-2026-06-13 — keine HIGH, 2 MED + LOW/INFO eingearbeitet**;
-implementierungsbereit).
+**Status:** done (2026-06-13). MR-006-Plan-Review gelaufen (keine HIGH,
+2 MED + LOW/INFO eingearbeitet); DoD vollständig, `make gates` grün
+(102 Tests, Coverage 91,7 %). Zwei-Commit-Split (i Domäne+slab_geometry /
+ii Integration). Closure-Notiz §8.
 
 **Plan-Review (MR-006):**
 [Report](../../../reviews/2026-06-13-slice-015b-plan.md) — keine HIGH
@@ -53,13 +54,13 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei (ADR-0001).
 
 ## 2. Definition of Done
 
-- [ ] **Domänen-Typen (pure Werte, `src/hexagon/model/`):** `Slab`
+- [x] **Domänen-Typen (pure Werte, `src/hexagon/model/`):** `Slab`
       (`SlabId`, `storey_id`, `SlabType ∈ {Decke, Fundament, Bodenplatte}`,
       `footprint: Footprint` (Grundriss-Polygon), `thickness_mm`,
       `cutouts: std::vector<Footprint>` (rechteckige Aussparungen,
       SLB-003)); `Building` gewinnt `std::vector<Slab> slabs`.
       Framework-frei (Regel A).
-- [ ] **base_z via Kern-Translation — KEIN Port-Signatur-Wechsel
+- [x] **base_z via Kern-Translation — KEIN Port-Signatur-Wechsel
       (Auflösung HIGH-1 aus 015a-Review):** der `GeometryKernelPort`
       (`extrudeFootprint`/`tessellateFootprint` + `CutPrism`) wird
       **unverändert** wiederverwendet (Volumen ist z-invariant; das Netz
@@ -79,25 +80,25 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei (ADR-0001).
       verdoppelt sich. Volumen ist z-invariant (Ausschnitt-AK unberührt
       von der Translation). Wand-Aufrufe bleiben unberührt (kein
       Port-Wechsel; HIGH-1 ohne ADR-0001-Signatur-Eingriff gelöst).
-- [ ] **`ViewModelPort` um Platten-Sicht:** `slabMeshes()` →
+- [x] **`ViewModelPort` um Platten-Sicht:** `slabMeshes()` →
       `std::vector<SlabMesh{slab_id, mesh}>` (Muster `roofMeshes`, total).
       Vom `StructureEditService` implementiert.
-- [ ] **`ModelChangedPort` um `SlabChanged`** (§5-`op`-Vokabular,
+- [x] **`ModelChangedPort` um `SlabChanged`** (§5-`op`-Vokabular,
       storey-bezogen; neuer Bauteil-Typ, ADR-0011 #6.4 — wie
       `RoofChanged`). **Keine `RoomsChanged`** (Platten berühren die
       Raumerkennung nicht). `spec/spezifikation.md` §1 D3-002.a um den
       `op` ergänzt (Mechanik, MR-008).
-- [ ] **`EditStructurePort`-Operationen** (im Service): `addSlab`
+- [x] **`EditStructurePort`-Operationen** (im Service): `addSlab`
       (Prototyp: Typ + footprint + thickness + optionale cutouts;
       degenerierter footprint → abgelehnt; Dicke/Tiefe gegen §3 geklemmt,
       `E-VAL-001`), `setSlabThickness`, `addSlabCutout` (SLB-003,
       rechteckige Aussparung, auf den Platten-Umriss begrenzt),
       `removeSlab`. Jede erfolgreiche Mutation meldet `SlabChanged`.
-- [ ] **Viewer folgt** (`ViewerScene`): hält Platten-Netze (`SlabId`-
+- [x] **Viewer folgt** (`ViewerScene`): hält Platten-Netze (`SlabId`-
       Map); auf `SlabChanged` `slabMeshes()` neu laden, **idempotent**
       (Zähler = tatsächlich geänderte Netze, Muster RoofChanged/MED-2).
       Wand-/Dach-Pfad additiv unberührt.
-- [ ] **AK-Tests mit `LH-FA-SLB-*`/`LH-FA-FND-*` im Namen** (Kern +
+- [x] **AK-Tests mit `LH-FA-SLB-*`/`LH-FA-FND-*` im Namen** (Kern +
       Szene), display-frei: **Decke** (Netz-Unterkante auf Geschoss-
       Oberkante; Dicke = Netz-z-Span); **Bodenplatte** (Oberkante z=0);
       **Fundament** (unterhalb 0, Tiefe = z-Span, Oberkante 0);
@@ -194,3 +195,49 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei (ADR-0001).
 
 - **Modus:** GF; Dichte hoch (LH-ID-Namen, analytische Orakel,
   Registrierung); Risiko niedrig.
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar):**
+
+- **Domäne + Kern-Geometrie:** `model::Slab` (Decke/Fundament/
+  Bodenplatte, footprint-Polygon, thickness, cutouts); `slab_geometry`
+  (pur): `slabBaseZ` je Typ, `slabCutPrisms` z **relativ** `[−ε,Dicke+ε]`,
+  `translateMeshZ`. **base_z ohne Port-Wechsel (HIGH-1 gelöst):** der
+  Kern ruft `extrudeFootprint`/`tessellateFootprint` unverändert (Volumen
+  z-invariant) und verschiebt das fertige Netz um base_z. Reihenfolge
+  (MED-2): Cutout relativ → Boolean → Translation. arch-check Regel A.
+- **Integration:** `ViewModelPort.slabMeshes()`; `EditStructurePort`
+  addSlab/setSlabThickness/addSlabCutout/removeSlab (Klemmung typabhängig
+  `E-VAL-001`, degenerierter Grundriss/unbekanntes Geschoss abgelehnt);
+  `SlabChanged`-`op` (storey-bezogen, **kein** `RoomsChanged`);
+  `ViewerScene` lädt Platten auf `SlabChanged` neu — idempotent über den
+  **gemeinsamen Template-Helfer `reloadKeyed`** (Roof+Slab, entfernt
+  Duplikation + senkt die `onModelChanged`-Cognitive-Complexity).
+- **8 AK-Tests `LH-FA-SLB-*`/`LH-FA-FND-*`:** Kern (base_z je Typ,
+  Cutout relativ, Ausschnitt-Volumen, Netz-Translation) + Viewer (Decke
+  auf Geschoss-Oberkante via realer OCC, Bodenplatte Oberkante 0, Dicke
+  geklemmt, degeneriert abgelehnt, Ausschnitt, `SlabChanged`-nicht-`Rooms`).
+- **`make gates` grün** (2026-06-13): docs-check 0, arch-check A–E,
+  lint 0 + suppression-gate, **Tests 102/102** (zuvor 99→Phase i, dann
+  Integration), Coverage **91,7 %**. Zwei-Commit-Split (i `ad6a730`).
+- **Spec §1** Port-base_z-Frage geschlossen (kein Port-Wechsel,
+  Mesh-Translation) + `SlabChanged`-`op`; §8.
+
+**Lerneintrag:**
+
+- **HIGH-1 sauber ohne Port-Eingriff gelöst:** Volumen z-invariant +
+  Mesh-Translation reicht — die Wand-Aufrufe blieben unberührt (keine
+  Signatur-Migration). Die MED-2-Reihenfolge (Cutout relativ, Translation
+  nach Boolean) war der korrektheits-kritische Punkt; vorab im
+  Plan-Review gefangen, nicht erst im Code.
+- **`reloadKeyed`-Helfer:** der zweite storey-bezogene Element-Typ
+  (Platte nach Dach) machte die Duplikation sichtbar → Template-Helfer;
+  zugleich nötig gegen den Cognitive-Complexity-lint (Build-Gate fing es).
+
+**Restrisiko / Nachfolge:** **slice-015c** (Platten-Persistenz `slabs`-
+Tabelle, `polygon_json` wie 014c-`footprint_json`) — Platten derzeit nur
+im Speicher (kein lebender Save-Pfad). **Empfohlen vor Welle-Closure:**
+Code-Review (geometrielastig, Praxis 3×+ nach welle-1). Offen: nicht-
+rechteckige Ausschnitte, Material/Bewehrung, Auto-Ableitung des
+Grundrisses aus dem Gebäudeumriss. Danach STR (Treppen), Welle-2-Closure.

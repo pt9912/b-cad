@@ -233,12 +233,19 @@ Platten-Umriss begrenzt.
 (kein Wurf); ein fehlgeschlagener mutierender Solid-Bau meldet
 `E-GEO-002`.
 
-**Port-Mechanik (slice-015b):** ob der bestehende `extrudeFootprint`
-(extrudiert ab z=0) um eine **`base_z`** erweitert wird — eine
-**Port-Signatur-Entscheidung (ADR-0001-Kern-Hoheit**, Muster ADR-0011 #2,
-**nicht** ADR-0002, das nur das Boolean-Backend liefert) — oder die
-Platte anders platziert wird, entscheidet die Implementierung; §1 legt
-nur die Geometrie fest.
+**Port-Mechanik (slice-015b, entschieden):** der bestehende
+`extrudeFootprint`/`tessellateFootprint` (extrudiert ab z=0) bleibt
+**unverändert** — das Volumen ist z-invariant, und der Kern **verschiebt
+das fertige Platten-Netz um `base_z`** (reine Mesh-Translation, NACH dem
+Ausschnitt-Boolean). Damit ist **kein** Port-Signatur-Eingriff nötig
+(ADR-0001-Kern-Hoheit gewahrt ohne Migration; die Cutout-`CutPrism`s
+liegen relativ zum Solid `[0,Dicke]`, nicht bei `base_z`).
+
+**Folge-Meldung:** Eine Platten-Mutation (Anlage/Dicke/Ausschnitt/
+Entfernen) meldet `op = SlabChanged` **storey-bezogen** (neuer `op` im
+D3-002.a-Vokabular, ADR-0011 #6); der Beobachter lädt die Platten neu
+(`ViewModelPort.slabMeshes`). **Keine `RoomsChanged`** (Platten berühren
+die Raumerkennung nicht).
 
 ### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
 
@@ -470,6 +477,7 @@ nicht im Bootstrap.
 | 2026-06-13 | §3 `OPENING_CUT_OVERSHOOT_MM` — Cutter-Überstand für koplanar-freien Boolean (Code-Review-Befund H1: §1-Überstand „je Seite" war nur in Z realisiert, jetzt auch lateral) | slice-013b Code-Review |
 | 2026-06-13 | §1 `LH-FA-ROF-001.a` neu (Dach-Geometrie Teilumfang Rechteck-Grundriss: Traufrechteck, Pult/Sattel/Walm-Konstruktion + Höhenformeln, Walm-Einrückbetrag, Firsthöhe abgeleitet, Totalität) + §3 Neigungs-/Überstands-Bereiche + Defaults (= `roofs`-Schema) | slice-014a |
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` neu (Platten-Geometrie Decken+Fundament: Polygon × Dicke an `base_z` je `slab_type`, Ausschnitte als Boolean/`CutPrism`, Totalität; Port-base_z-Frage an 015b) + §3 Decken-/Fundament-Dicke-Bereiche + Defaults | slice-015a |
+| 2026-06-13 | §1 `LH-FA-SLB-001.a` Port-base_z-Frage geschlossen: kein Port-Wechsel — Mesh-Translation um `base_z` nach dem Boolean, Cutouts relativ `[0,Dicke]`; `SlabChanged`-`op` (storey-bezogen, kein `RoomsChanged`) | slice-015b |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

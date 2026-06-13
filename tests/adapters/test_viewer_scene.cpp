@@ -13,8 +13,10 @@
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "adapters/ui/viewer_scene.h"
 #include "hexagon/model/constants.h"
+#include "hexagon/model/footprint.h"
 #include "hexagon/model/roof.h"
 #include "hexagon/model/segment.h"
+#include "hexagon/model/slab.h"
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
@@ -287,6 +289,94 @@ TEST_F(ViewerSceneAk, LH_FA_ROF_001_MeldetRoofChangedNichtRooms) {
     service_.setRoofPitch(*roof, 40.0);
 
     EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoofChanged), 2);  // add + pitch
+    EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoomsChanged), 0);
+    service_.unsubscribe(recorder);
+}
+
+// --- Platten: Decken/Fundament (LH-FA-SLB-*/FND-*, slice-015b) ---
+
+model::Footprint slabRect(double x0, double y0, double x1, double y1) {
+    return model::Footprint{{{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}}};
+}
+
+model::Slab sampleSlab(model::StoreyId storey, model::SlabType type) {
+    model::Slab slab;
+    slab.storey_id = storey;
+    slab.type = type;
+    slab.footprint = slabRect(0.0, 0.0, 5000.0, 4000.0);
+    slab.thickness_mm = model::kDefaultSlabThicknessMm;
+    return slab;
+}
+
+double meshMin(const model::TriangleMesh& mesh, int axis) {
+    double lo = std::numeric_limits<double>::max();
+    for (std::size_t i = static_cast<std::size_t>(axis);
+         i < mesh.positions.size(); i += 3) {
+        lo = std::min(lo, mesh.positions[i]);
+    }
+    return lo;
+}
+
+// LH-FA-SLB-001: eine Decke folgt in der Szene (SlabChanged → Pull),
+// liegt auf der Geschoss-Oberkante (base_z = Geschosshöhe); idempotent;
+// Entfernen leert. Belegt die reale OCC-Extrusion + base_z-Translation.
+TEST_F(ViewerSceneAk, LH_FA_SLB_001_DeckeFolgtUndAufGeschossOberkante) {
+    scene_.loadAll();
+    service_.subscribe(scene_);
+
+    const auto slab = service_.addSlab(sampleSlab(eg_, model::SlabType::Decke));
+    ASSERT_TRUE(slab.has_value());
+    ASSERT_EQ(scene_.slabMeshes().size(), 1U);
+    EXPECT_GE(scene_.effectiveUpdates(), 1);
+    // Unterkante auf Geschoss-Oberkante (base_z-Translation, real OCC).
+    EXPECT_NEAR(meshMin(scene_.slabMeshes().at(*slab), 2),
+                model::kDefaultStoreyHeightMm, 0.5);
+
+    const int before = scene_.effectiveUpdates();
+    scene_.onModelChanged({.op = driven::ModelChangeOp::SlabChanged,
+                           .storey_id = eg_});
+    EXPECT_EQ(scene_.effectiveUpdates(), before);  // idempotent
+
+    EXPECT_TRUE(service_.removeSlab(*slab));
+    EXPECT_TRUE(scene_.slabMeshes().empty());
+    service_.unsubscribe(scene_);
+}
+
+// LH-FA-FND-003: Bodenplatte — Oberkante auf Höhe 0 (Unterkante = −Dicke).
+TEST_F(ViewerSceneAk, LH_FA_FND_003_BodenplatteOberkanteNull) {
+    scene_.loadAll();
+    service_.subscribe(scene_);
+    const auto slab =
+        service_.addSlab(sampleSlab(eg_, model::SlabType::Bodenplatte));
+    ASSERT_TRUE(slab.has_value());
+    EXPECT_NEAR(meshMin(scene_.slabMeshes().at(*slab), 2),
+                -model::kDefaultSlabThicknessMm, 0.5);  // Unterkante −Dicke
+    service_.unsubscribe(scene_);
+}
+
+// LH-FA-SLB-002/003 + Negative: Dicke geklemmt, degenerierter Grundriss
+// abgelehnt, Ausschnitt ändert das Netz; SlabChanged, KEINE RoomsChanged.
+TEST_F(ViewerSceneAk, LH_FA_SLB_002_DickeGeklemmtAusschnittUndMeldung) {
+    OpRecorder recorder;
+    service_.subscribe(recorder);
+
+    const auto slab = service_.addSlab(sampleSlab(eg_, model::SlabType::Decke));
+    ASSERT_TRUE(slab.has_value());
+
+    EXPECT_EQ(service_.setSlabThickness(*slab, 9000.0).status,
+              bcad::hexagon::ports::driving::ParamStatus::Clamped);
+    EXPECT_NEAR(service_.slab(*slab).thickness_mm, model::kSlabThicknessMaxMm,
+                1e-9);
+
+    // Degenerierter Grundriss → abgelehnt.
+    model::Slab bad = sampleSlab(eg_, model::SlabType::Decke);
+    bad.footprint = slabRect(0.0, 0.0, 0.0, 0.0);
+    EXPECT_FALSE(service_.addSlab(bad).has_value());
+
+    // Ausschnitt setzen (LH-FA-SLB-003).
+    EXPECT_TRUE(service_.addSlabCutout(*slab, slabRect(1000, 1000, 2000, 2000)));
+
+    EXPECT_GT(recorder.count(driven::ModelChangeOp::SlabChanged), 0);
     EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoomsChanged), 0);
     service_.unsubscribe(recorder);
 }

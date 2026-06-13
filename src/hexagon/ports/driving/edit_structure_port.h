@@ -2,9 +2,11 @@
 
 #include <optional>
 
+#include "hexagon/model/footprint.h"  // Footprint (Slab-Ausschnitt)
 #include "hexagon/model/opening.h"  // OpeningId, OpeningKind, SwingDirection
 #include "hexagon/model/roof.h"     // Roof, RoofId, RoofType
 #include "hexagon/model/segment.h"
+#include "hexagon/model/slab.h"     // Slab, SlabId
 #include "hexagon/model/wall.h"  // WallId, StoreyId
 
 namespace bcad::hexagon::ports::driving {
@@ -100,6 +102,27 @@ public:
 
     // Entfernt ein Dach; meldet `RoofChanged`. `false` bei unbekanntem Dach.
     virtual bool removeRoof(model::RoofId roof) = 0;
+
+    // --- Platten: Decken/Fundament (LH-FA-SLB-*/FND-*, ADR-0011) ---
+
+    // Legt eine Platte über dem Grundriss des `prototype` an (`type`,
+    // `footprint`, `thickness_mm`, optionale `cutouts`; `id`/`storey_id`
+    // aus dem Prototyp). Dicke/Tiefe gegen §3 geklemmt (typabhängig);
+    // ein degenerierter Grundriss oder ein unbekanntes Geschoss wird
+    // abgelehnt (kein Wert). Meldet `SlabChanged`.
+    virtual std::optional<model::SlabId> addSlab(const model::Slab& prototype) = 0;
+
+    // Setzt die Platten-Dicke/-Tiefe; klemmt typabhängig auf §3
+    // (`E-VAL-001`); meldet `SlabChanged` (LH-FA-SLB-002/FND-002).
+    virtual ParamResult setSlabThickness(model::SlabId slab, double mm) = 0;
+
+    // Fügt einen Ausschnitt hinzu (LH-FA-SLB-003); auf den Platten-Umriss
+    // begrenzt; meldet `SlabChanged`. `false` bei unbekannter Platte.
+    virtual bool addSlabCutout(model::SlabId slab,
+                               const model::Footprint& cutout) = 0;
+
+    // Entfernt eine Platte; meldet `SlabChanged`. `false` bei unbekannt.
+    virtual bool removeSlab(model::SlabId slab) = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving
