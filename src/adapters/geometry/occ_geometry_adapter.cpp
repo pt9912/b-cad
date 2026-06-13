@@ -13,7 +13,9 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include <BRepAlgoAPI_Cut.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
 #include <BRepGProp.hxx>
@@ -26,6 +28,7 @@
 #include <TopAbs_Orientation.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
+#include <TopTools_ListOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
@@ -85,6 +88,65 @@ TopoDS_Shape makeFootprintSolid(const model::Footprint& footprint,
     return BRepPrimAPI_MakePrism(face.Face(), extrusion).Shape();
 }
 
+// Schnitt-Körper eines Öffnungs-Prismas (ADR-0011 (b)): Polygon über
+// `[z_min, z_max]`. An den Wand-Boundary-Höhen (0 / Wandhöhe) steht der
+// Körper leicht über (kOvershootMm) — der Überstand liegt AUSSERHALB der
+// Wand und ändert das Netto-Volumen nicht, vermeidet aber koplanare
+// Deck-/Boden-Flächen beim Boolean. Leerer Shape (übersprungen) bei
+// degeneriertem Prisma.
+TopoDS_Shape makeCutterSolid(const model::CutPrism& cut, double wall_height_mm) {
+    double z0 = cut.z_min_mm;
+    double z1 = cut.z_max_mm;
+    if (!std::isfinite(z0) || !std::isfinite(z1) ||
+        (z1 - z0) < model::kGeometryToleranceMm ||
+        cut.polygon.points.size() < 3) {
+        return TopoDS_Shape{};
+    }
+    constexpr double kOvershootMm = 1.0;
+    if (z0 <= model::kGeometryToleranceMm) {
+        z0 -= kOvershootMm;
+    }
+    if (z1 >= wall_height_mm - model::kGeometryToleranceMm) {
+        z1 += kOvershootMm;
+    }
+    BRepBuilderAPI_MakePolygon polygon;
+    for (const model::Point2D& p : cut.polygon.points) {
+        polygon.Add(gp_Pnt(p.x_mm, p.y_mm, z0));
+    }
+    polygon.Close();
+    BRepBuilderAPI_MakeFace face(polygon.Wire());
+    return BRepPrimAPI_MakePrism(face.Face(), gp_Vec(0.0, 0.0, z1 - z0)).Shape();
+}
+
+// Wand-Solid minus Öffnungs-Schnittkörper (boolesch, OCC). Total: wirft
+// `std::runtime_error` (E-GEO-002) bei degeneriertem Polygon oder
+// fehlgeschlagener Subtraktion — kein OCC-Typ verlässt den Adapter.
+TopoDS_Shape makeNetSolid(const model::Footprint& footprint, double height_mm,
+                          const std::vector<model::CutPrism>& cutouts) {
+    TopoDS_Shape solid = makeFootprintSolid(footprint, height_mm);
+    for (const model::CutPrism& cut : cutouts) {
+        const TopoDS_Shape cutter = makeCutterSolid(cut, height_mm);
+        if (cutter.IsNull()) {
+            continue;
+        }
+        BRepAlgoAPI_Cut op;
+        TopTools_ListOfShape args;
+        args.Append(solid);
+        TopTools_ListOfShape tools;
+        tools.Append(cutter);
+        op.SetArguments(args);
+        op.SetTools(tools);
+        op.SetFuzzyValue(model::kGeometryToleranceMm);  // koplanare Flächen
+        op.Build();
+        if (!op.IsDone()) {
+            throw std::runtime_error(
+                "OccGeometryAdapter: Wandöffnungs-Subtraktion fehlgeschlagen (E-GEO-002)");
+        }
+        solid = op.Shape();
+    }
+    return solid;
+}
+
 // Hängt ein Dreieck im Flat-Shading-Layout an: drei eigene Vertices mit
 // der Flächennormale (TriangleMesh-Konvention, triangle_mesh.h).
 void appendTriangle(model::TriangleMesh& mesh, const gp_Pnt& a, const gp_Pnt& b,
@@ -109,9 +171,10 @@ void appendTriangle(model::TriangleMesh& mesh, const gp_Pnt& a, const gp_Pnt& b,
 }  // namespace
 
 model::Solid OccGeometryAdapter::extrudeFootprint(
-    const model::Footprint& footprint, double height_mm) const {
+    const model::Footprint& footprint, double height_mm,
+    const std::vector<model::CutPrism>& cutouts) const {
     try {
-        const TopoDS_Shape solid = makeFootprintSolid(footprint, height_mm);
+        const TopoDS_Shape solid = makeNetSolid(footprint, height_mm, cutouts);
         GProp_GProps properties;
         BRepGProp::VolumeProperties(solid, properties);
         return model::Solid{std::abs(properties.Mass())};
@@ -125,9 +188,10 @@ model::Solid OccGeometryAdapter::extrudeFootprint(
 }
 
 model::TriangleMesh OccGeometryAdapter::tessellateFootprint(
-    const model::Footprint& footprint, double height_mm) const {
+    const model::Footprint& footprint, double height_mm,
+    const std::vector<model::CutPrism>& cutouts) const {
     try {
-        const TopoDS_Shape solid = makeFootprintSolid(footprint, height_mm);
+        const TopoDS_Shape solid = makeNetSolid(footprint, height_mm, cutouts);
         // Lineare Ablenkung 1 mm: Wand-Prismen sind eben — die
         // Triangulation ist exakt, der Wert unkritisch (ADR-0009:
         // Granularität wird erst mit einem Latenz-Budget Thema).

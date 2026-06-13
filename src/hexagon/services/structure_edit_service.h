@@ -39,6 +39,26 @@ public:
     ports::driving::ParamResult setWallThickness(model::WallId wall, double mm) override;
     ports::driving::ParamResult setWallHeight(model::WallId wall, double mm) override;
 
+    // Wandöffnungen (LH-FA-DOR-*/WIN-*, ADR-0011): platzieren/verschieben/
+    // Parameter/entfernen. Öffnungs-Mutationen bauen das Solid der
+    // Wirtswand neu (transaktional) und melden `WallGeometryChanged` der
+    // Wirtswand — KEINE Raum-Re-Detektion (Öffnung ändert weder Wandachse
+    // noch Stärke; Raumerkennung/Footprint unberührt, ADR-0011 (5)).
+    std::optional<model::OpeningId> addDoor(model::WallId wall,
+                                            double offset_mm) override;
+    std::optional<model::OpeningId> addWindow(model::WallId wall,
+                                              double offset_mm) override;
+    ports::driving::ParamResult setOpeningWidth(model::OpeningId opening,
+                                                double mm) override;
+    ports::driving::ParamResult setOpeningHeight(model::OpeningId opening,
+                                                 double mm) override;
+    ports::driving::ParamResult setWindowSill(model::OpeningId opening,
+                                              double mm) override;
+    bool moveOpening(model::OpeningId opening, double offset_mm) override;
+    void setDoorSwing(model::OpeningId opening,
+                      model::SwingDirection swing) override;
+    bool removeOpening(model::OpeningId opening) override;
+
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
 
@@ -61,6 +81,10 @@ public:
     const model::Building& building() const { return building_; }
     const model::Wall& wall(model::WallId id) const;
     const model::Solid& wallSolid(model::WallId id) const;
+    const std::vector<model::Opening>& openings() const {
+        return building_.openings;
+    }
+    const model::Opening& opening(model::OpeningId id) const;
 
 private:
     // Neu zu bauende Nachbar-Solids (LH-FA-WAL-006: Eckenschluss macht
@@ -74,6 +98,21 @@ private:
     model::Wall& mutableWall(model::WallId id);
     void redetectRooms(model::StoreyId storey);
     void notifyListeners(const ports::driven::ModelChange& change);
+    // Baut das Solid einer Wand inkl. ihrer Öffnungs-Schnittkörper
+    // (Footprint-Extrusion minus Cutouts). Wirft bei E-GEO-002.
+    model::Solid buildWallSolid(const model::Wall& w,
+                                const std::vector<model::Wall>& walls,
+                                const std::vector<model::Opening>& openings) const;
+    // Übernimmt `trial_openings` und baut das Solid der Wirtswand
+    // `wall_id` transaktional neu: gelingt der Bau, werden Öffnungen +
+    // Solid committet und `WallGeometryChanged` der Wirtswand gemeldet;
+    // schlägt er fehl (E-GEO-002), bleibt das Modell unverändert und es
+    // ergeht keine Meldung. Gibt den Erfolg zurück.
+    bool commitOpenings(model::WallId wall_id,
+                        std::vector<model::Opening> trial_openings);
+    model::Opening& mutableOpening(model::OpeningId id);
+    std::optional<model::OpeningId> addOpening(model::Opening prototype,
+                                               double offset_mm);
     // Berechnet VOR dem Commit die Solids der Nachbarn, deren Footprint
     // sich durch `trial` ändert (wirft bei Geometrie-Fehler — dann
     // bleibt das Modell unverändert, transaktionale Garantie).
@@ -93,6 +132,7 @@ private:
     int swallowed_listener_errors_{0};
     int next_storey_id_{1};
     int next_wall_id_{1};
+    int next_opening_id_{1};
 };
 
 }  // namespace bcad::hexagon::services

@@ -39,20 +39,24 @@ public:
     // Fehlerinjektion fuer den Mehr-Element-Pfad (LH-FA-WAL-006, W3-P2):
     // wirft beim n-ten extrude-Aufruf (1-basiert), 0 = nie.
     void failOnExtrudeCall(int call_number) { fail_on_call_ = call_number; }
-    model::Solid extrudeFootprint(const model::Footprint& footprint,
-                                  double height_mm) const override {
+    model::Solid extrudeFootprint(
+        const model::Footprint& footprint, double height_mm,
+        const std::vector<model::CutPrism>& cutouts) const override {
         ++extrude_calls_;
         if (failing_ || extrude_calls_ == fail_on_call_) {
             throw std::runtime_error("Geometrie-Operation fehlgeschlagen");
         }
-        return model::Solid{bcad::testing::analyticVolume(footprint, height_mm)};
+        return model::Solid{
+            bcad::testing::analyticVolume(footprint, height_mm, cutouts)};
     }
     model::TriangleMesh tessellateFootprint(
-        const model::Footprint& footprint, double height_mm) const override {
+        const model::Footprint& footprint, double height_mm,
+        const std::vector<model::CutPrism>& cutouts) const override {
         if (failing_) {
             throw std::runtime_error("Geometrie-Operation fehlgeschlagen");
         }
-        return AnalyticGeometry{}.tessellateFootprint(footprint, height_mm);
+        return AnalyticGeometry{}.tessellateFootprint(footprint, height_mm,
+                                                      cutouts);
     }
 
 private:

@@ -1,7 +1,7 @@
 ---
 id: slice-013b
 titel: Türen + Fenster implementieren — Wandöffnung (Schnitt-Prismen)
-status: next
+status: done
 welle: welle-2-bauteile
 lastenheft_refs: [LH-FA-DOR-001, LH-FA-DOR-002, LH-FA-DOR-003, LH-FA-DOR-004, LH-FA-WIN-001, LH-FA-WIN-002, LH-FA-WIN-003, LH-FA-WIN-004, LH-FA-WIN-005]
 adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0011]
@@ -9,9 +9,9 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0011]
 
 # Slice 013b: Türen + Fenster implementieren — Wandöffnung
 
-**Status:** next (Plan geschrieben; **MR-006-Plan-Review gelaufen
-2026-06-13 — keine HIGH, 4 MED/2 LOW eingearbeitet**;
-implementierungsbereit).
+**Status:** done (2026-06-13). MR-006-Plan-Review gelaufen (keine HIGH,
+4 MED/2 LOW eingearbeitet); DoD vollständig, `make gates` grün
+(80 Tests, Coverage 93,3 %). Closure-Notiz §8.
 
 **Plan-Review (MR-006):**
 [Report](../../../reviews/2026-06-13-slice-013b-plan.md) (M/L-IDs) —
@@ -57,13 +57,13 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
 
 ## 2. Definition of Done
 
-- [ ] **Domänen-Typen (pure Werte, `src/hexagon/model/`):**
+- [x] **Domänen-Typen (pure Werte, `src/hexagon/model/`):**
       `Opening` (`OpeningId`, `WallId wall_id`, `OpeningKind ∈ {Door,
       Window}`, `offset_mm`, `width_mm`, `height_mm`, `sill_height_mm`,
       Tür-`SwingDirection ∈ {Left, Right}` für den Anschlag,
       LH-FA-DOR-003); `Building` gewinnt `std::vector<Opening> openings`.
       Framework-frei (arch-check Regel A).
-- [ ] **`GeometryKernelPort` um Schnitt-Prismen erweitert** (ADR-0011 (b),
+- [x] **`GeometryKernelPort` um Schnitt-Prismen erweitert** (ADR-0011 (b),
       Port-Signatur = ADR-0001-Kern-Hoheit): ein `model::CutPrism`
       (`Footprint polygon` + `z_min_mm`/`z_max_mm`) als reiner
       Geometrie-Wert; `extrudeFootprint`/`tessellateFootprint` nehmen
@@ -75,7 +75,7 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
       mit **identischen Orakeln bei leeren Cutouts** (Regressions-Aussage
       wie slice-012 W3-P1, zweigeteilt + per `make test` belegt — keine
       behauptete Testzahl).
-- [ ] **`EditStructurePort`-Operationen** für Öffnungen, im
+- [x] **`EditStructurePort`-Operationen** für Öffnungen, im
       `StructureEditService` implementiert: platzieren (`addDoor`/
       `addWindow` an Wand + Position), verschieben (Offset),
       Parameter (Breite/Höhe/Brüstung/Anschlag), entfernen — Parameter
@@ -84,7 +84,7 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
       Wandlänge liegt; passt die Mindestbreite nicht oder fehlt die
       Wirtswand → abgelehnt (keine verwaiste Öffnung, kein Durchbruch
       außerhalb). Öffnungs-Oberkante auf Wandhöhe geklemmt.
-- [ ] **Öffnungs-Geometrie im Kern, total + transaktional:** der Service
+- [x] **Öffnungs-Geometrie im Kern, total + transaktional:** der Service
       berechnet je Wand aus ihren Öffnungen die Schnitt-Prismen (Quader
       quer zur Wand, `[offset,offset+width]` × volle Stärke ×
       `[sill,sill+height]`, Überstand ≥ Toleranz) und baut das
@@ -92,18 +92,18 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
       Commit**; schlägt der Boolean fehl, bleibt das Modell unverändert,
       keine Meldung (Muster slice-012). `wallMesh`/`wallMeshes` (ViewModel)
       liefern das ausgeschnittene Netz.
-- [ ] **Folge-Meldung:** Öffnungs-Mutation meldet
+- [x] **Folge-Meldung:** Öffnungs-Mutation meldet
       `op = WallGeometryChanged` für die **Wirtswand** (kein neuer `op`,
       ADR-0011 (4)); **keine** `RoomsChanged` (Öffnung ändert weder
       Wandachse noch Stärke — Raumerkennung/Footprint unberührt,
       ROM-/WAL-006-AK-Tests bleiben textlich grün). Abgelehnte/entfernte→
       definiertes Melde-Verhalten (entfernen meldet
       `WallGeometryChanged`, abgelehnt meldet nicht).
-- [ ] **Viewer folgt** (`ViewerScene`): die `WallGeometryChanged`-
+- [x] **Viewer folgt** (`ViewerScene`): die `WallGeometryChanged`-
       Meldung der Wirtswand zieht das ausgeschnittene Wand-Netz nach
       (Pull + idempotentes Ersetzen — bestehender Pfad seit slice-012;
       Code-Änderung nur falls nötig, sonst per AK-Test belegt).
-- [ ] **AK-Tests mit `LH-FA-DOR-*`/`LH-FA-WIN-*` im Namen** (Kern gegen
+- [x] **AK-Tests mit `LH-FA-DOR-*`/`LH-FA-WIN-*` im Namen** (Kern gegen
       `AnalyticGeometry`-Double mit Cutout-Volumen-Subtraktion + OCC-
       Adapter + Szene), display-frei:
       **Happy** (Tür/Fenster platziert → Wand-Solid-Volumen um das
@@ -123,7 +123,7 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
       **Regression** (ROM-/WAL-006-/D3-Tests ohne Cutout textlich grün;
       migrierte Doubles/OCC-Tests mit identischen Orakeln bei leeren
       Cutouts).
-- [ ] **`spec/spezifikation.md` §3** ggf. um Defaults (Default-Tür-/
+- [x] **`spec/spezifikation.md` §3** ggf. um Defaults (Default-Tür-/
       Fenster-Maße bei Anlage) ergänzt, falls die Anlage Defaults
       braucht (Spec-Drift-Disziplin, Begründung in Closure); `make gates`
       grün; arch-check A–E; Closure-Notiz mit Lerneintrag; CHANGELOG-
@@ -238,3 +238,70 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
 - **Modus:** GF; Dichte hoch (LH-ID-Namen, gemeinsames Double mit
   Cutout-Orakel, Registrierung); Risiko mittel (Orakel-Erweiterung —
   durch identische Leer-Cutout-Werte gegengeprüft).
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar):**
+
+- **DoD vollständig, `make gates` grün** (2026-06-13): docs-check 0,
+  gate-consistency, arch-check **A–E** (ADR-0001/0002 — OCC inkl.
+  `BRepAlgoAPI_Cut`/`TKBO` bleibt im Geometrie-Adapter, Regel C grün),
+  lint 0 + suppression-gate, **Tests 80/80**, **Coverage 93,3 % lines**
+  (1064/1140) / 93,5 % functions (Schwelle 70 %).
+- **13 neue AK-Tests mit `LH-FA-DOR-*`/`LH-FA-WIN-*` im Namen**
+  (Kern gegen `AnalyticGeometry` mit Cutout-Orakel + OCC-Adapter +
+  Szene): Happy (Tür/Fenster verringern das Wandvolumen; Fenster-
+  Brüstung), Boundary (Breite/Höhe geklemmt, Position auf Wandlänge,
+  Öffnung auf Wandhöhe geklemmt), Negative (ohne Wirtswand abgelehnt,
+  Wand zu kurz abgelehnt, entfernte Tür schließt die Wand), Verschieben
+  (DOR-002, geklemmt), Brüstung nur Fenster (Tür rejected), Anschlag
+  gesetzt (Query), Folge-Meldung (genau Wirtswand-`WallGeometryChanged`,
+  **kein** `RoomsChanged`), Fehlerfall-Transaktion (werfendes Double →
+  Modell/Solids unverändert, keine Meldung) + 2 OCC-Adapter-Tests (reale
+  boolesche Subtraktion) + 1 Viewer-Szene-AK (Öffnung folgt).
+- **Umsetzung deckungsgleich mit ADR-0011 (a)–(f):** `model::Opening`
+  mit `wall_id`-Referenz; `model::CutPrism` (Polygon + z) vom Kern
+  (`services/opening_geometry`), `GeometryKernelPort` um `cutouts`
+  erweitert (Port-Signatur = Kern-Hoheit), `OccGeometryAdapter`
+  subtrahiert per `BRepAlgoAPI_Cut` (fuzzy, kein OCC-Leck);
+  total/transaktional (E-GEO-002 → Modell unverändert);
+  `WallGeometryChanged` der Wirtswand (kein neuer `op`); Raumerkennung/
+  Footprint unberührt.
+- **Regressions-Aussage (W3-P1) eingehalten:** Die Port-Signatur-
+  Migration (`cutouts`) ist verhaltensneutral bei leerer Liste — die
+  ROM-/WAL-006-/D3-Tests ohne Öffnung blieben textlich unverändert grün;
+  migrierte Doubles/OCC-Tests behalten identische Leer-Cutout-Orakel.
+  Beleg: `make test` 80/80 (zuvor 63).
+- **Keine Schema-Schärfung** (ADR-0006 trägt openings/doors/windows
+  bereits); `make schema-check` im Strang nicht ausgelöst. Neue §3-
+  Defaults (`DEFAULT_DOOR_*`/`DEFAULT_WINDOW_*`) als Spec-Drift im Slice
+  (Muster `DEFAULT_WALL_THICKNESS_MM`).
+
+**Lerneintrag:**
+
+- **OCC-Boolean braucht ein eigenes Toolkit:** `BRepAlgoAPI_Cut`/
+  `BOPAlgo` linken nur mit **`TKBO`** (Boolean Operations) — der
+  Link-Fehler kam erst beim Composition-Root-Link, nicht beim Adapter-
+  Kompilieren. Lehre: bei neuer OCC-Funktionsklasse die nötige
+  `TK*`-Library gleich in `src/adapters/CMakeLists.txt` mitführen
+  (1× kategorisiert; Build-Gate fängt es, aber spät). Kein neues
+  apt-Paket (gleiches `libocct`), daher kein `make versions`-Nachzug.
+- **Verhaltensneutrale Signatur-Migration zahlt sich aus:** der
+  `cutouts`-Default „leer = Stand vor slice-013b" machte die Migration
+  von 5 Aufruf-Stellen + 2 Implementierern + Doubles risikoarm (alle
+  Alt-AK textlich grün) — Bestätigung der slice-012-W3-P1-Disziplin
+  (2. Vorkommen).
+
+**Restrisiko / Nachfolge / Auflagen:**
+
+- **slice-013c (Öffnungs-Persistenz)** wird startbar — und ist **Auflage
+  (M1): vor dem ersten lebenden Speicher-Use-Case** abzuschließen.
+  Aktuell sind Öffnungen nur im Speicher (kein lebender Save-Pfad:
+  `SqliteProjectRepository` ist nicht in `main` verdrahtet) — daher
+  **kein** §2.2-Datenverlust, aber die Lücke ist hier bewusst benannt.
+- **Bewusst ausgelassen (M4, welle-2-Scope):** `swing_angle_deg`,
+  `is_external`, `frame_material`/`glazing_type`/`u_value` (ADR-0006-
+  Schema-Felder) sowie eigenes Tür-Blatt/Fenster-Rahmen-Solid und die
+  2D-Öffnungs-Darstellung (ADR-0011 Re-Eval-Trigger).
+- **Welle-Leitplanke aktiv:** ROF/SLB/FND/STR folgen dem ADR-0011-
+  Bauteil-Erweiterungs-Muster (#6).

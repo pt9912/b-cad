@@ -162,6 +162,28 @@ TEST_F(ViewerSceneAk, LH_FA_WAL_006_NachbarFolgtInDerSzene) {
     service_.unsubscribe(scene_);
 }
 
+// LH-FA-DOR-004 (ADR-0011): eine platzierte Tür bricht die Wirtswand
+// durch — die Szene folgt der `WallGeometryChanged`-Meldung der Wirtswand
+// (Pull) ohne Benutzer-Schritt; das Netz der Wand wird wirksam ersetzt.
+TEST_F(ViewerSceneAk, LH_FA_DOR_004_TuerOeffnungFolgtInDerSzene) {
+    const auto wall = service_.addWall(eg_, seg(0, 0, 4000, 0));
+    ASSERT_TRUE(wall.has_value());
+    scene_.loadAll();
+    service_.subscribe(scene_);
+    const int triangles_before = scene_.wallMeshes().at(*wall).triangleCount();
+
+    const auto door = service_.addDoor(*wall, 1500.0);
+    ASSERT_TRUE(door.has_value());
+
+    // Kein loadAll(): der Stand kam über Push-Notify (WallGeometryChanged)
+    // + Pull. Die Öffnung erzeugt zusätzliche Begrenzungsflächen → das
+    // Netz der Wand ändert sich nachweisbar.
+    EXPECT_GE(scene_.effectiveUpdates(), 1);
+    EXPECT_GT(scene_.wallMeshes().at(*wall).triangleCount(), triangles_before)
+        << "Wand-Netz muss die Öffnung tragen";
+    service_.unsubscribe(scene_);
+}
+
 // Negative (ii): nach unsubscribe folgt die Darstellung nicht mehr.
 TEST_F(ViewerSceneAk, LH_FA_D3_002_Negative_UnsubscribeBeendetFolgen) {
     const auto wall = service_.addWall(eg_, seg(0, 0, 4000, 0));

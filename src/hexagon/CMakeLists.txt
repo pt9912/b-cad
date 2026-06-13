@@ -7,6 +7,7 @@
 add_library(bcad_hexagon
     services/bootstrap_info.cpp
     services/greeting_service.cpp
+    services/opening_geometry.cpp
     services/room_detection.cpp
     services/structure_edit_service.cpp
     services/wall_footprint.cpp

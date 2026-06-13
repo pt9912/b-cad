@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "hexagon/model/constants.h"
+#include "hexagon/services/opening_geometry.h"
 #include "hexagon/services/room_detection.h"
 #include "hexagon/services/wall_footprint.h"
 
@@ -65,6 +66,23 @@ double segmentLength(const model::Segment& seg) {
     return std::sqrt((dx * dx) + (dy * dy));
 }
 
+double wallLength(const model::Wall& wall) {
+    return segmentLength(model::Segment{wall.start, wall.end});
+}
+
+// Kind-spezifische Wertebereiche für Öffnungs-Parameter (spez. §3).
+Range openingWidthRange(model::OpeningKind kind) {
+    return (kind == model::OpeningKind::Door)
+               ? Range{model::kDoorWidthMinMm, model::kDoorWidthMaxMm}
+               : Range{model::kWindowWidthMinMm, model::kWindowWidthMaxMm};
+}
+
+Range openingHeightRange(model::OpeningKind kind) {
+    return (kind == model::OpeningKind::Door)
+               ? Range{model::kDoorHeightMinMm, model::kDoorHeightMaxMm}
+               : Range{model::kWindowHeightMinMm, model::kWindowHeightMaxMm};
+}
+
 }  // namespace
 
 StructureEditService::StructureEditService(
@@ -115,8 +133,7 @@ std::optional<model::WallId> StructureEditService::addWall(
 
     std::vector<model::Wall> trial = building_.walls;
     trial.push_back(wall);
-    const model::Solid solid =
-        geometry_.extrudeFootprint(wallFootprint(wall, trial), wall.height_mm);
+    const model::Solid solid = buildWallSolid(wall, trial, building_.openings);
     const std::vector<NeighborRebuild> neighbor_rebuilds =
         rebuildAffectedNeighbors(wall, trial);
 
@@ -152,8 +169,7 @@ ports::driving::ParamResult StructureEditService::setWallThickness(
     auto tit = std::find_if(trial_walls.begin(), trial_walls.end(),
                             [id](const model::Wall& w) { return w.id == id; });
     tit->thickness_mm = result.applied_mm;
-    const model::Solid solid =
-        geometry_.extrudeFootprint(wallFootprint(*tit, trial_walls), tit->height_mm);
+    const model::Solid solid = buildWallSolid(*tit, trial_walls, building_.openings);
     const std::vector<NeighborRebuild> neighbor_rebuilds =
         rebuildAffectedNeighbors(*tit, trial_walls);
 
@@ -184,8 +200,8 @@ ports::driving::ParamResult StructureEditService::setWallHeight(
     // (LH-FA-WAL-006/spez. §1).
     model::Wall trial = target;
     trial.height_mm = result.applied_mm;
-    const model::Solid solid = geometry_.extrudeFootprint(
-        wallFootprint(trial, building_.walls), trial.height_mm);
+    const model::Solid solid =
+        buildWallSolid(trial, building_.walls, building_.openings);
     target.height_mm = result.applied_mm;
     solids_[id] = solid;
     redetectRooms(target.storey_id);  // Mutation-Trigger (spez. §1 §Auslösung)
@@ -223,7 +239,8 @@ std::optional<model::TriangleMesh> StructureEditService::wallMesh(
     }
     try {
         return geometry_.tessellateFootprint(
-            wallFootprint(*it, building_.walls), it->height_mm);
+            wallFootprint(*it, building_.walls), it->height_mm,
+            wallCutPrisms(*it, building_.openings));
     } catch (const std::exception&) {
         // E-GEO-002 in der Query-Hälfte: totale Antwort statt Wurf —
         // committete Wände sind validiert, ein Tessellations-Fehler darf
@@ -255,7 +272,7 @@ StructureEditService::rebuildAffectedNeighbors(
         }
         rebuilds.push_back(NeighborRebuild{
             other.id, other.storey_id,
-            geometry_.extrudeFootprint(after, other.height_mm)});
+            buildWallSolid(other, trial, building_.openings)});
     }
     return rebuilds;
 }
@@ -328,6 +345,221 @@ model::Wall& StructureEditService::mutableWall(model::WallId id) {
         [id](const model::Wall& w) { return w.id == id; });
     if (it == building_.walls.end()) {
         throw std::out_of_range("mutableWall: unbekannte Wand-Id");
+    }
+    return *it;
+}
+
+// --- Wandöffnungen (LH-FA-DOR-*/WIN-*, ADR-0011) ---
+
+model::Solid StructureEditService::buildWallSolid(
+    const model::Wall& w, const std::vector<model::Wall>& walls,
+    const std::vector<model::Opening>& openings) const {
+    return geometry_.extrudeFootprint(wallFootprint(w, walls), w.height_mm,
+                                      wallCutPrisms(w, openings));
+}
+
+bool StructureEditService::commitOpenings(
+    model::WallId wall_id, std::vector<model::Opening> trial_openings) {
+    const model::Wall& host = wall(wall_id);
+    model::Solid solid{};
+    try {
+        // Transaktional: neues Wirtswand-Solid VOR dem Commit bauen.
+        solid = buildWallSolid(host, building_.walls, trial_openings);
+    } catch (const std::exception&) {
+        return false;  // E-GEO-002: Modell bleibt unverändert, keine Meldung
+    }
+    building_.openings = std::move(trial_openings);
+    solids_[wall_id] = solid;
+    // ADR-0011 (4): Öffnung ist ein Hohlraum der Wirtswand → deren
+    // `WallGeometryChanged`; KEINE Raum-Re-Detektion (ADR-0011 (5)).
+    notifyListeners({.op = ports::driven::ModelChangeOp::WallGeometryChanged,
+                     .storey_id = host.storey_id,
+                     .wall_id = wall_id});
+    return true;
+}
+
+std::optional<model::OpeningId> StructureEditService::addOpening(
+    model::Opening prototype, double offset_mm) {
+    const auto wit = std::find_if(
+        building_.walls.begin(), building_.walls.end(),
+        [&](const model::Wall& w) { return w.id == prototype.wall_id; });
+    if (wit == building_.walls.end()) {
+        return std::nullopt;  // keine Wirtswand (Negative)
+    }
+    const double length = wallLength(*wit);
+    const Range wr = openingWidthRange(prototype.kind);
+    if (!std::isfinite(length) || length < wr.min) {
+        return std::nullopt;  // Wand zu kurz für die schmalste Öffnung
+    }
+    // Breite: Default in den Bereich geklemmt, dann auf die Wandlänge
+    // verkürzt; Position so geklemmt, dass die Öffnung in der Wand liegt.
+    const double width = std::min(std::clamp(prototype.width_mm, wr.min, wr.max),
+                                  length);
+    prototype.width_mm = width;
+    prototype.offset_mm = std::clamp(offset_mm, 0.0, length - width);
+    prototype.id = static_cast<model::OpeningId>(next_opening_id_);
+
+    std::vector<model::Opening> trial = building_.openings;
+    trial.push_back(prototype);
+    if (!commitOpenings(prototype.wall_id, std::move(trial))) {
+        return std::nullopt;  // E-GEO-002
+    }
+    ++next_opening_id_;
+    return prototype.id;
+}
+
+std::optional<model::OpeningId> StructureEditService::addDoor(
+    model::WallId wall_id, double offset_mm) {
+    model::Opening proto{};
+    proto.wall_id = wall_id;
+    proto.kind = model::OpeningKind::Door;
+    proto.width_mm = model::kDefaultDoorWidthMm;
+    proto.height_mm = model::kDefaultDoorHeightMm;
+    proto.sill_height_mm = 0.0;  // Türen: keine Brüstung
+    proto.swing = model::SwingDirection::Left;
+    return addOpening(proto, offset_mm);
+}
+
+std::optional<model::OpeningId> StructureEditService::addWindow(
+    model::WallId wall_id, double offset_mm) {
+    model::Opening proto{};
+    proto.wall_id = wall_id;
+    proto.kind = model::OpeningKind::Window;
+    proto.width_mm = model::kDefaultWindowWidthMm;
+    proto.height_mm = model::kDefaultWindowHeightMm;
+    proto.sill_height_mm = model::kDefaultWindowSillMm;  // LH-FA-WIN-004
+    return addOpening(proto, offset_mm);
+}
+
+ports::driving::ParamResult StructureEditService::setOpeningWidth(
+    model::OpeningId id, double mm) {
+    model::Opening& target = mutableOpening(id);
+    const double length = wallLength(wall(target.wall_id));
+    const ports::driving::ParamResult result =
+        evaluateParam(mm, openingWidthRange(target.kind), target.width_mm);
+    if (result.status == ports::driving::ParamStatus::Rejected ||
+        result.applied_mm > length) {
+        // ungültig oder breiter als die Wand → Modell unverändert
+        return ports::driving::ParamResult{target.width_mm,
+                                           ports::driving::ParamStatus::Rejected};
+    }
+    std::vector<model::Opening> trial = building_.openings;
+    auto& t = *std::find_if(trial.begin(), trial.end(),
+                            [id](const model::Opening& o) { return o.id == id; });
+    t.width_mm = result.applied_mm;
+    t.offset_mm = std::clamp(t.offset_mm, 0.0, length - result.applied_mm);
+    if (!commitOpenings(target.wall_id, std::move(trial))) {
+        return ports::driving::ParamResult{target.width_mm,
+                                           ports::driving::ParamStatus::Rejected};
+    }
+    return result;
+}
+
+ports::driving::ParamResult StructureEditService::setOpeningHeight(
+    model::OpeningId id, double mm) {
+    model::Opening& target = mutableOpening(id);
+    const ports::driving::ParamResult result =
+        evaluateParam(mm, openingHeightRange(target.kind), target.height_mm);
+    if (result.status == ports::driving::ParamStatus::Rejected) {
+        return result;
+    }
+    std::vector<model::Opening> trial = building_.openings;
+    std::find_if(trial.begin(), trial.end(),
+                 [id](const model::Opening& o) { return o.id == id; })
+        ->height_mm = result.applied_mm;
+    if (!commitOpenings(target.wall_id, std::move(trial))) {
+        return ports::driving::ParamResult{target.height_mm,
+                                           ports::driving::ParamStatus::Rejected};
+    }
+    return result;
+}
+
+ports::driving::ParamResult StructureEditService::setWindowSill(
+    model::OpeningId id, double mm) {
+    model::Opening& target = mutableOpening(id);
+    if (target.kind != model::OpeningKind::Window) {
+        // Türen haben keine Brüstung (LH-FA-WIN-004 nur Fenster).
+        return ports::driving::ParamResult{target.sill_height_mm,
+                                           ports::driving::ParamStatus::Rejected};
+    }
+    const ports::driving::ParamResult result = evaluateParam(
+        mm, Range{model::kWindowSillMinMm, model::kWindowSillMaxMm},
+        target.sill_height_mm);
+    if (result.status == ports::driving::ParamStatus::Rejected) {
+        return result;
+    }
+    std::vector<model::Opening> trial = building_.openings;
+    std::find_if(trial.begin(), trial.end(),
+                 [id](const model::Opening& o) { return o.id == id; })
+        ->sill_height_mm = result.applied_mm;
+    if (!commitOpenings(target.wall_id, std::move(trial))) {
+        return ports::driving::ParamResult{target.sill_height_mm,
+                                           ports::driving::ParamStatus::Rejected};
+    }
+    return result;
+}
+
+bool StructureEditService::moveOpening(model::OpeningId id, double offset_mm) {
+    const auto it = std::find_if(
+        building_.openings.begin(), building_.openings.end(),
+        [id](const model::Opening& o) { return o.id == id; });
+    if (it == building_.openings.end()) {
+        return false;
+    }
+    const double length = wallLength(wall(it->wall_id));
+    std::vector<model::Opening> trial = building_.openings;
+    auto& t = *std::find_if(trial.begin(), trial.end(),
+                            [id](const model::Opening& o) { return o.id == id; });
+    t.offset_mm = std::clamp(offset_mm, 0.0, std::max(0.0, length - t.width_mm));
+    return commitOpenings(it->wall_id, std::move(trial));
+}
+
+void StructureEditService::setDoorSwing(model::OpeningId id,
+                                        model::SwingDirection swing) {
+    const auto it = std::find_if(
+        building_.openings.begin(), building_.openings.end(),
+        [id](const model::Opening& o) { return o.id == id; });
+    // Reine Eigenschaft (LH-FA-DOR-003) ohne Geometrie-Folge in welle-2
+    // (kein Türblatt-Solid, ADR-0011 Re-Eval) → keine Meldung.
+    if (it != building_.openings.end() && it->kind == model::OpeningKind::Door) {
+        it->swing = swing;
+    }
+}
+
+bool StructureEditService::removeOpening(model::OpeningId id) {
+    const auto it = std::find_if(
+        building_.openings.begin(), building_.openings.end(),
+        [id](const model::Opening& o) { return o.id == id; });
+    if (it == building_.openings.end()) {
+        return false;
+    }
+    const model::WallId host = it->wall_id;
+    std::vector<model::Opening> trial = building_.openings;
+    trial.erase(std::remove_if(trial.begin(), trial.end(),
+                               [id](const model::Opening& o) { return o.id == id; }),
+                trial.end());
+    // Wirtswand ohne die Öffnung neu bauen (schließt sich wieder) +
+    // WallGeometryChanged. commitOpenings ist hier nicht-werfend
+    // (Footprint der Wand ohne Cutout ist gültig).
+    return commitOpenings(host, std::move(trial));
+}
+
+const model::Opening& StructureEditService::opening(model::OpeningId id) const {
+    const auto it = std::find_if(
+        building_.openings.begin(), building_.openings.end(),
+        [id](const model::Opening& o) { return o.id == id; });
+    if (it == building_.openings.end()) {
+        throw std::out_of_range("opening: unbekannte Öffnungs-Id");
+    }
+    return *it;
+}
+
+model::Opening& StructureEditService::mutableOpening(model::OpeningId id) {
+    const auto it = std::find_if(
+        building_.openings.begin(), building_.openings.end(),
+        [id](const model::Opening& o) { return o.id == id; });
+    if (it == building_.openings.end()) {
+        throw std::out_of_range("mutableOpening: unbekannte Öffnungs-Id");
     }
     return *it;
 }

@@ -7,8 +7,13 @@
 
 #include <stdexcept>
 
+#include <vector>
+
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "hexagon/model/constants.h"
+#include "hexagon/model/cut_prism.h"
+#include "hexagon/model/opening.h"
+#include "hexagon/services/opening_geometry.h"
 #include "hexagon/services/wall_footprint.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/model/wall.h"
@@ -26,7 +31,7 @@ using bcad::hexagon::services::buttFootprint;
 // (Laenge·Staerke·Hoehe fuer den stumpfen Rechteck-Footprint).
 bcad::hexagon::model::Solid extrude(const OccGeometryAdapter& adapter,
                                     const model::Wall& wall) {
-    return adapter.extrudeFootprint(buttFootprint(wall), wall.height_mm);
+    return adapter.extrudeFootprint(buttFootprint(wall), wall.height_mm, {});
 }
 
 model::Wall makeWall(model::Point2D start, model::Point2D end,
@@ -78,6 +83,59 @@ TEST(OccGeometryAdapter_LH_FA_D3_001, DegeneriertesFootprintWirftNeutral) {
     const OccGeometryAdapter adapter;
     const auto wall = makeWall({5.0, 5.0}, {5.0, 5.0}, 240.0, 2500.0);  // Länge 0
     EXPECT_THROW((void)extrude(adapter, wall), std::runtime_error);
+}
+
+// LH-FA-DOR-004/WIN-005 (ADR-0011): die boolesche Subtraktion eines
+// Öffnungs-Schnittkörpers entfernt real das Öffnungs-Volumen aus dem
+// Wand-Solid (Kern liefert das Prisma, Adapter subtrahiert per OCC).
+TEST(OccGeometryAdapter_LH_FA_DOR_004, WandoeffnungSubtrahiertVolumen) {
+    const OccGeometryAdapter adapter;
+    auto wall = makeWall({0.0, 0.0}, {1000.0, 0.0}, 240.0, 2500.0);
+    wall.id = model::WallId{1};
+
+    model::Opening door{};
+    door.id = model::OpeningId{1};
+    door.wall_id = wall.id;
+    door.kind = model::OpeningKind::Door;
+    door.offset_mm = 50.0;
+    door.width_mm = 900.0;
+    door.height_mm = 2100.0;
+    door.sill_height_mm = 0.0;
+    const auto cutter = services::openingCutPrism(door, wall);
+    ASSERT_TRUE(cutter.has_value());
+
+    const auto solid = adapter.extrudeFootprint(buttFootprint(wall),
+                                                wall.height_mm, {*cutter});
+
+    const double full = 1000.0 * 240.0 * 2500.0;
+    const double opening = 900.0 * 240.0 * 2100.0;  // ganz in der Wand
+    EXPECT_NEAR(solid.volume_mm3, full - opening, (full - opening) * 1e-3);
+}
+
+// Fenster mit Brüstung: die Öffnung beginnt erst oberhalb der Brüstung —
+// das entfernte Volumen ist width·thickness·height (Wand darunter bleibt).
+TEST(OccGeometryAdapter_LH_FA_WIN_005, FensterMitBruestungSubtrahiert) {
+    const OccGeometryAdapter adapter;
+    auto wall = makeWall({0.0, 0.0}, {2000.0, 0.0}, 300.0, 2500.0);
+    wall.id = model::WallId{1};
+
+    model::Opening win{};
+    win.id = model::OpeningId{1};
+    win.wall_id = wall.id;
+    win.kind = model::OpeningKind::Window;
+    win.offset_mm = 500.0;
+    win.width_mm = 1200.0;
+    win.height_mm = 1300.0;
+    win.sill_height_mm = 900.0;  // beginnt oberhalb
+    const auto cutter = services::openingCutPrism(win, wall);
+    ASSERT_TRUE(cutter.has_value());
+
+    const auto solid = adapter.extrudeFootprint(buttFootprint(wall),
+                                                wall.height_mm, {*cutter});
+
+    const double full = 2000.0 * 300.0 * 2500.0;
+    const double opening = 1200.0 * 300.0 * 1300.0;
+    EXPECT_NEAR(solid.volume_mm3, full - opening, (full - opening) * 1e-3);
 }
 
 // Integration: volle Kette Driving -> Service -> Driven -> OCC mit dem

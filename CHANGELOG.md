@@ -61,6 +61,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (LH-FA-WIN-001..005) von Outline auf AK geschärft; Spezifikation §1
   Öffnungs-Algorithmus + §3 Tür-/Fenster-/Brüstungs-Wertebereiche. Keine
   Schema-Schärfung nötig (ADR-0006 trägt openings/doors/windows bereits).
+- slice-013b — Türen + Fenster implementiert (LH-FA-DOR-001..004,
+  LH-FA-WIN-001..005, ADR-0011): wand-gehostete `Opening` im Kern;
+  automatische Wandöffnung als boolesche Subtraktion (`model::CutPrism`
+  vom Kern, `GeometryKernelPort.extrudeFootprint`/`tessellateFootprint`
+  um `cutouts` erweitert, `OccGeometryAdapter` via `BRepAlgoAPI_Cut`/
+  `TKBO`, kein OCC-Leck); platzieren/verschieben/Parameter (Breite/Höhe/
+  Brüstung/Anschlag)/entfernen mit Klemmung (E-VAL-001) + Platzierungs-
+  Validierung; `WallGeometryChanged` der Wirtswand (total/transaktional),
+  Raumerkennung/Footprint unberührt; 13 AK-Tests, Coverage 93,3 %.
+  Öffnungen vorerst nur im Speicher — Persistenz folgt in slice-013c
+  (vor erstem Save-Use-Case).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

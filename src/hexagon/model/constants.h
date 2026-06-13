@@ -15,4 +15,23 @@ inline constexpr double kDefaultWallThicknessMm = 240.0;  // LH-FA-WAL-001
 inline constexpr double kDefaultStoreyHeightMm = 2500.0;  // LH-FA-BLD-001/FLR-004
 inline constexpr double kGeometryToleranceMm = 0.1;       // LH-FA-WAL-006/ROM-001
 
+// Wandöffnungen — Türen (LH-FA-DOR-003) / Fenster (LH-FA-WIN-003/004).
+inline constexpr double kDoorWidthMinMm = 600.0;       // LH-FA-DOR-003
+inline constexpr double kDoorWidthMaxMm = 2000.0;      // LH-FA-DOR-003
+inline constexpr double kDoorHeightMinMm = 1800.0;     // LH-FA-DOR-003
+inline constexpr double kDoorHeightMaxMm = 2500.0;     // LH-FA-DOR-003
+inline constexpr double kWindowWidthMinMm = 300.0;     // LH-FA-WIN-003
+inline constexpr double kWindowWidthMaxMm = 3000.0;    // LH-FA-WIN-003
+inline constexpr double kWindowHeightMinMm = 300.0;    // LH-FA-WIN-003
+inline constexpr double kWindowHeightMaxMm = 2500.0;   // LH-FA-WIN-003
+inline constexpr double kWindowSillMinMm = 0.0;        // LH-FA-WIN-004
+inline constexpr double kWindowSillMaxMm = 2000.0;     // LH-FA-WIN-004
+
+// Default-Maße bei Anlage (Muster kDefaultWallThicknessMm) — spez. §3.
+inline constexpr double kDefaultDoorWidthMm = 900.0;    // LH-FA-DOR-001
+inline constexpr double kDefaultDoorHeightMm = 2100.0;  // LH-FA-DOR-001
+inline constexpr double kDefaultWindowWidthMm = 1200.0;   // LH-FA-WIN-001
+inline constexpr double kDefaultWindowHeightMm = 1300.0;  // LH-FA-WIN-001
+inline constexpr double kDefaultWindowSillMm = 900.0;     // LH-FA-WIN-001/004
+
 }  // namespace bcad::hexagon::model

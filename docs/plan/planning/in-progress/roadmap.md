@@ -37,10 +37,12 @@ mit MR-006-Plan-Review, erster Slice steht):
   **done 2026-06-13** (in `done/`; ADR-0011 accepted nach unabhängigem
   Text-Review, `make gates` grün) → slice-013b (Türen/Fenster
   implementieren) startbar.
-- **Türen + Fenster** (LH-FA-DOR-001..004, LH-FA-WIN-001..005)
-  implementiert: platzieren/verschieben/Parameter, automatische
-  Wandöffnung sichtbar; AK-Tests mit `LH-`-ID, Viewer folgt,
-  persistiert. (slice-013b.)
+- **Türen + Fenster** (LH-FA-DOR-001..004, LH-FA-WIN-001..005):
+  **slice-013b done 2026-06-13** — platzieren/verschieben/Parameter,
+  automatische Wandöffnung sichtbar (boolesche Subtraktion), AK-Tests
+  mit `LH-`-ID, Viewer folgt; `make gates` grün (80 Tests). Öffnungen
+  noch nicht persistiert → **slice-013c** (Persistenz, vor erstem
+  Save-Use-Case) startbar.
 - **Dach** (LH-FA-ROF-001..005): Sattel-/Walm-/Pultdach, Neigung,
   Überstand — geschärft + implementiert.
 - **Decken + Fundament** (LH-FA-SLB-001..003, LH-FA-FND-001..003):

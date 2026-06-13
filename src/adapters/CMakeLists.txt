@@ -51,7 +51,8 @@ target_link_libraries(bcad_adapters
         # OCC-Modeling-Toolkits (gezielt; nicht ${OpenCASCADE_LIBRARIES},
         # das auch nicht-installierte DRAW-/Viewer-Toolkits listet):
         # Footprint-Fläche + Prisma + Volumen-Properties + Tessellation
-        # (TKMesh, ADR-0009 (b)).
-        TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKMesh
+        # (TKMesh, ADR-0009 (b)) + boolesche Subtraktion der Wandöffnungen
+        # (TKBO: BRepAlgoAPI_Cut, LH-FA-DOR-004/WIN-005, slice-013b/ADR-0011).
+        TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKMesh TKBO
 )
 target_compile_features(bcad_adapters PUBLIC cxx_std_20)

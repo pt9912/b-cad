@@ -285,6 +285,11 @@ im Schema (nur Undo) — eigener Slice.
 | `WINDOW_HEIGHT_MAX_MM` | 2500 | Obergrenze Fensterhöhe | LH-FA-WIN-003 |
 | `WINDOW_SILL_MIN_MM` | 0 | Untergrenze Brüstungshöhe | LH-FA-WIN-004 |
 | `WINDOW_SILL_MAX_MM` | 2000 | Obergrenze Brüstungshöhe | LH-FA-WIN-004 |
+| `DEFAULT_DOOR_WIDTH_MM` | 900 | Default-Türbreite bei Anlage | LH-FA-DOR-001 |
+| `DEFAULT_DOOR_HEIGHT_MM` | 2100 | Default-Türhöhe bei Anlage | LH-FA-DOR-001 |
+| `DEFAULT_WINDOW_WIDTH_MM` | 1200 | Default-Fensterbreite bei Anlage | LH-FA-WIN-001 |
+| `DEFAULT_WINDOW_HEIGHT_MM` | 1300 | Default-Fensterhöhe bei Anlage | LH-FA-WIN-001 |
+| `DEFAULT_WINDOW_SILL_MM` | 900 | Default-Brüstungshöhe bei Anlage | LH-FA-WIN-001/004 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
 | `UNDO_DEPTH_MIN` | 1000 | Mindesttiefe Undo/Redo | LH-QA-003 |
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
@@ -360,6 +365,7 @@ nicht im Bootstrap.
 | 2026-06-12 | §1 D3-002.a ergänzt: welle-1v-Operationalisierung „sichtbar" (Qt-Widgets-Fenster, Tessellation über `ViewModelPort`, Szenen-Surrogat, ACC-002-Beleg als manueller Abnahme-Schritt) | ADR-0009 |
 | 2026-06-12 | §1 LH-FA-WAL-006.a neu (Eckenschluss-Footprint-Regel, Footprint-Hoheit im Kern, Begrenzung/Rückfälle, EVL-Hinweis Shoelace) + D3-002.a-Mehr-Element-Update (`WallGeometryChanged`, Reihenfolge, Transaktions-Satz) + §3 `WALL_MITER_LIMIT`; zwei WAL-006-Verweise auf Vollumfang präzisiert | slice-012 (Lastenheft 0.1.2) |
 | 2026-06-13 | §1 LH-FA-DOR-004.a/WIN-005.a neu (Wandöffnung als Schnitt-Prismen im Kern, boolesche Subtraktion über `GeometryKernelPort`, Klemmung/Ablehnung, Totalität/Transaktion, `WallGeometryChanged` der Wirtswand, Raumerkennung/Footprint unberührt) + §3 Tür-/Fenster-/Brüstungs-Wertebereiche | ADR-0011 (slice-013a) |
+| 2026-06-13 | §3 Default-Maße bei Tür-/Fenster-Anlage (`DEFAULT_DOOR_*`/`DEFAULT_WINDOW_*`) — Implementierung der Anlage (Muster `DEFAULT_WALL_THICKNESS_MM`) | slice-013b |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 
