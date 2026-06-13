@@ -268,6 +268,40 @@ sie.
   Sensor-Deckung ohne Sensor, ACC-002-Beleg ohne Erzeugungsweg).
 - **Auflösungs-Trigger:** permanent.
 
+### MR-008 — Lastenheft-Schärfung bleibt lösungsfrei
+
+- **Datum:** 2026-06-13
+- **Geltungsbereich:** [`../spec/lastenheft.md`](../spec/lastenheft.md)
+  (Reifephase-Schärfung Outline → AK),
+  [`../spec/spezifikation.md`](../spec/spezifikation.md),
+  [`../docs/plan/adr/`](../docs/plan/adr/), [`AGENTS.md` §4](../AGENTS.md)
+- **Adaption:** Wenn ein Slice eine Lastenheft-Anforderung von **Outline
+  auf AK-Niveau** schärft (Reifephase-Klausel), bleiben die
+  Akzeptanzkriterien **lösungsfrei und benutzer-beobachtbar**
+  (Given/When/Then über *sichtbare* Ergebnisse; vertragliche
+  Wertebereiche/Grenzwerte sind das **Was** und gehören ins Lastenheft).
+  Die **Lösungsmechanik** — Algorithmen, Konstruktions-Verfahren, Ports,
+  Daten-/Schnitt-Strukturen, Fehler-Code-/`op`-Vokabular, Formeln —
+  ist das **Wie** und lebt in
+  [`spec/spezifikation.md`](../spec/spezifikation.md) (technisch,
+  fortschreibbar) bzw. in ADRs, **nie im Lastenheft-Text.**
+- **Abgrenzung zu [MR-001](#mr-001--source-precedence-mit-eigener-spezifikations-schicht):**
+  MR-001/Spec-Stratifizierung regelt die *ADR→Spec/Lastenheft*-Richtung
+  („ADR darf Spezifikation schärfen, nicht Lastenheft"). MR-008 schärft
+  das auf die **Slice-interne Outline→AK-Praxis**: auch ein Slice, der
+  das Lastenheft legitim *reift*, schreibt keine Lösung hinein.
+- **Begründung:** Viertes+ Vorkommen mit jeweils substanziellen
+  Plan-Review-Funden (Kurs-Regel: 2× kategorisieren, 3× Regel — hier
+  überfällig): slice-009a (Review-009 M4), slice-010a (Review-010
+  F1/F2 — Lastenheft-Grenzverletzung abgefangen), slice-012, slice-013a,
+  slice-014a (Plan-Review INFO-1: „überfällig"). Zähler-Herkunft
+  [`welle-1v-results.md` §5](../docs/plan/planning/done/welle-1v-results.md).
+- **Sensor:** das unabhängige Plan-Review (MR-006, Linse
+  Plan-Qualität/Quellen-Konsistenz) prüft die Lösungsfreiheit der
+  Lastenheft-AK je Schärfungs-Slice; ein computational Gate existiert
+  dafür (noch) nicht.
+- **Auflösungs-Trigger:** permanent.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

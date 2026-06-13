@@ -160,6 +160,12 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 - Neue ADRs müssen [`docs/plan/adr/README.md`](docs/plan/adr/README.md) aktualisieren.
 - Roadmap/Status-Geschichte lebt in `docs/plan/planning/`, nicht in `spec/architecture.md`.
 - Slice-Lifecycle-Bewegung ist reiner `git mv` (siehe §2.8).
+- **Lastenheft-Schärfung bleibt lösungsfrei** ([`harness/conventions.md`
+  MR-008](harness/conventions.md)): schärft ein Slice eine Anforderung
+  von Outline auf AK-Niveau, sind die AK benutzer-beobachtbar
+  (Given/When/Then; Wertebereiche = das *Was*); Lösungsmechanik
+  (Algorithmen, Ports, Formeln, Fehler-Code-/`op`-Vokabular) gehört in
+  `spec/spezifikation.md` bzw. ADRs — **nie ins Lastenheft**.
 
 ## 5. Minimal Agent Workflow
 
