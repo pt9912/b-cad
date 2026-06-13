@@ -84,6 +84,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   offen). Spezifikation §1 Dach-Geometrie (Traufrechteck, Konstruktion
   je Typ, Höhenformeln) + §3 Neigungs-/Überstands-Bereiche + Defaults.
   Reine Entscheidung/Spec (kein Code, kein ADR — ADR-0011-Leitplanke).
+- slice-014b — Dach implementiert (LH-FA-ROF-001..005, ADR-0011):
+  `model::Roof` + `roof_geometry` (analytisches Dach-Netz Sattel/Walm/Pult
+  im Kern, kein OCC); `ViewModelPort.roofMeshes`, `EditStructurePort`
+  add/setPitch/setOverhang/setType/remove (Klemmung); `RoofChanged`-`op`
+  (kein `RoomsChanged`); `ViewerScene` folgt idempotent. 9 AK-Tests; kein
+  ADR (ADR-0011-Leitplanke). Persistenz folgt in slice-014c. make gates
+  grün (92 Tests, Coverage 91,8 %).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

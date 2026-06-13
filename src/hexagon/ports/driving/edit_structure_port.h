@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "hexagon/model/opening.h"  // OpeningId, OpeningKind, SwingDirection
+#include "hexagon/model/roof.h"     // Roof, RoofId, RoofType
 #include "hexagon/model/segment.h"
 #include "hexagon/model/wall.h"  // WallId, StoreyId
 
@@ -79,6 +80,26 @@ public:
     // Entfernt eine Öffnung; die Wand schließt sich wieder
     // (LH-FA-DOR-004/WIN-005 Negative). `false` bei unbekannter Öffnung.
     virtual bool removeOpening(model::OpeningId opening) = 0;
+
+    // --- Dächer: Sattel/Walm/Pult (LH-FA-ROF-*, ADR-0011) ---
+
+    // Legt ein Dach über dem rechteckigen Grundriss des `prototype` an
+    // (`type`, `origin`, `width_mm`, `depth_mm`, `base_z_mm`,
+    // `pitch_deg`, `overhang_mm` — `id` wird vom Service vergeben).
+    // Neigung/Überstand werden auf §3 geklemmt; ein degenerierter
+    // Grundriss (Seite < Toleranz) wird abgelehnt (kein Wert).
+    virtual std::optional<model::RoofId> addRoof(const model::Roof& prototype) = 0;
+
+    // Setzt Neigung/Überstand; klemmt auf §3 (`E-VAL-001`); meldet
+    // `RoofChanged` (LH-FA-ROF-004/005).
+    virtual ParamResult setRoofPitch(model::RoofId roof, double deg) = 0;
+    virtual ParamResult setRoofOverhang(model::RoofId roof, double mm) = 0;
+
+    // Wechselt die Dachform (LH-FA-ROF-001..003); meldet `RoofChanged`.
+    virtual void setRoofType(model::RoofId roof, model::RoofType type) = 0;
+
+    // Entfernt ein Dach; meldet `RoofChanged`. `false` bei unbekanntem Dach.
+    virtual bool removeRoof(model::RoofId roof) = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

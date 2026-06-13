@@ -46,8 +46,10 @@ mit MR-006-Plan-Review, erster Slice steht):
   abgeschlossen (Code-Review zu 013b gelaufen).
 - **Dach** (LH-FA-ROF-001..005): Sattel-/Walm-/Pultdach, Neigung,
   Überstand. **slice-014a done 2026-06-13** — Lastenheft auf AK
-  geschärft (Teilumfang Rechteck-Grundriss) + Spec-Geometrie; **slice-014b**
-  (Implementierung) startbar.
+  geschärft (Teilumfang Rechteck-Grundriss) + Spec-Geometrie.
+  **slice-014b done 2026-06-13** — Sattel/Walm/Pult implementiert
+  (analytisches Dach-Netz im Kern, Viewer folgt, 92 Tests); Dach-
+  Persistenz → **slice-014c** startbar (vor erstem Save).
 - **Decken + Fundament** (LH-FA-SLB-001..003, LH-FA-FND-001..003):
   Platten-Solids mit Ausschnitten — geschärft + implementiert.
 - **Treppen** (LH-FA-STR-001..004) inkl. Geländer — geschärft +

@@ -8,11 +8,14 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <vector>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "adapters/ui/viewer_scene.h"
 #include "hexagon/model/constants.h"
+#include "hexagon/model/roof.h"
 #include "hexagon/model/segment.h"
+#include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
@@ -21,6 +24,19 @@ using bcad::adapters::geometry::OccGeometryAdapter;
 using bcad::adapters::ui::ViewerScene;
 namespace model = bcad::hexagon::model;
 namespace services = bcad::hexagon::services;
+namespace driven = bcad::hexagon::ports::driven;
+
+// Schreibt gemeldete Ops mit (für die Folge-Meldungs-AK).
+class OpRecorder final : public driven::ModelChangedPort {
+public:
+    void onModelChanged(const driven::ModelChange& change) override {
+        ops.push_back(change.op);
+    }
+    int count(driven::ModelChangeOp op) const {
+        return static_cast<int>(std::count(ops.begin(), ops.end(), op));
+    }
+    std::vector<driven::ModelChangeOp> ops;
+};
 
 model::Segment seg(double x1, double y1, double x2, double y2) {
     return model::Segment{model::Point2D{x1, y1}, model::Point2D{x2, y2}};
@@ -182,6 +198,79 @@ TEST_F(ViewerSceneAk, LH_FA_DOR_004_TuerOeffnungFolgtInDerSzene) {
     EXPECT_GT(scene_.wallMeshes().at(*wall).triangleCount(), triangles_before)
         << "Wand-Netz muss die Öffnung tragen";
     service_.unsubscribe(scene_);
+}
+
+// --- Dächer (LH-FA-ROF-*, slice-014b) ---
+
+model::Roof sampleRoof(model::StoreyId storey) {
+    model::Roof roof;
+    roof.storey_id = storey;
+    roof.type = model::RoofType::Sattel;
+    roof.origin = {0.0, 0.0};
+    roof.width_mm = 8000.0;
+    roof.depth_mm = 6000.0;
+    roof.base_z_mm = model::kDefaultStoreyHeightMm;
+    roof.pitch_deg = model::kDefaultRoofPitchDeg;
+    roof.overhang_mm = model::kDefaultRoofOverhangMm;
+    return roof;
+}
+
+// LH-FA-ROF-001: ein angelegtes Dach folgt in der Szene (RoofChanged →
+// Pull); idempotent bei identischer Mehrfach-Meldung; Entfernen leert.
+TEST_F(ViewerSceneAk, LH_FA_ROF_001_DachFolgtInDerSzeneUndIdempotent) {
+    scene_.loadAll();
+    service_.subscribe(scene_);
+
+    const auto roof = service_.addRoof(sampleRoof(eg_));
+    ASSERT_TRUE(roof.has_value());
+    EXPECT_EQ(scene_.roofMeshes().size(), 1U);
+    EXPECT_GE(scene_.effectiveUpdates(), 1);
+
+    // Identische erneute RoofChanged-Meldung → kein weiteres Update (MED-2).
+    const int before = scene_.effectiveUpdates();
+    scene_.onModelChanged({.op = driven::ModelChangeOp::RoofChanged,
+                           .storey_id = eg_});
+    EXPECT_EQ(scene_.effectiveUpdates(), before);
+
+    // Entfernen → Szene ohne Dach, wirksames Update.
+    EXPECT_TRUE(service_.removeRoof(*roof));
+    EXPECT_TRUE(scene_.roofMeshes().empty());
+    EXPECT_GT(scene_.effectiveUpdates(), before);
+    service_.unsubscribe(scene_);
+}
+
+// LH-FA-ROF-004/005: Neigung/Überstand werden geklemmt; ein
+// degenerierter Grundriss wird abgelehnt.
+TEST_F(ViewerSceneAk, LH_FA_ROF_004_NeigungUeberstandGeklemmt) {
+    const auto roof = service_.addRoof(sampleRoof(eg_));
+    ASSERT_TRUE(roof.has_value());
+
+    EXPECT_EQ(service_.setRoofPitch(*roof, 90.0).status,
+              bcad::hexagon::ports::driving::ParamStatus::Clamped);
+    EXPECT_NEAR(service_.roof(*roof).pitch_deg, model::kRoofPitchMaxDeg, 1e-9);
+    EXPECT_EQ(service_.setRoofOverhang(*roof, 9000.0).status,
+              bcad::hexagon::ports::driving::ParamStatus::Clamped);
+    EXPECT_NEAR(service_.roof(*roof).overhang_mm, model::kRoofOverhangMaxMm,
+                1e-9);
+
+    model::Roof degenerate = sampleRoof(eg_);
+    degenerate.width_mm = 0.0;
+    EXPECT_FALSE(service_.addRoof(degenerate).has_value());
+}
+
+// LH-FA-ROF-001: Dach-Mutation meldet RoofChanged, KEINE RoomsChanged
+// (Dächer berühren die Raumerkennung nicht).
+TEST_F(ViewerSceneAk, LH_FA_ROF_001_MeldetRoofChangedNichtRooms) {
+    OpRecorder recorder;
+    service_.subscribe(recorder);
+
+    const auto roof = service_.addRoof(sampleRoof(eg_));
+    ASSERT_TRUE(roof.has_value());
+    service_.setRoofPitch(*roof, 40.0);
+
+    EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoofChanged), 2);  // add + pitch
+    EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoomsChanged), 0);
+    service_.unsubscribe(recorder);
 }
 
 // Negative (ii): nach unsubscribe folgt die Darstellung nicht mehr.

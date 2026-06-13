@@ -3,6 +3,7 @@
 #include <optional>
 #include <vector>
 
+#include "hexagon/model/roof.h"  // RoofId
 #include "hexagon/model/triangle_mesh.h"
 #include "hexagon/model/wall.h"  // WallId
 
@@ -11,6 +12,15 @@ namespace bcad::hexagon::ports::driving {
 // Tessellierter Stand einer Wand für die Darstellung (ADR-0009 (b)).
 struct WallMesh {
     model::WallId wall_id{};
+    model::TriangleMesh mesh;
+};
+
+// Analytisches Dach-Netz je Dach (LH-FA-ROF-*, slice-014b). Das Dach ist
+// ein Polyeder; sein Netz entsteht im Kern (`roof_geometry`), nicht über
+// OCC — der Vertrag „framework-freie Netze über `ViewModelPort`" bleibt
+// erfüllt (ADR-0009).
+struct RoofMesh {
+    model::RoofId roof_id{};
     model::TriangleMesh mesh;
 };
 
@@ -31,6 +41,10 @@ public:
     // ADR-0008-Meldung (`element_id`). Leer bei unbekannter Id oder
     // fehlgeschlagener Tessellation (Query ist total, wirft nicht).
     virtual std::optional<model::TriangleMesh> wallMesh(model::WallId id) const = 0;
+
+    // Netze ALLER Dächer (LH-FA-ROF-*); Pull nach einer `RoofChanged`-
+    // Meldung. Total (degeneriertes Dach → kein Eintrag).
+    virtual std::vector<RoofMesh> roofMeshes() const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

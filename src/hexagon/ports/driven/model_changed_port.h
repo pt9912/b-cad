@@ -19,6 +19,10 @@ enum class ModelChangeOp {
     // RoomsChanged (spez. §1 D3-002.a).
     WallGeometryChanged,
     RoomsChanged,  // Raum-Stand des Geschosses neu erkannt (ADR-0007/0008)
+    // Dach eines Geschosses angelegt/geändert/entfernt (LH-FA-ROF-*,
+    // ADR-0011 #6 neuer Bauteil-Typ → neuer `op`). Storey-bezogen: der
+    // Beobachter lädt die Dächer des Stands neu (spez. §1 D3-002.a).
+    RoofChanged,
 };
 
 // Push-Notify-Meldung (ADR-0008): WAS sich geändert hat (`op`) und

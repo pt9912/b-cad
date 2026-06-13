@@ -190,9 +190,16 @@ das Dach kragt also um `o` über den Grundriss hinaus.
 ROOF_PITCH_MAX_DEG]`, Überstand `o` auf `[ROOF_OVERHANG_MIN_MM,
 ROOF_OVERHANG_MAX_MM]` geklemmt (`E-VAL-001`, §3). Ein nicht-rechteckiger
 oder degenerierter Grundriss (Seite < `GEOMETRY_TOLERANCE_MM`) erzeugt
-**kein** Dach — die Sicht-Query bleibt total (kein Wurf); ein
-fehlgeschlagener mutierender Solid-Bau meldet `E-GEO-002` (Modell
-unverändert).
+**kein** Dach — die Sicht-Query bleibt total (kein Wurf).
+
+**Folge-Meldung:** Eine Dach-Mutation (Anlage/Neigung/Überstand/Form/
+Entfernen) meldet `op = RoofChanged` **storey-bezogen** (neuer `op` im
+D3-002.a-Vokabular, ADR-0011 #6 neuer Bauteil-Typ); der Beobachter lädt
+die Dächer des Geschosses neu (`ViewModelPort.roofMeshes`). **Keine
+`RoomsChanged`** (Dächer berühren die Raumerkennung nicht). Das
+Dach-Netz entsteht **analytisch im Kern** (`roof_geometry`), nicht über
+OCC — der ADR-0009-Vertrag „framework-freie Netze über `ViewModelPort`"
+bleibt erfüllt (die OCC-Tessellation gilt dem extrudierten Wand-Solid).
 
 ### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
 

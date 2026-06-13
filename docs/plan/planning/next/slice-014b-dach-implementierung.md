@@ -1,7 +1,7 @@
 ---
 id: slice-014b
 titel: Dach implementieren — Sattel/Walm/Pult über Rechteck-Grundriss
-status: next
+status: done
 welle: welle-2-bauteile
 lastenheft_refs: [LH-FA-ROF-001, LH-FA-ROF-002, LH-FA-ROF-003, LH-FA-ROF-004, LH-FA-ROF-005]
 adr_refs: [ADR-0001, ADR-0008, ADR-0009, ADR-0011]
@@ -9,9 +9,10 @@ adr_refs: [ADR-0001, ADR-0008, ADR-0009, ADR-0011]
 
 # Slice 014b: Dach implementieren — Sattel/Walm/Pult
 
-**Status:** next (Plan geschrieben; **MR-006-Plan-Review gelaufen
-2026-06-13 — keine HIGH, 4 MED/2 LOW eingearbeitet**;
-implementierungsbereit).
+**Status:** done (2026-06-13). MR-006-Plan-Review gelaufen (keine HIGH,
+4 MED/2 LOW eingearbeitet); DoD vollständig, `make gates` grün (92 Tests,
+Coverage 91,8 %). Zwei-Commit-Split (i Domäne+`roof_geometry` /
+ii Integration). Closure-Notiz §8.
 
 **Plan-Review (MR-006):**
 [Report](../../../reviews/2026-06-13-slice-014b-plan.md) — keine HIGH
@@ -55,13 +56,13 @@ die Dach-Geometrie ist ein **analytisches Polyeder** (kein OCC-Boolean/
 
 ## 2. Definition of Done
 
-- [ ] **Domänen-Typen (pure Werte, `src/hexagon/model/`):** `Roof`
+- [x] **Domänen-Typen (pure Werte, `src/hexagon/model/`):** `Roof`
       (`RoofId`, `storey_id`, `RoofType ∈ {Sattel, Walm, Pult}`,
       rechteckiger Grundriss als `origin: Point2D` + `width_mm` (b) +
       `depth_mm` (t), `base_z_mm` (Traufhöhe/Aufstandshöhe),
       `pitch_deg`, `overhang_mm`); `Building` gewinnt
       `std::vector<Roof> roofs`. Framework-frei (arch-check Regel A).
-- [ ] **Kern-Geometrie `services/roof_geometry.{h,cpp}`:**
+- [x] **Kern-Geometrie `services/roof_geometry.{h,cpp}`:**
       `TriangleMesh roofMesh(const Roof&)` baut das Dach-Netz
       **analytisch** gemäß `spezifikation.md` §1 `LH-FA-ROF-001.a`
       (Traufrechteck aus Überstand; Pult = eine geneigte Fläche; Sattel
@@ -73,24 +74,24 @@ die Dach-Geometrie ist ein **analytisches Polyeder** (kein OCC-Boolean/
       Dreiecksnetze über `ViewModelPort`" ist — die OCC-Tessellation gilt
       dem extrudierten Wand-Modell, nicht dem analytischen Polyeder**;
       MR-006 prüft diese Lesart).
-- [ ] **`ViewModelPort` um Dach-Sicht erweitert:** `roofMeshes()` →
+- [x] **`ViewModelPort` um Dach-Sicht erweitert:** `roofMeshes()` →
       `std::vector<RoofMesh{roof_id, mesh}>` + `roofMesh(RoofId)` →
       `std::optional<TriangleMesh>` (Muster `wallMeshes`/`wallMesh`,
       total). Vom `StructureEditService` implementiert (ruft
       `roof_geometry`).
-- [ ] **`ModelChangedPort` um `RoofChanged`** (§5-`op`-Vokabular,
+- [x] **`ModelChangedPort` um `RoofChanged`** (§5-`op`-Vokabular,
       `bcad.geometry.rebuild`): meldet `storey_id` (kein spezifischer
       Roof-Id-Bedarf — der Viewer lädt die Dächer des Stands neu).
       `spec/spezifikation.md` §1 D3-002.a um den `op` ergänzt
       (Mechanik = Spec, MR-008). **Keine `RoomsChanged`** (Dächer
       berühren die Raumerkennung nicht).
-- [ ] **`EditStructurePort`-Operationen** (im Service): `addRoof`
+- [x] **`EditStructurePort`-Operationen** (im Service): `addRoof`
       (storey + Typ + Grundriss `b×t`/origin/base_z; Default-Neigung/
       -Überstand aus §3), `setRoofPitch`, `setRoofOverhang`,
       `setRoofType`, `removeRoof`. Neigung/Überstand gegen §3 geklemmt
       (`E-VAL-001`); degenerierter Grundriss → abgelehnt (nullopt).
       Jede erfolgreiche Mutation meldet `RoofChanged`.
-- [ ] **Viewer folgt** (`ViewerScene`): hält Dach-Netze (eigener
+- [x] **Viewer folgt** (`ViewerScene`): hält Dach-Netze (eigener
       `RoofId`-Schlüssel); auf `RoofChanged` lädt es `roofMeshes()` neu
       (idempotentes Ersetzen, deckt Anlage/Änderung/Entfernen). Wand-
       Pfad unberührt. **Idempotenz-Semantik (MED-2):** der
@@ -100,7 +101,7 @@ die Dach-Geometrie ist ein **analytisches Polyeder** (kein OCC-Boolean/
       **kein** weiteres wirksames Update (kein Flackern) — der AK prüft
       genau das (Anlehnung an den Wand-Idempotenz-AK, aber element-
       mengenbasiert statt 1-pro-Meldung).
-- [ ] **AK-Tests mit `LH-FA-ROF-*` im Namen** (Kern gegen analytische
+- [x] **AK-Tests mit `LH-FA-ROF-*` im Namen** (Kern gegen analytische
       Netz-Eigenschaften + Szene), display-frei: **Happy** je Typ
       (Pult: eine geneigte Fläche, Hochkante = `(t+2o)·tan(p)` ±
       Toleranz, LOW-2; Sattel: First mittig, Firsthöhe =
@@ -195,3 +196,56 @@ die Dach-Geometrie ist ein **analytisches Polyeder** (kein OCC-Boolean/
 
 - **Modus:** GF; Dichte hoch (LH-ID-Namen, analytische Orakel,
   Registrierung); Risiko niedrig.
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar):**
+
+- **Domäne + Kern-Geometrie:** `model::Roof` (rechteckiger Grundriss,
+  Sattel/Walm/Pult, Neigung, Überstand, Traufhöhe); `roof_geometry`
+  baut das Dach-Netz **analytisch im Kern** (Pult 1 Fläche, Sattel 2 +
+  First mittig, Walm 4 + First eingerückt; Firsthöhe = Formel·tan(p)),
+  total. **Kein OCC** fürs Dach (ADR-0001 Geometrie-Hoheit; ADR-0009-
+  Vertrag erfüllt — Netze über `ViewModelPort`). arch-check Regel A
+  grün (Kern framework-frei).
+- **Integration:** `ViewModelPort.roofMeshes()`; `EditStructurePort`
+  add/setPitch/setOverhang/setType/removeRoof (Klemmung `E-VAL-001`,
+  degenerierter Grundriss abgelehnt); `RoofChanged`-`op` (storey-bezogen,
+  **kein** `RoomsChanged`); `ViewerScene` lädt Dächer auf `RoofChanged`
+  neu — **idempotent** (Zähler steigt um tatsächlich geänderte Netze,
+  MED-2). Wand-Pfad additiv unberührt.
+- **9 AK-Tests `LH-FA-ROF-*`:** Kern (Pult/Sattel/Walm Flächenzahl +
+  Firsthöhe, Walm-Einrückung, Überstand-Bbox, Neigungs-Monotonie,
+  Degenerat-leer) + Viewer (Dach folgt, idempotent, Entfernen leert;
+  Neigung/Überstand geklemmt; `RoofChanged`-nicht-`Rooms`).
+- **`make gates` grün** (2026-06-13): docs-check 0, arch-check A–E,
+  lint 0 + suppression-gate, **Tests 92/92** (zuvor 83), Coverage
+  **91,8 %**. Zwei-Commit-Split eingehalten (i `1b48924` Domäne+Geometrie
+  einzeln grün; ii Integration).
+- **Spec §1 D3-002.a** um `RoofChanged`-`op` ergänzt (Mechanik = Spec,
+  MR-008).
+
+**Lerneintrag:**
+
+- **Dach-Mesh ohne OCC — ADR-0009 präzise gelesen:** das Verbot ist
+  GUI-gerichtet („kein OCC in der **GUI**"), der Vertrag ist
+  „framework-freie Netze über `ViewModelPort`". Ein analytisches
+  Polyeder (Dach) im Kern zu rechnen ist daher kein Schichtungsbruch,
+  sondern die Fortsetzung der slice-012-Geometrie-Hoheit. **Präzedenz
+  für SLB/FND** (ebenfalls analytische Solids): nicht jeder dargestellte
+  Körper muss durch OCC. (MED-1: bewusste Abweichung vom ADR-0011-#6.3-
+  Wortlaut „Port tesselliert", durch #6-Klausel „Geometrie-Entscheidung
+  im Folge-Slice" gedeckt.)
+
+**Restrisiko / Nachfolge:**
+
+- **slice-014c (Dach-Persistenz):** `roofs`-Tabelle (ADR-0006 liegt
+  bereit) — Dächer derzeit nur im Speicher (kein lebender Save-Pfad,
+  kein §2.2-Risiko; vor erstem Save-Use-Case).
+- **Empfohlen vor Welle-Closure:** Code-Review dieses geometrielastigen
+  Slice (Steering-Praxis 2× nach welle-1; vgl. 013b-Code-Review fand
+  einen HIGH, den Gates nicht trafen).
+- **Offen:** Walm über allgemeine Polygone (Straight-Skeleton,
+  Vollumfang spätere Welle); Material/Dachdeckung; Dach-Solid mit
+  Unterseite (welle-2 = Flächen-Polyeder).
+- **welle-2-Fortsetzung:** SLB+FND, STR entlang ADR-0011-Leitplanke (#6).

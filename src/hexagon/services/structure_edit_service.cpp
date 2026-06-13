@@ -6,6 +6,7 @@
 
 #include "hexagon/model/constants.h"
 #include "hexagon/services/opening_geometry.h"
+#include "hexagon/services/roof_geometry.h"
 #include "hexagon/services/room_detection.h"
 #include "hexagon/services/wall_footprint.h"
 
@@ -560,6 +561,111 @@ model::Opening& StructureEditService::mutableOpening(model::OpeningId id) {
         [id](const model::Opening& o) { return o.id == id; });
     if (it == building_.openings.end()) {
         throw std::out_of_range("mutableOpening: unbekannte Öffnungs-Id");
+    }
+    return *it;
+}
+
+// --- Dächer (LH-FA-ROF-*, ADR-0011 #6) ---
+
+std::vector<ports::driving::RoofMesh> StructureEditService::roofMeshes() const {
+    std::vector<ports::driving::RoofMesh> meshes;
+    meshes.reserve(building_.roofs.size());
+    for (const model::Roof& r : building_.roofs) {
+        model::TriangleMesh mesh = roofMesh(r);  // analytisch, total
+        if (!mesh.empty()) {
+            meshes.push_back(ports::driving::RoofMesh{r.id, std::move(mesh)});
+        }
+    }
+    return meshes;
+}
+
+std::optional<model::RoofId> StructureEditService::addRoof(
+    const model::Roof& prototype) {
+    // Degenerierter Grundriss → abgelehnt (LH-FA-ROF Negative).
+    if (!std::isfinite(prototype.width_mm) ||
+        !std::isfinite(prototype.depth_mm) ||
+        prototype.width_mm < model::kGeometryToleranceMm ||
+        prototype.depth_mm < model::kGeometryToleranceMm) {
+        return std::nullopt;
+    }
+    model::Roof roof = prototype;
+    roof.id = static_cast<model::RoofId>(next_roof_id_);
+    roof.pitch_deg = std::clamp(prototype.pitch_deg, model::kRoofPitchMinDeg,
+                                model::kRoofPitchMaxDeg);
+    roof.overhang_mm = std::clamp(prototype.overhang_mm,
+                                  model::kRoofOverhangMinMm,
+                                  model::kRoofOverhangMaxMm);
+    building_.roofs.push_back(roof);
+    ++next_roof_id_;
+    notifyRoofChanged(roof.storey_id);
+    return roof.id;
+}
+
+ports::driving::ParamResult StructureEditService::setRoofPitch(
+    model::RoofId id, double deg) {
+    model::Roof& target = mutableRoof(id);
+    const ports::driving::ParamResult result = evaluateParam(
+        deg, Range{model::kRoofPitchMinDeg, model::kRoofPitchMaxDeg},
+        target.pitch_deg);
+    if (result.status != ports::driving::ParamStatus::Rejected) {
+        target.pitch_deg = result.applied_mm;
+        notifyRoofChanged(target.storey_id);
+    }
+    return result;
+}
+
+ports::driving::ParamResult StructureEditService::setRoofOverhang(
+    model::RoofId id, double mm) {
+    model::Roof& target = mutableRoof(id);
+    const ports::driving::ParamResult result = evaluateParam(
+        mm, Range{model::kRoofOverhangMinMm, model::kRoofOverhangMaxMm},
+        target.overhang_mm);
+    if (result.status != ports::driving::ParamStatus::Rejected) {
+        target.overhang_mm = result.applied_mm;
+        notifyRoofChanged(target.storey_id);
+    }
+    return result;
+}
+
+void StructureEditService::setRoofType(model::RoofId id, model::RoofType type) {
+    model::Roof& target = mutableRoof(id);
+    if (target.type != type) {
+        target.type = type;
+        notifyRoofChanged(target.storey_id);
+    }
+}
+
+bool StructureEditService::removeRoof(model::RoofId id) {
+    const auto it = std::find_if(building_.roofs.begin(), building_.roofs.end(),
+                                 [id](const model::Roof& r) { return r.id == id; });
+    if (it == building_.roofs.end()) {
+        return false;
+    }
+    const model::StoreyId storey = it->storey_id;
+    building_.roofs.erase(it);
+    notifyRoofChanged(storey);
+    return true;
+}
+
+void StructureEditService::notifyRoofChanged(model::StoreyId storey) {
+    notifyListeners({.op = ports::driven::ModelChangeOp::RoofChanged,
+                     .storey_id = storey});
+}
+
+const model::Roof& StructureEditService::roof(model::RoofId id) const {
+    const auto it = std::find_if(building_.roofs.begin(), building_.roofs.end(),
+                                 [id](const model::Roof& r) { return r.id == id; });
+    if (it == building_.roofs.end()) {
+        throw std::out_of_range("roof: unbekannte Dach-Id");
+    }
+    return *it;
+}
+
+model::Roof& StructureEditService::mutableRoof(model::RoofId id) {
+    const auto it = std::find_if(building_.roofs.begin(), building_.roofs.end(),
+                                 [id](const model::Roof& r) { return r.id == id; });
+    if (it == building_.roofs.end()) {
+        throw std::out_of_range("mutableRoof: unbekannte Dach-Id");
     }
     return *it;
 }
