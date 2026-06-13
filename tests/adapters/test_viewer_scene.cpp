@@ -359,6 +359,7 @@ TEST_F(ViewerSceneAk, LH_FA_FND_003_BodenplatteOberkanteNull) {
 TEST_F(ViewerSceneAk, LH_FA_SLB_002_DickeGeklemmtAusschnittUndMeldung) {
     OpRecorder recorder;
     service_.subscribe(recorder);
+    service_.subscribe(scene_);  // Szene zieht Platten über OCC nach
 
     const auto slab = service_.addSlab(sampleSlab(eg_, model::SlabType::Decke));
     ASSERT_TRUE(slab.has_value());
@@ -373,11 +374,33 @@ TEST_F(ViewerSceneAk, LH_FA_SLB_002_DickeGeklemmtAusschnittUndMeldung) {
     bad.footprint = slabRect(0.0, 0.0, 0.0, 0.0);
     EXPECT_FALSE(service_.addSlab(bad).has_value());
 
-    // Ausschnitt setzen (LH-FA-SLB-003).
+    // Ausschnitt setzen (LH-FA-SLB-003) — und über den ECHTEN OCC-Boolean
+    // verifizieren (Code-Review slice-015b H1): nach dem Cutout das Netz
+    // erneut pullen. Die Aussparung erzeugt zusätzliche Begrenzungsflächen
+    // → mehr Dreiecke; der Umriss (x/y-Ausdehnung) bleibt unverändert
+    // (innenliegendes Loch).
+    const auto& before = scene_.slabMeshes().at(*slab);
+    const int triangles_before = before.triangleCount();
+    const double ext_x_before = meshExtent(before, 0);
+    const double ext_y_before = meshExtent(before, 1);
+
     EXPECT_TRUE(service_.addSlabCutout(*slab, slabRect(1000, 1000, 2000, 2000)));
+
+    const auto& after = scene_.slabMeshes().at(*slab);
+    EXPECT_GT(after.triangleCount(), triangles_before)
+        << "Platten-Netz muss die Aussparung tragen (OCC-Boolean lief)";
+    EXPECT_NEAR(meshExtent(after, 0), ext_x_before, 0.5);
+    EXPECT_NEAR(meshExtent(after, 1), ext_y_before, 0.5);
+
+    // Außenliegender Ausschnitt (über den Umriss hinaus) → abgelehnt, Netz
+    // unverändert ("auf den Platten-Umriss begrenzt").
+    EXPECT_FALSE(service_.addSlabCutout(*slab, slabRect(4000, 1000, 9000, 2000)));
+    EXPECT_EQ(scene_.slabMeshes().at(*slab).triangleCount(),
+              after.triangleCount());
 
     EXPECT_GT(recorder.count(driven::ModelChangeOp::SlabChanged), 0);
     EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoomsChanged), 0);
+    service_.unsubscribe(scene_);
     service_.unsubscribe(recorder);
 }
 

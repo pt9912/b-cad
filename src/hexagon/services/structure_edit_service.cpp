@@ -772,7 +772,13 @@ bool StructureEditService::addSlabCutout(model::SlabId id,
     if (it == building_.slabs.end()) {
         return false;
     }
-    it->cutouts.push_back(cutout);  // auf den Umriss begrenzt der Boolean
+    // „Auf den Platten-Umriss begrenzt" (spez. §1): degenerierte/nicht-
+    // endliche/rand- oder außenliegende Ausschnitte ablehnen (Code-Review
+    // slice-015b H1) — so bleibt der OCC-Boolean koplanar-frei.
+    if (!cutoutInsideSlab(*it, cutout)) {
+        return false;
+    }
+    it->cutouts.push_back(cutout);
     notifySlabChanged(it->storey_id);
     return true;
 }

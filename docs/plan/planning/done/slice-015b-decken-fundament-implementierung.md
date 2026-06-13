@@ -10,9 +10,14 @@ adr_refs: [ADR-0001, ADR-0002, ADR-0008, ADR-0009, ADR-0011]
 # Slice 015b: Decken + Fundament implementieren — Platten
 
 **Status:** done (2026-06-13). MR-006-Plan-Review gelaufen (keine HIGH,
-2 MED + LOW/INFO eingearbeitet); DoD vollständig, `make gates` grün
-(102 Tests, Coverage 91,7 %). Zwei-Commit-Split (i Domäne+slab_geometry /
-ii Integration). Closure-Notiz §8.
+2 MED + LOW/INFO eingearbeitet); DoD vollständig. Zwei-Commit-Split
+(i Domäne+slab_geometry / ii Integration). **Code-Review danach (Modul 11,
+geometrielastig): 1 HIGH gefunden TROTZ grüner Gates** — der OCC-Cutout-
+Boolean war ungetestet und `addSlabCutout` setzte die Spec-Begrenzung „auf
+den Platten-Umriss" nicht durch. **Nachschärfung** (`cutoutInsideSlab` +
+Test der OCC-Naht; Report `docs/reviews/2026-06-13-slice-015b-code-review.md`).
+`make gates` grün nach Nachschärfung (103 Tests, Coverage 91,9 %).
+Closure-Notiz §8.
 
 **Plan-Review (MR-006):**
 [Report](../../../reviews/2026-06-13-slice-015b-plan.md) — keine HIGH

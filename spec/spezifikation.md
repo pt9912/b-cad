@@ -225,8 +225,13 @@ Dicke/Tiefe ist auf §3 geklemmt (`E-VAL-001`).
 **Ausschnitte (`SLB-003`):** als **boolesche Subtraktion** von
 Schnitt-Prismen aus dem Platten-Solid — Wiederverwendung von
 `model::CutPrism` und des OCC-Boolean-Backends (ADR-0002), wie bei den
-Wandöffnungen (LH-FA-DOR-004.a). Ein Ausschnitt wird auf den
-Platten-Umriss begrenzt.
+Wandöffnungen (LH-FA-DOR-004.a). Ein Ausschnitt wird **auf den
+Platten-Umriss begrenzt**: rand-/außenliegende, degenerierte (Fläche <
+`GEOMETRY_TOLERANCE_MM²`) oder nicht-endliche Ausschnitte werden an der
+API abgelehnt (Containment-Vorbedingung). Ein vollständig innenliegender
+Ausschnitt ist Boolean-koplanar-frei — **kein** lateraler Überstand nötig
+(anders als die Wandöffnung, die die Wand zwangsläufig durchspannt; der
+z-Überstand `[−ε,Dicke+ε]` bleibt für Ober-/Unterseite).
 
 **Totalität:** degenerierter/leerer Grundriss (Fläche <
 `GEOMETRY_TOLERANCE_MM²`) → keine Platte; die Sicht-Query bleibt total
@@ -478,6 +483,7 @@ nicht im Bootstrap.
 | 2026-06-13 | §1 `LH-FA-ROF-001.a` neu (Dach-Geometrie Teilumfang Rechteck-Grundriss: Traufrechteck, Pult/Sattel/Walm-Konstruktion + Höhenformeln, Walm-Einrückbetrag, Firsthöhe abgeleitet, Totalität) + §3 Neigungs-/Überstands-Bereiche + Defaults (= `roofs`-Schema) | slice-014a |
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` neu (Platten-Geometrie Decken+Fundament: Polygon × Dicke an `base_z` je `slab_type`, Ausschnitte als Boolean/`CutPrism`, Totalität; Port-base_z-Frage an 015b) + §3 Decken-/Fundament-Dicke-Bereiche + Defaults | slice-015a |
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` Port-base_z-Frage geschlossen: kein Port-Wechsel — Mesh-Translation um `base_z` nach dem Boolean, Cutouts relativ `[0,Dicke]`; `SlabChanged`-`op` (storey-bezogen, kein `RoomsChanged`) | slice-015b |
+| 2026-06-13 | §1 `LH-FA-SLB-001.a` „auf den Platten-Umriss begrenzt" präzisiert: rand-/außenliegende, degenerierte und nicht-endliche Ausschnitte werden an der API **abgelehnt** (Containment-Vorbedingung) — innenliegende Aussparungen sind damit koplanar-frei, **kein** lateraler Überstand nötig (anders als die Wand durchspannende Öffnung, §1 DOR-004.a) | slice-015b Code-Review (H1) |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

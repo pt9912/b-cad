@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "hexagon/model/cut_prism.h"
+#include "hexagon/model/footprint.h"
 #include "hexagon/model/slab.h"
 #include "hexagon/model/triangle_mesh.h"
 
@@ -27,6 +28,17 @@ double slabBaseZ(const model::Slab& slab, double storey_height_mm);
 // danach auf das fertige Netz (`translateMeshZ`). Überstand ε
 // volumen-neutral (außerhalb der Platte).
 std::vector<model::CutPrism> slabCutPrisms(const model::Slab& slab);
+
+// Liegt der Ausschnitt vollständig im Umriss der Platte (spez. §1
+// LH-FA-SLB-001.a: „auf den Platten-Umriss begrenzt")? True nur für ein
+// nicht-degeneriertes (≥3 Stützpunkte, endliche Koordinaten, Fläche >
+// `GEOMETRY_TOLERANCE_MM²`) Polygon, dessen Stützpunkte alle strikt im
+// `slab.footprint` liegen. Rand-/außenliegende oder degenerierte
+// Ausschnitte werden an der API abgelehnt — so bleibt der OCC-Boolean
+// koplanar-frei (innenliegendes Loch braucht keinen lateralen Überstand,
+// anders als die die Wand durchspannende Öffnung). Vorbedingung:
+// einfacher Footprint.
+bool cutoutInsideSlab(const model::Slab& slab, const model::Footprint& cutout);
 
 // Verschiebt ein Netz um `dz` in z (reine Operation auf dem
 // `TriangleMesh`-Wert) — platziert die bei z∈[0,Dicke] extrudierte Platte

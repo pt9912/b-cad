@@ -116,7 +116,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `EditStructurePort` addSlab/setSlabThickness/addSlabCutout/removeSlab
   (Dicke typabhängig geklemmt), `SlabChanged`-`op` (storey-bezogen);
   `ViewerScene` über gemeinsamen `reloadKeyed`-Helfer (Roof+Slab).
-  Spec §1 base_z-Frage geschlossen. make gates grün (102 Tests, 91,7 %).
+  Spec §1 base_z-Frage geschlossen. **Code-Review danach: 1 HIGH trotz
+  grüner Gates** (OCC-Cutout-Boolean ungetestet, `addSlabCutout` setzte die
+  Spec-Begrenzung „auf den Platten-Umriss" nicht durch). Nachschärfung:
+  `cutoutInsideSlab` lehnt rand-/außenliegende/degenerierte/nicht-endliche
+  Ausschnitte ab (innenliegende Löcher sind koplanar-frei, kein lateraler
+  Überstand nötig); OCC-Boolean-Naht jetzt getestet. make gates grün
+  (103 Tests, Coverage 91,9 %).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

@@ -103,4 +103,37 @@ TEST(SlabGeometry_LH_FA_SLB_001, NetzAufAufstandshoeheVerschoben) {
     EXPECT_DOUBLE_EQ(minZ(mesh), 2500.0);  // Decke-Unterkante auf Geschoss-OK
 }
 
+// LH-FA-SLB-003 (Code-Review slice-015b H1): „auf den Platten-Umriss
+// begrenzt" — nur ein nicht-degenerierter, vollständig innenliegender
+// Ausschnitt wird akzeptiert; rand-/außenliegende, degenerierte und
+// nicht-endliche werden abgelehnt (koplanar-freier Boolean).
+TEST(SlabGeometry_LH_FA_SLB_003, CutoutNurInnenliegendAkzeptiert) {
+    const model::Slab slab = sampleSlab(model::SlabType::Decke);  // 0,0..5000,4000
+
+    // Innenliegend → akzeptiert.
+    EXPECT_TRUE(services::cutoutInsideSlab(
+        slab, rect(1000.0, 1000.0, 2000.0, 2000.0)));
+
+    // Über den Umriss hinaus (x bis 6000 > 5000) → abgelehnt.
+    EXPECT_FALSE(services::cutoutInsideSlab(
+        slab, rect(4000.0, 1000.0, 6000.0, 2000.0)));
+
+    // Stützpunkt auf der Umrisskante (x=5000, nicht strikt innen) → abgelehnt.
+    EXPECT_FALSE(services::cutoutInsideSlab(
+        slab, rect(3000.0, 1000.0, 5000.0, 2000.0)));
+
+    // Degeneriert (Fläche 0) → abgelehnt.
+    EXPECT_FALSE(services::cutoutInsideSlab(
+        slab, rect(1000.0, 1000.0, 1000.0, 1000.0)));
+
+    // Zu wenige Stützpunkte → abgelehnt.
+    EXPECT_FALSE(services::cutoutInsideSlab(
+        slab, model::Footprint{{{1000.0, 1000.0}, {2000.0, 2000.0}}}));
+
+    // Nicht-endliche Koordinate → abgelehnt.
+    model::Footprint nan_cut = rect(1000.0, 1000.0, 2000.0, 2000.0);
+    nan_cut.points[1].x_mm = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_FALSE(services::cutoutInsideSlab(slab, nan_cut));
+}
+
 }  // namespace
