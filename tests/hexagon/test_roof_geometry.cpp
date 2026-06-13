@@ -117,6 +117,21 @@ TEST(RoofGeometry_LH_FA_ROF_004, SteilereNeigungHoehererFirst) {
               axisBounds(roofMesh(flat), 2).span());
 }
 
+// Orientierung (LOW-3 Code-Review): alle Dachflächen zeigen nach oben
+// (Normale.z > 0) — kein versehentlich invertiertes Quad (Renderer würde
+// sonst Vorder-/Rückseite mischen).
+TEST(RoofGeometry_LH_FA_ROF_001, AlleFlaechenZeigenNachOben) {
+    for (const model::RoofType type :
+         {model::RoofType::Pult, model::RoofType::Sattel,
+          model::RoofType::Walm}) {
+        const auto mesh = roofMesh(sampleRoof(type));
+        ASSERT_FALSE(mesh.empty());
+        for (std::size_t i = 2; i < mesh.normals.size(); i += 3) {
+            EXPECT_GT(mesh.normals[i], 0.0) << "Dachfläche zeigt nicht nach oben";
+        }
+    }
+}
+
 // Negative/Totalität: degenerierter (Null-Breite) oder nicht-positiv
 // geneigter Grundriss → leeres Netz, kein Wurf.
 TEST(RoofGeometry_LH_FA_ROF_001, DegenerierterGrundrissLeer) {

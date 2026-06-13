@@ -67,8 +67,9 @@ model::TriangleMesh roofMesh(const model::Roof& roof) {
 
     if (!std::isfinite(bx) || !std::isfinite(ty) || !std::isfinite(z0) ||
         !std::isfinite(o) || bx < model::kGeometryToleranceMm ||
-        ty < model::kGeometryToleranceMm || !std::isfinite(roof.pitch_deg)) {
-        return mesh;  // degeneriert → leeres Netz (total)
+        ty < model::kGeometryToleranceMm || !std::isfinite(roof.pitch_deg) ||
+        roof.pitch_deg <= 0.0 || roof.pitch_deg >= 90.0) {
+        return mesh;  // degeneriert / nicht-bauliche Neigung → leeres Netz (total)
     }
     const double tan_p = std::tan(roof.pitch_deg * kPi / 180.0);
     if (!std::isfinite(tan_p) || tan_p <= 0.0) {
@@ -119,7 +120,7 @@ model::TriangleMesh roofMesh(const model::Roof& roof) {
                 const double inset = ty / 2.0;
                 double rx0 = x0 + inset;
                 double rx1 = x1 - inset;
-                if (rx1 < rx0) {  // (nahezu) quadratisch → Zeltdach (First = Punkt)
+                if (rx1 <= rx0) {  // (nahezu) quadratisch → Zeltdach (First = Punkt)
                     rx0 = (x0 + x1) / 2.0;
                     rx1 = rx0;
                 }
@@ -135,7 +136,7 @@ model::TriangleMesh roofMesh(const model::Roof& roof) {
                 const double inset = bx / 2.0;
                 double ry0 = y0 + inset;
                 double ry1 = y1 - inset;
-                if (ry1 < ry0) {
+                if (ry1 <= ry0) {  // (nahezu) quadratisch → Zeltdach (First = Punkt)
                     ry0 = (y0 + y1) / 2.0;
                     ry1 = ry0;
                 }

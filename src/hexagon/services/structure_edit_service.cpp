@@ -581,9 +581,14 @@ std::vector<ports::driving::RoofMesh> StructureEditService::roofMeshes() const {
 
 std::optional<model::RoofId> StructureEditService::addRoof(
     const model::Roof& prototype) {
-    // Degenerierter Grundriss → abgelehnt (LH-FA-ROF Negative).
+    // Degenerierter Grundriss oder nicht-endliche Parameter → abgelehnt
+    // (LH-FA-ROF Negative; kein NaN-Wert im Modell — Konsistenz zur
+    // addWall-Linie und zum evaluateParam-Kontrakt).
     if (!std::isfinite(prototype.width_mm) ||
         !std::isfinite(prototype.depth_mm) ||
+        !std::isfinite(prototype.pitch_deg) ||
+        !std::isfinite(prototype.overhang_mm) ||
+        !std::isfinite(prototype.base_z_mm) ||
         prototype.width_mm < model::kGeometryToleranceMm ||
         prototype.depth_mm < model::kGeometryToleranceMm) {
         return std::nullopt;

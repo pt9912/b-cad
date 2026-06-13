@@ -249,3 +249,16 @@ die Dach-Geometrie ist ein **analytisches Polyeder** (kein OCC-Boolean/
   Vollumfang spätere Welle); Material/Dachdeckung; Dach-Solid mit
   Unterseite (welle-2 = Flächen-Polyeder).
 - **welle-2-Fortsetzung:** SLB+FND, STR entlang ADR-0011-Leitplanke (#6).
+
+**Nachtrag Code-Review (2026-06-13,
+[Report](../../../reviews/2026-06-13-slice-014b-code-review.md)):**
+unabhängiges Code-Review (2 Linsen) — **keine HIGH**, Geometrie in allen
+3 Typen numerisch verifiziert. Behoben: **MEDIUM-1** (fehlender
+`setRoofType`-AK → Formwechsel-Test Sattel 4→Walm 6), LOW (NaN-Neigung/
+-Überstand in `addRoof` verworfen; `roofMesh` verwirft Neigung ≥ 90°;
+Flächen-Orientierungs-AK Normale.z>0; toter Zeltdach-Branch `<=`).
+Notiert: Viewer pullt storey-übergreifend (welle-2-ok, funktional
+korrekt). `make gates` grün, **94 Tests**, Coverage 92,2 %.
+**Lerneintrag:** erneut fand das Code-Review Verifikations-/Konsistenz-
+Lücken, die die grünen Gates nicht trafen (Modul 11) — die Praxis
+„geometrielastige Slices code-reviewen" trägt (3× nach welle-1).

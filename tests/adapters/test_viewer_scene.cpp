@@ -258,6 +258,24 @@ TEST_F(ViewerSceneAk, LH_FA_ROF_004_NeigungUeberstandGeklemmt) {
     EXPECT_FALSE(service_.addRoof(degenerate).has_value());
 }
 
+// LH-FA-ROF-001..003: Formwechsel (setRoofType) folgt in der Szene
+// (Sattel 4 → Walm 6 Dreiecke); ein No-op-Wechsel (gleicher Typ) meldet
+// nicht und ändert die Szene nicht (MEDIUM-1 Code-Review).
+TEST_F(ViewerSceneAk, LH_FA_ROF_002_FormwechselSattelZuWalmFolgt) {
+    service_.subscribe(scene_);
+    const auto roof = service_.addRoof(sampleRoof(eg_));  // Sattel
+    ASSERT_TRUE(roof.has_value());
+    EXPECT_EQ(scene_.roofMeshes().at(*roof).triangleCount(), 4);  // Sattel
+
+    service_.setRoofType(*roof, model::RoofType::Walm);
+    EXPECT_EQ(scene_.roofMeshes().at(*roof).triangleCount(), 6);  // Walm
+
+    const int after = scene_.effectiveUpdates();
+    service_.setRoofType(*roof, model::RoofType::Walm);  // No-op (gleicher Typ)
+    EXPECT_EQ(scene_.effectiveUpdates(), after);
+    service_.unsubscribe(scene_);
+}
+
 // LH-FA-ROF-001: Dach-Mutation meldet RoofChanged, KEINE RoomsChanged
 // (Dächer berühren die Raumerkennung nicht).
 TEST_F(ViewerSceneAk, LH_FA_ROF_001_MeldetRoofChangedNichtRooms) {
