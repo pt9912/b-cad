@@ -112,6 +112,33 @@ TEST(OccGeometryAdapter_LH_FA_DOR_004, WandoeffnungSubtrahiertVolumen) {
     EXPECT_NEAR(solid.volume_mm3, full - opening, (full - opening) * 1e-3);
 }
 
+// Diagonale Wand mit Öffnung (Robustheit): der laterale Cutter-Überstand
+// vermeidet koplanare Seitenflächen auch auf der Diagonale — das real
+// subtrahierte Volumen bleibt Breite·Stärke·Höhe.
+TEST(OccGeometryAdapter_LH_FA_DOR_004, DiagonaleWandMitOeffnung) {
+    const OccGeometryAdapter adapter;
+    auto wall = makeWall({0.0, 0.0}, {600.0, 800.0}, 240.0, 2500.0);  // Länge 1000
+    wall.id = model::WallId{1};
+
+    model::Opening door{};
+    door.id = model::OpeningId{1};
+    door.wall_id = wall.id;
+    door.kind = model::OpeningKind::Door;
+    door.offset_mm = 50.0;
+    door.width_mm = 900.0;
+    door.height_mm = 2100.0;
+    door.sill_height_mm = 0.0;
+    const auto cutter = services::openingCutPrism(door, wall);
+    ASSERT_TRUE(cutter.has_value());
+
+    const auto solid = adapter.extrudeFootprint(buttFootprint(wall),
+                                                wall.height_mm, {*cutter});
+
+    const double full = 1000.0 * 240.0 * 2500.0;
+    const double opening = 900.0 * 240.0 * 2100.0;
+    EXPECT_NEAR(solid.volume_mm3, full - opening, (full - opening) * 1e-3);
+}
+
 // Fenster mit Brüstung: die Öffnung beginnt erst oberhalb der Brüstung —
 // das entfernte Volumen ist width·thickness·height (Wand darunter bleibt).
 TEST(OccGeometryAdapter_LH_FA_WIN_005, FensterMitBruestungSubtrahiert) {

@@ -305,3 +305,19 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
   2D-Öffnungs-Darstellung (ADR-0011 Re-Eval-Trigger).
 - **Welle-Leitplanke aktiv:** ROF/SLB/FND/STR folgen dem ADR-0011-
   Bauteil-Erweiterungs-Muster (#6).
+
+**Nachtrag Code-Review (2026-06-13,
+[Report](../../../reviews/2026-06-13-slice-013b-code-review.md)):**
+unabhängiges Code-Review (2 Linsen) nach Closure. Linse B PASS (keine
+HIGH). Linse A: **1 HIGH (H1)** — der von `spezifikation.md` §1
+geforderte **laterale** Cutter-Überstand war nur in Z realisiert (Cutter
+lateral bündig → koplanar, allein fuzzy-gestützt). Behoben: voller
+Überstand im Kern (`OPENING_CUT_OVERSHOOT_MM`, spec-konform), Adapter
+dumb; Volumen-Orakel klippt jetzt `Footprint ∩ Cutter` (M1);
+Totalitäts-Tests (M2) + Zwischen-Shape-Null-Check (L1) + Diagonal-Wand-
+OCC-AK. `make gates` grün, **82 Tests**, Coverage 93,6 %.
+**Lerneintrag:** ein grünes Gate ≠ Spec-Treue — das Code-Review fand
+eine Spec-Abweichung mit realem Robustheitsrisiko, die die
+(achsenparallelen) Tests nicht trafen (Modul-11-Beleg). Praxis-Kandidat:
+*geometrielastige Slices vor Welle-Closure code-reviewen, nicht erst in
+der Welle-Verifikation* (2. Vorkommen nach welle-1).

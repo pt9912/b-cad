@@ -290,6 +290,7 @@ im Schema (nur Undo) — eigener Slice.
 | `DEFAULT_WINDOW_WIDTH_MM` | 1200 | Default-Fensterbreite bei Anlage | LH-FA-WIN-001 |
 | `DEFAULT_WINDOW_HEIGHT_MM` | 1300 | Default-Fensterhöhe bei Anlage | LH-FA-WIN-001 |
 | `DEFAULT_WINDOW_SILL_MM` | 900 | Default-Brüstungshöhe bei Anlage | LH-FA-WIN-001/004 |
+| `OPENING_CUT_OVERSHOOT_MM` | 1 | Überstand des Öffnungs-Schnittkörpers über die Wandgrenzen (lateral je Seite + Boundary-Höhen) für einen koplanar-freien Boolean; volumen-neutral (≥ `GEOMETRY_TOLERANCE_MM`) | LH-FA-DOR-004/WIN-005 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
 | `UNDO_DEPTH_MIN` | 1000 | Mindesttiefe Undo/Redo | LH-QA-003 |
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
@@ -366,6 +367,7 @@ nicht im Bootstrap.
 | 2026-06-12 | §1 LH-FA-WAL-006.a neu (Eckenschluss-Footprint-Regel, Footprint-Hoheit im Kern, Begrenzung/Rückfälle, EVL-Hinweis Shoelace) + D3-002.a-Mehr-Element-Update (`WallGeometryChanged`, Reihenfolge, Transaktions-Satz) + §3 `WALL_MITER_LIMIT`; zwei WAL-006-Verweise auf Vollumfang präzisiert | slice-012 (Lastenheft 0.1.2) |
 | 2026-06-13 | §1 LH-FA-DOR-004.a/WIN-005.a neu (Wandöffnung als Schnitt-Prismen im Kern, boolesche Subtraktion über `GeometryKernelPort`, Klemmung/Ablehnung, Totalität/Transaktion, `WallGeometryChanged` der Wirtswand, Raumerkennung/Footprint unberührt) + §3 Tür-/Fenster-/Brüstungs-Wertebereiche | ADR-0011 (slice-013a) |
 | 2026-06-13 | §3 Default-Maße bei Tür-/Fenster-Anlage (`DEFAULT_DOOR_*`/`DEFAULT_WINDOW_*`) — Implementierung der Anlage (Muster `DEFAULT_WALL_THICKNESS_MM`) | slice-013b |
+| 2026-06-13 | §3 `OPENING_CUT_OVERSHOOT_MM` — Cutter-Überstand für koplanar-freien Boolean (Code-Review-Befund H1: §1-Überstand „je Seite" war nur in Z realisiert, jetzt auch lateral) | slice-013b Code-Review |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

@@ -38,17 +38,82 @@ inline double analyticVolume(const hexagon::model::Footprint& footprint,
     return shoelaceArea(footprint) * height_mm;
 }
 
-// Volumen eines Öffnungs-Schnittkörpers, das TATSÄCHLICH aus der Wand
-// entfernt wird: Grundfläche × Höhen-Überlappung mit der Wand
-// `[0, height_mm]` (Oberkante auf Wandhöhe geklemmt, LH-FA-WIN-004).
-// Exaktes Orakel zum flush-genauen Kern-Schnittkörper (opening_geometry).
-inline double cutVolume(const hexagon::model::CutPrism& cut, double height_mm) {
+// Doppelte vorzeichenbehaftete Fläche eines Polygons (Shoelace).
+inline double signedDoubleArea(const std::vector<hexagon::model::Point2D>& p) {
+    double acc = 0.0;
+    const std::size_t n = p.size();
+    for (std::size_t i = 0; i < n; ++i) {
+        const auto& u = p[i];
+        const auto& v = p[(i + 1) % n];
+        acc += (u.x_mm * v.y_mm) - (v.x_mm * u.y_mm);
+    }
+    return acc;
+}
+
+// Schnittpunkt der Strecke (s,e) mit der Geraden (a,b).
+inline hexagon::model::Point2D lineIntersect(hexagon::model::Point2D s,
+                                             hexagon::model::Point2D e,
+                                             hexagon::model::Point2D a,
+                                             hexagon::model::Point2D b) {
+    const double a1 = e.y_mm - s.y_mm;
+    const double b1 = s.x_mm - e.x_mm;
+    const double c1 = (a1 * s.x_mm) + (b1 * s.y_mm);
+    const double a2 = b.y_mm - a.y_mm;
+    const double b2 = a.x_mm - b.x_mm;
+    const double c2 = (a2 * a.x_mm) + (b2 * a.y_mm);
+    const double det = (a1 * b2) - (a2 * b1);
+    return {((b2 * c1) - (b1 * c2)) / det, ((a1 * c2) - (a2 * c1)) / det};
+}
+
+// Fläche des Schnitts `subject ∩ clip` (Sutherland-Hodgman; `clip` muss
+// konvex sein — das Cutter-Polygon ist ein Rechteck). So misst das Orakel
+// das TATSÄCHLICH aus der Wand entfernte Footprint-Areal, auch wenn der
+// Cutter lateral über die Wand übersteht (spez. §1) — ehrlich gegenüber
+// dem, was OCC real subtrahiert.
+inline double intersectionArea(std::vector<hexagon::model::Point2D> subject,
+                               std::vector<hexagon::model::Point2D> clip) {
+    if (signedDoubleArea(clip) < 0.0) {
+        std::reverse(clip.begin(), clip.end());  // Clip auf CCW
+    }
+    const std::size_t m = clip.size();
+    for (std::size_t i = 0; i < m && !subject.empty(); ++i) {
+        const auto a = clip[i];
+        const auto b = clip[(i + 1) % m];
+        const auto inside = [&](hexagon::model::Point2D pt) {
+            return (((b.x_mm - a.x_mm) * (pt.y_mm - a.y_mm)) -
+                    ((b.y_mm - a.y_mm) * (pt.x_mm - a.x_mm))) >= -1e-9;
+        };
+        const std::vector<hexagon::model::Point2D> in = subject;
+        subject.clear();
+        const std::size_t k = in.size();
+        for (std::size_t j = 0; j < k; ++j) {
+            const auto cur = in[j];
+            const auto prev = in[(j + k - 1) % k];
+            if (inside(cur)) {
+                if (!inside(prev)) {
+                    subject.push_back(lineIntersect(prev, cur, a, b));
+                }
+                subject.push_back(cur);
+            } else if (inside(prev)) {
+                subject.push_back(lineIntersect(prev, cur, a, b));
+            }
+        }
+    }
+    return std::abs(signedDoubleArea(subject)) * 0.5;
+}
+
+// Volumen, das eine Öffnung TATSÄCHLICH aus der Wand entfernt:
+// (Footprint ∩ Cutter-Polygon) × Höhen-Überlappung mit `[0, height_mm]`
+// (Oberkante auf Wandhöhe, LH-FA-WIN-004; lateraler/Boundary-Überstand
+// des Cutters wird durch den Schnitt mit dem Footprint herausgeklemmt).
+inline double cutVolume(const hexagon::model::Footprint& footprint,
+                        const hexagon::model::CutPrism& cut, double height_mm) {
     const double z0 = std::max(0.0, cut.z_min_mm);
     const double z1 = std::min(height_mm, cut.z_max_mm);
     if (z1 <= z0) {
         return 0.0;
     }
-    return shoelaceArea(cut.polygon) * (z1 - z0);
+    return intersectionArea(footprint.points, cut.polygon.points) * (z1 - z0);
 }
 
 // Netto-Wandvolumen: Footprint-Extrusion minus Öffnungs-Schnittkörper
@@ -59,7 +124,7 @@ inline double analyticVolume(const hexagon::model::Footprint& footprint,
                              const std::vector<hexagon::model::CutPrism>& cutouts) {
     double volume = shoelaceArea(footprint) * height_mm;
     for (const hexagon::model::CutPrism& cut : cutouts) {
-        volume -= cutVolume(cut, height_mm);
+        volume -= cutVolume(footprint, cut, height_mm);
     }
     return volume;
 }

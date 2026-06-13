@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "hexagon/model/footprint.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driven/model_changed_port.h"
+#include "hexagon/services/opening_geometry.h"
 #include "hexagon/services/structure_edit_service.h"
 #include "analytic_geometry_double.h"
 
@@ -295,6 +297,47 @@ TEST(OpeningsTransaktion, LH_FA_DOR_004_FehlschlagLaesstModellUnveraendert) {
     EXPECT_NEAR(service.wallSolid(*wall).volume_mm3, before, 1e-9);
     EXPECT_EQ(listener.ops.size(), 0U);  // keine Meldung
     service.unsubscribe(listener);
+}
+
+// Totalität von openingCutPrism (M2): degenerierte Eingaben liefern
+// `nullopt` statt zu werfen — die ViewModel-Query bleibt damit total.
+TEST(OpeningCutPrismTotalitaet, DegenerierteEingabenLiefernNullopt) {
+    model::Wall wall{};
+    wall.id = model::WallId{1};
+    wall.start = {0.0, 0.0};
+    wall.end = {4000.0, 0.0};
+    wall.thickness_mm = 240.0;
+    wall.height_mm = 2500.0;
+
+    model::Opening base{};
+    base.wall_id = wall.id;
+    base.kind = model::OpeningKind::Window;
+    base.offset_mm = 100.0;
+    base.width_mm = 900.0;
+    base.height_mm = 1000.0;
+
+    // Brüstung >= Wandhöhe → Höhen-Bereich kollabiert.
+    model::Opening sill_over = base;
+    sill_over.sill_height_mm = 2500.0;
+    EXPECT_FALSE(services::openingCutPrism(sill_over, wall).has_value());
+
+    // Breite ~ 0.
+    model::Opening zero_w = base;
+    zero_w.width_mm = 0.0;
+    EXPECT_FALSE(services::openingCutPrism(zero_w, wall).has_value());
+
+    // Nicht-endlicher Offset.
+    model::Opening nan_off = base;
+    nan_off.offset_mm = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_FALSE(services::openingCutPrism(nan_off, wall).has_value());
+
+    // Null-Längen-Wand.
+    model::Wall zero_wall = wall;
+    zero_wall.end = wall.start;
+    EXPECT_FALSE(services::openingCutPrism(base, zero_wall).has_value());
+
+    // Gültige Eingabe → Prisma vorhanden.
+    EXPECT_TRUE(services::openingCutPrism(base, wall).has_value());
 }
 
 }  // namespace

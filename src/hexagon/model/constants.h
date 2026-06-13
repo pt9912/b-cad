@@ -27,6 +27,12 @@ inline constexpr double kWindowHeightMaxMm = 2500.0;   // LH-FA-WIN-003
 inline constexpr double kWindowSillMinMm = 0.0;        // LH-FA-WIN-004
 inline constexpr double kWindowSillMaxMm = 2000.0;     // LH-FA-WIN-004
 
+// Überstand des Öffnungs-Schnittkörpers über die Wandgrenzen (je Seite
+// lateral + oben/unten an Boundary-Höhen) für einen sauberen Boolean
+// ohne koplanare Flächen (spez. §1 LH-FA-DOR-004.a „≥ Toleranz je
+// Seite"). Liegt außerhalb der Wand → volumen-neutral.
+inline constexpr double kOpeningCutOvershootMm = 1.0;  // LH-FA-DOR-004/WIN-005
+
 // Default-Maße bei Anlage (Muster kDefaultWallThicknessMm) — spez. §3.
 inline constexpr double kDefaultDoorWidthMm = 900.0;    // LH-FA-DOR-001
 inline constexpr double kDefaultDoorHeightMm = 2100.0;  // LH-FA-DOR-001

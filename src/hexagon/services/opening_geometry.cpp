@@ -28,7 +28,8 @@ std::optional<model::CutPrism> openingCutPrism(const model::Opening& opening,
         return std::nullopt;
     }
 
-    // Höhen-Bereich, Oberkante auf die Wandhöhe geklemmt.
+    // Höhen-Bereich innerhalb der Wand, Oberkante auf die Wandhöhe
+    // geklemmt (kein Durchbruch über die Wand hinaus, LH-FA-WIN-004).
     const double z_min = std::max(0.0, opening.sill_height_mm);
     const double z_max = std::min(opening.sill_height_mm + opening.height_mm,
                                   wall.height_mm);
@@ -36,12 +37,21 @@ std::optional<model::CutPrism> openingCutPrism(const model::Opening& opening,
         return std::nullopt;  // Brüstung ≥ Wandhöhe o. ä. — kein Schnitt
     }
 
+    // Überstand über die Wandgrenzen (spez. §1): lateral je Seite und an
+    // den Boundary-Höhen (Standfläche/Wandkrone) — vermeidet koplanare
+    // Flächen beim Boolean. Liegt außerhalb der Wand → das real entfernte
+    // Volumen (Footprint ∩ Cutter, z ∩ [0, Wandhöhe]) bleibt unverändert.
+    const double ov = model::kOpeningCutOvershootMm;
+    const double z0 = (z_min <= model::kGeometryToleranceMm) ? z_min - ov : z_min;
+    const double z1 =
+        (z_max >= wall.height_mm - model::kGeometryToleranceMm) ? z_max + ov : z_max;
+
     // Achsen-Einheitsvektor d und Quer-Normale n der Wand.
     const double dir_x = (wall.end.x_mm - wall.start.x_mm) / length;
     const double dir_y = (wall.end.y_mm - wall.start.y_mm) / length;
     const double nrm_x = -dir_y;
     const double nrm_y = dir_x;
-    const double half = wall.thickness_mm * 0.5;
+    const double half = (wall.thickness_mm * 0.5) + ov;  // lateraler Überstand
 
     // Begrenzung der Öffnung auf die Wandlänge (defensiv — der Service
     // klemmt die Position bereits; opening_geometry bleibt dennoch total).
@@ -61,8 +71,8 @@ std::optional<model::CutPrism> openingCutPrism(const model::Opening& opening,
     model::CutPrism prism;
     prism.polygon.points = {corner(near, half), corner(far, half),
                             corner(far, -half), corner(near, -half)};
-    prism.z_min_mm = z_min;
-    prism.z_max_mm = z_max;
+    prism.z_min_mm = z0;
+    prism.z_max_mm = z1;
     return prism;
 }
 

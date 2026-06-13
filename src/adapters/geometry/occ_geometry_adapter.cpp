@@ -88,26 +88,18 @@ TopoDS_Shape makeFootprintSolid(const model::Footprint& footprint,
     return BRepPrimAPI_MakePrism(face.Face(), extrusion).Shape();
 }
 
-// Schnitt-Körper eines Öffnungs-Prismas (ADR-0011 (b)): Polygon über
-// `[z_min, z_max]`. An den Wand-Boundary-Höhen (0 / Wandhöhe) steht der
-// Körper leicht über (kOvershootMm) — der Überstand liegt AUSSERHALB der
-// Wand und ändert das Netto-Volumen nicht, vermeidet aber koplanare
-// Deck-/Boden-Flächen beim Boolean. Leerer Shape (übersprungen) bei
-// degeneriertem Prisma.
-TopoDS_Shape makeCutterSolid(const model::CutPrism& cut, double wall_height_mm) {
-    double z0 = cut.z_min_mm;
-    double z1 = cut.z_max_mm;
+// Schnitt-Körper eines Öffnungs-Prismas (ADR-0011 (b)): das vom KERN
+// gelieferte Polygon (inkl. lateralem Überstand) extrudiert über
+// `[z_min, z_max]` (inkl. Boundary-Überstand). Der Adapter rechnet nur
+// Geometrie — Position/Überstand bestimmt der Kern (`opening_geometry`).
+// Leerer Shape (übersprungen) bei degeneriertem Prisma.
+TopoDS_Shape makeCutterSolid(const model::CutPrism& cut) {
+    const double z0 = cut.z_min_mm;
+    const double z1 = cut.z_max_mm;
     if (!std::isfinite(z0) || !std::isfinite(z1) ||
         (z1 - z0) < model::kGeometryToleranceMm ||
         cut.polygon.points.size() < 3) {
         return TopoDS_Shape{};
-    }
-    constexpr double kOvershootMm = 1.0;
-    if (z0 <= model::kGeometryToleranceMm) {
-        z0 -= kOvershootMm;
-    }
-    if (z1 >= wall_height_mm - model::kGeometryToleranceMm) {
-        z1 += kOvershootMm;
     }
     BRepBuilderAPI_MakePolygon polygon;
     for (const model::Point2D& p : cut.polygon.points) {
@@ -125,7 +117,7 @@ TopoDS_Shape makeNetSolid(const model::Footprint& footprint, double height_mm,
                           const std::vector<model::CutPrism>& cutouts) {
     TopoDS_Shape solid = makeFootprintSolid(footprint, height_mm);
     for (const model::CutPrism& cut : cutouts) {
-        const TopoDS_Shape cutter = makeCutterSolid(cut, height_mm);
+        const TopoDS_Shape cutter = makeCutterSolid(cut);
         if (cutter.IsNull()) {
             continue;
         }
@@ -136,9 +128,9 @@ TopoDS_Shape makeNetSolid(const model::Footprint& footprint, double height_mm,
         tools.Append(cutter);
         op.SetArguments(args);
         op.SetTools(tools);
-        op.SetFuzzyValue(model::kGeometryToleranceMm);  // koplanare Flächen
+        op.SetFuzzyValue(model::kGeometryToleranceMm);  // Rest-Robustheit
         op.Build();
-        if (!op.IsDone()) {
+        if (!op.IsDone() || op.Shape().IsNull()) {
             throw std::runtime_error(
                 "OccGeometryAdapter: Wandöffnungs-Subtraktion fehlgeschlagen (E-GEO-002)");
         }
