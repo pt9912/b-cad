@@ -400,15 +400,78 @@ parametrisch im Bereich **0 mm bis 1500 mm**.
 
 ### Modul Decken (`SLB`)
 
-- **LH-FA-SLB-001 — Decke erzeugen.**
-- **LH-FA-SLB-002 — Deckendicke definieren.**
-- **LH-FA-SLB-003 — Deckenausschnitte.**
+Decken sind **horizontale Platten** über einem Grundriss. Geschärft
+2026-06-13 (slice-015a) von Outline auf AK-Niveau (Reifephase-Klausel).
+
+#### LH-FA-SLB-001 — Decke erzeugen
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Grundriss-Umriss, when eine Decke erzeugt
+  wird, then erscheint eine horizontale Platte über dem Umriss in der
+  3D-Darstellung.
+- **Negative:** Given ein degenerierter/leerer Grundriss, then entsteht
+  keine Decke; kein Fehler/Absturz.
+
+#### LH-FA-SLB-002 — Deckendicke definieren
+
+**Beschreibung:** Die Deckendicke ist parametrisch im Bereich
+**100 mm bis 500 mm**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine Decke, when die Dicke geändert wird, then
+  passt sich die Platten-Stärke sichtbar an.
+- **Boundary:** Dicke am Grenzwert akzeptiert; außerhalb → geklemmt +
+  Hinweis.
+
+#### LH-FA-SLB-003 — Deckenausschnitte
+
+**Beschreibung:** Eine Decke kann eine Aussparung erhalten (z. B. für
+eine Treppe oder einen Schacht).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine Decke, when ein Ausschnitt gesetzt wird,
+  then ist die Decke an dieser Stelle durchbrochen (als Loch sichtbar);
+  das verbleibende Decken-Volumen ist um das Ausschnitt-Volumen
+  verringert.
+- **Boundary:** Ein Ausschnitt, der über den Decken-Umriss hinausragt,
+  wird auf den Umriss begrenzt (kein Loch außerhalb der Platte).
 
 ### Modul Fundament (`FND`)
 
-- **LH-FA-FND-001 — Fundament erzeugen.**
-- **LH-FA-FND-002 — Fundamenttiefe definieren.**
-- **LH-FA-FND-003 — Bodenplatte erzeugen.**
+Fundament und Bodenplatte sind **horizontale Platten** am
+Gebäude-Aufstand. Geschärft 2026-06-13 (slice-015a).
+
+#### LH-FA-FND-001 — Fundament erzeugen
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Grundriss-Umriss, when ein Fundament erzeugt
+  wird, then erscheint eine Platte am Aufstand des Gebäudes (in 3D
+  sichtbar, unterhalb des untersten Geschosses).
+- **Negative:** wie LH-FA-SLB-001 (degeneriert → kein Fundament).
+
+#### LH-FA-FND-002 — Fundamenttiefe definieren
+
+**Beschreibung:** Die Fundamenttiefe (Stärke der Fundament-Platte) ist
+parametrisch im Bereich **200 mm bis 2000 mm**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Fundament, when die Tiefe geändert wird,
+  then passt sich die Platten-Stärke sichtbar an.
+- **Boundary:** am Grenzwert akzeptiert; außerhalb → geklemmt + Hinweis.
+
+#### LH-FA-FND-003 — Bodenplatte erzeugen
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Grundriss-Umriss, when eine Bodenplatte
+  erzeugt wird, then erscheint eine Fundament-Platte auf Geländehöhe
+  (Oberkante auf Höhe 0).
+- **Negative:** wie LH-FA-SLB-001.
 
 ### Modul 3D-Modellierung (`D3`)
 
@@ -586,3 +649,4 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 | 0.1.2 | 2026-06-12 | LH-FA-WAL-006 Teilumfang „Eckenschluss endpunkt-verbundener Wände" von Outline auf AK-Niveau geschärft (Vollumfang bleibt offen); Auslöser: ACC-002-Abnahme-Befund | slice-012 |
 | 0.1.3 | 2026-06-13 | Module Türen (LH-FA-DOR-001..004) und Fenster (LH-FA-WIN-001..005) von Outline auf AK-Niveau geschärft (wand-gehostete Bauteile mit automatischer Wandöffnung, Brüstungshöhe; Breiten-/Höhen-/Brüstungs-Bereiche); lösungsfrei/benutzer-beobachtbar | slice-013a (welle-2-bauteile) |
 | 0.1.4 | 2026-06-13 | Modul Dach (LH-FA-ROF-001..005) von Outline auf AK-Niveau geschärft (Sattel-/Walm-/Pultdach, Neigung 5–60°, Überstand 0–1500 mm); **Teilumfang rechteckiger Grundriss**, komplexe Polygon-Grundrisse bleiben offen; lösungsfrei/benutzer-beobachtbar | slice-014a (welle-2-bauteile) |
+| 0.1.5 | 2026-06-13 | Module Decken (LH-FA-SLB-001..003) und Fundament (LH-FA-FND-001..003) von Outline auf AK-Niveau geschärft (horizontale Platten, Deckendicke 100–500 mm, Ausschnitte, Fundamenttiefe 200–2000 mm, Bodenplatte); lösungsfrei/benutzer-beobachtbar | slice-015a (welle-2-bauteile) |

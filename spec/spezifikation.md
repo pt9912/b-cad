@@ -201,6 +201,45 @@ Dach-Netz entsteht **analytisch im Kern** (`roof_geometry`), nicht über
 OCC — der ADR-0009-Vertrag „framework-freie Netze über `ViewModelPort`"
 bleibt erfüllt (die OCC-Tessellation gilt dem extrudierten Wand-Solid).
 
+### LH-FA-SLB-001.a — Platten-Geometrie (Decken & Fundament)
+
+Sammelblock, deckt **LH-FA-SLB-001..003** (Decken) **und LH-FA-FND-001..003**
+(Fundament/Bodenplatte). Modell-Einordnung über ADR-0011 (#6); keine
+eigene Grundsatz-ADR. Beide sind **horizontale Platten** und liegen im
+Schema gemeinsam in `slabs` (Diskriminator `slab_type`, ADR-0006).
+
+**Platten-Solid:** Eine Platte ist ein **Grundriss-Polygon, vertikal um
+die Dicke extrudiert** — ein flaches Prisma. Geometrisch dasselbe
+Vokabular wie die Wand-Footprint-Extrusion (`GeometryKernelPort`,
+slice-012), hier auf eine horizontale Platte angewandt; eigenständig
+begründet (nicht das Dach-Verfahren — das Dach ist ein analytisches
+Polyeder, LH-FA-ROF-001.a).
+
+**Aufstandshöhe `base_z` je `slab_type`** (das `slabs`-Schema trägt
+**keine** base_z-Spalte — sie folgt aus Typ/Geschoss): **Decke** =
+Oberkante des zugeordneten Geschosses (`storey_id`); **Bodenplatte**
+(`FND-003`) = Oberkante auf Höhe 0; **Fundament** (`FND-001/002`) = unter
+Gelände, die Fundamenttiefe erstreckt sich von 0 **nach unten**. Die
+Dicke/Tiefe ist auf §3 geklemmt (`E-VAL-001`).
+
+**Ausschnitte (`SLB-003`):** als **boolesche Subtraktion** von
+Schnitt-Prismen aus dem Platten-Solid — Wiederverwendung von
+`model::CutPrism` und des OCC-Boolean-Backends (ADR-0002), wie bei den
+Wandöffnungen (LH-FA-DOR-004.a). Ein Ausschnitt wird auf den
+Platten-Umriss begrenzt.
+
+**Totalität:** degenerierter/leerer Grundriss (Fläche <
+`GEOMETRY_TOLERANCE_MM²`) → keine Platte; die Sicht-Query bleibt total
+(kein Wurf); ein fehlgeschlagener mutierender Solid-Bau meldet
+`E-GEO-002`.
+
+**Port-Mechanik (slice-015b):** ob der bestehende `extrudeFootprint`
+(extrudiert ab z=0) um eine **`base_z`** erweitert wird — eine
+**Port-Signatur-Entscheidung (ADR-0001-Kern-Hoheit**, Muster ADR-0011 #2,
+**nicht** ADR-0002, das nur das Boolean-Backend liefert) — oder die
+Platte anders platziert wird, entscheidet die Implementierung; §1 legt
+nur die Geometrie fest.
+
 ### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
 
 Präzisiert LH-FA-D3-002; Mechanik-Entscheidung in ADR-0008.
@@ -346,6 +385,12 @@ im Schema (nur Undo) — eigener Slice.
 | `ROOF_OVERHANG_MAX_MM` | 1500 | Obergrenze Dachüberstand | LH-FA-ROF-005 |
 | `DEFAULT_ROOF_PITCH_DEG` | 30 | Default-Dachneigung bei Anlage (= `roofs`-Schema-Default) | LH-FA-ROF-001 |
 | `DEFAULT_ROOF_OVERHANG_MM` | 500 | Default-Dachüberstand bei Anlage (= `roofs`-Schema-Default) | LH-FA-ROF-005 |
+| `SLAB_THICKNESS_MIN_MM` | 100 | Untergrenze Deckendicke | LH-FA-SLB-002 |
+| `SLAB_THICKNESS_MAX_MM` | 500 | Obergrenze Deckendicke | LH-FA-SLB-002 |
+| `DEFAULT_SLAB_THICKNESS_MM` | 200 | Default-Deckendicke bei Anlage | LH-FA-SLB-001 |
+| `FOUNDATION_DEPTH_MIN_MM` | 200 | Untergrenze Fundamenttiefe | LH-FA-FND-002 |
+| `FOUNDATION_DEPTH_MAX_MM` | 2000 | Obergrenze Fundamenttiefe | LH-FA-FND-002 |
+| `DEFAULT_FOUNDATION_DEPTH_MM` | 500 | Default-Fundamenttiefe bei Anlage | LH-FA-FND-001 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
 | `UNDO_DEPTH_MIN` | 1000 | Mindesttiefe Undo/Redo | LH-QA-003 |
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
@@ -424,6 +469,7 @@ nicht im Bootstrap.
 | 2026-06-13 | §3 Default-Maße bei Tür-/Fenster-Anlage (`DEFAULT_DOOR_*`/`DEFAULT_WINDOW_*`) — Implementierung der Anlage (Muster `DEFAULT_WALL_THICKNESS_MM`) | slice-013b |
 | 2026-06-13 | §3 `OPENING_CUT_OVERSHOOT_MM` — Cutter-Überstand für koplanar-freien Boolean (Code-Review-Befund H1: §1-Überstand „je Seite" war nur in Z realisiert, jetzt auch lateral) | slice-013b Code-Review |
 | 2026-06-13 | §1 `LH-FA-ROF-001.a` neu (Dach-Geometrie Teilumfang Rechteck-Grundriss: Traufrechteck, Pult/Sattel/Walm-Konstruktion + Höhenformeln, Walm-Einrückbetrag, Firsthöhe abgeleitet, Totalität) + §3 Neigungs-/Überstands-Bereiche + Defaults (= `roofs`-Schema) | slice-014a |
+| 2026-06-13 | §1 `LH-FA-SLB-001.a` neu (Platten-Geometrie Decken+Fundament: Polygon × Dicke an `base_z` je `slab_type`, Ausschnitte als Boolean/`CutPrism`, Totalität; Port-base_z-Frage an 015b) + §3 Decken-/Fundament-Dicke-Bereiche + Defaults | slice-015a |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

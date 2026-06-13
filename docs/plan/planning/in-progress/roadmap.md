@@ -52,7 +52,10 @@ mit MR-006-Plan-Review, erster Slice steht):
   2026-06-13** — Dach-Persistenz (`roofs`/`footprint_json`-Round-Trip).
   **Dach-Familie (014a/b/c) komplett**, Code-Review zu 014b gelaufen.
 - **Decken + Fundament** (LH-FA-SLB-001..003, LH-FA-FND-001..003):
-  Platten-Solids mit Ausschnitten — geschärft + implementiert.
+  Platten-Solids mit Ausschnitten. **slice-015a done 2026-06-13** —
+  Lastenheft auf AK geschärft + Spec-Platten-Geometrie (Polygon × Dicke,
+  Ausschnitte als Boolean, base_z je Typ); slice-015b (Implementierung)
+  + slice-015c (Persistenz) folgen.
 - **Treppen** (LH-FA-STR-001..004) inkl. Geländer — geschärft +
   implementiert.
 - Unabhängige Welle-Verifikation (analog welle-1/-1v) + Closure-Notiz in

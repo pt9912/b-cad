@@ -99,6 +99,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   atomaren Transaktion nach den Geschossen; Round-Trip-AK (nicht-glatter
   double prüft `%.17g`). Kein Schema-Wechsel. Dach-Familie (014a/b/c)
   damit komplett. make gates grün (95 Tests).
+- slice-015a — Decken + Fundament von Outline auf AK geschärft
+  (LH-FA-SLB-001..003, LH-FA-FND-001..003, Lastenheft 0.1.5): horizontale
+  Platten, Deckendicke 100–500 mm, Ausschnitte, Fundamenttiefe
+  200–2000 mm, Bodenplatte. Spezifikation §1 Platten-Geometrie (Polygon ×
+  Dicke an base_z je slab_type; Ausschnitte als Boolean/`CutPrism`;
+  base_z-/Port-Frage an 015b) + §3 Dicke-Bereiche. Reine Entscheidung/Spec
+  (kein Code, kein ADR — ADR-0011-Leitplanke; MR-008 lösungsfrei).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die
