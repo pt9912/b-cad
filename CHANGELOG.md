@@ -72,6 +72,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Raumerkennung/Footprint unberührt; 13 AK-Tests, Coverage 93,3 %.
   Öffnungen vorerst nur im Speicher — Persistenz folgt in slice-013c
   (vor erstem Save-Use-Case).
+- slice-013c — Öffnungs-Persistenz (LH-FA-DOR-001/WIN-001, LH-FA-BLD-002/003,
+  ADR-0011/0006): `SqliteProjectRepository` speichert/lädt Türen + Fenster
+  über `openings` + `doors`/`windows`-CTI (in derselben atomaren
+  Transaktion nach den Wänden, FK `wall_id`); Round-Trip-AK-Test. Kein
+  Schema-Wechsel (ADR-0006 trug die Tabellen bereits). Damit ist ADR-0011
+  vollständig umgesetzt (Geometrie 013b + Persistenz 013c).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

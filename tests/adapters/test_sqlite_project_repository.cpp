@@ -18,6 +18,10 @@ using bcad::adapters::persistence::SqliteProjectRepository;
 using bcad::hexagon::model::Building;
 using bcad::hexagon::model::Storey;
 using bcad::hexagon::model::StoreyId;
+using bcad::hexagon::model::Opening;
+using bcad::hexagon::model::OpeningId;
+using bcad::hexagon::model::OpeningKind;
+using bcad::hexagon::model::SwingDirection;
 using bcad::hexagon::model::Wall;
 using bcad::hexagon::model::WallId;
 using bcad::hexagon::model::WallType;
@@ -103,6 +107,56 @@ TEST(SqliteProjectRepository_LH_FA_BLD_002_003, SaveErsetztSauberOhneTempRest) {
     EXPECT_EQ(static_cast<int>(loaded.storeys[0].id), 7);
     EXPECT_TRUE(loaded.walls.empty());
     EXPECT_FALSE(fs::exists(fs::path(path.string() + ".tmp")));
+    fs::remove(path);
+}
+
+// LH-FA-DOR-001/WIN-001 (ADR-0011/0006, slice-013c): Türen + Fenster
+// überleben den Round-Trip feldgleich (openings + doors/windows-CTI).
+TEST(SqliteProjectRepository_LH_FA_DOR_WIN, RoundTripErhaeltOeffnungen) {
+    const SqliteProjectRepository repo;
+    Building original;
+    original.storeys.push_back({StoreyId{1}, 2500.0});
+    original.walls.push_back({WallId{1}, StoreyId{1}, {0.0, 0.0},
+                              {5000.0, 0.0}, 240.0, 2500.0, WallType::Aussen});
+    Opening door{};
+    door.id = OpeningId{1};
+    door.wall_id = WallId{1};
+    door.kind = OpeningKind::Door;
+    door.offset_mm = 1000.0;
+    door.width_mm = 900.0;
+    door.height_mm = 2100.0;
+    door.sill_height_mm = 0.0;
+    door.swing = SwingDirection::Right;
+    Opening window{};
+    window.id = OpeningId{2};
+    window.wall_id = WallId{1};
+    window.kind = OpeningKind::Window;
+    window.offset_mm = 3000.0;
+    window.width_mm = 1200.0;
+    window.height_mm = 1300.0;
+    window.sill_height_mm = 900.0;
+    original.openings = {door, window};
+
+    const fs::path path = tempPath("bcad_openings.bcad");
+    fs::remove(path);
+    repo.save(original, path);
+    const Building loaded = repo.load(path);
+
+    ASSERT_EQ(loaded.openings.size(), original.openings.size());
+    for (std::size_t i = 0; i < original.openings.size(); ++i) {
+        const Opening& want = original.openings[i];
+        const Opening& got = loaded.openings[i];
+        EXPECT_EQ(static_cast<int>(got.id), static_cast<int>(want.id));
+        EXPECT_EQ(static_cast<int>(got.wall_id), static_cast<int>(want.wall_id));
+        EXPECT_EQ(static_cast<int>(got.kind), static_cast<int>(want.kind));
+        EXPECT_DOUBLE_EQ(got.offset_mm, want.offset_mm);
+        EXPECT_DOUBLE_EQ(got.width_mm, want.width_mm);
+        EXPECT_DOUBLE_EQ(got.height_mm, want.height_mm);
+        EXPECT_DOUBLE_EQ(got.sill_height_mm, want.sill_height_mm);
+        if (want.kind == OpeningKind::Door) {
+            EXPECT_EQ(static_cast<int>(got.swing), static_cast<int>(want.swing));
+        }
+    }
     fs::remove(path);
 }
 

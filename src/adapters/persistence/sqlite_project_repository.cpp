@@ -165,6 +165,46 @@ hexagon::model::WallType textToClass(const std::string& text) {
     throw std::runtime_error("E-IO: unbekannte classification '" + text + "'");
 }
 
+const char* openingTypeToText(hexagon::model::OpeningKind kind) {
+    switch (kind) {
+        case hexagon::model::OpeningKind::Door:
+            return "door";
+        case hexagon::model::OpeningKind::Window:
+            return "window";
+    }
+    throw std::runtime_error("E-IO: unbekannter OpeningKind");
+}
+
+hexagon::model::OpeningKind textToOpeningKind(const std::string& text) {
+    if (text == "door") {
+        return hexagon::model::OpeningKind::Door;
+    }
+    if (text == "window") {
+        return hexagon::model::OpeningKind::Window;
+    }
+    throw std::runtime_error("E-IO: unbekannter opening_type '" + text + "'");
+}
+
+const char* swingToText(hexagon::model::SwingDirection swing) {
+    switch (swing) {
+        case hexagon::model::SwingDirection::Left:
+            return "left";
+        case hexagon::model::SwingDirection::Right:
+            return "right";
+    }
+    throw std::runtime_error("E-IO: unbekannte SwingDirection");
+}
+
+hexagon::model::SwingDirection textToSwing(const std::string& text) {
+    if (text == "left") {
+        return hexagon::model::SwingDirection::Left;
+    }
+    if (text == "right") {
+        return hexagon::model::SwingDirection::Right;
+    }
+    throw std::runtime_error("E-IO: unbekannte swing_direction '" + text + "'");
+}
+
 void insertProject(Db& db) {
     Stmt stmt(db,
               "INSERT INTO projects (id,name,file_version,unit,created_at,"
@@ -217,6 +257,49 @@ void insertWalls(Db& db, const hexagon::model::Building& building) {
     }
 }
 
+// Öffnungen (Türen/Fenster, ADR-0011/0006): Basistabelle `openings` +
+// 1:1-Spezialisierung `doors`/`windows` (CTI). NACH `insertWalls` (FK
+// `openings.wall_id → walls.id`), in derselben Transaktion. Nicht-
+// Domänen-Spalten (`name`, `swing_angle_deg`, `is_external`,
+// `frame_material`, …) bleiben auf Default/`NULL` — welle-2-Scope (M4).
+void insertOpenings(Db& db, const hexagon::model::Building& building) {
+    Stmt openingStmt(
+        db,
+        "INSERT INTO openings (id,project_id,wall_id,opening_type,offset_mm,"
+        "width_mm,height_mm,sill_height_mm,created_at,updated_at) "
+        "VALUES (?,1,?,?,?,?,?,?,?,?);");
+    Stmt doorStmt(db,
+                  "INSERT INTO doors (opening_id,swing_direction) VALUES (?,?);");
+    Stmt windowStmt(db, "INSERT INTO windows (opening_id) VALUES (?);");
+    for (const auto& opening : building.openings) {
+        sqlite3_bind_int(openingStmt.get(), 1, static_cast<int>(opening.id));
+        sqlite3_bind_int(openingStmt.get(), 2,
+                         static_cast<int>(opening.wall_id));
+        sqlite3_bind_text(openingStmt.get(), 3, openingTypeToText(opening.kind),
+                          -1, SQLITE_STATIC);
+        sqlite3_bind_double(openingStmt.get(), 4, opening.offset_mm);
+        sqlite3_bind_double(openingStmt.get(), 5, opening.width_mm);
+        sqlite3_bind_double(openingStmt.get(), 6, opening.height_mm);
+        sqlite3_bind_double(openingStmt.get(), 7, opening.sill_height_mm);
+        sqlite3_bind_text(openingStmt.get(), 8, kSentinelTs, -1, SQLITE_STATIC);
+        sqlite3_bind_text(openingStmt.get(), 9, kSentinelTs, -1, SQLITE_STATIC);
+        openingStmt.step();
+        openingStmt.reset();
+
+        if (opening.kind == hexagon::model::OpeningKind::Door) {
+            sqlite3_bind_int(doorStmt.get(), 1, static_cast<int>(opening.id));
+            sqlite3_bind_text(doorStmt.get(), 2, swingToText(opening.swing), -1,
+                              SQLITE_STATIC);
+            doorStmt.step();
+            doorStmt.reset();
+        } else {
+            sqlite3_bind_int(windowStmt.get(), 1, static_cast<int>(opening.id));
+            windowStmt.step();
+            windowStmt.reset();
+        }
+    }
+}
+
 void loadStoreys(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db, "SELECT id,height_mm FROM storeys ORDER BY level_index;");
     while (stmt.step()) {
@@ -249,6 +332,33 @@ void loadWalls(Db& db, hexagon::model::Building& building) {
                                     ? reinterpret_cast<const char*>(cls)
                                     : "");
         building.walls.push_back(wall);
+    }
+}
+
+void loadOpenings(Db& db, hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "SELECT o.id,o.wall_id,o.opening_type,o.offset_mm,o.width_mm,"
+              "o.height_mm,o.sill_height_mm,d.swing_direction FROM openings o "
+              "LEFT JOIN doors d ON d.opening_id=o.id ORDER BY o.id;");
+    while (stmt.step()) {
+        hexagon::model::Opening opening;
+        opening.id = static_cast<hexagon::model::OpeningId>(
+            sqlite3_column_int(stmt.get(), 0));
+        opening.wall_id = static_cast<hexagon::model::WallId>(
+            sqlite3_column_int(stmt.get(), 1));
+        const auto* type = sqlite3_column_text(stmt.get(), 2);
+        opening.kind = textToOpeningKind(
+            type != nullptr ? reinterpret_cast<const char*>(type) : "");
+        opening.offset_mm = sqlite3_column_double(stmt.get(), 3);
+        opening.width_mm = sqlite3_column_double(stmt.get(), 4);
+        opening.height_mm = sqlite3_column_double(stmt.get(), 5);
+        opening.sill_height_mm = sqlite3_column_double(stmt.get(), 6);
+        if (opening.kind == hexagon::model::OpeningKind::Door) {
+            const auto* swing = sqlite3_column_text(stmt.get(), 7);
+            opening.swing = textToSwing(
+                swing != nullptr ? reinterpret_cast<const char*>(swing) : "left");
+        }
+        building.openings.push_back(opening);
     }
 }
 
@@ -291,6 +401,7 @@ void SqliteProjectRepository::save(const hexagon::model::Building& building,
             insertProject(*db);
             insertStoreys(*db, building);
             insertWalls(*db, building);
+            insertOpenings(*db, building);  // nach Wänden (FK wall_id)
             db->exec("COMMIT;");
             db.reset();  // schließen vor fsync/rename
         } catch (const SqliteError& e) {
@@ -333,6 +444,7 @@ hexagon::model::Building SqliteProjectRepository::load(
         Db db(path);
         loadStoreys(db, building);
         loadWalls(db, building);
+        loadOpenings(db, building);
         return building;
     } catch (const SqliteError& e) {
         throw std::runtime_error("E-IO: Projektdatei nicht lesbar ('" +
