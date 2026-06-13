@@ -33,6 +33,14 @@ inline constexpr double kWindowSillMaxMm = 2000.0;     // LH-FA-WIN-004
 // Seite"). Liegt außerhalb der Wand → volumen-neutral.
 inline constexpr double kOpeningCutOvershootMm = 1.0;  // LH-FA-DOR-004/WIN-005
 
+// Dach (LH-FA-ROF-004 Neigung / LH-FA-ROF-005 Überstand); spez. §3.
+inline constexpr double kRoofPitchMinDeg = 5.0;          // LH-FA-ROF-004
+inline constexpr double kRoofPitchMaxDeg = 60.0;         // LH-FA-ROF-004
+inline constexpr double kRoofOverhangMinMm = 0.0;        // LH-FA-ROF-005
+inline constexpr double kRoofOverhangMaxMm = 1500.0;     // LH-FA-ROF-005
+inline constexpr double kDefaultRoofPitchDeg = 30.0;     // LH-FA-ROF-001 (= roofs-Schema)
+inline constexpr double kDefaultRoofOverhangMm = 500.0;  // LH-FA-ROF-005 (= roofs-Schema)
+
 // Default-Maße bei Anlage (Muster kDefaultWallThicknessMm) — spez. §3.
 inline constexpr double kDefaultDoorWidthMm = 900.0;    // LH-FA-DOR-001
 inline constexpr double kDefaultDoorHeightMm = 2100.0;  // LH-FA-DOR-001
