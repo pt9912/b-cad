@@ -91,6 +91,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (kein `RoomsChanged`); `ViewerScene` folgt idempotent. 9 AK-Tests; kein
   ADR (ADR-0011-Leitplanke). Persistenz folgt in slice-014c. make gates
   grün (92 Tests, Coverage 91,8 %).
+- slice-014c — Dach-Persistenz (LH-FA-ROF-001, LH-FA-BLD-002/003,
+  ADR-0011/0006): `SqliteProjectRepository` speichert/lädt Dächer über
+  die `roofs`-Tabelle (`roof_type`/`pitch`/`overhang` als Spalten,
+  rechteckiger Grundriss als `footprint_json`-Array `[ox,oy,w,d,base_z]`,
+  `%.17g`; erste JSON-Ser/De im Repo, gekapselt + total). In derselben
+  atomaren Transaktion nach den Geschossen; Round-Trip-AK (nicht-glatter
+  double prüft `%.17g`). Kein Schema-Wechsel. Dach-Familie (014a/b/c)
+  damit komplett. make gates grün (95 Tests).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

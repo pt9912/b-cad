@@ -21,6 +21,9 @@ using bcad::hexagon::model::StoreyId;
 using bcad::hexagon::model::Opening;
 using bcad::hexagon::model::OpeningId;
 using bcad::hexagon::model::OpeningKind;
+using bcad::hexagon::model::Roof;
+using bcad::hexagon::model::RoofId;
+using bcad::hexagon::model::RoofType;
 using bcad::hexagon::model::SwingDirection;
 using bcad::hexagon::model::Wall;
 using bcad::hexagon::model::WallId;
@@ -156,6 +159,59 @@ TEST(SqliteProjectRepository_LH_FA_DOR_WIN, RoundTripErhaeltOeffnungen) {
         if (want.kind == OpeningKind::Door) {
             EXPECT_EQ(static_cast<int>(got.swing), static_cast<int>(want.swing));
         }
+    }
+    fs::remove(path);
+}
+
+// LH-FA-ROF-001 (ADR-0011/0006, slice-014c): Dächer überleben den
+// Round-Trip feldgleich (roofs + footprint_json). Der nicht-glatte
+// `origin.x` belegt die `%.17g`-Präzision diskriminierend (MED-1).
+TEST(SqliteProjectRepository_LH_FA_ROF_001, RoundTripErhaeltDaecher) {
+    const SqliteProjectRepository repo;
+    Building original;
+    original.storeys.push_back({StoreyId{1}, 2500.0});
+    Roof sattel{};
+    sattel.id = RoofId{1};
+    sattel.storey_id = StoreyId{1};
+    sattel.type = RoofType::Sattel;
+    sattel.origin = {1234.56789012345, -50.0};  // nicht-glatt → prüft %.17g
+    sattel.width_mm = 8000.0;
+    sattel.depth_mm = 6000.0;
+    sattel.base_z_mm = 2500.0;
+    sattel.pitch_deg = 30.0;
+    sattel.overhang_mm = 500.0;
+    Roof walm{};
+    walm.id = RoofId{2};
+    walm.storey_id = StoreyId{1};
+    walm.type = RoofType::Walm;
+    walm.origin = {0.0, 0.0};
+    walm.width_mm = 5000.0;
+    walm.depth_mm = 5000.0;
+    walm.base_z_mm = 3000.0;
+    walm.pitch_deg = 45.0;
+    walm.overhang_mm = 300.0;
+    original.roofs = {sattel, walm};
+
+    const fs::path path = tempPath("bcad_roofs.bcad");
+    fs::remove(path);
+    repo.save(original, path);
+    const Building loaded = repo.load(path);
+
+    ASSERT_EQ(loaded.roofs.size(), original.roofs.size());
+    for (std::size_t i = 0; i < original.roofs.size(); ++i) {
+        const Roof& want = original.roofs[i];
+        const Roof& got = loaded.roofs[i];
+        EXPECT_EQ(static_cast<int>(got.id), static_cast<int>(want.id));
+        EXPECT_EQ(static_cast<int>(got.storey_id),
+                  static_cast<int>(want.storey_id));
+        EXPECT_EQ(static_cast<int>(got.type), static_cast<int>(want.type));
+        EXPECT_DOUBLE_EQ(got.origin.x_mm, want.origin.x_mm);
+        EXPECT_DOUBLE_EQ(got.origin.y_mm, want.origin.y_mm);
+        EXPECT_DOUBLE_EQ(got.width_mm, want.width_mm);
+        EXPECT_DOUBLE_EQ(got.depth_mm, want.depth_mm);
+        EXPECT_DOUBLE_EQ(got.base_z_mm, want.base_z_mm);
+        EXPECT_DOUBLE_EQ(got.pitch_deg, want.pitch_deg);
+        EXPECT_DOUBLE_EQ(got.overhang_mm, want.overhang_mm);
     }
     fs::remove(path);
 }

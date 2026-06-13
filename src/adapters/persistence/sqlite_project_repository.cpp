@@ -14,9 +14,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <array>
 #include <cerrno>
+#include <cstdio>
 #include <filesystem>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <system_error>
@@ -205,6 +208,75 @@ hexagon::model::SwingDirection textToSwing(const std::string& text) {
     throw std::runtime_error("E-IO: unbekannte swing_direction '" + text + "'");
 }
 
+const char* roofTypeToText(hexagon::model::RoofType type) {
+    switch (type) {
+        case hexagon::model::RoofType::Sattel:
+            return "sattel";
+        case hexagon::model::RoofType::Walm:
+            return "walm";
+        case hexagon::model::RoofType::Pult:
+            return "pult";
+    }
+    throw std::runtime_error("E-IO: unbekannter RoofType");
+}
+
+hexagon::model::RoofType textToRoofType(const std::string& text) {
+    if (text == "sattel") {
+        return hexagon::model::RoofType::Sattel;
+    }
+    if (text == "walm") {
+        return hexagon::model::RoofType::Walm;
+    }
+    if (text == "pult") {
+        return hexagon::model::RoofType::Pult;
+    }
+    throw std::runtime_error("E-IO: unbekannter roof_type '" + text + "'");
+}
+
+// Rechteckiger Dach-Grundriss als JSON-Array
+// `[origin_x, origin_y, width, depth, base_z]` (ADR-0006 footprint_json).
+// `%.17g` → exakter double-Round-Trip (DBL_DECIMAL_DIG). Eigenes,
+// deterministisches Format; nur dieser Adapter schreibt/liest es.
+std::string footprintToJson(const hexagon::model::Roof& roof) {
+    std::array<char, 256> buf{};
+    std::snprintf(buf.data(), buf.size(), "[%.17g,%.17g,%.17g,%.17g,%.17g]",
+                  roof.origin.x_mm, roof.origin.y_mm, roof.width_mm,
+                  roof.depth_mm, roof.base_z_mm);
+    return buf.data();
+}
+
+// Parst das eigene 5-Zahlen-Array zurück; wirft bei Format-Fehler neutral
+// (`E-IO`, kein Lib-Typ verlässt den Adapter — total nach außen).
+void parseFootprintJson(const std::string& json, hexagon::model::Roof& roof) {
+    const std::size_t lhs = json.find('[');
+    const std::size_t rhs = json.rfind(']');
+    if (lhs == std::string::npos || rhs == std::string::npos || rhs < lhs) {
+        throw std::runtime_error("E-IO: footprint_json invalide: '" + json + "'");
+    }
+    std::stringstream inner(json.substr(lhs + 1, rhs - lhs - 1));
+    std::array<double, 5> values{};
+    std::string token;
+    std::size_t count = 0;
+    try {
+        while (std::getline(inner, token, ',')) {
+            if (count >= values.size()) {
+                throw std::runtime_error("E-IO: footprint_json zu viele Werte");
+            }
+            values[count++] = std::stod(token);
+        }
+    } catch (const std::logic_error& e) {  // stod: invalid_argument/out_of_range
+        throw std::runtime_error(std::string("E-IO: footprint_json Zahl ungültig: ") +
+                                 e.what());
+    }
+    if (count != values.size()) {
+        throw std::runtime_error("E-IO: footprint_json erwartet 5 Werte");
+    }
+    roof.origin = {values[0], values[1]};
+    roof.width_mm = values[2];
+    roof.depth_mm = values[3];
+    roof.base_z_mm = values[4];
+}
+
 void insertProject(Db& db) {
     Stmt stmt(db,
               "INSERT INTO projects (id,name,file_version,unit,created_at,"
@@ -300,6 +372,28 @@ void insertOpenings(Db& db, const hexagon::model::Building& building) {
     }
 }
 
+// Dächer (LH-FA-ROF-*, ADR-0011/0006): NACH `insertStoreys` (FK
+// `roofs.storey_id → storeys.id`). `height_mm` (abgeleitete Firsthöhe)
+// und `material_id` bleiben `NULL` — welle-2-Scope.
+void insertRoofs(Db& db, const hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "INSERT INTO roofs (id,project_id,storey_id,roof_type,pitch_deg,"
+              "overhang_mm,footprint_json) VALUES (?,1,?,?,?,?,?);");
+    for (const auto& roof : building.roofs) {
+        const std::string footprint = footprintToJson(roof);
+        sqlite3_bind_int(stmt.get(), 1, static_cast<int>(roof.id));
+        sqlite3_bind_int(stmt.get(), 2, static_cast<int>(roof.storey_id));
+        sqlite3_bind_text(stmt.get(), 3, roofTypeToText(roof.type), -1,
+                          SQLITE_STATIC);
+        sqlite3_bind_double(stmt.get(), 4, roof.pitch_deg);
+        sqlite3_bind_double(stmt.get(), 5, roof.overhang_mm);
+        sqlite3_bind_text(stmt.get(), 6, footprint.c_str(), -1,
+                          SQLITE_TRANSIENT);
+        stmt.step();
+        stmt.reset();
+    }
+}
+
 void loadStoreys(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db, "SELECT id,height_mm FROM storeys ORDER BY level_index;");
     while (stmt.step()) {
@@ -362,6 +456,29 @@ void loadOpenings(Db& db, hexagon::model::Building& building) {
     }
 }
 
+void loadRoofs(Db& db, hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "SELECT id,storey_id,roof_type,pitch_deg,overhang_mm,"
+              "footprint_json FROM roofs ORDER BY id;");
+    while (stmt.step()) {
+        hexagon::model::Roof roof;
+        roof.id =
+            static_cast<hexagon::model::RoofId>(sqlite3_column_int(stmt.get(), 0));
+        roof.storey_id = static_cast<hexagon::model::StoreyId>(
+            sqlite3_column_int(stmt.get(), 1));
+        const auto* type = sqlite3_column_text(stmt.get(), 2);
+        roof.type = textToRoofType(
+            type != nullptr ? reinterpret_cast<const char*>(type) : "");
+        roof.pitch_deg = sqlite3_column_double(stmt.get(), 3);
+        roof.overhang_mm = sqlite3_column_double(stmt.get(), 4);
+        const auto* footprint = sqlite3_column_text(stmt.get(), 5);
+        parseFootprintJson(
+            footprint != nullptr ? reinterpret_cast<const char*>(footprint) : "",
+            roof);
+        building.roofs.push_back(roof);
+    }
+}
+
 // Stale Temp-Artefakte entfernen (Recovery nach Absturz): das Temp-DB plus
 // ein evtl. zurückgebliebenes -journal/-wal eines getöteten `save`. Sonst
 // sähe ein neues sqlite3_open ein „hot journal" zu einer frisch angelegten
@@ -402,6 +519,7 @@ void SqliteProjectRepository::save(const hexagon::model::Building& building,
             insertStoreys(*db, building);
             insertWalls(*db, building);
             insertOpenings(*db, building);  // nach Wänden (FK wall_id)
+            insertRoofs(*db, building);      // nach Geschossen (FK storey_id)
             db->exec("COMMIT;");
             db.reset();  // schließen vor fsync/rename
         } catch (const SqliteError& e) {
@@ -445,6 +563,7 @@ hexagon::model::Building SqliteProjectRepository::load(
         loadStoreys(db, building);
         loadWalls(db, building);
         loadOpenings(db, building);
+        loadRoofs(db, building);
         return building;
     } catch (const SqliteError& e) {
         throw std::runtime_error("E-IO: Projektdatei nicht lesbar ('" +

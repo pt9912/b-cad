@@ -31,6 +31,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0009 | `arch-check` **Regel E** (Qt-Includes nur `src/adapters/ui/` + `src/main.cpp`) + Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3) + `acc-002-beleg`-Target außerhalb `gates` | **erfüllt** durch slice-011b (2026-06-12) |
 | ADR-0011 | Öffnungs-Domänenmodell (Tür/Fenster/Opening, pure Werte) + `EditStructurePort`-Operationen + `GeometryKernelPort`-Schnitt-Prismen (OCC-`BRepAlgoAPI_Cut`, Regel C) + `WallGeometryChanged` der Wirtswand (total/transaktional) + `ViewerScene`-Folgen; AK-Tests `LH-FA-DOR-*`/`LH-FA-WIN-*` | **Geometrie/Verhalten erfüllt** durch slice-013b (2026-06-13) |
 | ADR-0011 | Persistenz-Abbildung der Öffnungen (`openings`/`doors`/`windows`, ADR-0006-Schema) — Round-Trip Speichern/Laden | **erfüllt** durch slice-013c (2026-06-13) |
+| ADR-0011 (#6) | Bauteil-Erweiterungs-Muster fürs **Dach** (LH-FA-ROF-*): Domäne + analytisches Netz (`roof_geometry`) + ViewModel/Viewer/Edit-Ops + Persistenz (`roofs`/`footprint_json`) | **erfüllt** durch slice-014a/b/c (2026-06-13) |
 
 ## Konventionen
 
