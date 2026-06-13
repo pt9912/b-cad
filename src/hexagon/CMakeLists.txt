@@ -10,6 +10,7 @@ add_library(bcad_hexagon
     services/opening_geometry.cpp
     services/roof_geometry.cpp
     services/room_detection.cpp
+    services/slab_geometry.cpp
     services/structure_edit_service.cpp
     services/wall_footprint.cpp
 )
