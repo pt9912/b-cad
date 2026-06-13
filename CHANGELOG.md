@@ -51,6 +51,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Hälfte LH-FA-D3-002. slice-011a/011b + slice-012 in `done/`;
   unabhängige Welle-Verifikation (keine HIGH/MEDIUM), `make gates` grün
   am HEAD (63/63, Coverage 94,2 %). Ergebnisnotiz: `welle-1v-results.md`.
+- slice-013a — Bauteil-Hosting & Wandöffnungs-Modell (welle-2-bauteile,
+  erster Slice; reine ADR+Spec-Entscheidung, kein Code): **ADR-0011**
+  accepted (Öffnung als wand-gehostetes Element; Kern liefert
+  Schnitt-Prismen, `GeometryKernelPort` subtrahiert per OCC-Boolean;
+  `WallGeometryChanged`-Wiederverwendung; Raumerkennung/Footprint
+  unberührt; Bauteil-Erweiterungs-Muster als Welle-Leitplanke).
+  Lastenheft 0.1.3: Türen (LH-FA-DOR-001..004) + Fenster
+  (LH-FA-WIN-001..005) von Outline auf AK geschärft; Spezifikation §1
+  Öffnungs-Algorithmus + §3 Tür-/Fenster-/Brüstungs-Wertebereiche. Keine
+  Schema-Schärfung nötig (ADR-0006 trägt openings/doors/windows bereits).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

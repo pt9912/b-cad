@@ -83,7 +83,7 @@ nur dort werden Adapter-Instanzen injiziert.
 
 | Port | Verantwortung | Bezug |
 |---|---|---|
-| `GeometryKernelPort` | Solids, boolesche Operationen, Verschneidung (Wandöffnungen); extrudiert/tesselliert **Footprint-Polygone** (die Footprint-Hoheit inkl. Eckenschluss liegt im Kern, LH-FA-WAL-006.a/slice-012; Tessellation ADR-0009) | LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005 |
+| `GeometryKernelPort` | Solids, boolesche Operationen; extrudiert/tesselliert **Footprint-Polygone** (Footprint-Hoheit inkl. Eckenschluss im Kern, LH-FA-WAL-006.a/slice-012) und **subtrahiert vom Kern gelieferte Schnitt-Prismen** (Wandöffnungen für Türen/Fenster, LH-FA-DOR-004/WIN-005, ADR-0011 — Öffnungs-Semantik bleibt im Kern, der Adapter rechnet nur Geometrie); Tessellation ADR-0009 | LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005 |
 | `ProjectRepositoryPort` | Projekt **atomar** persistieren und laden; Versionshistorie | LH-FA-BLD-002..004, LH-QA-005 |
 | `ModelImporterPort` | externes Modell (IFC/DXF) in Domain-Bauteile lesen | LH-FA-IO-001, LH-FA-IO-003 |
 | `ModelExporterPort` | Domain-Modell in Zielformat schreiben (IFC/DXF/STEP/STL/PDF/PNG) | LH-FA-IO-002,004,005,006,007,008 |

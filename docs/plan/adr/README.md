@@ -12,6 +12,7 @@
 | [0008](0008-aenderungs-benachrichtigung.md) | Änderungs-Benachrichtigung Kern → Darstellung (Observer-Port, Push-Notify/Pull-State, Kapselung) | Accepted (2026-06-11) | LH-FA-D3-002, OBJ-003, ADR-0001/0007 |
 | [0009](0009-gui-framework-qt6.md) | GUI-Framework-Bindung Qt 6 (Widgets, Tessellation über `ViewModelPort` — kein OCC in der GUI, Regel E, Headless-Strategie) | Accepted (2026-06-12) | REQ-TEC-002, ACC-002, LH-FA-D3-001/002, ADR-0001/0002/0008 |
 | [0010](0010-headless-gl-xvfb.md) | Headless-GL via Xvfb + Mesa/llvmpipe — präzisiert ADR-0009 (f): offscreen-QPA trägt kein GL (Implementierungs-Befund slice-011b) | Accepted (2026-06-12) | ADR-0009, ADR-0004, LH-FA-D3-002 |
+| [0011](0011-bauteil-hosting-wandoeffnung.md) | Bauteil-Hosting & Wandöffnungs-Modell (wand-gehostetes Element mit Wand-Referenz; Kern liefert Schnitt-Prismen, `GeometryKernelPort` subtrahiert; `WallGeometryChanged`-Wiederverwendung; Raumerkennung unberührt; Bauteil-Erweiterungs-Muster als welle-2-Leitplanke) | Accepted (2026-06-13) | LH-FA-DOR-001..004, LH-FA-WIN-001..005, ADR-0001/0002/0006/0007/0008 |
 
 ## ADR-Folgepflichten (Status)
 
@@ -28,6 +29,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0007 | Innenkanten-Offset + Ring-Modell implementieren; Boundary-Test prüft Netto-Fläche verschachtelter Wandzüge | **erfüllt** durch [slice-009b](../planning/done/slice-009b-raumerkennung-implementierung.md) (2026-06-11) |
 | ADR-0008 | Observer-Port + subscribe/unsubscribe + Meldungen im `StructureEditService` (nach `redetectRooms`), inkl. Kapselungs-Test (werfender Beobachter) | **erfüllt** durch slice-010b (2026-06-11) |
 | ADR-0009 | `arch-check` **Regel E** (Qt-Includes nur `src/adapters/ui/` + `src/main.cpp`) + Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3) + `acc-002-beleg`-Target außerhalb `gates` | **erfüllt** durch slice-011b (2026-06-12) |
+| ADR-0011 | Öffnungs-Domänenmodell (Tür/Fenster/Opening, pure Werte) + `EditStructurePort`-Operationen + `GeometryKernelPort`-Schnitt-Prismen (OCC-`BRepAlgoAPI_Cut`, Regel C) + `WallGeometryChanged` der Wirtswand (total/transaktional) + `ViewerScene`-Folgen + Persistenz-Abbildung; AK-Tests `LH-FA-DOR-*`/`LH-FA-WIN-*` | **offen** → slice-013b |
 
 ## Konventionen
 

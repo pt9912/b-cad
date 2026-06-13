@@ -203,19 +203,121 @@ Default-Material und Auswertungs-Kategorie.
 
 ### Modul Türen (`DOR`)
 
-- **LH-FA-DOR-001 — Tür platzieren.**
-- **LH-FA-DOR-002 — Tür verschieben.**
-- **LH-FA-DOR-003 — Türparameter bearbeiten** (Breite, Höhe, Anschlag).
-- **LH-FA-DOR-004 — Wandöffnung automatisch erzeugen** (Tür schneidet
-  Wand, vgl. LH-FA-WIN-005).
+Türen sind **wand-gehostete Bauteile**: eine platzierte Tür sitzt in
+einer Wirtswand und bricht diese an ihrer Stelle durch (Öffnung). Die
+folgenden Anforderungen wurden 2026-06-13 (slice-013a) von Outline auf
+Akzeptanz-Niveau geschärft (Reifephase-Klausel).
+
+#### LH-FA-DOR-001 — Tür platzieren
+
+**Beschreibung:** Eine Tür wird an einer Wand platziert; ihre Lage ist
+parametrisch entlang der Wand.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine Wand, when eine Tür an einer Position
+  entlang der Wand platziert wird, then sitzt die Tür in der Wand und
+  die Wand ist an dieser Stelle durchbrochen (in der 3D-Darstellung
+  sichtbar, vgl. LH-FA-DOR-004), ohne Benutzer-Refresh.
+- **Boundary:** Given eine Position, bei der die Tür sonst über ein
+  Wandende hinausragen würde, then wird die Position so begrenzt, dass
+  die Tür vollständig in der Wand liegt; passt selbst die schmalste Tür
+  nicht in die Wand, then wird die Platzierung abgelehnt (kein
+  Durchbruch außerhalb der Wand).
+- **Negative:** Given eine Platzierung ohne Wirtswand, then wird sie
+  abgelehnt; es entsteht keine verwaiste Tür.
+
+#### LH-FA-DOR-002 — Tür verschieben
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine platzierte Tür, when sie entlang ihrer
+  Wand verschoben wird, then folgt der Wand-Durchbruch der neuen
+  Position (alte Stelle wieder geschlossen), ohne Benutzer-Refresh.
+- **Boundary:** Verschieben über ein Wandende hinaus wird auf den
+  gültigen Bereich begrenzt (Verhalten wie LH-FA-DOR-001 Boundary).
+- **Negative:** Eine abgelehnte/ungültige Verschiebung lässt die Tür an
+  ihrer bisherigen Position; die Darstellung bleibt unverändert.
+
+#### LH-FA-DOR-003 — Türparameter bearbeiten
+
+**Beschreibung:** Breite, Höhe und **Anschlag** (Öffnungsseite/-richtung)
+sind parametrisch. Breite **600 mm bis 2000 mm**, Höhe **1800 mm bis
+2500 mm**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine Tür, when Breite/Höhe geändert werden, then
+  passt sich der Wand-Durchbruch sofort an; when der Anschlag geändert
+  wird, then ist die geänderte Öffnungsseite benutzer-beobachtbar.
+- **Boundary:** Given Breite oder Höhe am Grenzwert, then akzeptiert;
+  außerhalb des Bereichs, then auf den nächsten Grenzwert geklemmt +
+  Hinweis.
+
+#### LH-FA-DOR-004 — Wandöffnung automatisch erzeugen
+
+**Beschreibung:** Eine Tür erzeugt **automatisch** eine Öffnung in ihrer
+Wirtswand — ohne separaten Benutzer-Schritt (vgl. LH-FA-WIN-005).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine an einer Wand platzierte Tür, then ist die
+  Wand an der Tür-Position über die Türbreite und von der Standfläche
+  bis zur Türhöhe durchbrochen, in 2D- und 3D-Darstellung beobachtbar;
+  das verbleibende Wandvolumen ist um das Öffnungsvolumen verringert.
+- **Boundary:** Given eine Tür höher als die Wand, then reicht der
+  Durchbruch höchstens bis zur Wandhöhe (kein Durchbruch über die Wand
+  hinaus).
+- **Negative:** Given eine entfernte Tür, then ist die Wand an der
+  vormaligen Stelle wieder geschlossen.
 
 ### Modul Fenster (`WIN`)
 
-- **LH-FA-WIN-001 — Fenster platzieren.**
-- **LH-FA-WIN-002 — Fenster verschieben.**
-- **LH-FA-WIN-003 — Fensterparameter bearbeiten.**
-- **LH-FA-WIN-004 — Brüstungshöhe definieren.**
-- **LH-FA-WIN-005 — Wandöffnung automatisch erzeugen.**
+Fenster sind **wand-gehostete Bauteile** wie Türen (LH-FA-DOR-*),
+zusätzlich mit einer Brüstungshöhe. Geschärft 2026-06-13 (slice-013a).
+
+#### LH-FA-WIN-001 — Fenster platzieren
+
+**Akzeptanzkriterien:** wie LH-FA-DOR-001 (Happy/Boundary/Negative),
+für ein Fenster — eine platzierte Fenster-Öffnung sitzt in der Wand und
+bricht sie durch (vgl. LH-FA-WIN-005); ohne Wirtswand abgelehnt.
+
+#### LH-FA-WIN-002 — Fenster verschieben
+
+**Akzeptanzkriterien:** wie LH-FA-DOR-002, für ein Fenster.
+
+#### LH-FA-WIN-003 — Fensterparameter bearbeiten
+
+**Beschreibung:** Breite und Höhe parametrisch. Breite **300 mm bis
+3000 mm**, Höhe **300 mm bis 2500 mm**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Fenster, when Breite/Höhe geändert werden,
+  then passt sich die Wandöffnung sofort an.
+- **Boundary:** Grenzwert-Verhalten wie LH-FA-DOR-003 (akzeptiert am
+  Grenzwert; außerhalb geklemmt + Hinweis).
+
+#### LH-FA-WIN-004 — Brüstungshöhe definieren
+
+**Beschreibung:** Die Brüstungshöhe ist der Abstand der Fenster-Unterkante
+über der Geschoss-Standfläche, parametrisch **0 mm bis 2000 mm**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Fenster, when die Brüstungshöhe gesetzt wird,
+  then beginnt die Wandöffnung erst oberhalb der Brüstung — die Wand
+  bleibt unterhalb des Fensters geschlossen (beobachtbar in 3D).
+- **Boundary:** Given Brüstung + Fensterhöhe größer als die Wandhöhe,
+  then reicht die Öffnung höchstens bis zur Wandhöhe; given Brüstung am
+  Grenzwert, then akzeptiert, außerhalb geklemmt + Hinweis.
+
+#### LH-FA-WIN-005 — Wandöffnung automatisch erzeugen
+
+**Akzeptanzkriterien:** wie LH-FA-DOR-004, für ein Fenster — die
+Öffnung wird automatisch erzeugt, beginnt oberhalb der Brüstung
+(LH-FA-WIN-004) und reicht über die Fensterhöhe; bei entferntem Fenster
+ist die Wand wieder geschlossen.
 
 ### Modul Treppen (`STR`)
 
@@ -418,3 +520,4 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 | 0.1.0 | 2026-06-08 | Initiale Outline-Fassung aus Domänen-Vorlage; ID-Schema `LH-FA-<BEREICH>-<NNN>` etabliert | Greenfield-Bootstrap (Kurs-Modul 2) |
 | 0.1.1 | 2026-06-11 | LH-FA-D3-002 von Outline auf AK-Niveau geschärft (Reifephase-Klausel §1/§4); lösungsfreie, benutzer-beobachtbare Formulierung; irreführender Querverweis „vgl. LH-QA-001" entfernt | slice-010a |
 | 0.1.2 | 2026-06-12 | LH-FA-WAL-006 Teilumfang „Eckenschluss endpunkt-verbundener Wände" von Outline auf AK-Niveau geschärft (Vollumfang bleibt offen); Auslöser: ACC-002-Abnahme-Befund | slice-012 |
+| 0.1.3 | 2026-06-13 | Module Türen (LH-FA-DOR-001..004) und Fenster (LH-FA-WIN-001..005) von Outline auf AK-Niveau geschärft (wand-gehostete Bauteile mit automatischer Wandöffnung, Brüstungshöhe; Breiten-/Höhen-/Brüstungs-Bereiche); lösungsfrei/benutzer-beobachtbar | slice-013a (welle-2-bauteile) |

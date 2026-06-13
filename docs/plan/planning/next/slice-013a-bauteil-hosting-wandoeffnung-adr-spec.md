@@ -1,17 +1,17 @@
 ---
 id: slice-013a
 titel: Bauteil-Hosting & Wandöffnungs-Modell — ADR + AK-Schärfung DOR/WIN
-status: next
+status: done
 welle: welle-2-bauteile
 lastenheft_refs: [LH-FA-DOR-001, LH-FA-DOR-002, LH-FA-DOR-003, LH-FA-DOR-004, LH-FA-WIN-001, LH-FA-WIN-002, LH-FA-WIN-003, LH-FA-WIN-004, LH-FA-WIN-005]
-adr_refs: [ADR-0001, ADR-0002, ADR-0006, ADR-0007, ADR-0008]  # ADR-0011 (Bauteil-Hosting/Öffnung) entsteht in diesem Slice
+adr_refs: [ADR-0001, ADR-0002, ADR-0006, ADR-0007, ADR-0008, ADR-0011]  # ADR-0011 (Bauteil-Hosting/Öffnung) in diesem Slice entstanden + accepted
 ---
 
 # Slice 013a: Bauteil-Hosting & Wandöffnungs-Modell — ADR + AK-Schärfung DOR/WIN
 
-**Status:** next (Plan geschrieben; **MR-006-Plan-Review gelaufen
-2026-06-13 — keine HIGH, 3 MED + 3 LOW eingearbeitet**;
-implementierungsbereit).
+**Status:** done (2026-06-13). MR-006-Plan-Review gelaufen (keine HIGH,
+3 MED + 3 LOW eingearbeitet); ADR-0011 accepted nach unabhängigem
+Text-Review; DoD vollständig (Closure-Notiz §8).
 
 **Welle:** welle-2-bauteile (erste Slice der Welle).
 
@@ -60,7 +60,7 @@ Bauteil-Erweiterungs-Muster für die Welle.
 
 ## 2. Definition of Done
 
-- [ ] **Lastenheft LH-FA-DOR-001..004 + LH-FA-WIN-001..005 geschärft**
+- [x] **Lastenheft LH-FA-DOR-001..004 + LH-FA-WIN-001..005 geschärft**
       (Outline → AK-Niveau, Reifephase-Klausel; **lösungsfrei und
       benutzer-beobachtbar** — keine Lösungsmechanik im Lastenheft-Text;
       die gehört in DoD-2/ADR-0011 und DoD-3/Spec, sonst würde die
@@ -80,7 +80,7 @@ Bauteil-Erweiterungs-Muster für die Welle.
       Öffnungen** in derselben Wand → definiertes Verhalten (Wortlaut
       lösungsfrei). Negative: Tür/Fenster **ohne Wirtswand** →
       abgelehnt, kein verwaistes Bauteil. + Historie-Zeile.
-- [ ] **ADR-0011 „Bauteil-Hosting & Wandöffnungs-Modell" accepted**
+- [x] **ADR-0011 „Bauteil-Hosting & Wandöffnungs-Modell" accepted**
       (MADR-Form, Optionen mit Trade-offs). Entscheidungs-Pflichten:
       (a) **Domänen-Repräsentation** wand-gehosteter Bauteile: Opening
           als Kind/Teil der Wand vs. eigenständiges `model`-Element mit
@@ -126,7 +126,7 @@ Bauteil-Erweiterungs-Muster für die Welle.
           **nummerierten Integrations-Schritt-Liste**, am
           Tür/Fenster-Fall belegt.
       ADR-Index aktualisiert (Zeile + ggf. Folgepflicht slice-013b).
-- [ ] **`spec/spezifikation.md` §1 präzisiert** (Öffnungs-Block):
+- [x] **`spec/spezifikation.md` §1 präzisiert** (Öffnungs-Block):
       **hier — nicht im Lastenheft —** leben Öffnungs-Algorithmus
       (boolesche Subtraktion, Öffnungs-Quader aus Position + Breite +
       Höhe + Brüstung/Anschlag), Wertebereiche/Default-Klemmung,
@@ -138,7 +138,7 @@ Bauteil-Erweiterungs-Muster für die Welle.
       Schema-Schärfung beschließt — zusätzlich `make schema-check` grün**
       (separater Lauf, **nicht** in `gates`, d-migrate aus dem Gate-Pfad,
       MR-007/M3). Closure-Notiz mit Lerneintrag.
-- [ ] **Reine Doku/Entscheidung — kein Code, keine Tests** in diesem
+- [x] **Reine Doku/Entscheidung — kein Code, keine Tests** in diesem
       Slice (Präzedenz 009a/010a). Die AK-Tests + Implementierung sind
       slice-013b. **Nicht Teil dieser DoD:** die Welle-Closure
       `welle-2-bauteile`.
@@ -231,4 +231,66 @@ Bauteil-Erweiterungs-Muster für die Welle.
 - **Phase-Reife:** Phase 4.
 - **Evidenz-/Diskrepanz-Risiko:** niedrig.
 - **Reconciliation-Aufwand:** keiner (GF).
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar):**
+
+- **ADR-0011 „Bauteil-Hosting & Wandöffnungs-Modell" `Accepted`**
+  (2026-06-13), alle sechs Entscheidungs-Pflichten (a)–(f) getroffen:
+  (a) Öffnung als eigenständiges Domänen-Element mit `wall_id`-Referenz;
+  (b) Kern liefert Schnitt-Prismen (Polygon + z-Bereich),
+  `GeometryKernelPort` extrudiert + subtrahiert (OCC-Boolean ADR-0002),
+  Port-Signatur = ADR-0001-Kern-Hoheit; (c)/(d) total + transaktional,
+  `E-GEO-002` bei Fehlschlag; (e) Folge-Meldung `WallGeometryChanged`
+  der Wirtswand (kein neuer `op`); Raumerkennung/Footprint unberührt;
+  (f) Bauteil-Erweiterungs-Muster mit nummerierter Integrations-
+  Schritt-Liste als welle-2-Leitplanke. ADR-Index-Zeile +
+  Folgepflicht-Zeile (slice-013b) nachgezogen.
+- **Unabhängiger ADR-Text-Review vor Accept** (Reviewer ≠ Autor):
+  keine HIGH/MEDIUM; die umgebungsabhängigen Behauptungen
+  (Schema-Felder `openings/doors/windows`, ADR-0002-Boolean-Reservierung,
+  `WallGeometryChanged`-Vokabular) gegen die kanonischen Quellen belegt
+  — Adressierung des slice-011b-Lerneintrags („umgebungsabhängige
+  Mechanik-Details vor Accept belegen").
+- **Lastenheft 0.1.3:** LH-FA-DOR-001..004 + LH-FA-WIN-001..005 von
+  Outline auf AK-Niveau (Happy/Boundary/Negative, lösungsfrei,
+  benutzer-beobachtbar; keine Mechanik im Text — MR-001 gewahrt) +
+  §9-Historie.
+- **`spec/spezifikation.md` §1 LH-FA-DOR-004.a/WIN-005.a** (Öffnung als
+  Schnitt-Prismen, boolesche Subtraktion, Klemmung/Ablehnung über
+  bestehende `E-VAL-001`/`E-GEO-002`, `WallGeometryChanged` der
+  Wirtswand) + **§3 Tür-/Fenster-/Brüstungs-Wertebereiche** (deckungs-
+  gleich mit dem Lastenheft) + §8-Historie. `spec/architecture.md`
+  `GeometryKernelPort`-Zeile auf Schnitt-Prismen-Subtraktion präzisiert.
+- **Keine Schema-Schärfung** nötig — `data-model.yaml`/`schema.sql`
+  tragen openings/doors/windows bereits (ADR-0006); daher **kein**
+  `make schema-check`-Lauf im Strang (DoD-3-Bedingung „falls (d)
+  schärft" trat nicht ein).
+- **Reine Doku/Entscheidung — kein Code, keine Tests** (wie geplant);
+  `make gates` grün (docs-check über alle geänderten Artefakte,
+  gate-consistency, arch-check A–E, lint, Tests, Coverage unverändert).
+
+**Lerneintrag:**
+
+- **Schema war der Welle voraus:** `data-model.yaml`/`schema.sql`
+  modellierten openings/doors/windows (sowie roofs/slabs/stairs) bereits
+  beim ADR-0006-Entwurf vollständig — die Öffnungs-ADR brauchte **keine**
+  Schema-Schärfung. Frühzeitige, vollständige Schema-Modellierung
+  (ADR-0006) zahlt sich beim Bauteil-Ausbau aus; Kandidat: *Datenmodell
+  vorausschauend für die Roadmap-Bauteile anlegen* (1× kategorisiert).
+- **ADR-Text-Review vor Accept fing keinen HIGH — aber bestätigte die
+  Praxis:** Der slice-011b-Lerneintrag („umgebungsabhängige
+  Mechanik-Details vor Accept belegen") wurde hier prophylaktisch
+  angewandt; der Review verifizierte die drei harten Quellen-Behauptungen
+  statt sie zu glauben. 2. Vorkommen der Praxis — Richtung Regel.
+
+**Restrisiko / Nachfolge:** **slice-013b** (Implementierung Türen +
+Fenster: Domänen-Werttypen, `EditStructurePort`-Operationen,
+`GeometryKernelPort`-Schnitt-Prismen + OCC-Cut, `WallGeometryChanged`,
+`ViewerScene`-Folgen, Persistenz-Abbildung, AK-Tests mit
+`LH-FA-DOR-*`/`LH-FA-WIN-*`) wird startbar — MR-006-Plan-Review davor.
+Die Bauteil-Leitplanke (ADR-0011 #6) gilt ab jetzt für ROF/SLB/FND/STR.
+Offen (bewusst): eigenes Tür-Blatt/Fenster-Rahmen-Solid und
+2D-Öffnungs-Darstellung (ADR-0011 Re-Eval-Trigger).
 </content>

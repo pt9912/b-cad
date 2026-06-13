@@ -106,6 +106,52 @@ Solids extrudiert; Wandöffnungen für Türen/Fenster (LH-FA-DOR-004,
 LH-FA-WIN-005) als boolesche Subtraktion. Parameteränderung triggert
 inkrementellen Rebuild des betroffenen Solids (Echtzeit, LH-FA-D3-002).
 
+### LH-FA-DOR-004.a / LH-FA-WIN-005.a — Wandöffnung (Schnitt-Prismen)
+
+Präzisiert die automatische Wandöffnung für Türen (LH-FA-DOR-*) und
+Fenster (LH-FA-WIN-*); Modell-Entscheidung in ADR-0011.
+
+**Hosting & Position.** Eine Öffnung ist ein **eigenständiges
+Domänen-Element** mit Referenz auf ihre Wirtswand (`wall_id`). Ihre Lage
+entlang der Wandachse ist `offset_mm` = Abstand vom **Wand-Startpunkt**
+entlang der Wand-Mittellinie bis zur **Nahkante** der Öffnung; die
+Öffnung belegt den Achsenbereich `[offset, offset + width]`. Vertikal
+belegt sie `[sill, sill + height]` über der Geschoss-Standfläche
+(`sill = 0` für Türen, LH-FA-WIN-004 für Fenster). Quer durchsetzt sie
+die **volle Wandstärke**.
+
+**Schnitt-Prisma (Kern-Hoheit).** Der Kern berechnet je Öffnung ein
+**Schnitt-Prisma** als reine Werte (Polygon + z-Bereich, dieselbe
+Werte-Sprache wie das Footprint-Polygon, LH-FA-WAL-006.a): ein Rechteck
+quer zur Wand an der Öffnungs-Position, das die Wandstärke voll (mit
+geringem Überstand ≥ `GEOMETRY_TOLERANCE_MM` je Seite für einen
+sauberen Schnitt) durchsetzt, extrudiert über `[sill, sill + height]`.
+Der `GeometryKernelPort` extrudiert das Wand-Footprint-Polygon und
+**subtrahiert die Schnitt-Prismen** (OCC-Boolean, ADR-0002) → Netto-
+Wand-Solid; der Adapter kennt keine Öffnungs-Semantik (ADR-0011).
+
+**Klemmung (LH-FA-WAL-002.a, `E-VAL-001`).** Breite/Höhe/Brüstung werden
+gegen §3 geklemmt; reicht `sill + height` über die Wandhöhe, wird die
+Öffnungs-Oberkante auf die Wandhöhe geklemmt. Die Position wird so
+begrenzt, dass `[offset, offset + width]` vollständig in der Wandlänge
+liegt; passt selbst die Mindestbreite (§3) nicht in die Wirtswand oder
+fehlt eine Wirtswand, wird die Platzierung **abgelehnt** (`E-VAL-001`,
+kein Durchbruch außerhalb der Wand, keine verwaiste Öffnung).
+
+**Totalität & Transaktion.** Das Netto-Solid entsteht **vor dem
+Commit**; eine fehlgeschlagene/degenerierte Subtraktion meldet
+`E-GEO-002` (§4), das Modell bleibt unverändert und es ergeht keine
+Meldung (Muster slice-012).
+
+**Folge-Meldung.** Eine Öffnungs-Mutation (anlegen/verschieben/Parameter/
+löschen) meldet `op = WallGeometryChanged` für die **Wirtswand**
+(§5-Vokabular, kein neuer `op`) — die Öffnung ist ein Hohlraum im
+Wand-Solid, kein eigenes Solid (welle-2). Es findet **keine
+Raum-Re-Detektion** statt: eine Öffnung ändert weder Wandachse noch
+Wandstärke, daher bleiben Raumerkennung (ADR-0007) und Footprint/
+Eckenschluss (LH-FA-WAL-006.a) unberührt; die ROM- und WAL-006-AK-Tests
+bleiben textlich unverändert grün. Abgelehnte Mutationen melden nicht.
+
 ### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
 
 Präzisiert LH-FA-D3-002; Mechanik-Entscheidung in ADR-0008.
@@ -229,6 +275,16 @@ im Schema (nur Undo) — eigener Slice.
 | `DEFAULT_STOREY_HEIGHT_MM` | 2500 | Default-Geschosshöhe bei Projekt/Geschoss-Anlage | LH-FA-BLD-001, LH-FA-FLR-004 |
 | `GEOMETRY_TOLERANCE_MM` | 0.1 | Toleranz für Punkt-Gleichheit / Wandverbindung | LH-FA-WAL-006, LH-FA-ROM-001 |
 | `WALL_MITER_LIMIT` | max(Stärke_A, Stärke_B) | Eckenschluss-Begrenzung: maximales Auskragen der Eck-Geometrie über den gemeinsamen Endpunkt; darüber stumpfes Ende (Formel, keine feste Zahl) | LH-FA-WAL-006 |
+| `DOOR_WIDTH_MIN_MM` | 600 | Untergrenze Türbreite | LH-FA-DOR-003 |
+| `DOOR_WIDTH_MAX_MM` | 2000 | Obergrenze Türbreite | LH-FA-DOR-003 |
+| `DOOR_HEIGHT_MIN_MM` | 1800 | Untergrenze Türhöhe | LH-FA-DOR-003 |
+| `DOOR_HEIGHT_MAX_MM` | 2500 | Obergrenze Türhöhe | LH-FA-DOR-003 |
+| `WINDOW_WIDTH_MIN_MM` | 300 | Untergrenze Fensterbreite | LH-FA-WIN-003 |
+| `WINDOW_WIDTH_MAX_MM` | 3000 | Obergrenze Fensterbreite | LH-FA-WIN-003 |
+| `WINDOW_HEIGHT_MIN_MM` | 300 | Untergrenze Fensterhöhe | LH-FA-WIN-003 |
+| `WINDOW_HEIGHT_MAX_MM` | 2500 | Obergrenze Fensterhöhe | LH-FA-WIN-003 |
+| `WINDOW_SILL_MIN_MM` | 0 | Untergrenze Brüstungshöhe | LH-FA-WIN-004 |
+| `WINDOW_SILL_MAX_MM` | 2000 | Obergrenze Brüstungshöhe | LH-FA-WIN-004 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
 | `UNDO_DEPTH_MIN` | 1000 | Mindesttiefe Undo/Redo | LH-QA-003 |
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
@@ -303,6 +359,7 @@ nicht im Bootstrap.
 | 2026-06-11 | §1 ROM-001.a präzisiert (Welle-1-Code-Review M1/M2): minimale Zyklen via Flächen-Traversierung — geteilte Knoten (Grad ≥ 3) abgedeckt, Stichkanten ignoriert; Näherung für kollineare Nachbarkanten ungleicher Stärke dokumentiert | ADR-0007 |
 | 2026-06-12 | §1 D3-002.a ergänzt: welle-1v-Operationalisierung „sichtbar" (Qt-Widgets-Fenster, Tessellation über `ViewModelPort`, Szenen-Surrogat, ACC-002-Beleg als manueller Abnahme-Schritt) | ADR-0009 |
 | 2026-06-12 | §1 LH-FA-WAL-006.a neu (Eckenschluss-Footprint-Regel, Footprint-Hoheit im Kern, Begrenzung/Rückfälle, EVL-Hinweis Shoelace) + D3-002.a-Mehr-Element-Update (`WallGeometryChanged`, Reihenfolge, Transaktions-Satz) + §3 `WALL_MITER_LIMIT`; zwei WAL-006-Verweise auf Vollumfang präzisiert | slice-012 (Lastenheft 0.1.2) |
+| 2026-06-13 | §1 LH-FA-DOR-004.a/WIN-005.a neu (Wandöffnung als Schnitt-Prismen im Kern, boolesche Subtraktion über `GeometryKernelPort`, Klemmung/Ablehnung, Totalität/Transaktion, `WallGeometryChanged` der Wirtswand, Raumerkennung/Footprint unberührt) + §3 Tür-/Fenster-/Brüstungs-Wertebereiche | ADR-0011 (slice-013a) |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

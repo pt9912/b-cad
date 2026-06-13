@@ -34,8 +34,9 @@ mit MR-006-Plan-Review, erster Slice steht):
   accepted (Hosting, Öffnungs-Boolean, Notification, Persistenz +
   verallgemeinertes Bauteil-Erweiterungs-Muster als Welle-Leitplanke) +
   Lastenheft DOR/WIN von Outline auf AK geschärft + Spec-Algorithmus.
-  Erster Slice der Welle (in `next/`; MR-006-Plan-Review gelaufen
-  2026-06-13 — keine HIGH, implementierungsbereit).
+  **done 2026-06-13** (in `done/`; ADR-0011 accepted nach unabhängigem
+  Text-Review, `make gates` grün) → slice-013b (Türen/Fenster
+  implementieren) startbar.
 - **Türen + Fenster** (LH-FA-DOR-001..004, LH-FA-WIN-001..005)
   implementiert: platzieren/verschieben/Parameter, automatische
   Wandöffnung sichtbar; AK-Tests mit `LH-`-ID, Viewer folgt,
