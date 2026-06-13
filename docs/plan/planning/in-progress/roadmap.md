@@ -11,18 +11,47 @@ Feature-Sequenz, kein Reconciliation-Plan.
 
 ## Aktuelle Welle
 
-**Keine aktive Welle.** welle-1v-viewer ist abgeschlossen
-(Closure 2026-06-13, [`../done/welle-1v-results.md`](../done/welle-1v-results.md));
-**ACC-002 erfüllt**. Der Start der nächsten Welle ist eine
-Planungs-Entscheidung, kein Automatismus (Präzedenz welle-1 → -1v).
-Kandidaten siehe §Nächste Wellen: `welle-2-bauteile` (Meilenstein M2)
-oder Zwischenschritt slice-006 (Drittanbieter-Attribution, in `open/`).
+**Welle-ID:** welle-2-bauteile
+**Start:** 2026-06-13 (bewusste Planungs-Entscheidung nach
+welle-1v-Closure, [`../done/welle-1v-results.md`](../done/welle-1v-results.md))
+**Geplantes Ende:** offen (Aufwands-Schätzung L)
+
+**Welle-Ziel:** Alle parametrischen Bauteile über die Wände hinaus —
+**Türen + Fenster** (mit automatischer Wandöffnung), **Treppen**,
+**Dach**, **Decken**, **Fundament**. Jedes Modul wird vom Lastenheft-
+Outline auf AK-Niveau geschärft (Reifephase-Klausel), spezifiziert,
+hinter den bestehenden Ports (`EditStructurePort`/`GeometryKernelPort`)
+implementiert, folgt im Viewer (ADR-0008/0009-Vertrag) und persistiert
+(ADR-0006-Schema). Erfüllt **Meilenstein M2** und die Bauteil-Hälfte von
+**ACC-001** (Türen/Fenster/Dach) sowie STR/SLB/FND darüber hinaus.
+Scope-Entscheidung 2026-06-13: **alle Bauteil-Module** in einer Welle
+(thematisch geschlossen); das Welle-Sizing wird über kleine, einzeln
+MR-006-plan-reviewte Slices gehalten, nicht über Welle-Verkleinerung.
+
+**Closure-Trigger** (deliverable-granular; konkrete Slices emergieren
+mit MR-006-Plan-Review, erster Slice steht):
+- **slice-013a done** — ADR-0011 „Bauteil-Hosting & Wandöffnungs-Modell"
+  accepted (Hosting, Öffnungs-Boolean, Notification, Persistenz +
+  verallgemeinertes Bauteil-Erweiterungs-Muster als Welle-Leitplanke) +
+  Lastenheft DOR/WIN von Outline auf AK geschärft + Spec-Algorithmus.
+  Erster Slice der Welle (in `next/`, MR-006-Review ausstehend).
+- **Türen + Fenster** (LH-FA-DOR-001..004, LH-FA-WIN-001..005)
+  implementiert: platzieren/verschieben/Parameter, automatische
+  Wandöffnung sichtbar; AK-Tests mit `LH-`-ID, Viewer folgt,
+  persistiert. (slice-013b.)
+- **Dach** (LH-FA-ROF-001..005): Sattel-/Walm-/Pultdach, Neigung,
+  Überstand — geschärft + implementiert.
+- **Decken + Fundament** (LH-FA-SLB-001..003, LH-FA-FND-001..003):
+  Platten-Solids mit Ausschnitten — geschärft + implementiert.
+- **Treppen** (LH-FA-STR-001..004) inkl. Geländer — geschärft +
+  implementiert.
+- Unabhängige Welle-Verifikation (analog welle-1/-1v) + Closure-Notiz in
+  `done/welle-2-results.md` inkl. zwingendem Carveout-Audit.
 
 ## Nächste Wellen
 
 | Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
 |---|---|---|---|
-| welle-2-bauteile | welle-1 done | Türen/Fenster mit Wandöffnung (`DOR`,`WIN`), Treppen (`STR`), Decken/Dach (`SLB`,`ROF`) | L |
 | welle-3-auswertung | welle-2 done | Material (`MAT`), Auswertungen (`EVL`), Bemaßung/Layer (`DRW`) | M |
 | welle-4-austausch | welle-3 done + ADR zu IFC-Bibliothek accepted | IFC/DXF/STEP/STL-Adapter (`IO`), PDF/PNG-Export | L |
 | welle-5-erweiterung | welle-4 done | Plugin-System (`PLG`), UI-Themes/Docking (`UI`), Mehrsprachigkeit (`LH-QA-006`) | M |
@@ -43,7 +72,7 @@ oder Zwischenschritt slice-006 (Drittanbieter-Attribution, in `open/`).
 flowchart LR
     W1[welle-1-mvp<br/>done 2026-06-12]
     W1V[welle-1v-viewer<br/>done 2026-06-13]
-    W2[welle-2-bauteile]
+    W2[welle-2-bauteile<br/>aktiv]
     W3[welle-3-auswertung]
     W4[welle-4-austausch]
     W5[welle-5-erweiterung]
