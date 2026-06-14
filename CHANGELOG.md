@@ -186,6 +186,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Adapter (Reuse der rise-Formel statt Duplikat). Kein Schema-Wechsel.
   **Treppen-Familie (016a/b/c) komplett → welle-2 closure-reif.** MR-006: keine
   HIGH (2 MED eingearbeitet). make gates grün (114 Tests).
+- **Welle-2-bauteile abgeschlossen** (Closure 2026-06-14): alle parametrischen
+  Bauteile über die Wände hinaus — Türen/Fenster (automatische Wandöffnung),
+  Dach (Sattel/Walm/Pult), Decken/Fundament (Platten + Ausschnitte), Treppen
+  (gerade einläufig) — je Familie Lastenheft-AK-Schärfung + Implementierung
+  (Domäne/Geometrie/Viewer/Edit-Ops) + Persistenz; **12 Slices** (013–016) in
+  `done/`, getragen von der **ADR-0011-(#6)-Leitplanke** ohne neuen Grundsatz-ADR
+  je Bauteil. **Meilenstein M2 erreicht** + ACC-001-Bauteil-Hälfte. Unabhängige
+  Welle-Verifikation (keine HIGH; 1 MED Frontmatter-Status + 1 LOW DoD-Checkboxen
+  behoben) + Carveout-Audit (keine aktiven); geometrielastige Code-Reviews je
+  Familie (013b/014b/015b je 1 HIGH gefixt, 016b keine HIGH — Test-Orakel
+  gehärtet). `make gates` grün am HEAD (116/116, Coverage 92,3 %). Ergebnisnotiz:
+  `welle-2-results.md`.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

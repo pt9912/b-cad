@@ -1,7 +1,7 @@
 ---
 id: slice-016b
 titel: Treppen implementieren — gerade einläufige Treppe (analytisches Stufen-Polyeder + Geländer)
-status: in-progress
+status: done
 welle: welle-2-bauteile
 lastenheft_refs: [LH-FA-STR-001, LH-FA-STR-002, LH-FA-STR-003, LH-FA-STR-004]
 adr_refs: [ADR-0001, ADR-0008, ADR-0009, ADR-0011]
@@ -126,7 +126,7 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei und **OCC-frei**
       `RoomsChanged`; Szene folgt idempotent); **Regression** (Wand-/Dach-/
       Platten-/ROM-/D3-Tests textlich unverändert grün — additiv, **keine**
       Port-Signatur-Migration).
-- [ ] arch-check A–E grün (Regel A: Kern OCC-/Qt-frei; Regel E: Qt nur im
+- [x] arch-check A–E grün (Regel A: Kern OCC-/Qt-frei; Regel E: Qt nur im
       Viewer); `make gates` grün; Closure-Notiz mit Lerneintrag; CHANGELOG
       (MR-004). **Nicht Teil:** Persistenz (`stairs`-Round-Trip → slice-016c);
       Material/Bewehrung; Podest-/U-/L-/Wendeltreppe; freie Rotation (Schema

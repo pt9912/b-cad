@@ -113,7 +113,7 @@ die Dach-Geometrie ist ein **analytisches Polyeder** (kein OCC-Boolean/
       abgelehnt); **Folge-Meldung** (`RoofChanged`, kein `RoomsChanged`;
       Szene folgt, idempotent); **Regression** (Wand-/ROM-/D3-Tests
       textlich unverändert grün — der Dach-Pfad ist additiv).
-- [ ] arch-check A–E grün; `make gates` grün; Closure-Notiz mit
+- [x] arch-check A–E grün; `make gates` grün; Closure-Notiz mit
       Lerneintrag; CHANGELOG (MR-004). **Nicht Teil dieser DoD:**
       Persistenz (`roofs`-Round-Trip → slice-014c); Walm über allgemeine
       Polygone (Vollumfang spätere Welle); Material/Dachdeckung.

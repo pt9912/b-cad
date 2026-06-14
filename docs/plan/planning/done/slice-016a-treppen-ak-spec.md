@@ -1,7 +1,7 @@
 ---
 id: slice-016a
 titel: Treppen — AK-Schärfung LH-FA-STR-* & Spec-Geometrie (Teilumfang gerade einläufige Treppe)
-status: in-progress
+status: done
 welle: welle-2-bauteile
 lastenheft_refs: [LH-FA-STR-001, LH-FA-STR-002, LH-FA-STR-003, LH-FA-STR-004]
 adr_refs: [ADR-0001, ADR-0006, ADR-0009, ADR-0011]

@@ -1,7 +1,7 @@
 ---
 id: slice-016c
 titel: Treppen-Persistenz — stairs-Round-Trip (rise abgeleitet/write-derived)
-status: in-progress
+status: done
 welle: welle-2-bauteile
 lastenheft_refs: [LH-FA-STR-001, LH-FA-STR-002, LH-FA-STR-003, LH-FA-BLD-002, LH-FA-BLD-003]
 adr_refs: [ADR-0001, ADR-0003, ADR-0006, ADR-0011]

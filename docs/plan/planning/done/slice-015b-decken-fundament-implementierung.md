@@ -113,7 +113,7 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei (ADR-0001).
       (`SlabChanged`, kein `RoomsChanged`; Szene folgt idempotent);
       **Regression** (Wand-/Dach-/ROM-/D3-Tests textlich unverändert grün —
       additiv, **keine** Port-Signatur-Migration).
-- [ ] arch-check A–E grün; `make gates` grün; Closure-Notiz mit
+- [x] arch-check A–E grün; `make gates` grün; Closure-Notiz mit
       Lerneintrag; CHANGELOG (MR-004). **Nicht Teil:** Persistenz
       (`slabs`-Round-Trip → slice-015c); Material/Bewehrung; nicht-
       rechteckige Ausschnitte (falls §1 das einschränkt).
