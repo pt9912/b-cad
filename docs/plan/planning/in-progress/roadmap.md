@@ -54,6 +54,20 @@ MR-006-Plan-Review):
 - Unabhängige Welle-Verifikation (analog welle-1/-2) + Closure-Notiz in
   `done/welle-3-results.md` inkl. zwingendem Carveout-Audit.
 
+**Fortschritt (Stand 2026-06-14):**
+- ✓ **slice-017a** — Auswertungs-/Material-Architektur (**ADR-0012 „Evaluations-
+  Architektur" accepted**) + Lastenheft-EVL/MAT-Schärfung (0.1.7) + Spec
+  (`EvaluatePort` read-only/pull; Fläche = Shoelace-Raum-Netto/ADR-0007;
+  Netto-Volumen analytisch im Kern; Material = konsumierte Eingabe). **Erster
+  Closure-Trigger erfüllt.**
+- ✓ **slice-017b** — **`EvaluatePort` implementiert** + Flächen EVL-001/003
+  (Netto-Grundfläche je Raum/Geschoss + Wohnfläche), read-only-Aggregation der
+  `Room.net_area_mm2`. `model::AreaReport`, `kLivingAreaFactor=1`. 122 Tests grün.
+- ⏳ offen: **slice-017c** (EVL-002 **Volumen** — geometrie-schwer, **MR-009
+  greift**) · Listen EVL-004/005/006 · **Material-Strang** (`model::Material` +
+  Zuweisung + `material_id`-Round-Trip, die welle-2-`NULL`-Felder) ·
+  Welle-Verifikation + `done/welle-3-results.md`.
+
 ## Nächste Wellen
 
 | Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
