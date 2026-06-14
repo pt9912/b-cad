@@ -220,6 +220,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `LH-FA-EVL-001.a` + §2.1 `model::Material`/FK-Autorität + §3 `LIVING_AREA_FACTOR`.
   Reine Entscheidung/Spec (kein Code; MR-008 lösungsfrei; MR-010 Header). DRW →
   welle-5. make gates grün (116 Tests).
+- slice-017b — Auswertung Flächen: **`EvaluatePort` implementiert** (erste
+  Auswertungs-Implementierung, LH-FA-EVL-001/003, ADR-0012). `floorArea(StoreyId)`
+  (Netto-Grundfläche je Raum + Summe je Geschoss) und `livingArea()` (Wohnfläche
+  gebäudeweit) als **read-only-Aggregation** der bereits in der Raumerkennung
+  berechneten `Room.net_area_mm2` (ADR-0007), mm²→m²; reiner Ergebnis-Werttyp
+  `model::AreaReport` (Per-Raum + Summe), `kLivingAreaFactor=1` (spez. §3); `const`
+  ⇒ kein `op`, kein `GeometryKernelPort`, keine Mutation. Vom `StructureEditService`
+  getragen (hält `rooms_`). Unabhängiger MR-006-Plan-Review (keine HIGH; MED-1
+  Per-Raum-Flächen, MED-2 `make arch-check`-Wortlaut, LOW-1 read-only-stabil, LOW-2
+  Loch-Ring eingearbeitet). **MR-009 n/a** (reine Aggregation, keine neue
+  Geometrie — greift für EVL-002 Volumen/017c). make gates grün (122 Tests).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

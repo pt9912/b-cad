@@ -12,6 +12,7 @@
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/ports/driving/detect_rooms_port.h"
 #include "hexagon/ports/driving/edit_structure_port.h"
+#include "hexagon/ports/driving/evaluate_port.h"
 #include "hexagon/ports/driving/view_model_port.h"
 
 namespace bcad::hexagon::services {
@@ -29,7 +30,8 @@ namespace bcad::hexagon::services {
 // läuft erst NACH dem transaktionalen Commit der Mutation.
 class StructureEditService final : public ports::driving::EditStructurePort,
                                    public ports::driving::DetectRoomsPort,
-                                   public ports::driving::ViewModelPort {
+                                   public ports::driving::ViewModelPort,
+                                   public ports::driving::EvaluatePort {
 public:
     explicit StructureEditService(const ports::driven::GeometryKernelPort& geometry);
 
@@ -98,6 +100,12 @@ public:
 
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
+
+    // EvaluatePort (LH-FA-EVL-001/003, ADR-0012): read-only Flächen-Auswertung.
+    // Reine Aggregation der Raum-Netto-Flächen (Room.net_area_mm2, ADR-0007),
+    // mm² → m²; const ⇒ keine Re-Detektion, kein op, kein GeometryKernelPort.
+    model::AreaReport floorArea(model::StoreyId storey) const override;
+    model::AreaReport livingArea() const override;
 
     // ViewModelPort (LH-FA-D3-001, ADR-0009 (b)): tessellierter Stand für
     // die Darstellung — totale Queries (Tessellations-Fehler ⇒ leer),

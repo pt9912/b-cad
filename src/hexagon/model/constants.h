@@ -73,4 +73,9 @@ inline constexpr double kDefaultWindowWidthMm = 1200.0;   // LH-FA-WIN-001
 inline constexpr double kDefaultWindowHeightMm = 1300.0;  // LH-FA-WIN-001
 inline constexpr double kDefaultWindowSillMm = 900.0;     // LH-FA-WIN-001/004
 
+// Auswertung — Wohnflächen-Anrechnungsfaktor (LH-FA-EVL-003); spez. §3.
+// welle-3-Teilumfang: Wohnfläche = Netto-Grundfläche (Faktor 1); raum-/
+// nutzungsabhängige Anrechnung (DIN 277 / WoFlV) ist offen (spez. §1/§3).
+inline constexpr double kLivingAreaFactor = 1.0;  // LH-FA-EVL-003
+
 }  // namespace bcad::hexagon::model

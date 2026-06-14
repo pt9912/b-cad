@@ -251,6 +251,46 @@ std::vector<model::Room> StructureEditService::rooms(model::StoreyId storey) con
     return (it != rooms_.end()) ? it->second : std::vector<model::Room>{};
 }
 
+namespace {
+
+// mm² → m²: 1 m² = 1 000 000 mm² (LH-FA-EVL-001 „in m²").
+constexpr double kMm2PerM2 = 1.0e6;
+
+}  // namespace
+
+// EVL-001 (ADR-0012): Netto-Grundfläche je Raum des Geschosses + Summe (m²).
+// Reine Aggregation des zuletzt erkannten Stands (Pull, kein Re-Detect);
+// unbekanntes/raumloses Geschoss → leerer Report (total 0, kein Wurf).
+model::AreaReport StructureEditService::floorArea(model::StoreyId storey) const {
+    model::AreaReport report;
+    const auto it = rooms_.find(storey);
+    if (it == rooms_.end()) {
+        return report;
+    }
+    report.room_areas_m2.reserve(it->second.size());
+    for (const model::Room& room : it->second) {
+        const double area_m2 = room.net_area_mm2 / kMm2PerM2;
+        report.room_areas_m2.push_back(area_m2);
+        report.total_m2 += area_m2;
+    }
+    return report;
+}
+
+// EVL-003 (ADR-0012): Wohnfläche gebäudeweit = Σ Raum-Netto-Grundflächen ×
+// kLivingAreaFactor (welle-3 = 1). Leeres Modell → leerer Report.
+model::AreaReport StructureEditService::livingArea() const {
+    model::AreaReport report;
+    for (const auto& [storey, storey_rooms] : rooms_) {
+        for (const model::Room& room : storey_rooms) {
+            const double area_m2 =
+                (room.net_area_mm2 / kMm2PerM2) * model::kLivingAreaFactor;
+            report.room_areas_m2.push_back(area_m2);
+            report.total_m2 += area_m2;
+        }
+    }
+    return report;
+}
+
 std::vector<ports::driving::WallMesh> StructureEditService::wallMeshes() const {
     std::vector<ports::driving::WallMesh> meshes;
     meshes.reserve(building_.walls.size());
