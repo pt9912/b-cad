@@ -82,6 +82,9 @@ double stairRiseMm(const model::Stair& stair, double from_storey_height_mm) {
 }
 
 double stairRunLengthMm(const model::Stair& stair) {
+    if (stair.step_count < 1 || !std::isfinite(stair.tread_mm)) {
+        return 0.0;  // Totalitäts-Kontrakt wie stairMesh/stairRiseMm (M1)
+    }
     return stair.step_count * stair.tread_mm;
 }
 

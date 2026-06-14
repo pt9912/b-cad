@@ -16,6 +16,15 @@ LOW-1/2/3 eingearbeitet). Implementiert als **Zwei-Commit-Split** (i Domäne +
 `stair_geometry` + Kern-AK / ii Integration); DoD vollständig, `make gates` grün
 (112 Tests, Coverage 92,2 %). Closure-Notiz §8.
 
+**Code-Review danach** (Modul 11, unabhängig, geometrielastig vor Welle-Closure;
+[Report](../../../reviews/2026-06-14-slice-016b-code-review.md)) — **keine HIGH**:
+die Geometrie ist Zeichen für Zeichen korrekt (Normalen-Winding aller 6 Box-
+Flächen outward, rise-Exaktheit, Stufen-Bündigkeit, Geländer-Off-by-one). 3 MED
+eingearbeitet: M1 `stairRunLengthMm`-Totalitäts-Guard; M2 Test-Sonde gegen
+invertierte Normalen (Divergenzsatz); M3 Test-Sonde Stufen-Bündigkeit
+(`step_count+1` x-Kanten). **116 Tests**; Korrektheit jetzt durch die Tests
+abgesichert, nicht nur durch den Code.
+
 **Welle:** welle-2-bauteile (elfter Slice; zweiter der Treppen-Familie).
 
 **Bezug:** LH-FA-STR-001..004 (slice-016a, Lastenheft 0.1.6),

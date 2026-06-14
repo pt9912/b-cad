@@ -166,7 +166,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   abgeleitet/z-Span/Stufenanzahl/Laufbreite/Geländer-Doppelsonde/Totalität;
   Szene: folgt+verbindet+idempotent, Klemmung/Spanne/Meldung). Zwei-Commit-Split
   i/ii. Persistenz folgt in slice-016c. make gates grün (112 Tests, Coverage
-  92,2 %).
+  92,2 %). **Unabhängiges geometrielastiges Code-Review danach** (Modul 11, vor
+  Welle-Closure; keine HIGH — Normalen-Winding/rise-Exaktheit/Stufen-Bündigkeit/
+  Geländer korrekt): 3 MED gefixt — `stairRunLengthMm`-Totalitäts-Guard +
+  zwei Test-Sonden (invertierte Normalen via Divergenzsatz, Stufen-Bündigkeit),
+  116 Tests.
 - slice-016c — Treppen-Persistenz (LH-FA-STR-001..003, LH-FA-BLD-002/003,
   ADR-0011/0006): `SqliteProjectRepository` speichert/lädt Treppen über die
   `stairs`-Tabelle (from/to_storey, stair_type, start_x/y, width, step_count,

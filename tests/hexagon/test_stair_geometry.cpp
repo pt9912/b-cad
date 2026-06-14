@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <set>
 
 #include "hexagon/model/constants.h"
 #include "hexagon/model/stair.h"
@@ -165,6 +166,52 @@ TEST(StairGeometry_LH_FA_STR_001, NegativeDegeneriertLeeresNetz) {
     EXPECT_TRUE(stairMesh(nan_start, kStoreyHeight).empty());
 
     EXPECT_DOUBLE_EQ(stairRiseMm(zero_steps, kStoreyHeight), 0.0);  // Div-Schutz
+}
+
+// LH-FA-STR-001 (Code-Review M2): das Netz ist ein geschlossener, konsistent
+// orientierter Körper — die Summe der flächengewichteten Außennormalen
+// (∑ ½·(b−a)×(c−a) je Dreieck) verschwindet (Divergenzsatz; jeder geschlossene
+// Quader summiert zu 0). Fängt eine **invertierte** Box-Fläche (014b-Defekt-
+// klasse), die Bounding-Box-/Vertex-Sonden NICHT sehen.
+TEST(StairGeometry_LH_FA_STR_001, NetzGeschlossenUndKonsistentOrientiert) {
+    const model::TriangleMesh mesh = stairMesh(sampleStair(), kStoreyHeight);
+    ASSERT_FALSE(mesh.empty());
+    double sx = 0.0;
+    double sy = 0.0;
+    double sz = 0.0;
+    for (std::size_t i = 0; i + 2 < mesh.indices.size(); i += 3) {
+        const auto pos = [&](int tri_offset, std::size_t axis) {
+            return mesh.positions[(static_cast<std::size_t>(
+                                       mesh.indices[i + tri_offset]) *
+                                   3) +
+                                  axis];
+        };
+        const double abx = pos(1, 0) - pos(0, 0);
+        const double aby = pos(1, 1) - pos(0, 1);
+        const double abz = pos(1, 2) - pos(0, 2);
+        const double acx = pos(2, 0) - pos(0, 0);
+        const double acy = pos(2, 1) - pos(0, 1);
+        const double acz = pos(2, 2) - pos(0, 2);
+        sx += 0.5 * ((aby * acz) - (abz * acy));
+        sy += 0.5 * ((abz * acx) - (abx * acz));
+        sz += 0.5 * ((abx * acy) - (aby * acx));
+    }
+    // ≈ 0 mm²; eine invertierte Fläche läge bei ~Flächeninhalt (≫ 1).
+    EXPECT_LT(std::sqrt((sx * sx) + (sy * sy) + (sz * sz)), 1.0);
+}
+
+// LH-FA-STR-002 (Code-Review M3): alle `step_count` Stufen sind vorhanden und
+// **bündig** — die distinkten x-Stufenkanten sind genau `step_count + 1` (kein
+// Spalt, keine fehlende/zusätzliche Stufe). Bounding-Box-/Dreiecks-Anzahl-
+// Sonden sehen das nicht.
+TEST(StairGeometry_LH_FA_STR_002, StufenBuendigKeineLuecke) {
+    const model::Stair stair = sampleStair();  // step_count=15, tread=280, x=0
+    const model::TriangleMesh mesh = stairMesh(stair, kStoreyHeight);
+    std::set<long long> x_edges;
+    for (std::size_t v = 0; v < mesh.positions.size(); v += 3) {
+        x_edges.insert(std::llround(mesh.positions[v] * 1000.0));  // µm-Raster
+    }
+    EXPECT_EQ(static_cast<int>(x_edges.size()), stair.step_count + 1);
 }
 
 }  // namespace
