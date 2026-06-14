@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.2
+**Version:** 0.1.6
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -321,10 +321,68 @@ ist die Wand wieder geschlossen.
 
 ### Modul Treppen (`STR`)
 
-- **LH-FA-STR-001 — Treppe erzeugen.**
-- **LH-FA-STR-002 — Stufenanzahl definieren.**
-- **LH-FA-STR-003 — Laufbreite definieren.**
-- **LH-FA-STR-004 — Treppengeländer erzeugen.**
+Geschärft 2026-06-14 (slice-016a) von Outline auf AK-Niveau
+(Reifephase-Klausel). **Teilumfang welle-2: gerade einläufige Treppe** —
+eine gerade Treppe, die zwei Geschosse verbindet. Podest-, U-/L-förmige
+und Wendeltreppen bleiben ausdrücklich **offen** (späterer Vollumfang).
+b-cad ist **keine Statik** (§6): Stufen-/Breiten-Bereiche sind
+parametrische Komfort-Vorgaben, keine erzwungene Baurecht-Prüfung.
+
+#### LH-FA-STR-001 — Treppe erzeugen
+
+**Beschreibung:** Eine gerade Treppe verbindet ein unteres mit einem
+oberen Geschoss; sie steigt vom Startpunkt als Stufenfolge auf.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given zwei übereinanderliegende Geschosse, when eine
+  gerade Treppe an einer Position erzeugt wird, then zeigt die
+  3D-Darstellung eine Stufenfolge, die von der unteren zur oberen
+  Geschossebene aufsteigt.
+- **Boundary:** Stufenanzahl/Laufbreite am Grenzwert akzeptiert (Bereiche
+  siehe LH-FA-STR-002/003).
+- **Negative:** Given keine gültige Zwei-Geschoss-Spanne (nur ein
+  Geschoss, oder Start- = Zielgeschoss), then entsteht keine Treppe; kein
+  Fehler/Absturz.
+
+#### LH-FA-STR-002 — Stufenanzahl definieren
+
+**Beschreibung:** Die Stufenanzahl ist parametrisch im Bereich
+**2 bis 30**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine Treppe, when die Stufenanzahl geändert wird,
+  then passt sich die Zahl der sichtbaren Stufen an; die Treppe verbindet
+  weiterhin beide Geschossebenen.
+- **Boundary:** Stufenanzahl am Grenzwert akzeptiert; außerhalb → auf den
+  Grenzwert geklemmt + Hinweis.
+
+#### LH-FA-STR-003 — Laufbreite definieren
+
+**Beschreibung:** Die Laufbreite ist parametrisch im Bereich
+**800 mm bis 2000 mm**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine Treppe, when die Laufbreite geändert wird,
+  then wird die Treppe sichtbar breiter bzw. schmaler.
+- **Boundary:** Laufbreite am Grenzwert akzeptiert; außerhalb → geklemmt +
+  Hinweis.
+
+#### LH-FA-STR-004 — Treppengeländer
+
+**Beschreibung:** Eine gerade Treppe trägt ein Geländer (Handlauf) entlang
+des Laufs. **Teilumfang welle-2:** das Geländer ist **immer sichtbar**;
+eine An/Aus-Schaltung oder Seitenwahl bleibt offen.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine Treppe, then ist entlang des Laufs ein
+  Geländer auf Handlaufhöhe sichtbar (in der 3D-Darstellung), das der
+  Stufenfolge folgt.
+- **Negative:** Given eine entfernte Treppe, then verschwindet auch ihr
+  Geländer (kein verwaistes Geländer).
 
 ### Modul Dach (`ROF`)
 
@@ -650,3 +708,4 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 | 0.1.3 | 2026-06-13 | Module Türen (LH-FA-DOR-001..004) und Fenster (LH-FA-WIN-001..005) von Outline auf AK-Niveau geschärft (wand-gehostete Bauteile mit automatischer Wandöffnung, Brüstungshöhe; Breiten-/Höhen-/Brüstungs-Bereiche); lösungsfrei/benutzer-beobachtbar | slice-013a (welle-2-bauteile) |
 | 0.1.4 | 2026-06-13 | Modul Dach (LH-FA-ROF-001..005) von Outline auf AK-Niveau geschärft (Sattel-/Walm-/Pultdach, Neigung 5–60°, Überstand 0–1500 mm); **Teilumfang rechteckiger Grundriss**, komplexe Polygon-Grundrisse bleiben offen; lösungsfrei/benutzer-beobachtbar | slice-014a (welle-2-bauteile) |
 | 0.1.5 | 2026-06-13 | Module Decken (LH-FA-SLB-001..003) und Fundament (LH-FA-FND-001..003) von Outline auf AK-Niveau geschärft (horizontale Platten, Deckendicke 100–500 mm, Ausschnitte, Fundamenttiefe 200–2000 mm, Bodenplatte); lösungsfrei/benutzer-beobachtbar | slice-015a (welle-2-bauteile) |
+| 0.1.6 | 2026-06-14 | Modul Treppen (LH-FA-STR-001..004) von Outline auf AK-Niveau geschärft (gerade einläufige Treppe verbindet zwei Geschosse, Stufenanzahl 2–30, Laufbreite 800–2000 mm, immer sichtbares Geländer); **Teilumfang gerade einläufig**, Podest-/U-/L-/Wendeltreppen offen; lösungsfrei/benutzer-beobachtbar. Zugleich Header-Versions-Drift behoben (Header war seit slice-012 auf 0.1.2 stehengeblieben, während die Historie auf 0.1.5 wuchs) | slice-016a (welle-2-bauteile) |

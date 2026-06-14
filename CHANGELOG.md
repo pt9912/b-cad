@@ -123,6 +123,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Ausschnitte ab (innenliegende Löcher sind koplanar-frei, kein lateraler
   Überstand nötig); OCC-Boolean-Naht jetzt getestet. make gates grün
   (103 Tests, Coverage 91,9 %).
+- slice-015c — Decken/Fundament-Persistenz (LH-FA-SLB-001/003, LH-FA-FND-001,
+  LH-FA-BLD-002/003, ADR-0011/0006): `SqliteProjectRepository` speichert/lädt
+  Platten über die `slabs`-Tabelle (`slab_type`/`thickness_mm` als Spalten,
+  Grundriss **und Aussparungen** als verschachteltes `polygon_json`
+  `[[footprint],[cutout]…]`, `%.17g`; generalisiert das 014c-Flach-Array zu
+  Ringen, `std::string`-Builder + balancierter Sub-Array-Scan, total/`E-IO`).
+  In derselben atomaren Transaktion nach den Geschossen (FK `storey_id`);
+  `slab_type`-Mapper total (Schema ohne CHECK). Cutouts round-trippen
+  feldgleich (Domänenfeld, kein NULL); `material_id`/`base_z` bewusst nicht
+  persistiert (welle-2-Scope/abgeleitet). Round-Trip-AK (Decke mit Ausschnitt
+  + nicht-glatter double; Fundament Ein-Ring; Bodenplatte) + Leer-Pfad- und
+  Negativ-Parse-Regression. **Unabhängiger Code-Review danach** (keine HIGH;
+  3 MEDIUM gefixt: `stod`-Totalität — Müll-Suffix wurde still verschluckt —,
+  Negativ-Parse-Test, Bodenplatte-Mapper-Zweig). Kein Schema-Wechsel.
+  **Platten-Familie (015a/b/c) komplett.** make gates grün (105 Tests,
+  Coverage 91,9 %).
+- slice-016a — Treppen von Outline auf AK geschärft (LH-FA-STR-001..004,
+  Lastenheft 0.1.6): gerade einläufige Treppe verbindet zwei Geschosse,
+  Stufenanzahl 2–30, Laufbreite 800–2000 mm, immer sichtbares Geländer;
+  **Teilumfang gerade einläufig** (Podest/Wendel/Mehrlauf offen). Spezifikation
+  §1 `LH-FA-STR-001.a` (analytisches Stufen-Quader-Polyeder im Kern,
+  `rise = Geschosshöhe/step_count` abgeleitet, feste +x-Aufstiegsrichtung,
+  Geländer als generierte Geometrie ohne Schema-Spalte, `StairChanged` an
+  `from_storey` gebunden) + §3 Stair-Wertebereiche. Reine Entscheidung/Spec
+  (kein Code, kein ADR — ADR-0011-Leitplanke; MR-008 lösungsfrei). MR-006:
+  keine HIGH (3 MED/2 LOW eingearbeitet). Nebenbei: Lastenheft-Header-Versions-
+  Drift behoben (Header hing seit slice-012 auf 0.1.2, Historie war bei 0.1.5).
+  make gates grün.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

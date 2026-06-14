@@ -252,6 +252,75 @@ D3-002.a-Vokabular, ADR-0011 #6); der Beobachter lädt die Platten neu
 (`ViewModelPort.slabMeshes`). **Keine `RoomsChanged`** (Platten berühren
 die Raumerkennung nicht).
 
+### LH-FA-STR-001.a — Treppen-Geometrie (Teilumfang gerade einläufige Treppe)
+
+Sammelblock, deckt **LH-FA-STR-001..004** (erzeugen, Stufenanzahl, Laufbreite,
+Geländer); Reifephase-Teilumfang welle-2 (Lastenheft 0.1.6). Modell-Einordnung
+über ADR-0011 (#6, Bauteil-Erweiterungs-Muster) — keine eigene Grundsatz-ADR;
+die Geometrie wird **hier** normativ festgelegt.
+
+**Teilumfang (welle-2):** eine **gerade einläufige Treppe**. Das `stairs`-Schema
+(ADR-0006) trägt genau die Parameter dafür (`start_x/y_mm`, `width_mm`,
+`step_count`, `rise_mm`, `tread_mm`, `from_storey_id`/`to_storey_id`) und **kein**
+Podest-/Wendel-/Richtungs-Feld. Mehrläufige, gewendelte und Podest-Treppen
+bleiben offen (späterer Vollumfang).
+
+**Geschoss-Spanne:** Die Treppe verbindet `from_storey` (unten) → `to_storey`
+(oben); die **Gesamtsteigung = Geschosshöhe** der unteren Etage. Die
+Aufstandshöhe `base_z` ist der Boden der unteren Etage (welle-2-Ein-Geschoss-
+Annahme = 0, Muster `LH-FA-SLB-001.a`/`slab_geometry`); Mehr-Geschoss-Stapelung
+später.
+
+**Steigung abgeleitet:** `stairs.rise_mm` ist **nicht** freie Eingabe, sondern
+die aus Geschosshöhe und Stufenanzahl berechnete Steigung **`rise =
+Geschosshöhe / step_count`** (flächenbündiger Anschluss an die obere Ebene; der
+gespeicherte `rise_mm` spiegelt diese Ableitung). Eingabe sind `step_count`
+(STR-002), `width` (STR-003) und `tread` (Auftritt). Das Muster „abgeleitete
+Größe statt Doppel-Eingabe" entspricht der Dach-Firsthöhe (LH-FA-ROF-001.a).
+
+**Stufen-Konstruktion (analytisches Polyeder im Kern):** die Treppe entsteht
+**analytisch im Kern** (Präzedenz `roof_geometry`/`slab_geometry`), **nicht** über
+OCC — der ADR-0009-Vertrag „framework-freie Netze über `ViewModelPort`" bleibt
+erfüllt. `step_count` Quader; Stufe `i` (0-basiert) spannt in Treppen-lokalen
+Koordinaten `x ∈ [i·tread, (i+1)·tread]` (Aufstiegsrichtung), `y ∈ [0, width]`
+(Laufbreite), `z ∈ [0, (i+1)·rise]` (solides Stufenprofil vom Boden zur
+Stufenoberkante). Die Lauflänge ist `step_count · tread`.
+
+**Aufstiegsrichtung (welle-2):** das Schema trägt **keine** Richtungs-Spalte →
+die Treppe steigt in einer **festen Konvention `+x` ab dem Startpunkt**
+(`start_x/y_mm`) auf. Freie Rotation/Orientierung bräuchte eine Schema-Erweiterung
+und bleibt offen (analog ROF „rechteckiger Grundriss").
+
+**Geländer (STR-004):** ein dünnes vertikales Element entlang der Lauf-Seite(n)
+auf `STAIR_RAILING_HEIGHT_MM` über den Stufen-Oberkanten, das der Stufenfolge
+folgt — **generierte Geometrie aus der Treppe**, kein persistierter Eigenzustand
+(das `stairs`-Schema trägt keine Geländer-Spalte). In welle-2 ist das Geländer
+**immer Teil der Treppe** (nicht schaltbar); eine persistierte An/Aus- bzw.
+Seiten-Option ist späterer Ausbau (Schema-Erweiterung). Da es deterministisch
+aus der Stufen-Geometrie folgt, geht beim Speichern nichts verloren (Muster
+abgeleitete roofs-`height_mm`, LH-FA-ROF-001.a).
+
+**Klemmung/Totalität:** `step_count` auf `[STAIR_STEP_COUNT_MIN,
+STAIR_STEP_COUNT_MAX]`, `width` auf `[STAIR_WIDTH_MIN_MM, STAIR_WIDTH_MAX_MM]`,
+`tread` auf `[STAIR_TREAD_MIN_MM, STAIR_TREAD_MAX_MM]` geklemmt (`E-VAL-001`,
+§3). Die abgeleitete `rise` wird **nicht** geklemmt; `STAIR_RISE_MIN/MAX_MM` ist
+ein **informativer Komfort-Bereich** (Hinweis, falls Geschosshöhe/`step_count`
+ihn verlässt). Eine ungültige Spanne (nur ein Geschoss, `from == to`,
+Geschosshöhe ≤ `GEOMETRY_TOLERANCE_MM`) erzeugt **keine** Treppe — die
+Sicht-Query bleibt total (kein Wurf); ein fehlgeschlagener mutierender Solid-Bau
+meldet `E-GEO-002`.
+
+**Folge-Meldung:** Eine Treppen-Mutation (Anlage/Stufenanzahl/Breite/Entfernen)
+meldet `op = StairChanged` (neuer `op` im D3-002.a-§5-Span-Vokabular, ADR-0011 #6
+neuer Bauteil-Typ). **Geschoss-Bindung (begründet):** anders als Dach/Decke (je
+ein Geschoss) spannt die Treppe zwei; die Meldung wird an die **untere Etage
+(`from_storey`)** gebunden — dort liegen Start/Anker (`start_x/y_mm`) und die
+`base_z` der Treppe (die obere Etage ist nur Ziel der abgeleiteten Steigung). Der
+Beobachter lädt die Treppen über `ViewModelPort.stairMeshes` neu — in welle-2
+**projektweit** (eine Treppe ist geschossübergreifend; eine geschoss-gefilterte
+Sicht wird mit der Mehr-Geschoss-Stapelung später möglich). **Keine
+`RoomsChanged`** (Treppen berühren die Raumerkennung nicht).
+
 ### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
 
 Präzisiert LH-FA-D3-002; Mechanik-Entscheidung in ADR-0008.
@@ -403,6 +472,18 @@ im Schema (nur Undo) — eigener Slice.
 | `FOUNDATION_DEPTH_MIN_MM` | 200 | Untergrenze Fundamenttiefe | LH-FA-FND-002 |
 | `FOUNDATION_DEPTH_MAX_MM` | 2000 | Obergrenze Fundamenttiefe | LH-FA-FND-002 |
 | `DEFAULT_FOUNDATION_DEPTH_MM` | 500 | Default-Fundamenttiefe bei Anlage | LH-FA-FND-001 |
+| `STAIR_WIDTH_MIN_MM` | 800 | Untergrenze Laufbreite (Wohnbau-Komfort, keine Statik) | LH-FA-STR-003 |
+| `STAIR_WIDTH_MAX_MM` | 2000 | Obergrenze Laufbreite | LH-FA-STR-003 |
+| `STAIR_STEP_COUNT_MIN` | 2 | Untergrenze Stufenanzahl je gerader Lauf | LH-FA-STR-002 |
+| `STAIR_STEP_COUNT_MAX` | 30 | Obergrenze Stufenanzahl je gerader Lauf | LH-FA-STR-002 |
+| `STAIR_TREAD_MIN_MM` | 210 | Untergrenze Auftritt (Stufentiefe) | LH-FA-STR-001 |
+| `STAIR_TREAD_MAX_MM` | 350 | Obergrenze Auftritt | LH-FA-STR-001 |
+| `STAIR_RISE_MIN_MM` | 140 | **Informativer** Komfort-Bereich der abgeleiteten Steigung — **kein** `E-VAL-001`-Klemmpunkt (`rise = Geschosshöhe / step_count`) | LH-FA-STR-001 |
+| `STAIR_RISE_MAX_MM` | 200 | **Informative** Komfort-Obergrenze der abgeleiteten Steigung (Hinweis, keine Klemmung) | LH-FA-STR-001 |
+| `STAIR_RAILING_HEIGHT_MM` | 900 | Handlaufhöhe des Treppengeländers über Stufenoberkante | LH-FA-STR-004 |
+| `DEFAULT_STAIR_WIDTH_MM` | 1000 | Default-Laufbreite bei Anlage | LH-FA-STR-001 |
+| `DEFAULT_STAIR_STEP_COUNT` | 15 | Default-Stufenanzahl bei Anlage | LH-FA-STR-001 |
+| `DEFAULT_STAIR_TREAD_MM` | 280 | Default-Auftritt bei Anlage | LH-FA-STR-001 |
 | `AUTOSAVE_INTERVAL_S` | 300 | Autosave-Intervall | LH-QA-004 |
 | `UNDO_DEPTH_MIN` | 1000 | Mindesttiefe Undo/Redo | LH-QA-003 |
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
@@ -484,6 +565,7 @@ nicht im Bootstrap.
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` neu (Platten-Geometrie Decken+Fundament: Polygon × Dicke an `base_z` je `slab_type`, Ausschnitte als Boolean/`CutPrism`, Totalität; Port-base_z-Frage an 015b) + §3 Decken-/Fundament-Dicke-Bereiche + Defaults | slice-015a |
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` Port-base_z-Frage geschlossen: kein Port-Wechsel — Mesh-Translation um `base_z` nach dem Boolean, Cutouts relativ `[0,Dicke]`; `SlabChanged`-`op` (storey-bezogen, kein `RoomsChanged`) | slice-015b |
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` „auf den Platten-Umriss begrenzt" präzisiert: rand-/außenliegende, degenerierte und nicht-endliche Ausschnitte werden an der API **abgelehnt** (Containment-Vorbedingung) — innenliegende Aussparungen sind damit koplanar-frei, **kein** lateraler Überstand nötig (anders als die Wand durchspannende Öffnung, §1 DOR-004.a) | slice-015b Code-Review (H1) |
+| 2026-06-14 | §1 `LH-FA-STR-001.a` neu (Treppen-Geometrie Teilumfang gerade einläufige Treppe: Stufen-Quader-Polyeder im Kern wie `roof_geometry`, `rise = Geschosshöhe/step_count` abgeleitet, feste +x-Aufstiegsrichtung, Geländer als generierte Geometrie ohne Schema-Spalte, `StairChanged`-`op` an `from_storey` gebunden + `stairMeshes` projektweit) + §3 Stair-Wertebereiche (Breite/Stufenanzahl/Auftritt geklemmt, Steigung informativ) + Defaults | slice-016a |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

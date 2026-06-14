@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <string>
 #include <system_error>
+#include <vector>
 
 #include <sqlite3.h>
 
@@ -233,6 +234,35 @@ hexagon::model::RoofType textToRoofType(const std::string& text) {
     throw std::runtime_error("E-IO: unbekannter roof_type '" + text + "'");
 }
 
+// Platten-Typ ↔ Text. `slabs.slab_type` trägt (anders als `roofs.roof_type`)
+// **keine** CHECK-Constraint im Schema (ADR-0006) — daher erzwingt der Mapper
+// hier die gültige Menge {decke,fundament,bodenplatte} und wirft bei
+// Unbekanntem neutral (`E-IO`, kein Lib-Typ verlässt den Adapter).
+const char* slabTypeToText(hexagon::model::SlabType type) {
+    switch (type) {
+        case hexagon::model::SlabType::Decke:
+            return "decke";
+        case hexagon::model::SlabType::Fundament:
+            return "fundament";
+        case hexagon::model::SlabType::Bodenplatte:
+            return "bodenplatte";
+    }
+    throw std::runtime_error("E-IO: unbekannter SlabType");
+}
+
+hexagon::model::SlabType textToSlabType(const std::string& text) {
+    if (text == "decke") {
+        return hexagon::model::SlabType::Decke;
+    }
+    if (text == "fundament") {
+        return hexagon::model::SlabType::Fundament;
+    }
+    if (text == "bodenplatte") {
+        return hexagon::model::SlabType::Bodenplatte;
+    }
+    throw std::runtime_error("E-IO: unbekannter slab_type '" + text + "'");
+}
+
 // Rechteckiger Dach-Grundriss als JSON-Array
 // `[origin_x, origin_y, width, depth, base_z]` (ADR-0006 footprint_json).
 // `%.17g` → exakter double-Round-Trip (DBL_DECIMAL_DIG). Eigenes,
@@ -275,6 +305,115 @@ void parseFootprintJson(const std::string& json, hexagon::model::Roof& roof) {
     roof.width_mm = values[2];
     roof.depth_mm = values[3];
     roof.base_z_mm = values[4];
+}
+
+// Platten-Grundriss + Aussparungen als verschachtelte Ring-Arrays
+// `[[fx0,fy0,…],[c1x0,c1y0,…],…]` (ADR-0006 `slabs.polygon_json`): Element 0
+// ist der Grundriss-Ring (footprint), Elemente 1..n sind die Ausschnitt-Ringe
+// (cutouts, LH-FA-SLB-003). `%.17g` → exakter double-Round-Trip. Generalisiert
+// das 014c-Flach-Array (angekündigte Erweiterung „Ring statt 5-Tupel");
+// variabel lang → `std::string`-Builder. Eigenes, deterministisches Format;
+// nur dieser Adapter schreibt/liest es.
+void appendRingJson(std::string& out, const std::vector<hexagon::model::Point2D>& pts) {
+    std::array<char, 64> buf{};
+    out += '[';
+    for (std::size_t i = 0; i < pts.size(); ++i) {
+        if (i != 0) {
+            out += ',';
+        }
+        std::snprintf(buf.data(), buf.size(), "%.17g", pts[i].x_mm);
+        out += buf.data();
+        out += ',';
+        std::snprintf(buf.data(), buf.size(), "%.17g", pts[i].y_mm);
+        out += buf.data();
+    }
+    out += ']';
+}
+
+std::string polygonToJson(const hexagon::model::Slab& slab) {
+    std::string out = "[";
+    appendRingJson(out, slab.footprint.points);  // Ring 0 = Grundriss
+    for (const auto& cutout : slab.cutouts) {
+        out += ',';
+        appendRingJson(out, cutout.points);  // Ring 1..n = Aussparungen
+    }
+    out += ']';
+    return out;
+}
+
+// Parst einen Ring (flache `x,y`-Folge) zu Punkten; gerade Wertzahl Pflicht,
+// jedes Token **vollständig** numerisch (kein `stod`-Müll-Suffix wie "1.5x",
+// kein leeres Token) — sonst neutraler `E-IO`-Wurf (total gegen Fremd-Inhalt).
+std::vector<hexagon::model::Point2D> parseRing(const std::string& inner) {
+    std::stringstream stream(inner);
+    std::vector<double> values;
+    std::string token;
+    try {
+        while (std::getline(stream, token, ',')) {
+            if (token.empty()) {
+                throw std::runtime_error("E-IO: polygon_json leeres Zahl-Token");
+            }
+            std::size_t consumed = 0;
+            const double value = std::stod(token, &consumed);
+            if (consumed != token.size()) {  // Teil-Parse (Müll-Suffix) → ablehnen
+                throw std::runtime_error("E-IO: polygon_json Zahl ungültig: '" +
+                                         token + "'");
+            }
+            values.push_back(value);
+        }
+    } catch (const std::logic_error& e) {  // stod: invalid_argument/out_of_range
+        throw std::runtime_error(std::string("E-IO: polygon_json Zahl ungültig: ") +
+                                 e.what());
+    }
+    if (values.size() % 2 != 0) {
+        throw std::runtime_error("E-IO: polygon_json Ring mit ungerader Wertzahl");
+    }
+    std::vector<hexagon::model::Point2D> points;
+    points.reserve(values.size() / 2);
+    for (std::size_t i = 0; i + 1 < values.size(); i += 2) {
+        points.push_back({values[i], values[i + 1]});
+    }
+    return points;
+}
+
+// Parst das eigene verschachtelte Format zurück (Ring 0 → footprint, 1..n →
+// cutouts) per balanciertem `[...]`-Scan auf Tiefe 1; wirft bei Format-Fehler
+// neutral (`E-IO`, total nach außen — kein Lib-Typ leckt, Regel D).
+void parseSlabPolygonJson(const std::string& json, hexagon::model::Slab& slab) {
+    std::vector<std::vector<hexagon::model::Point2D>> rings;
+    int depth = 0;
+    std::size_t ring_start = std::string::npos;
+    for (std::size_t i = 0; i < json.size(); ++i) {
+        const char chr = json[i];
+        if (chr == '[') {
+            ++depth;
+            if (depth == 2) {
+                ring_start = i + 1;  // Inhalt beginnt nach dem inneren '['
+            }
+        } else if (chr == ']') {
+            if (depth == 2 && ring_start != std::string::npos) {
+                rings.push_back(parseRing(json.substr(ring_start, i - ring_start)));
+                ring_start = std::string::npos;
+            }
+            --depth;
+            if (depth < 0) {
+                throw std::runtime_error("E-IO: polygon_json unbalanciert: '" + json +
+                                         "'");
+            }
+        }
+    }
+    if (depth != 0) {
+        throw std::runtime_error("E-IO: polygon_json unbalanciert: '" + json + "'");
+    }
+    if (rings.empty()) {
+        throw std::runtime_error("E-IO: polygon_json ohne Grundriss-Ring: '" + json +
+                                 "'");
+    }
+    slab.footprint.points = rings.front();
+    slab.cutouts.clear();
+    for (std::size_t i = 1; i < rings.size(); ++i) {
+        slab.cutouts.push_back(hexagon::model::Footprint{rings[i]});
+    }
 }
 
 void insertProject(Db& db) {
@@ -394,6 +533,28 @@ void insertRoofs(Db& db, const hexagon::model::Building& building) {
     }
 }
 
+// Platten (LH-FA-SLB-*/FND-*, ADR-0011/0006): NACH `insertStoreys` (FK
+// `slabs.storey_id → storeys.id`). `material_id` bleibt `NULL` (welle-2-Scope,
+// kein Material im Domänenmodell); `base_z` wird **nicht** gespeichert
+// (abgeleitet aus Typ/Geschoss, `slab_geometry`). Grundriss + Aussparungen
+// als `polygon_json`.
+void insertSlabs(Db& db, const hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "INSERT INTO slabs (id,project_id,storey_id,slab_type,"
+              "thickness_mm,polygon_json) VALUES (?,1,?,?,?,?);");
+    for (const auto& slab : building.slabs) {
+        const std::string polygon = polygonToJson(slab);
+        sqlite3_bind_int(stmt.get(), 1, static_cast<int>(slab.id));
+        sqlite3_bind_int(stmt.get(), 2, static_cast<int>(slab.storey_id));
+        sqlite3_bind_text(stmt.get(), 3, slabTypeToText(slab.type), -1,
+                          SQLITE_STATIC);
+        sqlite3_bind_double(stmt.get(), 4, slab.thickness_mm);
+        sqlite3_bind_text(stmt.get(), 5, polygon.c_str(), -1, SQLITE_TRANSIENT);
+        stmt.step();
+        stmt.reset();
+    }
+}
+
 void loadStoreys(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db, "SELECT id,height_mm FROM storeys ORDER BY level_index;");
     while (stmt.step()) {
@@ -479,6 +640,27 @@ void loadRoofs(Db& db, hexagon::model::Building& building) {
     }
 }
 
+void loadSlabs(Db& db, hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "SELECT id,storey_id,slab_type,thickness_mm,polygon_json "
+              "FROM slabs ORDER BY id;");
+    while (stmt.step()) {
+        hexagon::model::Slab slab;
+        slab.id =
+            static_cast<hexagon::model::SlabId>(sqlite3_column_int(stmt.get(), 0));
+        slab.storey_id = static_cast<hexagon::model::StoreyId>(
+            sqlite3_column_int(stmt.get(), 1));
+        const auto* type = sqlite3_column_text(stmt.get(), 2);
+        slab.type = textToSlabType(
+            type != nullptr ? reinterpret_cast<const char*>(type) : "");
+        slab.thickness_mm = sqlite3_column_double(stmt.get(), 3);
+        const auto* polygon = sqlite3_column_text(stmt.get(), 4);
+        parseSlabPolygonJson(
+            polygon != nullptr ? reinterpret_cast<const char*>(polygon) : "", slab);
+        building.slabs.push_back(slab);
+    }
+}
+
 // Stale Temp-Artefakte entfernen (Recovery nach Absturz): das Temp-DB plus
 // ein evtl. zurückgebliebenes -journal/-wal eines getöteten `save`. Sonst
 // sähe ein neues sqlite3_open ein „hot journal" zu einer frisch angelegten
@@ -520,6 +702,7 @@ void SqliteProjectRepository::save(const hexagon::model::Building& building,
             insertWalls(*db, building);
             insertOpenings(*db, building);  // nach Wänden (FK wall_id)
             insertRoofs(*db, building);      // nach Geschossen (FK storey_id)
+            insertSlabs(*db, building);      // nach Geschossen (FK storey_id)
             db->exec("COMMIT;");
             db.reset();  // schließen vor fsync/rename
         } catch (const SqliteError& e) {
@@ -564,6 +747,7 @@ hexagon::model::Building SqliteProjectRepository::load(
         loadWalls(db, building);
         loadOpenings(db, building);
         loadRoofs(db, building);
+        loadSlabs(db, building);  // Lade-Reihenfolge: Stil-Konsistenz (kein FK auf load)
         return building;
     } catch (const SqliteError& e) {
         throw std::runtime_error("E-IO: Projektdatei nicht lesbar ('" +

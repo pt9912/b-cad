@@ -57,9 +57,18 @@ mit MR-006-Plan-Review, erster Slice steht):
   Ausschnitte als Boolean, base_z je Typ). **slice-015b done
   2026-06-13** — Platten implementiert: Extrusion + Mesh-Translation
   auf base_z (Port unverändert, 015a-HIGH-1 gelöst), Cutout-Boolean,
-  `SlabChanged`-Viewer (`reloadKeyed`); slice-015c (Persistenz) folgt.
-- **Treppen** (LH-FA-STR-001..004) inkl. Geländer — geschärft +
-  implementiert.
+  `SlabChanged`-Viewer (`reloadKeyed`). **slice-015c done 2026-06-14** —
+  Platten-Persistenz (`slabs`/`polygon_json` mit Grundriss- **und**
+  Cutout-Ringen, Round-Trip; verschachteltes Format generalisiert das
+  014c-Flach-Array). **Platten-Familie (015a/b/c) komplett.**
+- **Treppen** (LH-FA-STR-001..004) inkl. Geländer — letztes welle-2-Bauteil.
+  **slice-016a done 2026-06-14** — Lastenheft STR-001..004 auf AK geschärft
+  (**Teilumfang gerade einläufige Treppe**, Stufenanzahl 2–30, Laufbreite
+  800–2000 mm, immer sichtbares Geländer) + Spec `LH-FA-STR-001.a`
+  (analytisches Stufen-Polyeder, `rise = Geschosshöhe/step_count` abgeleitet,
+  feste +x-Richtung, `StairChanged` an `from_storey`) + §3-Konstanten;
+  zugleich Lastenheft-Header-Versions-Drift behoben (0.1.2 → 0.1.6). slice-016b
+  (Implementierung) + slice-016c (Persistenz) folgen.
 - Unabhängige Welle-Verifikation (analog welle-1/-1v) + Closure-Notiz in
   `done/welle-2-results.md` inkl. zwingendem Carveout-Audit.
 
