@@ -1,10 +1,12 @@
 # b-cad
 
-> **Projekt-Status:** Welle `welle-1-mvp` in Arbeit — der Kern-MVP ist
-> implementiert (Domain-Modell, Wände, Raumerkennung, OCC-Extrusion,
-> SQLite-Persistenz, Änderungs-Benachrichtigung), die Welle-Closure ist
-> offen. Der *sichtbare* 3D-Viewer folgt in `welle-1v-viewer`. Einstieg:
-> [`harness/README.md`](harness/README.md).
+> **Projekt-Status:** Welle `welle-3-auswertung` aktiv. **Meilenstein M2
+> erreicht** — Kern-MVP (Wände, Raumerkennung, OCC-Extrusion, SQLite-Persistenz
+> inkl. Crash-Recovery, Änderungs-Benachrichtigung; welle-1, M1), sichtbarer
+> Qt-6-3D-Viewer (welle-1v, ACC-002) und **alle parametrischen Bauteile** —
+> Türen/Fenster, Dach, Decken/Fundament, Treppen (welle-2) — sind implementiert.
+> Aktuell: **Auswertungen** (Flächen/Volumen/Wohnfläche, Material) über einen
+> read-only `EvaluatePort`. Einstieg: [`harness/README.md`](harness/README.md).
 
 ## Was ist b-cad?
 
@@ -113,20 +115,24 @@ b-cad/
 │   ├── adapters/             Qt/OCC/SQLite (ui/ geometry/ persistence/ io/ plugin/)
 │   └── main.cpp              Composition Root
 ├── tests/                    GoogleTest (hexagon/ adapters/ e2e/)
-├── tools/                    Gate-Skripte (docs-check, arch-check, gate-consistency, suppression-gate) + Dockerfile
+├── tools/                    Gate-Skripte (arch-check, gate-consistency, suppression-gate) + Dockerfile; docs-check via d-check (MR-007)
 └── docs/
     ├── glossar.md
     ├── user/releasing.md
     └── plan/
-        ├── adr/              ADR-Index + ADR-0001..0008
+        ├── adr/              ADR-Index + ADR-0001..0012
         ├── planning/         Slice-Lifecycle (open/next/in-progress/done) + Roadmap
         └── carveouts/        dokumentierte Gate-Ausnahmen (derzeit keine)
 ```
 
-> Stand: **welle-1-mvp** weitgehend umgesetzt — Domain-Kern, Wände,
-> Raumerkennung, OCC-Extrusion, SQLite-Persistenz inkl. Crash-Recovery
-> und Änderungs-Benachrichtigung implementiert (slice-001–010b; offen:
-> slice-006 Attribution). Struktur:
+> Stand: **welle-3-auswertung aktiv** (M3 offen). Umgesetzt: Domain-Kern,
+> Wände, Raumerkennung, OCC-Extrusion, SQLite-Persistenz inkl. Crash-Recovery
+> und Änderungs-Benachrichtigung (welle-1, M1); Qt-6-3D-Viewer (welle-1v,
+> ACC-002); **alle parametrischen Bauteile** — Türen/Fenster, Dach,
+> Decken/Fundament, Treppen, je inkl. Persistenz (welle-2, M2, ADR-0011);
+> erste Auswertungen — `EvaluatePort` + Flächen/Wohnfläche (slice-017a/b,
+> ADR-0012). Offen: Volumen + Material-/Bauteil-Listen, slice-006 Attribution.
+> Struktur:
 > [`spec/architecture.md` §2.1](spec/architecture.md#21-verzeichnis--und-build-struktur).
 > Aktueller Stand der Slices: [`docs/plan/planning/README.md`](docs/plan/planning/README.md).
 
