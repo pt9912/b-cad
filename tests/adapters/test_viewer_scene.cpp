@@ -17,6 +17,7 @@
 #include "hexagon/model/roof.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/model/slab.h"
+#include "hexagon/model/stair.h"
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
@@ -308,6 +309,18 @@ model::Slab sampleSlab(model::StoreyId storey, model::SlabType type) {
     return slab;
 }
 
+model::Stair sampleStair(model::StoreyId from, model::StoreyId to) {
+    model::Stair stair;
+    stair.from_storey_id = from;
+    stair.to_storey_id = to;
+    stair.type = model::StairType::Gerade;
+    stair.start = {0.0, 0.0};
+    stair.width_mm = model::kDefaultStairWidthMm;
+    stair.step_count = model::kDefaultStairStepCount;
+    stair.tread_mm = model::kDefaultStairTreadMm;
+    return stair;
+}
+
 double meshMin(const model::TriangleMesh& mesh, int axis) {
     double lo = std::numeric_limits<double>::max();
     for (std::size_t i = static_cast<std::size_t>(axis);
@@ -399,6 +412,72 @@ TEST_F(ViewerSceneAk, LH_FA_SLB_002_DickeGeklemmtAusschnittUndMeldung) {
               after.triangleCount());
 
     EXPECT_GT(recorder.count(driven::ModelChangeOp::SlabChanged), 0);
+    EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoomsChanged), 0);
+    service_.unsubscribe(scene_);
+    service_.unsubscribe(recorder);
+}
+
+// LH-FA-STR-001/004: eine gerade Treppe folgt in der Szene (StairChanged →
+// Pull), verbindet zwei Geschosse (Fuß auf 0, oberste Stufe auf Geschosshöhe;
+// Geländer darüber bis Handlaufhöhe); idempotent; Entfernen leert.
+TEST_F(ViewerSceneAk, LH_FA_STR_001_TreppeFolgtUndVerbindetGeschosse) {
+    const auto og = service_.addStorey(model::kDefaultStoreyHeightMm);  // obere Etage
+    scene_.loadAll();
+    service_.subscribe(scene_);
+
+    const auto stair = service_.addStair(sampleStair(eg_, og));
+    ASSERT_TRUE(stair.has_value());
+    ASSERT_EQ(scene_.stairMeshes().size(), 1U);
+    EXPECT_GE(scene_.effectiveUpdates(), 1);
+
+    const auto& mesh = scene_.stairMeshes().at(*stair);
+    EXPECT_NEAR(meshMin(mesh, 2), 0.0, 0.5);  // Fuß auf base_z = 0
+    // Oberste Stufe erreicht die obere Ebene (= Geschosshöhe); Geländer reicht
+    // bis Handlaufhöhe darüber → max-z = Geschosshöhe + Handlaufhöhe (STR-004).
+    EXPECT_NEAR(meshMin(mesh, 2) + meshExtent(mesh, 2),
+                model::kDefaultStoreyHeightMm + model::kStairRailingHeightMm, 0.5);
+
+    const int before = scene_.effectiveUpdates();
+    scene_.onModelChanged(
+        {.op = driven::ModelChangeOp::StairChanged, .storey_id = eg_});
+    EXPECT_EQ(scene_.effectiveUpdates(), before);  // idempotent
+
+    EXPECT_TRUE(service_.removeStair(*stair));
+    EXPECT_TRUE(scene_.stairMeshes().empty());
+    service_.unsubscribe(scene_);
+}
+
+// LH-FA-STR-002/003 + Negative: Stufenanzahl/Laufbreite geklemmt, ungültige
+// Zwei-Geschoss-Spanne abgelehnt; Folge-Meldung StairChanged, KEINE
+// RoomsChanged.
+TEST_F(ViewerSceneAk, LH_FA_STR_002_003_GeklemmtSpanneUndMeldung) {
+    namespace pdr = bcad::hexagon::ports::driving;
+    const auto og = service_.addStorey(model::kDefaultStoreyHeightMm);
+    OpRecorder recorder;
+    service_.subscribe(recorder);
+    service_.subscribe(scene_);
+
+    const auto stair = service_.addStair(sampleStair(eg_, og));
+    ASSERT_TRUE(stair.has_value());
+
+    // STR-002: Stufenanzahl geklemmt (int → ParamResult, nie Rejected).
+    const auto sc = service_.setStairStepCount(*stair, 999);
+    EXPECT_EQ(sc.status, pdr::ParamStatus::Clamped);
+    EXPECT_EQ(service_.stair(*stair).step_count, model::kStairStepCountMax);
+    EXPECT_DOUBLE_EQ(sc.applied_mm,
+                     static_cast<double>(model::kStairStepCountMax));
+
+    // STR-003: Laufbreite geklemmt.
+    EXPECT_EQ(service_.setStairWidth(*stair, 9000.0).status,
+              pdr::ParamStatus::Clamped);
+    EXPECT_NEAR(service_.stair(*stair).width_mm, model::kStairWidthMaxMm, 1e-9);
+
+    // Negative: ungültige Spanne → abgelehnt (from==to bzw. unbekanntes Ziel).
+    EXPECT_FALSE(service_.addStair(sampleStair(eg_, eg_)).has_value());
+    EXPECT_FALSE(
+        service_.addStair(sampleStair(eg_, model::StoreyId{999})).has_value());
+
+    EXPECT_GT(recorder.count(driven::ModelChangeOp::StairChanged), 0);
     EXPECT_EQ(recorder.count(driven::ModelChangeOp::RoomsChanged), 0);
     service_.unsubscribe(scene_);
     service_.unsubscribe(recorder);

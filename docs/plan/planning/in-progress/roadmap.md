@@ -67,8 +67,12 @@ mit MR-006-Plan-Review, erster Slice steht):
   800–2000 mm, immer sichtbares Geländer) + Spec `LH-FA-STR-001.a`
   (analytisches Stufen-Polyeder, `rise = Geschosshöhe/step_count` abgeleitet,
   feste +x-Richtung, `StairChanged` an `from_storey`) + §3-Konstanten;
-  zugleich Lastenheft-Header-Versions-Drift behoben (0.1.2 → 0.1.6). slice-016b
-  (Implementierung) + slice-016c (Persistenz) folgen.
+  zugleich Lastenheft-Header-Versions-Drift behoben (0.1.2 → 0.1.6).
+  **slice-016b done 2026-06-14** — Treppen implementiert (in-memory): `model::Stair`
+  + pure `stair_geometry` (analytisches Stufen-Quader-Polyeder + beidseitiges
+  Geländer im Kern, **kein OCC**; rise abgeleitet), `ViewModelPort.stairMeshes`,
+  Edit-Ops (Klemmung, ungültige Spanne abgelehnt), `StairChanged`-Viewer über
+  `reloadKeyed`; 7 AK-Tests, Zwei-Commit-Split. slice-016c (Persistenz) folgt.
 - Unabhängige Welle-Verifikation (analog welle-1/-1v) + Closure-Notiz in
   `done/welle-2-results.md` inkl. zwingendem Carveout-Audit.
 

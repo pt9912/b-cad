@@ -28,6 +28,13 @@ enum class ModelChangeOp {
     // Beobachter lädt die Platten neu (spez. §1 D3-002.a). Kein
     // `RoomsChanged` (Platten berühren die Raumerkennung nicht).
     SlabChanged,
+    // Treppe (gerade einläufig, LH-FA-STR-*) angelegt/geändert/entfernt —
+    // neuer Bauteil-Typ (ADR-0011 #6). Die Treppe spannt zwei Geschosse; die
+    // Meldung ist an die **untere Etage** (`from_storey`) gebunden (Anker/
+    // base_z, spez. §1 LH-FA-STR-001.a). Beobachter lädt die Treppen neu
+    // (projektweit). Kein `RoomsChanged` (Treppen berühren die Raumerkennung
+    // nicht).
+    StairChanged,
 };
 
 // Push-Notify-Meldung (ADR-0008): WAS sich geändert hat (`op`) und

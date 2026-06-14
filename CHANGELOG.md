@@ -151,6 +151,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   keine HIGH (3 MED/2 LOW eingearbeitet). Nebenbei: Lastenheft-Header-Versions-
   Drift behoben (Header hing seit slice-012 auf 0.1.2, Historie war bei 0.1.5).
   make gates grün.
+- slice-016b — Treppen implementiert (LH-FA-STR-001..004, ADR-0011): gerade
+  einläufige Treppe in-memory + sichtbar. `model::Stair` (from/to_storey, start,
+  width, step_count, tread; rise abgeleitet, Geländer intrinsisch) +
+  `Building.stairs`; pure `stair_geometry` (**analytisches Stufen-Quader-
+  Polyeder + beidseitiges Geländer im Kern, KEIN OCC/Port** — Muster
+  `roof_geometry`; `rise = Geschosshöhe/step_count`, +x-Aufstieg, total).
+  `ViewModelPort.stairMeshes()` (projektweit), `EditStructurePort`
+  addStair/setStairWidth/setStairStepCount/removeStair (width/tread/step_count
+  geklemmt; `setStairStepCount` int→`ParamResult`, nie `Rejected`; ungültige
+  Zwei-Geschoss-Spanne `from==to`/unbekannt abgelehnt — `addSlab`-Muster),
+  `StairChanged`-`op` an `from_storey` (kein `RoomsChanged`); `ViewerScene` über
+  `reloadKeyed` (Roof+Slab+Stair). 7 AK-Tests `LH-FA-STR-*` (Kern: rise
+  abgeleitet/z-Span/Stufenanzahl/Laufbreite/Geländer-Doppelsonde/Totalität;
+  Szene: folgt+verbindet+idempotent, Klemmung/Spanne/Meldung). Zwei-Commit-Split
+  i/ii. Persistenz folgt in slice-016c. make gates grün (112 Tests, Coverage
+  92,2 %).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

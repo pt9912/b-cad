@@ -9,6 +9,7 @@
 #include "hexagon/services/roof_geometry.h"
 #include "hexagon/services/room_detection.h"
 #include "hexagon/services/slab_geometry.h"
+#include "hexagon/services/stair_geometry.h"
 #include "hexagon/services/wall_footprint.h"
 
 namespace bcad::hexagon::services {
@@ -90,6 +91,16 @@ Range slabThicknessRange(model::SlabType type) {
     return (type == model::SlabType::Decke)
                ? Range{model::kSlabThicknessMinMm, model::kSlabThicknessMaxMm}
                : Range{model::kFoundationDepthMinMm, model::kFoundationDepthMaxMm};
+}
+
+// Treppen-Wertebereiche (spez. §3). Die Steigung (`rise`) ist abgeleitet und
+// hat keinen Klemm-Bereich (016a-LOW-2).
+Range stairWidthRange() {
+    return Range{model::kStairWidthMinMm, model::kStairWidthMaxMm};
+}
+
+Range stairTreadRange() {
+    return Range{model::kStairTreadMinMm, model::kStairTreadMaxMm};
 }
 
 // Vorzeichenlose Polygon-Fläche (Shoelace) — Degenerations-Prüfung des
@@ -814,6 +825,116 @@ model::Slab& StructureEditService::mutableSlab(model::SlabId id) {
                                  [id](const model::Slab& s) { return s.id == id; });
     if (it == building_.slabs.end()) {
         throw std::out_of_range("mutableSlab: unbekannte Platten-Id");
+    }
+    return *it;
+}
+
+// --- Treppen: gerade einläufig (LH-FA-STR-*, ADR-0011 #6) ---
+
+std::vector<ports::driving::StairMesh> StructureEditService::stairMeshes() const {
+    std::vector<ports::driving::StairMesh> meshes;
+    meshes.reserve(building_.stairs.size());
+    for (const model::Stair& s : building_.stairs) {
+        // Analytisches Netz (kein OCC, kein Wurf); rise aus der from_storey-Höhe.
+        model::TriangleMesh mesh = stairMesh(s, storeyHeight(s.from_storey_id));
+        if (!mesh.empty()) {
+            meshes.push_back(ports::driving::StairMesh{s.id, std::move(mesh)});
+        }
+    }
+    return meshes;
+}
+
+std::optional<model::StairId> StructureEditService::addStair(
+    const model::Stair& prototype) {
+    // Gültige Zwei-Geschoss-Spanne (LOW-1: `addSlab`-Validierungsmuster, NICHT
+    // `addRoof` — die Storey-Existenz wird geprüft): `from != to`, beide
+    // Geschosse bekannt, `from_storey`-Höhe > Toleranz; nicht-endlicher
+    // Startpunkt abgelehnt.
+    if (prototype.from_storey_id == prototype.to_storey_id ||
+        !std::isfinite(prototype.start.x_mm) ||
+        !std::isfinite(prototype.start.y_mm)) {
+        return std::nullopt;
+    }
+    const auto known = [&](model::StoreyId id) {
+        return std::any_of(building_.storeys.begin(), building_.storeys.end(),
+                           [id](const model::Storey& s) { return s.id == id; });
+    };
+    if (!known(prototype.from_storey_id) || !known(prototype.to_storey_id) ||
+        storeyHeight(prototype.from_storey_id) < model::kGeometryToleranceMm) {
+        return std::nullopt;
+    }
+    const Range wr = stairWidthRange();
+    const Range tr = stairTreadRange();
+    model::Stair stair = prototype;
+    stair.id = static_cast<model::StairId>(next_stair_id_);
+    stair.width_mm = std::clamp(prototype.width_mm, wr.min, wr.max);
+    stair.tread_mm = std::clamp(prototype.tread_mm, tr.min, tr.max);
+    stair.step_count = std::clamp(prototype.step_count, model::kStairStepCountMin,
+                                  model::kStairStepCountMax);
+    building_.stairs.push_back(stair);
+    ++next_stair_id_;
+    notifyStairChanged(stair.from_storey_id);
+    return stair.id;
+}
+
+ports::driving::ParamResult StructureEditService::setStairWidth(
+    model::StairId id, double mm) {
+    model::Stair& target = mutableStair(id);
+    const ports::driving::ParamResult result =
+        evaluateParam(mm, stairWidthRange(), target.width_mm);
+    if (result.status != ports::driving::ParamStatus::Rejected) {
+        target.width_mm = result.applied_mm;
+        notifyStairChanged(target.from_storey_id);
+    }
+    return result;
+}
+
+ports::driving::ParamResult StructureEditService::setStairStepCount(
+    model::StairId id, int count) {
+    // MED-1: int-Klemmung über `ParamResult`; nie `Rejected` (int ist endlich),
+    // `applied_mm` trägt die geklemmte Stufenzahl.
+    model::Stair& target = mutableStair(id);
+    const int applied =
+        std::clamp(count, model::kStairStepCountMin, model::kStairStepCountMax);
+    const auto status = (applied != count)
+                            ? ports::driving::ParamStatus::Clamped
+                            : ports::driving::ParamStatus::Accepted;
+    target.step_count = applied;
+    notifyStairChanged(target.from_storey_id);
+    return ports::driving::ParamResult{static_cast<double>(applied), status};
+}
+
+bool StructureEditService::removeStair(model::StairId id) {
+    const auto it = std::find_if(building_.stairs.begin(), building_.stairs.end(),
+                                 [id](const model::Stair& s) { return s.id == id; });
+    if (it == building_.stairs.end()) {
+        return false;
+    }
+    const model::StoreyId storey = it->from_storey_id;
+    building_.stairs.erase(it);
+    notifyStairChanged(storey);
+    return true;
+}
+
+void StructureEditService::notifyStairChanged(model::StoreyId storey) {
+    notifyListeners({.op = ports::driven::ModelChangeOp::StairChanged,
+                     .storey_id = storey});
+}
+
+const model::Stair& StructureEditService::stair(model::StairId id) const {
+    const auto it = std::find_if(building_.stairs.begin(), building_.stairs.end(),
+                                 [id](const model::Stair& s) { return s.id == id; });
+    if (it == building_.stairs.end()) {
+        throw std::out_of_range("stair: unbekannte Treppen-Id");
+    }
+    return *it;
+}
+
+model::Stair& StructureEditService::mutableStair(model::StairId id) {
+    const auto it = std::find_if(building_.stairs.begin(), building_.stairs.end(),
+                                 [id](const model::Stair& s) { return s.id == id; });
+    if (it == building_.stairs.end()) {
+        throw std::out_of_range("mutableStair: unbekannte Treppen-Id");
     }
     return *it;
 }

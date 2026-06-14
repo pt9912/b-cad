@@ -67,6 +67,11 @@ void ViewerScene::loadAll() {
          view_model_.slabMeshes()) {
         slab_meshes_[slab_mesh.slab_id] = std::move(slab_mesh.mesh);
     }
+    stair_meshes_.clear();
+    for (hexagon::ports::driving::StairMesh& stair_mesh :
+         view_model_.stairMeshes()) {
+        stair_meshes_[stair_mesh.stair_id] = std::move(stair_mesh.mesh);
+    }
 }
 
 void ViewerScene::onModelChanged(const driven::ModelChange& change) {
@@ -96,6 +101,13 @@ void ViewerScene::onModelChanged(const driven::ModelChange& change) {
             effective_updates_ += reloadKeyed(
                 slab_meshes_, view_model_.slabMeshes(),
                 [](const hexagon::ports::driving::SlabMesh& m) { return m.slab_id; });
+            break;
+        case driven::ModelChangeOp::StairChanged:  // LH-FA-STR-* (projektweit)
+            effective_updates_ += reloadKeyed(
+                stair_meshes_, view_model_.stairMeshes(),
+                [](const hexagon::ports::driving::StairMesh& m) {
+                    return m.stair_id;
+                });
             break;
         case driven::ModelChangeOp::StoreyAdded:
         case driven::ModelChangeOp::RoomsChanged:

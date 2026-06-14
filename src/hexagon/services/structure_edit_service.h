@@ -84,6 +84,18 @@ public:
                        const model::Footprint& cutout) override;
     bool removeSlab(model::SlabId slab) override;
 
+    // Treppen (LH-FA-STR-*, ADR-0011 #6): gerade einläufige Treppe,
+    // eigenständiges Element; jede Mutation meldet `StairChanged` (an die
+    // untere Etage `from_storey`), KEINE RoomsChanged. Das Treppen-Netz ist
+    // eine reine Query (`stair_geometry`, analytisch/total) — kein OCC, kein
+    // gespeichertes Solid.
+    std::optional<model::StairId> addStair(const model::Stair& prototype) override;
+    ports::driving::ParamResult setStairWidth(model::StairId stair,
+                                              double mm) override;
+    ports::driving::ParamResult setStairStepCount(model::StairId stair,
+                                                  int count) override;
+    bool removeStair(model::StairId stair) override;
+
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
 
@@ -99,6 +111,10 @@ public:
     // ViewModelPort (LH-FA-SLB-*/FND-*): Platten-Netze (Port-Extrusion +
     // base_z-Translation, `slab_geometry`).
     std::vector<ports::driving::SlabMesh> slabMeshes() const override;
+
+    // ViewModelPort (LH-FA-STR-*): Treppen-Netze (analytisch, `stair_geometry`;
+    // rise aus der `from_storey`-Höhe abgeleitet).
+    std::vector<ports::driving::StairMesh> stairMeshes() const override;
 
     // ADR-0008 (LH-FA-D3-002): Beobachter-Registrierung — mehrfach,
     // nicht-besitzend; Beobachter melden sich vor ihrer Zerstörung ab.
@@ -121,6 +137,8 @@ public:
     const model::Roof& roof(model::RoofId id) const;
     const std::vector<model::Slab>& slabs() const { return building_.slabs; }
     const model::Slab& slab(model::SlabId id) const;
+    const std::vector<model::Stair>& stairs() const { return building_.stairs; }
+    const model::Stair& stair(model::StairId id) const;
 
 private:
     // Neu zu bauende Nachbar-Solids (LH-FA-WAL-006: Eckenschluss macht
@@ -153,6 +171,8 @@ private:
     void notifyRoofChanged(model::StoreyId storey);
     model::Slab& mutableSlab(model::SlabId id);
     void notifySlabChanged(model::StoreyId storey);
+    model::Stair& mutableStair(model::StairId id);
+    void notifyStairChanged(model::StoreyId storey);
     double storeyHeight(model::StoreyId id) const;
     // Berechnet VOR dem Commit die Solids der Nachbarn, deren Footprint
     // sich durch `trial` ändert (wirft bei Geometrie-Fehler — dann
@@ -176,6 +196,7 @@ private:
     int next_opening_id_{1};
     int next_roof_id_{1};
     int next_slab_id_{1};
+    int next_stair_id_{1};
 };
 
 }  // namespace bcad::hexagon::services

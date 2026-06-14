@@ -9,13 +9,12 @@ adr_refs: [ADR-0001, ADR-0008, ADR-0009, ADR-0011]
 
 # Slice 016b: Treppen implementieren — gerade einläufige Treppe
 
-**Status:** in-progress — **geschrieben + MR-006-reviewt; Implementierung steht
-aus** (bewusster Checkpoint, slice-016b-Schreibung). MR-006-Plan-Review gelaufen
+**Status:** done (2026-06-14). MR-006-Plan-Review gelaufen
 ([Report](../../../reviews/2026-06-14-slice-016b-plan.md) — **keine HIGH**; alle
-tragenden Behauptungen gegen den realen Code verifiziert; MED-1
-`setStairStepCount`-Signatur, MED-2 Geländer-AK-Schärfung, LOW-1
-`addSlab`-Validierungsmuster, LOW-2 Oberkante-Orakel, LOW-3 Default-Herkunft
-eingearbeitet). DoD offen bis Implementierung + `make gates` grün.
+tragenden Behauptungen gegen den realen Code verifiziert; MED-1/MED-2 +
+LOW-1/2/3 eingearbeitet). Implementiert als **Zwei-Commit-Split** (i Domäne +
+`stair_geometry` + Kern-AK / ii Integration); DoD vollständig, `make gates` grün
+(112 Tests, Coverage 92,2 %). Closure-Notiz §8.
 
 **Welle:** welle-2-bauteile (elfter Slice; zweiter der Treppen-Familie).
 
@@ -48,20 +47,20 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei und **OCC-frei**
 
 ## 2. Definition of Done
 
-- [ ] **Domänen-Typen (pure Werte, `src/hexagon/model/`):** `Stair`
+- [x] **Domänen-Typen (pure Werte, `src/hexagon/model/`):** `Stair`
       (`StairId`, `from_storey_id`/`to_storey_id: StoreyId`,
       `StairType ∈ {Gerade}` (welle-2-Teilumfang, ein Wert; vorwärts-kompatibel
       für Podest/Wendel), `start: Point2D`, `width_mm`, `step_count: int`,
       `tread_mm`). **Kein `rise`-Feld** (abgeleitet) und **kein Geländer-Feld**
       (immer Teil der Treppe, spez. §1). `Building` gewinnt
       `std::vector<Stair> stairs`. Framework-frei (Regel A).
-- [ ] **Konstanten (`src/hexagon/model/constants.h`):** `kStairWidthMin/MaxMm`
+- [x] **Konstanten (`src/hexagon/model/constants.h`):** `kStairWidthMin/MaxMm`
       (800/2000), `kStairStepCountMin/Max` (2/30, `int`), `kStairTreadMin/MaxMm`
       (210/350), `kStairRiseMin/MaxMm` (140/200, **informativ — kein
       Klemmpunkt**, 016a-LOW-2 / spez. §3), `kStairRailingHeightMm` (900), `kDefaultStairWidthMm`
       (1000), `kDefaultStairStepCount` (15), `kDefaultStairTreadMm` (280) —
       spiegeln spez. §3 (Source Precedence: Spec gewinnt).
-- [ ] **Reine Kern-Geometrie (`src/hexagon/services/stair_geometry.{h,cpp}`,
+- [x] **Reine Kern-Geometrie (`src/hexagon/services/stair_geometry.{h,cpp}`,
       neu):** `stairMesh(const Stair&, double from_storey_height_mm)
       → TriangleMesh` — **analytisches Stufen-Polyeder**, **kein Port/OCC**
       (Muster `roofMesh`). **`rise = from_storey_height_mm / step_count`**
@@ -74,16 +73,16 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei und **OCC-frei**
       kGeometryToleranceMm`, `from_storey_height_mm ≤ kGeometryToleranceMm`) →
       **leeres** Netz (kein Wurf). Ggf. kleine Helfer (`stairRiseMm`,
       `stairRunLengthMm`).
-- [ ] **`ViewModelPort` um Treppen-Sicht:** `struct StairMesh{stair_id, mesh}` +
+- [x] **`ViewModelPort` um Treppen-Sicht:** `struct StairMesh{stair_id, mesh}` +
       `stairMeshes() → std::vector<StairMesh>` (Muster `roofMeshes`/`slabMeshes`,
       total — degenerierte Treppe → kein Eintrag). Vom `StructureEditService`
       implementiert (liest die `from_storey`-Höhe aus `building.storeys`).
-- [ ] **`ModelChangedPort` um `StairChanged`** (§5-`op`-Vokabular). **Geschoss-
+- [x] **`ModelChangedPort` um `StairChanged`** (§5-`op`-Vokabular). **Geschoss-
       Bindung an `from_storey`** (spez. §1, begründet: Anker/`base_z` unten);
       `ModelChange.storey_id = from_storey_id`. **Keine `RoomsChanged`** (Treppen
       berühren die Raumerkennung nicht). `spec/spezifikation.md` §5/§8 ggf. um
       den `op` ergänzen (Mechanik-Doku).
-- [ ] **`EditStructurePort`-Operationen** (im Service): `addStair`
+- [x] **`EditStructurePort`-Operationen** (im Service): `addStair`
       (Prototyp: from/to-Geschoss, start, width, step_count, tread; Defaults
       `kDefaultStair…` bestücken den **UI-seitigen Prototyp**, nicht den Service,
       Muster `addRoof`/`addSlab` — LOW-3; `id` vom Service;
@@ -96,11 +95,11 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei und **OCC-frei**
       Count; **`Clamped`/`Accepted`, nie `Rejected`** — int ist endlich; MED-1),
       `removeStair`. Jede erfolgreiche Mutation meldet `StairChanged`. **Kein
       Geländer-Op** (immer Teil der Treppe, welle-2 — spez. §1).
-- [ ] **Viewer folgt** (`ViewerScene`): hält Treppen-Netze (`StairId`-Map);
+- [x] **Viewer folgt** (`ViewerScene`): hält Treppen-Netze (`StairId`-Map);
       auf `StairChanged` `stairMeshes()` neu laden, **idempotent** über den
       bestehenden Template-Helfer `reloadKeyed` (Roof+Slab → +Stair). Wand-/
       Dach-/Platten-Pfad additiv unberührt.
-- [ ] **AK-Tests mit `LH-FA-STR-*` im Namen** (Kern + Service + Szene),
+- [x] **AK-Tests mit `LH-FA-STR-*` im Namen** (Kern + Service + Szene),
       display-frei: **STR-001** (Netz-z-Span = `from_storey_height_mm` — Oberkante
       = obere Geschossebene **als Geschosshöhe, kein Elevation-Lookup** (`Storey`
       trägt keine Elevation, Ein-Geschoss-Annahme wie `slab_geometry`; LOW-2);
@@ -220,4 +219,60 @@ ADR-0008-Mechanik folgend. Der Kern bleibt framework-frei und **OCC-frei**
 
 ## 8. Closure-Notiz
 
-*(folgt nach `make gates` grün.)*
+**Closure-Kriterien (beobachtbar):**
+
+- **Domäne + Kern-Geometrie:** `model::Stair` (gerade einläufig,
+  `StairType::Gerade`; from/to_storey, start, width, step_count, tread — **kein**
+  rise-/Geländer-Feld) + `Building.stairs`; `constants.h` `kStair*` (spez. §3).
+  `stair_geometry` (pur, **kein OCC/Port** — Muster `roof_geometry`):
+  `stairMesh` (step_count solide Stufen-Quader + **beidseitiges** Geländer auf
+  Handlaufhöhe), `stairRiseMm` (= Geschosshöhe/step_count, Division-Schutz),
+  `stairRunLengthMm`; **total** (degeneriert → leeres Netz). arch-check Regel A
+  (Kern OCC-/Qt-frei).
+- **Integration:** `ViewModelPort.stairMeshes()` (**projektweit**, total);
+  `ModelChangedPort.StairChanged` (an **`from_storey`** gebunden, MED-1 aus 016a);
+  `EditStructurePort` addStair/setStairWidth/setStairStepCount/removeStair —
+  width/tread/step_count gegen §3 geklemmt (`E-VAL-001`); **`setStairStepCount`
+  `(StairId,int)→ParamResult`, nie `Rejected`** (MED-1); **ungültige
+  Zwei-Geschoss-Spanne abgelehnt** (`from==to`/unbekanntes Geschoss/Höhe ≤
+  Toleranz — `addSlab`-Validierungsmuster, LOW-1); kein `RoomsChanged`.
+  `ViewerScene` lädt Treppen auf `StairChanged` über den gemeinsamen
+  `reloadKeyed`-Helfer (Roof+Slab+Stair) idempotent neu.
+- **7 AK-Tests `LH-FA-STR-*`:** Kern (rise abgeleitet + verbindet Geschosse,
+  z-Span = Geschosshöhe **als Höhe, kein Elevation-Lookup** (LOW-2); Stufenanzahl;
+  Laufbreite; **Geländer-Doppelsonde** — Handlaufhöhe **und** folgt dem Lauf, kein
+  Spike, MED-2; Negative/Totalität) + Szene (folgt+verbindet+idempotent,
+  Entfernen leert; Klemmung step_count/width, ungültige Spanne, `StairChanged`-
+  nicht-`Rooms`). Wand-/Dach-/Platten-/ROM-/D3-Tests textlich unverändert grün
+  (additiv, keine Port-Signatur-Migration).
+- **`make gates` grün** (2026-06-14): docs-check 0, gate-consistency,
+  arch-check A–E, lint 0 + suppression-gate, **Tests 112/112** (zuvor 105 →
+  Phase i 110 → Phase ii 112), Coverage **92,2 %**. Zwei-Commit-Split.
+- **Keine Spec-/ADR-Änderung:** §1 `LH-FA-STR-001.a` + §3 lagen aus 016a
+  vollständig vor (Präzedenz 014b: Dach-Implementierung änderte die Spec nicht);
+  das Geländer „beidseitig" ⊆ spez. „Lauf-Seite(n)". Persistenz ist 016c.
+
+**Lerneintrag:**
+
+- **Analytisches Bauteil < OCC-Bauteil im Aufwand:** die Treppe ist geometrisch
+  reicher als die Platte (Zwei-Geschoss-Spanne, abgeleitete rise, Geländer),
+  aber **einfacher zu implementieren** — rein analytische Quader im Kern
+  (`appendBox`, Muster `roof_geometry`) statt OCC-Boolean/Port/TKBO. Das
+  MR-006-INFO-1 („016b netto einfacher als 015b") bestätigte sich; kein
+  Geländer-Split nötig (gleiche Mesh-Funktion/Pfad).
+- **Geländer-Doppelsonde (MED-2) verhinderte einen Spike-Durchrutscher vorab:**
+  die schärfere AK (Handlaufhöhe + Lauf-Folge) wurde direkt umgesetzt — die
+  013b/014b/015b-Klasse „grünes Gate, aber Geometrie-Defekt" wurde diesmal
+  **im Plan-Review** statt erst im Code-Review gefangen.
+- **`reloadKeyed` trägt den vierten Element-Typ ohne Änderung:** der
+  Template-Helfer (Roof+Slab seit 015b) nahm Stair mit einer Lambda-Zeile auf —
+  die Idempotenz-Mechanik skaliert mit den storey-/projektbezogenen Bauteilen.
+
+**Restrisiko / Nachfolge:** **slice-016c** (Treppen-Persistenz `stairs`-Tabelle,
+from/to_storey-Spanne `restrict`; rise wird abgeleitet, nicht round-getrippt —
+Schema trägt `rise_mm`, das aus Geschosshöhe/step_count folgt). **Empfohlen vor
+Welle-Closure:** geometrielastiges Code-Review (Praxis 3×+ nach welle-1).
+Offen: Podest-/U-/L-/Wendeltreppe, freie Rotation (Schema ohne Richtungs-Spalte),
+echte Mehr-Geschoss-Stapelung (Elevation). STR ist das **letzte welle-2-Bauteil**
+→ danach Welle-2-Closure (unabhängige Verifikation + `done/welle-2-results.md`
+inkl. Carveout-Audit).

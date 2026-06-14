@@ -4,6 +4,7 @@
 
 #include "hexagon/model/roof.h"  // RoofId
 #include "hexagon/model/slab.h"  // SlabId
+#include "hexagon/model/stair.h"  // StairId
 #include "hexagon/model/triangle_mesh.h"
 #include "hexagon/model/wall.h"  // WallId
 #include "hexagon/ports/driven/model_changed_port.h"
@@ -54,6 +55,12 @@ public:
         return slab_meshes_;
     }
 
+    // Gehaltene Treppen-Netze (LH-FA-STR-*); auf `StairChanged` neu geladen.
+    const std::map<hexagon::model::StairId, hexagon::model::TriangleMesh>&
+    stairMeshes() const {
+        return stair_meshes_;
+    }
+
     // Anzahl wirksamer Szenen-Updates (Netz ersetzt/hinzugefügt/entfernt) —
     // Surrogat-Zähler für die Idempotenz-/Negative-AK.
     int effectiveUpdates() const { return effective_updates_; }
@@ -63,6 +70,7 @@ private:
     std::map<hexagon::model::WallId, hexagon::model::TriangleMesh> meshes_{};
     std::map<hexagon::model::RoofId, hexagon::model::TriangleMesh> roof_meshes_{};
     std::map<hexagon::model::SlabId, hexagon::model::TriangleMesh> slab_meshes_{};
+    std::map<hexagon::model::StairId, hexagon::model::TriangleMesh> stair_meshes_{};
     int effective_updates_{0};
 };
 

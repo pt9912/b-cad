@@ -7,6 +7,7 @@
 #include "hexagon/model/roof.h"     // Roof, RoofId, RoofType
 #include "hexagon/model/segment.h"
 #include "hexagon/model/slab.h"     // Slab, SlabId
+#include "hexagon/model/stair.h"    // Stair, StairId
 #include "hexagon/model/wall.h"  // WallId, StoreyId
 
 namespace bcad::hexagon::ports::driving {
@@ -123,6 +124,30 @@ public:
 
     // Entfernt eine Platte; meldet `SlabChanged`. `false` bei unbekannt.
     virtual bool removeSlab(model::SlabId slab) = 0;
+
+    // --- Treppen: gerade einläufig (LH-FA-STR-*, ADR-0011) ---
+
+    // Legt eine gerade Treppe aus dem `prototype` an (`from_storey_id`/
+    // `to_storey_id`, `start`, `width_mm`, `step_count`, `tread_mm`; `id` vom
+    // Service). width/step_count/tread werden gegen §3 geklemmt. **Abgelehnt**
+    // (kein Wert), wenn die Zwei-Geschoss-Spanne ungültig ist: `from == to`,
+    // ein Geschoss unbekannt, oder die `from_storey`-Höhe ≤ Toleranz. Meldet
+    // `StairChanged` (an `from_storey`).
+    virtual std::optional<model::StairId> addStair(
+        const model::Stair& prototype) = 0;
+
+    // Setzt die Laufbreite; klemmt auf §3 (`E-VAL-001`); meldet `StairChanged`
+    // (LH-FA-STR-003).
+    virtual ParamResult setStairWidth(model::StairId stair, double mm) = 0;
+
+    // Setzt die Stufenanzahl (LH-FA-STR-002); klemmt auf den ganzzahligen
+    // §3-Bereich. `applied_mm` trägt die geklemmte Stufenzahl; Status
+    // `Clamped`/`Accepted` (nie `Rejected` — `int` ist endlich). Meldet
+    // `StairChanged`.
+    virtual ParamResult setStairStepCount(model::StairId stair, int count) = 0;
+
+    // Entfernt eine Treppe; meldet `StairChanged`. `false` bei unbekannt.
+    virtual bool removeStair(model::StairId stair) = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

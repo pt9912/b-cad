@@ -5,6 +5,7 @@
 
 #include "hexagon/model/roof.h"  // RoofId
 #include "hexagon/model/slab.h"  // SlabId
+#include "hexagon/model/stair.h"  // StairId
 #include "hexagon/model/triangle_mesh.h"
 #include "hexagon/model/wall.h"  // WallId
 
@@ -29,6 +30,13 @@ struct RoofMesh {
 // Footprint-Extrusion (über den Port) auf die Aufstandshöhe verschoben.
 struct SlabMesh {
     model::SlabId slab_id{};
+    model::TriangleMesh mesh;
+};
+
+// Netz je Treppe (gerade einläufig, LH-FA-STR-*, slice-016b) — analytisches
+// Stufen-Polyeder + Geländer im Kern (`stair_geometry`), kein OCC.
+struct StairMesh {
+    model::StairId stair_id{};
     model::TriangleMesh mesh;
 };
 
@@ -57,6 +65,11 @@ public:
     // Netze ALLER Platten (LH-FA-SLB-*/FND-*); Pull nach `SlabChanged`.
     // Total (degenerierte Platte → kein Eintrag).
     virtual std::vector<SlabMesh> slabMeshes() const = 0;
+
+    // Netze ALLER Treppen (LH-FA-STR-*); Pull nach `StairChanged`. Total
+    // (degenerierte Treppe → kein Eintrag). **Projektweit** (eine Treppe ist
+    // geschossübergreifend — spez. §1 LH-FA-STR-001.a).
+    virtual std::vector<StairMesh> stairMeshes() const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving
