@@ -28,6 +28,7 @@
 #include <sqlite3.h>
 
 #include "adapters/persistence/schema_sql.h"  // kSchemaSql (generiert)
+#include "hexagon/services/stair_geometry.h"  // stairRiseMm (rise write-derived)
 
 namespace fs = std::filesystem;
 
@@ -261,6 +262,24 @@ hexagon::model::SlabType textToSlabType(const std::string& text) {
         return hexagon::model::SlabType::Bodenplatte;
     }
     throw std::runtime_error("E-IO: unbekannter slab_type '" + text + "'");
+}
+
+// Treppen-Typ ↔ Text. `stairs.stair_type` trägt **keine** CHECK-Constraint
+// (ADR-0006) — der Mapper erzwingt die gültige Menge {gerade} (welle-2-Teil-
+// umfang) und wirft bei Unbekanntem neutral (`E-IO`, kein Lib-Typ leckt).
+const char* stairTypeToText(hexagon::model::StairType type) {
+    switch (type) {
+        case hexagon::model::StairType::Gerade:
+            return "gerade";
+    }
+    throw std::runtime_error("E-IO: unbekannter StairType");
+}
+
+hexagon::model::StairType textToStairType(const std::string& text) {
+    if (text == "gerade") {
+        return hexagon::model::StairType::Gerade;
+    }
+    throw std::runtime_error("E-IO: unbekannter stair_type '" + text + "'");
 }
 
 // Rechteckiger Dach-Grundriss als JSON-Array
@@ -555,6 +574,48 @@ void insertSlabs(Db& db, const hexagon::model::Building& building) {
     }
 }
 
+// from_storey-Höhe für die abgeleitete `rise` (MED-1: **total** — fehlt das
+// Geschoss in `building.storeys`, neutraler `E-IO`-Wurf statt stillem `rise=0`;
+// rollt in der Transaktion zurück).
+double fromStoreyHeight(const hexagon::model::Building& building,
+                        hexagon::model::StoreyId id) {
+    for (const auto& storey : building.storeys) {
+        if (storey.id == id) {
+            return storey.height_mm;
+        }
+    }
+    throw std::runtime_error("E-IO: stairs from_storey unbekannt");
+}
+
+// Treppen (LH-FA-STR-*, ADR-0011/0006): NACH `insertStoreys` (FK
+// `stairs.from/to_storey_id → storeys.id`, RESTRICT). `name` bleibt `NULL`
+// (welle-2-Scope). `rise_mm` ist **abgeleitet** (Geschosshöhe/step_count, via
+// Kern-Helfer `stairRiseMm`) → write-derived; beim Laden NICHT zurückgelesen
+// (der Kern leitet es neu ab — Muster roofs-`height_mm`). Geländer render-only.
+void insertStairs(Db& db, const hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "INSERT INTO stairs (id,project_id,from_storey_id,to_storey_id,"
+              "stair_type,start_x_mm,start_y_mm,width_mm,step_count,rise_mm,"
+              "tread_mm) VALUES (?,1,?,?,?,?,?,?,?,?,?);");
+    for (const auto& stair : building.stairs) {
+        const double rise = hexagon::services::stairRiseMm(
+            stair, fromStoreyHeight(building, stair.from_storey_id));
+        sqlite3_bind_int(stmt.get(), 1, static_cast<int>(stair.id));
+        sqlite3_bind_int(stmt.get(), 2, static_cast<int>(stair.from_storey_id));
+        sqlite3_bind_int(stmt.get(), 3, static_cast<int>(stair.to_storey_id));
+        sqlite3_bind_text(stmt.get(), 4, stairTypeToText(stair.type), -1,
+                          SQLITE_STATIC);
+        sqlite3_bind_double(stmt.get(), 5, stair.start.x_mm);
+        sqlite3_bind_double(stmt.get(), 6, stair.start.y_mm);
+        sqlite3_bind_double(stmt.get(), 7, stair.width_mm);
+        sqlite3_bind_int(stmt.get(), 8, stair.step_count);
+        sqlite3_bind_double(stmt.get(), 9, rise);
+        sqlite3_bind_double(stmt.get(), 10, stair.tread_mm);
+        stmt.step();
+        stmt.reset();
+    }
+}
+
 void loadStoreys(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db, "SELECT id,height_mm FROM storeys ORDER BY level_index;");
     while (stmt.step()) {
@@ -661,6 +722,32 @@ void loadSlabs(Db& db, hexagon::model::Building& building) {
     }
 }
 
+// Treppen laden: feldgleich für die Domänenfelder; `rise_mm` (abgeleitet) und
+// `name` (nicht im Modell) werden **nicht** zurückgelesen.
+void loadStairs(Db& db, hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "SELECT id,from_storey_id,to_storey_id,stair_type,start_x_mm,"
+              "start_y_mm,width_mm,step_count,tread_mm FROM stairs ORDER BY id;");
+    while (stmt.step()) {
+        hexagon::model::Stair stair;
+        stair.id = static_cast<hexagon::model::StairId>(
+            sqlite3_column_int(stmt.get(), 0));
+        stair.from_storey_id = static_cast<hexagon::model::StoreyId>(
+            sqlite3_column_int(stmt.get(), 1));
+        stair.to_storey_id = static_cast<hexagon::model::StoreyId>(
+            sqlite3_column_int(stmt.get(), 2));
+        const auto* type = sqlite3_column_text(stmt.get(), 3);
+        stair.type = textToStairType(
+            type != nullptr ? reinterpret_cast<const char*>(type) : "");
+        stair.start = {sqlite3_column_double(stmt.get(), 4),
+                       sqlite3_column_double(stmt.get(), 5)};
+        stair.width_mm = sqlite3_column_double(stmt.get(), 6);
+        stair.step_count = sqlite3_column_int(stmt.get(), 7);
+        stair.tread_mm = sqlite3_column_double(stmt.get(), 8);
+        building.stairs.push_back(stair);
+    }
+}
+
 // Stale Temp-Artefakte entfernen (Recovery nach Absturz): das Temp-DB plus
 // ein evtl. zurückgebliebenes -journal/-wal eines getöteten `save`. Sonst
 // sähe ein neues sqlite3_open ein „hot journal" zu einer frisch angelegten
@@ -703,6 +790,7 @@ void SqliteProjectRepository::save(const hexagon::model::Building& building,
             insertOpenings(*db, building);  // nach Wänden (FK wall_id)
             insertRoofs(*db, building);      // nach Geschossen (FK storey_id)
             insertSlabs(*db, building);      // nach Geschossen (FK storey_id)
+            insertStairs(*db, building);     // nach Geschossen (FK from/to_storey)
             db->exec("COMMIT;");
             db.reset();  // schließen vor fsync/rename
         } catch (const SqliteError& e) {
@@ -748,6 +836,7 @@ hexagon::model::Building SqliteProjectRepository::load(
         loadOpenings(db, building);
         loadRoofs(db, building);
         loadSlabs(db, building);  // Lade-Reihenfolge: Stil-Konsistenz (kein FK auf load)
+        loadStairs(db, building);
         return building;
     } catch (const SqliteError& e) {
         throw std::runtime_error("E-IO: Projektdatei nicht lesbar ('" +

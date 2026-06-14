@@ -72,7 +72,11 @@ mit MR-006-Plan-Review, erster Slice steht):
   + pure `stair_geometry` (analytisches Stufen-Quader-Polyeder + beidseitiges
   Geländer im Kern, **kein OCC**; rise abgeleitet), `ViewModelPort.stairMeshes`,
   Edit-Ops (Klemmung, ungültige Spanne abgelehnt), `StairChanged`-Viewer über
-  `reloadKeyed`; 7 AK-Tests, Zwei-Commit-Split. slice-016c (Persistenz) folgt.
+  `reloadKeyed`; 7 AK-Tests, Zwei-Commit-Split. **slice-016c done 2026-06-14** —
+  Treppen-Persistenz (`stairs`-Round-Trip; `rise_mm` write-derived via
+  `stairRiseMm`/nicht round-getrippt, Geländer render-only; from/to_storey
+  RESTRICT). **Treppen-Familie (016a/b/c) komplett — STR war das letzte
+  welle-2-Bauteil → welle-2 closure-reif.**
 - Unabhängige Welle-Verifikation (analog welle-1/-1v) + Closure-Notiz in
   `done/welle-2-results.md` inkl. zwingendem Carveout-Audit.
 

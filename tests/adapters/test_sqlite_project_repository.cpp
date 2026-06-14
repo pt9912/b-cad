@@ -30,6 +30,9 @@ using bcad::hexagon::model::Footprint;
 using bcad::hexagon::model::Slab;
 using bcad::hexagon::model::SlabId;
 using bcad::hexagon::model::SlabType;
+using bcad::hexagon::model::Stair;
+using bcad::hexagon::model::StairId;
+using bcad::hexagon::model::StairType;
 using bcad::hexagon::model::SwingDirection;
 using bcad::hexagon::model::Wall;
 using bcad::hexagon::model::WallId;
@@ -99,6 +102,7 @@ TEST(SqliteProjectRepository_LH_FA_BLD_002_003, LeeresProjektRoundTrip) {
     EXPECT_TRUE(loaded.storeys.empty());
     EXPECT_TRUE(loaded.walls.empty());
     EXPECT_TRUE(loaded.slabs.empty());  // Leer-Pfad der slabs-Entity (slice-015c)
+    EXPECT_TRUE(loaded.stairs.empty());  // Leer-Pfad der stairs-Entity (slice-016c)
     fs::remove(path);
 }
 
@@ -307,7 +311,7 @@ TEST(SqliteProjectRepository_LH_FA_SLB_FND, RoundTripErhaeltPlatten) {
 // gespeicherte .bcad. Im Produktcode wäre rohes sqlite3 außerhalb des
 // Persistenz-Adapters ein arch-check-Regel-D-Verstoß — Regel D wie auch `lint`
 // (clang-tidy) greppen aber nur `src/`, nicht `tests/`, daher hier zulässig.
-void corruptSlabColumn(const fs::path& path, const char* sql) {
+void corruptColumn(const fs::path& path, const char* sql) {
     sqlite3* db = nullptr;
     sqlite3_open(path.string().c_str(), &db);
     sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
@@ -335,24 +339,94 @@ TEST(SqliteProjectRepository_LH_FA_SLB_FND, MalformedSpaltenWerfenNeutral) {
     // (a) ungerade Wertzahl im Ring → parseRing wirft.
     fs::remove(path);
     repo.save(original, path);
-    corruptSlabColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3]]';");
+    corruptColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3]]';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
     // (b) unbalancierte Klammern → parseSlabPolygonJson wirft.
     repo.save(original, path);
-    corruptSlabColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3,4]';");
+    corruptColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3,4]';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
     // (c) Müll-Suffix im Zahl-Token → Vollständig-Verbrauch-Check wirft (MED-1).
     repo.save(original, path);
-    corruptSlabColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3x,4]]';");
+    corruptColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3x,4]]';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
     // (d) unbekannter slab_type (Schema ohne CHECK) → textToSlabType wirft.
     repo.save(original, path);
-    corruptSlabColumn(path, "UPDATE slabs SET slab_type='xyz';");
+    corruptColumn(path, "UPDATE slabs SET slab_type='xyz';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
+    fs::remove(path);
+}
+
+// LH-FA-STR-001 (ADR-0011/0006, slice-016c): Treppen überleben den Round-Trip
+// feldgleich (stairs). `rise_mm` ist abgeleitet → write-derived, beim Laden
+// NICHT zurückgelesen; `name` nicht im Modell. Der nicht-glatte `start.x` belegt
+// die `sqlite3_bind_double`-Exaktheit diskriminierend (kein %.17g-Text-Pfad für
+// stairs — INFO-3).
+TEST(SqliteProjectRepository_LH_FA_STR_001, RoundTripErhaeltTreppen) {
+    const SqliteProjectRepository repo;
+    Building original;
+    original.storeys.push_back({StoreyId{1}, 2500.0});  // untere Etage
+    original.storeys.push_back({StoreyId{2}, 3000.0});  // obere Etage
+
+    Stair stair{};
+    stair.id = StairId{1};
+    stair.from_storey_id = StoreyId{1};
+    stair.to_storey_id = StoreyId{2};
+    stair.type = StairType::Gerade;
+    stair.start = {1234.56789012345, -50.0};  // nicht-glatt → bind_double exakt
+    stair.width_mm = 1000.0;
+    stair.step_count = 15;
+    stair.tread_mm = 287.3125;
+    original.stairs = {stair};
+
+    const fs::path path = tempPath("bcad_stairs.bcad");
+    fs::remove(path);
+    repo.save(original, path);
+    const Building loaded = repo.load(path);
+
+    ASSERT_EQ(loaded.stairs.size(), original.stairs.size());
+    const Stair& want = original.stairs[0];
+    const Stair& got = loaded.stairs[0];
+    EXPECT_EQ(static_cast<int>(got.id), static_cast<int>(want.id));
+    EXPECT_EQ(static_cast<int>(got.from_storey_id),
+              static_cast<int>(want.from_storey_id));
+    EXPECT_EQ(static_cast<int>(got.to_storey_id),
+              static_cast<int>(want.to_storey_id));
+    EXPECT_EQ(static_cast<int>(got.type), static_cast<int>(want.type));
+    EXPECT_DOUBLE_EQ(got.start.x_mm, want.start.x_mm);
+    EXPECT_DOUBLE_EQ(got.start.y_mm, want.start.y_mm);
+    EXPECT_DOUBLE_EQ(got.width_mm, want.width_mm);
+    EXPECT_EQ(got.step_count, want.step_count);
+    EXPECT_DOUBLE_EQ(got.tread_mm, want.tread_mm);
+    fs::remove(path);
+}
+
+// LH-FA-STR-001 (slice-016c, MR-006 MED-2): unbekannter stair_type → `load`
+// wirft neutral E-IO (`textToStairType` total; Schema ohne CHECK). Muster 015c.
+TEST(SqliteProjectRepository_LH_FA_STR_001, MalformedStairTypeWirftNeutral) {
+    const SqliteProjectRepository repo;
+    Building original;
+    original.storeys.push_back({StoreyId{1}, 2500.0});
+    original.storeys.push_back({StoreyId{2}, 3000.0});
+    Stair stair{};
+    stair.id = StairId{1};
+    stair.from_storey_id = StoreyId{1};
+    stair.to_storey_id = StoreyId{2};
+    stair.type = StairType::Gerade;
+    stair.start = {0.0, 0.0};
+    stair.width_mm = 1000.0;
+    stair.step_count = 15;
+    stair.tread_mm = 280.0;
+    original.stairs = {stair};
+
+    const fs::path path = tempPath("bcad_stair_malformed.bcad");
+    fs::remove(path);
+    repo.save(original, path);
+    corruptColumn(path, "UPDATE stairs SET stair_type='wendel';");
+    EXPECT_THROW(repo.load(path), std::runtime_error);
     fs::remove(path);
 }
 

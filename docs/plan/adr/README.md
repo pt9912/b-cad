@@ -33,6 +33,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0011 | Persistenz-Abbildung der Öffnungen (`openings`/`doors`/`windows`, ADR-0006-Schema) — Round-Trip Speichern/Laden | **erfüllt** durch slice-013c (2026-06-13) |
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster fürs **Dach** (LH-FA-ROF-*): Domäne + analytisches Netz (`roof_geometry`) + ViewModel/Viewer/Edit-Ops + Persistenz (`roofs`/`footprint_json`) | **erfüllt** durch slice-014a/b/c (2026-06-13) |
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Decken/Fundament** (LH-FA-SLB-*/FND-*): Domäne + Platten-Geometrie (`slab_geometry`, base_z via Mesh-Translation) + ViewModel/Viewer/Edit-Ops + Persistenz (`slabs`/`polygon_json` mit Cutouts) | **erfüllt** durch slice-015a/b/c (2026-06-14) |
+| ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Treppen** (LH-FA-STR-*): Domäne + analytische Treppen-Geometrie (`stair_geometry`, Stufen-Polyeder + Geländer, kein OCC) + ViewModel/Viewer/Edit-Ops + Persistenz (`stairs`, `rise_mm` write-derived) | **erfüllt** durch slice-016a/b/c (2026-06-14) |
 
 ## Konventionen
 

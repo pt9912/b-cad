@@ -167,6 +167,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Szene: folgt+verbindet+idempotent, Klemmung/Spanne/Meldung). Zwei-Commit-Split
   i/ii. Persistenz folgt in slice-016c. make gates grün (112 Tests, Coverage
   92,2 %).
+- slice-016c — Treppen-Persistenz (LH-FA-STR-001..003, LH-FA-BLD-002/003,
+  ADR-0011/0006): `SqliteProjectRepository` speichert/lädt Treppen über die
+  `stairs`-Tabelle (from/to_storey, stair_type, start_x/y, width, step_count,
+  tread als Spalten/`bind_double`/`bind_int`). **`rise_mm` write-derived** (via
+  Kern-Helfer `stairRiseMm`, from_storey-Höhe aus `building.storeys`; Lookup
+  total → `E-IO` bei fehlendem Geschoss) und beim Laden **nicht** zurückgelesen
+  — Gegenstück zu den 015c-Cutouts: `rise` ist abgeleitet (wie roofs-`height_mm`),
+  nicht domänen-getragen; Geländer render-only. `name` `NULL` (welle-2-Scope).
+  In derselben atomaren Transaktion nach den Geschossen (FK from/to_storey
+  RESTRICT); `stair_type`-Mapper total (Schema ohne CHECK). Round-Trip-AK
+  (nicht-glatter double → `bind_double` exakt) + Leer-Pfad- + Negativ-Parse-Test
+  (`stair_type` korrumpiert → `E-IO`). Erster `services`-Include im Persistenz-
+  Adapter (Reuse der rise-Formel statt Duplikat). Kein Schema-Wechsel.
+  **Treppen-Familie (016a/b/c) komplett → welle-2 closure-reif.** MR-006: keine
+  HIGH (2 MED eingearbeitet). make gates grün (114 Tests).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die
