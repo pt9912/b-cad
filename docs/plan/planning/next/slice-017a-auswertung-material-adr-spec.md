@@ -77,7 +77,10 @@ ADR-Frage.
       (ADR-0011/DOR-004.a/WIN-005.a) — Dach/Platte/Treppe sind ohnehin
       analytisch. **Bewusst kein OCC-`GProp` im Geometrie-Adapter**, sonst kippt
       die „reine Kern-Query"-Rahmung (driven-Round-Trip). Das ADR legt das
-      explizit fest.
+      explizit fest und **führt die verworfene Alternative (OCC-`GProp`-Volumen-
+      messung im Geometrie-Adapter) unter „Verglichene Alternativen"** — ein
+      echtes Entscheidungsprotokoll, konsistent mit ADR-0001..0011 (Forward-Note
+      des Reviews).
       ADR-Index ([`docs/plan/adr/README.md`](../../adr/README.md)) aktualisiert;
       `architecture.md` ggf. um `EvaluatePort` ergänzt.
 - [ ] **Lastenheft EVL-001..006 + MAT-001/002/003/005/006 von Outline auf
@@ -102,9 +105,12 @@ ADR-Frage.
       versprochene EVL-004-AK. **Grenze ROM-002/003 ↔ EVL-001/002 (LOW-2):**
       ROM-002/003 = Per-Raum-Quelle (ADR-0007); EVL = Aggregation/Bericht — eine
       Semantik. **§2.1** — `model::Material` als pure Werte (Kennwerte aus dem
-      `materials`-Schema) + **Zuweisungs-Autorität** (`material_id` direkt am
-      Bauteil **vs.** über `wall_types` — **Spec-Entscheidung** LH-FA-MAT-003.a,
-      HIGH-1; INFO-1: Werttyp gehört ins Domänen-Modell §2.1, nicht §1).
+      `materials`-Schema) + die **FK-Zuweisungs-Autorität** (`material_id` direkt
+      am Bauteil **vs.** über `wall_types` — strukturell, **Spec-Entscheidung**
+      LH-FA-MAT-003.a, HIGH-1/INFO-1). **Die effektive Auflösungsregel** (eigenes
+      `material_id`, sonst über `wall_type`) ist **Datenfluss → §1** (NIT:
+      Werttyp/FK in §2.1, Auflösungs-Mechanik in §1 — bei der Umsetzung
+      konsistent halten).
       **§3** ggf. Konstanten (Wohnflächen-Faktoren-Default, Default-Material).
       + §8-Historie.
 - [ ] **Reine Doku/Entscheidung — kein Code.** `make gates` grün; Closure-Notiz
