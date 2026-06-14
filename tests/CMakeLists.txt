@@ -14,6 +14,7 @@ add_executable(bcad_tests
     hexagon/test_roof_geometry.cpp
     hexagon/test_room_detection.cpp
     hexagon/test_slab_geometry.cpp
+    hexagon/test_stair_geometry.cpp
     hexagon/test_structure_edit_service.cpp
     hexagon/test_wall_footprint.cpp
 )

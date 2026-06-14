@@ -49,6 +49,23 @@ inline constexpr double kFoundationDepthMinMm = 200.0;     // LH-FA-FND-002
 inline constexpr double kFoundationDepthMaxMm = 2000.0;    // LH-FA-FND-002
 inline constexpr double kDefaultFoundationDepthMm = 500.0; // LH-FA-FND-001
 
+// Treppen — gerade einläufige Treppe (LH-FA-STR-*); spez. §3. b-cad ist keine
+// Statik: parametrische Komfort-Bereiche, keine erzwungene Baurecht-Prüfung.
+inline constexpr double kStairWidthMinMm = 800.0;      // LH-FA-STR-003
+inline constexpr double kStairWidthMaxMm = 2000.0;     // LH-FA-STR-003
+inline constexpr int kStairStepCountMin = 2;           // LH-FA-STR-002
+inline constexpr int kStairStepCountMax = 30;          // LH-FA-STR-002
+inline constexpr double kStairTreadMinMm = 210.0;      // LH-FA-STR-001
+inline constexpr double kStairTreadMaxMm = 350.0;      // LH-FA-STR-001
+// Steigung ist abgeleitet (Geschosshöhe/step_count) — diese Grenzen sind ein
+// **informativer** Komfort-Bereich, KEIN E-VAL-001-Klemmpunkt (016a-LOW-2).
+inline constexpr double kStairRiseMinMm = 140.0;       // LH-FA-STR-001 (informativ)
+inline constexpr double kStairRiseMaxMm = 200.0;       // LH-FA-STR-001 (informativ)
+inline constexpr double kStairRailingHeightMm = 900.0; // LH-FA-STR-004 (Handlaufhöhe)
+inline constexpr double kDefaultStairWidthMm = 1000.0; // LH-FA-STR-001
+inline constexpr int kDefaultStairStepCount = 15;      // LH-FA-STR-001
+inline constexpr double kDefaultStairTreadMm = 280.0;  // LH-FA-STR-001
+
 // Default-Maße bei Anlage (Muster kDefaultWallThicknessMm) — spez. §3.
 inline constexpr double kDefaultDoorWidthMm = 900.0;    // LH-FA-DOR-001
 inline constexpr double kDefaultDoorHeightMm = 2100.0;  // LH-FA-DOR-001
