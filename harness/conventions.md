@@ -174,7 +174,7 @@ sie.
   [`.d-check.yml`](../.d-check.yml)
 - **Adaption:** Der vendorte Kurs-Validator (MR-003) ist abgelöst:
   `make docs-check` läuft über das digest-gepinnte Container-Image
-  [d-check](https://github.com/pt9912/d-check) (v0.2.1) — weiterhin
+  [d-check](https://github.com/pt9912/d-check) (v0.8.0) — weiterhin
   als Build-Stage ohne Bind-Mount (`tools/Dockerfile`: `FROM d-check`
   + `COPY . .` + `RUN`), die Hard Rule bleibt erfüllt. Konfiguration
   deklarativ in [`.d-check.yml`](../.d-check.yml) (Module `links`,

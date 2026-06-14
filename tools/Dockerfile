@@ -9,7 +9,7 @@
 # das vendorte docs-check.js (MR-003) ist abgelöst. Digest-Hebungen
 # sind Routine-Pins mit Begründung im Commit-Body.
 
-FROM ghcr.io/pt9912/d-check@sha256:7bdef75be26e808a137ad817cd7fec8bf4eccd282fa78932d2e3d3bbc0e050eb AS docs-check
+FROM ghcr.io/pt9912/d-check@sha256:871751f9ed13cec8fadb610c538d735ad6c77a838a0384f645da916e829e4550 AS docs-check
 WORKDIR /repo
 COPY . .
 RUN ["/d-check", "/repo"]
