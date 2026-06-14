@@ -50,6 +50,7 @@ coverage-gate: ## bootstrap-aware Coverage (Schwelle $(COVERAGE_THRESHOLD)%, gco
 
 docs-check: ## Doku-Konsistenz — interne Markdown-Links/Anker/ID-Pfade (Modul 11/13)
 	$(DOCKER) build -f tools/Dockerfile --target docs-check -t $(IMAGE):docs-check .
+	$(DOCKER) run --rm $(IMAGE):docs-check
 
 gate-consistency: ## Modul 13 — jeder als real dokumentierte make-Befehl existiert (Doku↔Makefile)
 	$(GATE) --target gate-consistency -t $(IMAGE):gate-consistency .

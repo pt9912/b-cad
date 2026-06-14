@@ -12,4 +12,4 @@
 FROM ghcr.io/pt9912/d-check@sha256:871751f9ed13cec8fadb610c538d735ad6c77a838a0384f645da916e829e4550 AS docs-check
 WORKDIR /repo
 COPY . .
-RUN ["/d-check", "/repo"]
+
