@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.6
+**Version:** 0.1.7
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -576,21 +576,119 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 
 ### Modul Materialsystem (`MAT`)
 
-- **LH-FA-MAT-001 — Materialien verwalten.**
-- **LH-FA-MAT-002 — Materialbibliothek.**
-- **LH-FA-MAT-003 — Materialzuweisung.**
-- **LH-FA-MAT-004 — Texturen.**
-- **LH-FA-MAT-005 — U-Wert** (bauphysikalischer Kennwert).
-- **LH-FA-MAT-006 — Kostenkennwerte.**
+Geschärft 2026-06-14 (slice-017a) von Outline auf AK-Niveau (Reifephase-
+Klausel). Material ist eine **Eigenschaft**, die Bauteilen zugewiesen wird und
+in die Auswertungen (EVL) einfließt — **keine** Geometrie. **Teilumfang:**
+MAT-004 (Texturen) ist darstellungs-nah und bleibt **offen** (gehört zur Sicht,
+nicht zu M3).
+
+#### LH-FA-MAT-001 — Materialien verwalten
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Projekt, when ein Material mit Name und Kategorie
+  angelegt (bzw. geändert/entfernt) wird, then steht es zur Zuweisung bereit
+  (bzw. ist geändert/entfernt).
+- **Negative:** Given ein Material ohne Name, then wird es abgelehnt.
+
+#### LH-FA-MAT-002 — Materialbibliothek
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given das Projekt, when die Materialbibliothek geöffnet wird,
+  then zeigt sie die verfügbaren Materialien (Name, Kategorie), aus denen
+  ausgewählt werden kann.
+
+#### LH-FA-MAT-003 — Materialzuweisung
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Bauteil (Wand/Dach/Decke) und ein Material, when das
+  Material dem Bauteil zugewiesen wird, then ist das Bauteil dem Material
+  zugeordnet und seine Kennwerte (U-Wert/Kosten) fließen in die Auswertungen ein.
+- **Negative:** Given ein Bauteil ohne zugewiesenes Material, then gilt „kein
+  Material"; es entsteht kein Fehler.
+
+#### LH-FA-MAT-005 — U-Wert
+
+**Beschreibung:** Ein Material trägt einen **U-Wert** (Wärmedurchgangs-
+koeffizient, bauphysikalischer Kennwert).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Material, when sein U-Wert gesetzt wird, then ist er
+  am Material hinterlegt und über die zugewiesenen Bauteile abrufbar.
+
+#### LH-FA-MAT-006 — Kostenkennwerte
+
+**Beschreibung:** Ein Material trägt **Kostenkennwerte** (Kosten je m² bzw.
+je m³).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Material mit Kostenkennwerten, when eine
+  Kosten-Auswertung erfolgt, then fließen die Kennwerte je zugewiesenem Bauteil
+  (Fläche/Volumen) in die Summe ein.
 
 ### Modul Auswertungen (`EVL`)
 
-- **LH-FA-EVL-001 — Flächenberechnung.**
-- **LH-FA-EVL-002 — Volumenberechnung.**
-- **LH-FA-EVL-003 — Wohnflächenberechnung.**
-- **LH-FA-EVL-004 — Materiallisten.**
-- **LH-FA-EVL-005 — Türlisten.**
-- **LH-FA-EVL-006 — Fensterlisten.**
+Geschärft 2026-06-14 (slice-017a) von Outline auf AK-Niveau (Reifephase-
+Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
+(read-only) — sie zeigen Werte, sie verändern das Modell nicht.
+
+#### LH-FA-EVL-001 — Flächenberechnung
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Geschoss mit erkannten Räumen, when die Fläche
+  ausgewertet wird, then zeigt die Auswertung die **Netto-Grundfläche** je Raum
+  (und die Summe je Geschoss) in m².
+- **Boundary:** Given ein Geschoss ohne geschlossene Räume, then ist die
+  ausgewiesene Fläche 0 (kein Fehler).
+
+#### LH-FA-EVL-002 — Volumenberechnung
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Gebäude mit Bauteilen, when das Volumen ausgewertet
+  wird, then zeigt die Auswertung das **Netto-Volumen** (Bauteil-Volumen
+  abzüglich der Öffnungen) in m³.
+- **Boundary:** leeres Modell → Volumen 0.
+
+#### LH-FA-EVL-003 — Wohnflächenberechnung
+
+**Beschreibung:** Die Wohnfläche wird aus den Raum-Netto-Flächen abgeleitet.
+**Teilumfang welle-3:** Wohnfläche = Summe der Netto-Grundflächen;
+**Anrechnungsfaktoren** (Dachschrägen, Balkone, …) bleiben **offen**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given die erkannten Räume, when die Wohnfläche ausgewertet
+  wird, then zeigt sie die Summe der Raum-Netto-Flächen in m².
+
+#### LH-FA-EVL-004 — Materiallisten
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given Bauteile mit zugewiesenem Material, when die
+  Materialliste ausgewertet wird, then zeigt sie je Material die **Menge**
+  (Fläche bzw. Volumen) der zugeordneten Bauteile.
+- **Boundary:** Bauteile ohne Material werden nicht material-gruppiert; kein
+  Fehler.
+
+#### LH-FA-EVL-005 — Türlisten
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given platzierte Türen, when die Türliste ausgewertet wird,
+  then zeigt sie die Türen mit Anzahl und Maßen (Breite/Höhe).
+
+#### LH-FA-EVL-006 — Fensterlisten
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given platzierte Fenster, when die Fensterliste ausgewertet
+  wird, then zeigt sie die Fenster mit Anzahl und Maßen (Breite/Höhe/Brüstung).
 
 ### Modul Import / Export (`IO`)
 
@@ -709,3 +807,4 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 | 0.1.4 | 2026-06-13 | Modul Dach (LH-FA-ROF-001..005) von Outline auf AK-Niveau geschärft (Sattel-/Walm-/Pultdach, Neigung 5–60°, Überstand 0–1500 mm); **Teilumfang rechteckiger Grundriss**, komplexe Polygon-Grundrisse bleiben offen; lösungsfrei/benutzer-beobachtbar | slice-014a (welle-2-bauteile) |
 | 0.1.5 | 2026-06-13 | Module Decken (LH-FA-SLB-001..003) und Fundament (LH-FA-FND-001..003) von Outline auf AK-Niveau geschärft (horizontale Platten, Deckendicke 100–500 mm, Ausschnitte, Fundamenttiefe 200–2000 mm, Bodenplatte); lösungsfrei/benutzer-beobachtbar | slice-015a (welle-2-bauteile) |
 | 0.1.6 | 2026-06-14 | Modul Treppen (LH-FA-STR-001..004) von Outline auf AK-Niveau geschärft (gerade einläufige Treppe verbindet zwei Geschosse, Stufenanzahl 2–30, Laufbreite 800–2000 mm, immer sichtbares Geländer); **Teilumfang gerade einläufig**, Podest-/U-/L-/Wendeltreppen offen; lösungsfrei/benutzer-beobachtbar. Zugleich Header-Versions-Drift behoben (Header war seit slice-012 auf 0.1.2 stehengeblieben, während die Historie auf 0.1.5 wuchs) | slice-016a (welle-2-bauteile) |
+| 0.1.7 | 2026-06-14 | Module Material (LH-FA-MAT-001/002/003/005/006) und Auswertungen (LH-FA-EVL-001..006) von Outline auf AK-Niveau geschärft (Material als zuweisbare Eigenschaft mit U-Wert/Kosten; Auswertungen als reine read-only-Ableitung: Netto-Grundfläche, Netto-Volumen, Wohnfläche, Material-/Tür-/Fensterlisten); MAT-004 Texturen (Teilumfang offen, darstellungs-nah), Wohnflächen-Anrechnungsfaktoren offen; lösungsfrei/benutzer-beobachtbar | slice-017a (welle-3-auswertung) |

@@ -207,6 +207,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Version == oberste §9-Historie-Zeile" — 3× Drift (013a/014a/015a, erst 016a
   korrigiert); MR-006-Linse prüft den Header-Nachzug, computational d-check-/
   make-Regel als Promotion-Ziel.
+- slice-017a — Auswertung & Material: Entscheidung/Schärfung (welle-3-Leitplanke,
+  LH-FA-EVL-001..006 + LH-FA-MAT-001/002/003/005/006, Lastenheft 0.1.7).
+  **ADR-0012 „Evaluations-Architektur" accepted** (neuer `EvaluatePort`
+  read-only/pull; Fläche = Shoelace-Raum-Netto, **Netto-Volumen analytisch im
+  Kern** = Footprint·Höhe − geklemmtes Öffnungsvolumen, **kein OCC-`GProp`**;
+  Material nur konsumierte Eingabe). Zwei unabhängige Reviews: MR-006-Plan-Review
+  des Projektinhabers (1 HIGH — ADR auf Evaluation verengt, Material→Spec) +
+  **unabhängiger ADR-Text-Review** (1 HIGH — Volumen-Falle Roh-Prisma/Miter-
+  Doppelzählung gefixt; `architecture.md`-Nachzug EVL→`EvaluatePort`;
+  `windows.frame_material`-Freitext aus EVL-004 ausgenommen). Spec §1
+  `LH-FA-EVL-001.a` + §2.1 `model::Material`/FK-Autorität + §3 `LIVING_AREA_FACTOR`.
+  Reine Entscheidung/Spec (kein Code; MR-008 lösungsfrei; MR-010 Header). DRW →
+  welle-5. make gates grün (116 Tests).
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die

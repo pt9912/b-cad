@@ -380,6 +380,55 @@ Zähler wirksamer Szenen-Updates); der benutzer-beobachtbare
 ACC-002-Beleg entsteht als manueller Abnahme-Schritt
 (`make acc-002-beleg`, kein Gate).
 
+### LH-FA-EVL-001.a — Auswertungen (Flächen/Volumen/Wohnfläche/Listen)
+
+Sammelblock, deckt **LH-FA-EVL-001..006**; Modell-Einordnung über **ADR-0012**
+(Evaluations-Architektur). Auswertung ist eine **reine read-only-Ableitung** aus
+dem committeten Modell über den neuen Driving-Port **`EvaluatePort`** (kein
+`DetectRoomsPort`-Überladen; pure Ergebnis-Werttypen; **kein** `…Changed`-`op`,
+pull-on-demand). **Analytisch im Kern, kein OCC-`GProp`** (keine
+`GeometryKernelPort`-Anfrage für eine Zahl).
+
+**Fläche (EVL-001/003) — Shoelace auf dem Raum-Netto-Polygon.** Die
+Netto-Grundfläche je Raum ist die **Shoelace-Fläche des ADR-0007-Raumpolygons**
+(äußerer Innenkanten-Ring **minus** Loch-Ringe — die ADR-0007-Netto-Definition
+wird **wiederverwendet**, keine zweite Semantik, keine Doppelzählung). ROM-002
+(Raumfläche) / ROM-003 (Raumvolumen) sind die **Per-Raum-Quelle**; EVL
+**aggregiert** sie je Geschoss/Gebäude (Bericht) — **eine** Flächen-Semantik.
+**Wohnfläche (EVL-003)** = Summe der Raum-Netto-Flächen (welle-3-Teilumfang;
+Anrechnungsfaktoren offen, `LIVING_AREA_FACTOR = 1` §3).
+
+**Volumen (EVL-002) — Bauteil-Netto-Volumen analytisch im Kern.** Je Bauteil:
+Dach/Platte/Treppe aus ihrem analytischen Solid; **Wand** =
+Bauteil-Footprint-Fläche (Shoelace) · Höhe **minus** das **real entfernte,
+geklemmte Öffnungsvolumen** je Öffnung
+(`width · thickness · clamped_height`,
+`clamped_height = min(sill+height, Wandhöhe) − max(0, sill)`) — **NICHT** das
+überstands-behaftete Roh-Schnittprisma (`OPENING_CUT_OVERSHOOT_MM`; die
+Schnitt-Prismen sind das Boolean-**Werkzeug**, nicht das Volumen-Maß).
+**Eck-Näherung (welle-3, benannt):** die Summe der Wand-Volumina **doppelzählt**
+den Miter-Sporn endpunkt-verbundener Wände (slice-012-Footprint) — kleine
+Über-Zählung, bewusst in Kauf genommen; das exakte vereinigte Volumen
+(Footprint-Union je Geschoss) ist Re-Eval (ADR-0012, parallel
+WAL-006-Vollumfang).
+
+**Listen (EVL-004/005/006) — Aggregation über das Modell.** Die Materialliste
+(EVL-004) gruppiert die **material-tragenden Bauteile** (`walls`/`roofs`/`slabs`
+mit `material_id`) je Material und summiert die Menge (Fläche/Volumen).
+`stairs`/`openings`/`doors`/`windows` tragen kein `material_id` und sind eine
+**benannte Lücke**; **`windows.frame_material` ist Freitext (kein `materials`-FK)
+und fließt NICHT in die EVL-004-Aggregation** (sonst zwei inkonsistente Quellen).
+Tür-/Fensterlisten (EVL-005/006) zählen die `openings`/`doors`/`windows` mit
+ihren Maßen.
+
+**Material-Auflösungsregel (Datenfluss):** das **effektive** Material eines
+Bauteils ist sein eigenes `material_id`; **fehlt es, gilt das `material_id`
+seines `wall_type`** (Default über den Typ) — `wall_types.material_id` als
+Vorlage, das Bauteil-`material_id` als Override (Werttyp/FK-Autorität siehe §2.1).
+
+**Totalität:** ein leeres/lückenhaftes Modell liefert eine Null-/leere
+Auswertung (kein Wurf); die Auswertung **mutiert nie** (read-only).
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -402,6 +451,16 @@ Pure Werttypen in `src/hexagon/model/`, framework-frei. Implementiert
 *Wandzüge/Polylines* (mehrere verbundene Segmente, LH-FA-WAL-001/006)
 folgen als Erweiterung; `Storey` gewinnt später `level_index`/`elevation`
 aus dem Persistenz-Schema (§2.2).
+
+**Material (welle-3, LH-FA-MAT-*, von ADR-0012/EVL konsumiert):** `model::Material`
+als pure Werte aus dem `materials`-Schema (ADR-0006):
+`{ id, name, category, u_value?, cost_per_m2?, cost_per_m3?, color_hex?, texture_path? }`.
+**FK-Zuweisungs-Autorität:** ein Bauteil (`walls`/`roofs`/`slabs`) trägt ein
+**eigenes** `material_id` (Override); `wall_types.material_id` ist die
+**Typ-Vorlage**. Die **effektive** Auflösung (eigenes `material_id`, sonst über
+den `wall_type`) ist Datenfluss → §1 `LH-FA-EVL-001.a` (LH-FA-MAT-003.a).
+`stairs`/`openings`/`doors` tragen in welle-3 **kein** Material (benannte Lücke);
+`windows.frame_material` ist Freitext, **kein** `materials`-FK.
 
 ### 2.2 Persistenz-Schema (SQLite, ADR-0003 / ADR-0006)
 
@@ -489,6 +548,7 @@ im Schema (nur Undo) — eigener Slice.
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | LH-QA-001 |
 | `MEMORY_BUDGET_GB` | 2 | RAM-Budget Standardprojekt | LH-QA-002 |
 | `SUPPORTED_LOCALES` | `de`, `en` | Mehrsprachigkeit | LH-QA-006 |
+| `LIVING_AREA_FACTOR` | 1 | Wohnflächen-Anrechnungsfaktor (welle-3-Teilumfang: Wohnfläche = Netto-Grundfläche; Schrägen-/Balkon-Faktoren offen) | LH-FA-EVL-003 |
 
 Die Default-**Wandhöhe** bei Anlage ist die **Höhe des Geschosses**
 (parametrisch, kein eigener Konstant; LH-FA-WAL-001). `slice-003a` hat
@@ -566,6 +626,7 @@ nicht im Bootstrap.
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` Port-base_z-Frage geschlossen: kein Port-Wechsel — Mesh-Translation um `base_z` nach dem Boolean, Cutouts relativ `[0,Dicke]`; `SlabChanged`-`op` (storey-bezogen, kein `RoomsChanged`) | slice-015b |
 | 2026-06-13 | §1 `LH-FA-SLB-001.a` „auf den Platten-Umriss begrenzt" präzisiert: rand-/außenliegende, degenerierte und nicht-endliche Ausschnitte werden an der API **abgelehnt** (Containment-Vorbedingung) — innenliegende Aussparungen sind damit koplanar-frei, **kein** lateraler Überstand nötig (anders als die Wand durchspannende Öffnung, §1 DOR-004.a) | slice-015b Code-Review (H1) |
 | 2026-06-14 | §1 `LH-FA-STR-001.a` neu (Treppen-Geometrie Teilumfang gerade einläufige Treppe: Stufen-Quader-Polyeder im Kern wie `roof_geometry`, `rise = Geschosshöhe/step_count` abgeleitet, feste +x-Aufstiegsrichtung, Geländer als generierte Geometrie ohne Schema-Spalte, `StairChanged`-`op` an `from_storey` gebunden + `stairMeshes` projektweit) + §3 Stair-Wertebereiche (Breite/Stufenanzahl/Auftritt geklemmt, Steigung informativ) + Defaults | slice-016a |
+| 2026-06-14 | §1 `LH-FA-EVL-001.a` neu (Auswertungs-Architektur ADR-0012: `EvaluatePort` read-only/pull; Fläche = Shoelace-Raum-Netto, **Netto-Volumen analytisch im Kern** = Footprint·Höhe − geklemmtes Öffnungsvolumen, **kein** Roh-Prisma/OCC-`GProp`; benannte Miter-Eck-Näherung; Listen-Aggregation über material-tragende `walls`/`roofs`/`slabs`, `windows.frame_material`-Freitext ausgenommen; Material-Auflösungsregel eigenes vs. `wall_type`) + §2.1 `model::Material` + FK-Autorität + §3 `LIVING_AREA_FACTOR` | slice-017a |
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

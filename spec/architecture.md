@@ -75,7 +75,8 @@ nur dort werden Adapter-Instanzen injiziert.
 |---|---|---|
 | `ManageProjectPort` | Projekt anlegen, speichern, laden, versionieren | LH-FA-BLD-001..004, ACC-005 |
 | `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, OBJ-002 |
-| `DetectRoomsPort` | Raum-Autoerkennung, Flächen-/Volumenberechnung | LH-FA-ROM-001..003, LH-FA-EVL-001..003 |
+| `DetectRoomsPort` | Raum-Autoerkennung (geschlossene Wandzüge → Raumpolygone, Netto-Fläche je Raum als Auswertungs-Quelle) | LH-FA-ROM-001..003 |
+| `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten | LH-FA-EVL-001..006, ADR-0012 |
 | `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation, ADR-0009) | LH-FA-D3-001..006, ACC-002, ADR-0009 |
 | `ExchangeModelPort` | Import/Export anstoßen (Format-neutral) | LH-FA-IO-001..008, ACC-003, ACC-004 |
 

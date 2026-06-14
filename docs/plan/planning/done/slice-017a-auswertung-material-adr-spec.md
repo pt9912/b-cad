@@ -1,7 +1,7 @@
 ---
 id: slice-017a
 titel: Auswertung & Material — ADR-0012 (Evaluations-Architektur) + Lastenheft EVL/MAT-Schärfung & Spec
-status: next
+status: done
 welle: welle-3-auswertung
 lastenheft_refs: [LH-FA-EVL-001, LH-FA-EVL-002, LH-FA-EVL-003, LH-FA-EVL-004, LH-FA-EVL-005, LH-FA-EVL-006, LH-FA-MAT-001, LH-FA-MAT-002, LH-FA-MAT-003, LH-FA-MAT-005, LH-FA-MAT-006]
 adr_refs: [ADR-0001, ADR-0006, ADR-0007, ADR-0011, ADR-0012]
@@ -9,13 +9,15 @@ adr_refs: [ADR-0001, ADR-0006, ADR-0007, ADR-0011, ADR-0012]
 
 # Slice 017a: Auswertung & Material — ADR-0012 + Lastenheft-Schärfung & Spec
 
-**Status:** next — **MR-006-Plan-Review des Projektinhabers gelaufen
-(2026-06-14): 1 HIGH + 2 MED + 3 LOW/2 INFO, alle eingearbeitet** (Report
-[`2026-06-14-slice-017a-plan.md`](../../../reviews/2026-06-14-slice-017a-plan.md)).
-**HIGH-1 (ADR bündelt zwei Entscheidungsfelder) gelöst per Remedy 1:** ADR-0012
-ist auf die **Evaluations-Architektur** verengt; die Material-Zuweisungs-
-Autorität ist **Spec-Gewicht** (LH-FA-MAT-003.a), kein ADR. **Wartet auf das Go
-des Projektinhabers** (HIGH gelöst → startbar).
+**Status:** done (2026-06-14). MR-006-Plan-Review (Projektinhaber): 1 HIGH +
+2 MED + 3 LOW/2 INFO eingearbeitet ([Report](../../../reviews/2026-06-14-slice-017a-plan.md);
+HIGH-1 per Remedy 1 — ADR auf Evaluation verengt). **ADR-0012 accepted** nach
+**unabhängigem Text-Review** (1 HIGH + 2 MED eingearbeitet: Netto-Volumen
+geklemmtes reales Öffnungsvolumen statt Roh-Prisma + benannte Eck-Näherung;
+`architecture.md`-Nachzug EVL→`EvaluatePort`; `windows.frame_material` aus
+EVL-004 ausgenommen). Lastenheft EVL/MAT auf AK (0.1.7), Spec §1
+`LH-FA-EVL-001.a` + §2.1 `model::Material` + §3 + §8. DoD vollständig,
+`make gates` grün (reine Doku). Closure-Notiz §8.
 
 **Welle:** welle-3-auswertung (erster Slice; **Welle-Leitplanke**, Muster
 slice-013a).
@@ -55,7 +57,7 @@ ADR-Frage.
 
 ## 2. Definition of Done
 
-- [ ] **ADR-0012 „Evaluations-Architektur" accepted** (nach **unabhängigem
+- [x] **ADR-0012 „Evaluations-Architektur" accepted** (nach **unabhängigem
       ADR-Text-Review** vor Accept — Muster 013a/009a; ADR-Accept ist
       Review-Checkpoint). **Eng auf Evaluation** (HIGH-1 — **kein** Material-
       Modell-Entscheid im ADR; Material erscheint nur als *von EVL konsumierte
@@ -83,7 +85,7 @@ ADR-Frage.
       des Reviews).
       ADR-Index ([`docs/plan/adr/README.md`](../../adr/README.md)) aktualisiert;
       `architecture.md` ggf. um `EvaluatePort` ergänzt.
-- [ ] **Lastenheft EVL-001..006 + MAT-001/002/003/005/006 von Outline auf
+- [x] **Lastenheft EVL-001..006 + MAT-001/002/003/005/006 von Outline auf
       AK-Niveau geschärft** (Reifephase-Klausel; **lösungsfrei, benutzer-
       beobachtbar**, MR-008): je Happy/Boundary/Negative wo sinnvoll.
       **EVL:** Flächenberechnung (EVL-001: Netto-Grundfläche je Raum/Geschoss in
@@ -93,7 +95,7 @@ ADR-Frage.
       **MAT-004 Texturen** ist **rendering-/Darstellungs-nah** → **Teilumfang
       offen** (nicht M3, gehört zur Sicht). **MR-010:** Header-`Version:` auf die
       neue §9-Historie-Zeile nachziehen. + §9-Historie.
-- [ ] **`spec/spezifikation.md` präzisiert:**
+- [x] **`spec/spezifikation.md` präzisiert:**
       **§1 `LH-FA-EVL-001.a`** — Fläche via Shoelace (Netto, ADR-0007-Definition
       **wiederverwendet**, nicht zweite Semantik); **Netto-Volumen analytisch im
       Kern** (footprint·Höhe − Öffnungs-Prismen, MED-2); Wohnfläche-Regel (Summe
@@ -113,7 +115,7 @@ ADR-Frage.
       konsistent halten).
       **§3** ggf. Konstanten (Wohnflächen-Faktoren-Default, Default-Material).
       + §8-Historie.
-- [ ] **Reine Doku/Entscheidung — kein Code.** `make gates` grün; Closure-Notiz
+- [x] **Reine Doku/Entscheidung — kein Code.** `make gates` grün; Closure-Notiz
       mit Lerneintrag. **Nicht Teil:** Material-Implementierung (Domänentyp +
       Zuweisung + `material_id`-Persistenz-Round-Trip); EVL-Implementierung
       (`EvaluatePort`-Service + Shoelace/Netto-Volumen/Listen + AK-Tests);
@@ -123,11 +125,11 @@ ADR-Frage.
 
 | Datei / Komponente | Änderungs-Art | Begründung |
 |---|---|---|
-| `docs/plan/adr/{0012-evaluations-architektur}.md` | neu | ADR-0012 **eng** (EvaluatePort, Ergebnis-Modell, read-only/pull, Flächen-+Volumen-Fundament) |
+| `docs/plan/adr/0012-evaluations-architektur.md` | neu ✓ | ADR-0012 **eng**, **accepted** (EvaluatePort, Ergebnis-Modell, read-only/pull, Flächen-+Volumen-Fundament) |
 | `docs/plan/adr/README.md` | ändern | ADR-0012 im Index + Folgepflichten |
 | `spec/lastenheft.md` | ändern | EVL-001..006 + MAT-001/002/003/005/006 Outline→AK; Header-Version (MR-010); §9-Historie |
 | `spec/spezifikation.md` | ändern | §1 `LH-FA-EVL-001.a` (Shoelace/Netto-Volumen/Listen, MED-1/LOW-2); §2.1 `model::Material` + Zuweisungs-Autorität (HIGH-1/INFO-1); §3; §8 |
-| `spec/architecture.md` | ggf. ändern | `EvaluatePort` (Driving) in §1.1, falls die ADR ihn so entscheidet |
+| `spec/architecture.md` | geändert ✓ | `EvaluatePort` (Driving) §1.1, EVL-001..006 von `DetectRoomsPort` gelöst (ADR-0012-Folgepflicht/MED-1) |
 | `docs/reviews/2026-06-14-slice-017a-plan.md` | neu ✓ | MR-006-Report (Projektinhaber) — **geschrieben** |
 
 ## 4. Trigger
@@ -192,4 +194,49 @@ ADR-Frage.
 
 ## 8. Closure-Notiz
 
-*(folgt nach `make gates` grün.)*
+**Closure-Kriterien (beobachtbar):**
+
+- **ADR-0012 „Evaluations-Architektur" accepted** (`docs/plan/adr/0012-…`):
+  neuer `EvaluatePort` (read-only Query, **nicht** `DetectRoomsPort`-Überladen);
+  pure Ergebnis-Werttypen; **pull, kein `…Changed`-`op`**; Fläche = Shoelace-
+  Raum-Netto (ADR-0007 wiederverwendet), **Netto-Volumen analytisch im Kern**
+  (Footprint·Höhe − geklemmtes Öffnungsvolumen, **kein OCC-`GProp`**); Material
+  nur konsumierte Eingabe. **Nach unabhängigem Text-Review** (1 HIGH + 2 MED
+  eingearbeitet — Volumen-Falle Roh-Prisma/Miter-Doppelzählung; `architecture.md`-
+  Nachzug; `windows.frame_material`-Ausnahme). ADR-Index + Folgepflichten +
+  Geschichte gesetzt.
+- **`architecture.md` §1.1 nachgezogen** (ADR-0012-Folgepflicht): `EvaluatePort`
+  trägt EVL-001..006; `DetectRoomsPort` ist wieder raum-spezifisch — kein
+  Doku↔Leitplanke-Widerspruch.
+- **Lastenheft 0.1.7:** MAT-001/002/003/005/006 + EVL-001..006 Outline→AK,
+  **lösungsfrei/benutzer-beobachtbar** (MR-008); MAT-004 Texturen + Wohnflächen-
+  Anrechnungsfaktoren als Teilumfang offen; Header 0.1.6→**0.1.7 nachgezogen**
+  (MR-010); §9-Historie.
+- **Spec:** §1 `LH-FA-EVL-001.a` (EVL-Algorithmik, ADR-0012-treu); §2.1
+  `model::Material` + FK-Zuweisungs-Autorität (Werttyp/FK strukturell, NIT/
+  INFO-1); effektive Auflösungsregel als Datenfluss in §1; §3
+  `LIVING_AREA_FACTOR`; §8-Historie.
+- **Reine Doku/Entscheidung — kein Code.** `make gates` grün (docs-check 0;
+  Tests 116/116 unverändert).
+
+**Lerneintrag:**
+
+- **Der unabhängige ADR-Text-Review fing einen HIGH, den der Plan-Review nicht
+  sehen konnte:** das „Footprint·Höhe − Σ Schnittprismen"-Volumen war
+  geometrisch falsch (Roh-Prismen-Überstand + Miter-Eck-Doppelzählung). Der
+  Befund war erst am **ADR-Text** (mit Bezug auf `opening_geometry.cpp`/
+  `wall_footprint.cpp`) greifbar — bestätigt MR-009-Geist auf der **Entscheidungs-
+  Ebene**: auch ein ADR-Text trägt geometrie-korrektheits-nahe Behauptungen, die
+  ein unabhängiger Review gegen den realen Code prüfen muss.
+- **Leitplanken-ADR eng schneiden (HIGH-1):** das ursprüngliche „Auswertung +
+  Material" hätte zwei verschiedenartige Entscheidungsfelder immutabel gebündelt
+  (Präzedenz slice-009). Die Verengung auf Evaluation + Material-als-Spec hielt
+  die Leitplanke kohärent.
+
+**Restrisiko / Nachfolge:** **slice-017b** (EVL-Implementierung: `EvaluatePort` +
+Auswertungs-Service mit Shoelace-Netto-Fläche, analytischem Netto-Volumen,
+Listen-Aggregation; **MR-009** greift — geometrie-korrektheits-nah) + der
+Material-Implementierungs-Strang (`model::Material`, Zuweisung, `material_id`-
+Persistenz-Round-Trip). Offen (Re-Eval/Teilumfang): exaktes vereinigtes Volumen
+(Miter-Eck), material-tragende Erweiterung auf `stairs`/`openings`/`windows`,
+MAT-004 Texturen, Wohnflächen-Faktoren, reaktive Auswertung. **DRW → welle-5.**

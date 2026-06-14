@@ -13,6 +13,7 @@
 | [0009](0009-gui-framework-qt6.md) | GUI-Framework-Bindung Qt 6 (Widgets, Tessellation über `ViewModelPort` — kein OCC in der GUI, Regel E, Headless-Strategie) | Accepted (2026-06-12) | REQ-TEC-002, ACC-002, LH-FA-D3-001/002, ADR-0001/0002/0008 |
 | [0010](0010-headless-gl-xvfb.md) | Headless-GL via Xvfb + Mesa/llvmpipe — präzisiert ADR-0009 (f): offscreen-QPA trägt kein GL (Implementierungs-Befund slice-011b) | Accepted (2026-06-12) | ADR-0009, ADR-0004, LH-FA-D3-002 |
 | [0011](0011-bauteil-hosting-wandoeffnung.md) | Bauteil-Hosting & Wandöffnungs-Modell (wand-gehostetes Element mit Wand-Referenz; Kern liefert Schnitt-Prismen, `GeometryKernelPort` subtrahiert; `WallGeometryChanged`-Wiederverwendung; Raumerkennung unberührt; Bauteil-Erweiterungs-Muster als welle-2-Leitplanke) | Accepted (2026-06-13) | LH-FA-DOR-001..004, LH-FA-WIN-001..005, ADR-0001/0002/0006/0007/0008 |
+| [0012](0012-evaluations-architektur.md) | Evaluations-Architektur (neuer `EvaluatePort` read-only Query; pure Ergebnis-Werttypen; pull, kein `op`; Fläche = Shoelace-Raum-Netto / Volumen analytisch im Kern — geklemmtes Öffnungsvolumen, **kein OCC-`GProp`**; Material nur konsumierte Eingabe; welle-3-Leitplanke) | Accepted (2026-06-14) | LH-FA-EVL-001..006, ADR-0001/0006/0007/0011 |
 
 ## ADR-Folgepflichten (Status)
 
@@ -34,6 +35,8 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster fürs **Dach** (LH-FA-ROF-*): Domäne + analytisches Netz (`roof_geometry`) + ViewModel/Viewer/Edit-Ops + Persistenz (`roofs`/`footprint_json`) | **erfüllt** durch slice-014a/b/c (2026-06-13) |
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Decken/Fundament** (LH-FA-SLB-*/FND-*): Domäne + Platten-Geometrie (`slab_geometry`, base_z via Mesh-Translation) + ViewModel/Viewer/Edit-Ops + Persistenz (`slabs`/`polygon_json` mit Cutouts) | **erfüllt** durch slice-015a/b/c (2026-06-14) |
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Treppen** (LH-FA-STR-*): Domäne + analytische Treppen-Geometrie (`stair_geometry`, Stufen-Polyeder + Geländer, kein OCC) + ViewModel/Viewer/Edit-Ops + Persistenz (`stairs`, `rise_mm` write-derived) | **erfüllt** durch slice-016a/b/c (2026-06-14) |
+| ADR-0012 | `architecture.md` §1.1 nachziehen — EVL-001..006 von `DetectRoomsPort` auf den neuen Driving-Port `EvaluatePort` | **erfüllt** durch slice-017a (2026-06-14) |
+| ADR-0012 | `EvaluatePort` + Auswertungs-Service (Shoelace-Raum-Netto-Fläche, analytisches Netto-Volumen mit geklemmtem Öffnungsvolumen, Listen-Aggregation) + pure Ergebnis-Werttypen + AK-Tests `LH-FA-EVL-*`; **MR-009** für den EVL-Impl (geometrie-korrektheits-nah) | **offen** (slice-017b ff.) |
 
 ## Konventionen
 
