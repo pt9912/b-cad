@@ -11,25 +11,55 @@ Feature-Sequenz, kein Reconciliation-Plan.
 
 ## Aktuelle Welle
 
-**Keine aktive Welle.** `welle-2-bauteile` ist **abgeschlossen**
-(Closure 2026-06-14, [`../done/welle-2-results.md`](../done/welle-2-results.md))
-— **Meilenstein M2 erreicht**. Geliefert: vier Bauteil-Familien (Türen/Fenster
-013, Dach 014, Decken/Fundament 015, Treppen 016), je Familie die Trias
-a/b/c (Lastenheft-AK-Schärfung · Implementierung · Persistenz), zwölf Slices
-in `done/`; `make gates` grün am HEAD (116 Tests, Coverage 92,3 %); unabhängige
-Verifikation + Carveout-Audit (keine aktiven) gelaufen.
+**Welle-ID:** welle-3-auswertung
+**Start:** 2026-06-14 (bewusste Planungs-Entscheidung nach welle-2-Closure,
+[`../done/welle-2-results.md`](../done/welle-2-results.md))
+**Geplantes Ende:** offen (Aufwands-Schätzung M)
 
-Der Start der nächsten Welle (`welle-3-auswertung`) ist eine **bewusste
-Planungs-Entscheidung, kein Automatismus** (Kurs-Modul 2). Umfang, Teilumfänge
-und Steering-Zähler stehen in der Closure-Notiz.
+**Welle-Ziel:** Das Gebäudemodell wird **auswertbar** — **Material-System**
+(`MAT`) + **Auswertungen** (`EVL`): Flächen-, Volumen-, Wohnflächenberechnung
+und Material-/Tür-/Fensterlisten. Auswertung ist eine **reine Ableitung aus dem
+committeten Modell** (Query, **kein** Geometrie-Erzeugen) — über einen
+Auswertungs-Driving-Port und ein Material-Domänenmodell. Das `materials`-Schema
++ `material_id`-FKs liegen vor (ADR-0006); `MaterialLibraryPort` (driven) und die
+EVL-001..003-Zuordnung zu `DetectRoomsPort` sind in `architecture.md` §1.2/§1.1
+bereits deklariert. **EVL-Flächen setzen auf der Footprint-Fläche (Shoelace)
+auf**, nicht auf Länge·Stärke (spez. §1-Hinweis aus welle-1v/welle-2-Closure).
+Erfüllt **Meilenstein M3** („Flächen/Volumen/Materiallisten korrekt").
+
+**Scope-Entscheidung 2026-06-14:** welle-3 = **Auswertungs-Kern MAT + EVL**
+(M3-kritisch). Das **`DRW`-Modul** (Fangpunkte/Raster/Winkelvorgaben/Bemaßung/
+Hilfslinien/Layer/Gruppen) ist **2D-Zeichen-Interaktion (UX), orthogonal zu M3**
+und wird **bewusst zurückgestellt** (eigene spätere Welle/Erweiterung; das
+`layers`-Schema liegt bereits vor). Die Roadmap-Zeile nannte DRW unter welle-3 —
+das Welle-Sizing hält den Auswertungs-Fokus kohärent zum Welle-Namen (Begründung
+in §Historische Trigger-Verschiebungen).
+
+**Closure-Trigger** (deliverable-granular; konkrete Slices emergieren mit
+MR-006-Plan-Review):
+- **Auswertungs-/Material-Architektur-ADR + Spec/Lastenheft-Schärfung** (erster
+  Slice, Muster slice-013a): Grundsatz-Entscheidung für den Auswertungs-Port
+  (neu vs. `DetectRoomsPort`-Erweiterung), das Auswertungs-Ergebnis-Modell, das
+  Material-Domänenmodell + Zuweisung, und die Flächen-/Volumen-/Listen-Algorithmik
+  (Shoelace) — Lastenheft-AK lösungsfrei (MR-008), Mechanik in `spec`.
+- **Material-System** (`LH-FA-MAT-001..006`): Material-Domänentyp + Zuweisung an
+  Bauteile (`material_id`), Bibliothek/Kennwerte (U-Wert/Kosten); Persistenz
+  `materials` + `material_id`-Round-Trip (die welle-2-`NULL`-Felder werden nun
+  getragen).
+- **Auswertungen** (`LH-FA-EVL-001..006`): Flächen (Shoelace), Volumen,
+  Wohnfläche, Material-/Tür-/Fensterlisten als Aggregation über das Modell;
+  AK-Tests mit `LH-`-ID. **MR-009** greift, wo neue Geometrie entsteht (hier
+  überwiegend analytisch/Aggregation); je Schärfungs-Slice **MR-010** (Header
+  nachziehen).
+- Unabhängige Welle-Verifikation (analog welle-1/-2) + Closure-Notiz in
+  `done/welle-3-results.md` inkl. zwingendem Carveout-Audit.
 
 ## Nächste Wellen
 
 | Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
 |---|---|---|---|
-| welle-3-auswertung | welle-2 done | Material (`MAT`), Auswertungen (`EVL`), Bemaßung/Layer (`DRW`) | M |
 | welle-4-austausch | welle-3 done + ADR zu IFC-Bibliothek accepted | IFC/DXF/STEP/STL-Adapter (`IO`), PDF/PNG-Export | L |
-| welle-5-erweiterung | welle-4 done | Plugin-System (`PLG`), UI-Themes/Docking (`UI`), Mehrsprachigkeit (`LH-QA-006`) | M |
+| welle-5-erweiterung | welle-4 done | Plugin-System (`PLG`), UI-Themes/Docking + **2D-Zeichen-Werkzeuge `DRW`** (Bemaßung/Layer/Fangpunkte/Gruppen, aus welle-3 zurückgestellt), Mehrsprachigkeit (`LH-QA-006`) | M |
 
 ## Meilensteine
 
@@ -48,7 +78,7 @@ flowchart LR
     W1[welle-1-mvp<br/>done 2026-06-12]
     W1V[welle-1v-viewer<br/>done 2026-06-13]
     W2[welle-2-bauteile<br/>done 2026-06-14]
-    W3[welle-3-auswertung]
+    W3[welle-3-auswertung<br/>aktiv]
     W4[welle-4-austausch]
     W5[welle-5-erweiterung]
 
@@ -72,3 +102,4 @@ flowchart LR
 | 2026-06-11 | `slice-009` in `slice-009a` (ADR-0007 + Spec-Schärfung) + `slice-009b` (Implementierung + Tests) geschnitten | Plan-Review-Findings H1/M1/M2: ADR-0007 trägt mehr Entscheidungsgewicht als geplant (Polygon-Basis **und** Verschachtelungs-Repräsentation), ADR-Accept ist Review-Checkpoint und gehört nicht mitten in einen Implementierungs-Slice (Präzedenz slice-007, slice-003-Split). |
 | 2026-06-11 | Sichtbarer 3D-Viewer aus welle-1 in eigene Welle `welle-1v-viewer` gelöst; Welle-Ziel und Viewer-Trigger-Zeile angepasst | Scope-Entscheidung slice-010a: GUI-Grundsatz-ADR (Qt 6) fehlt noch, M1-Trigger (ACC-001-Kern + Gates) verlangt keinen Viewer; ACC-002 wird in `welle-1v-viewer` erfüllt — kein stilles `done` über den Kern-Vertrag (Lastenheft-Wortlaut „sichtbar" bleibt unverändert benutzer-beobachtbar). |
 | 2026-06-12 | `welle-1v-viewer` um slice-012 erweitert (Eckenschluss endpunkt-verbundener Wände, LH-FA-WAL-006-Teilumfang); slice-011b-Abnahme (DoD-4) auf den regenerierten Beleg verschoben | Abnahme-Befund des Projektinhabers am ACC-002-Beleg: Wände schließen an Außenecken nicht (fehlendes ½×½-Stärke-Quadrat, [Befund-2D](../done/acc-002-befund-2d-ecken.png)) — modell-treu gerendert, aber als Abnahme-Artefakt nicht tragfähig; WAL-006-Teilumfang wird vorgezogen statt die Grenze nur zu dokumentieren. |
+| 2026-06-14 | `welle-3-auswertung` gestartet; Scope auf **MAT + EVL** (Auswertungs-Kern, M3) gesetzt, **`DRW` (Bemaßung/Layer/Fangpunkte/Raster/Hilfslinien/Gruppen) nach welle-5 zurückgestellt** | Welle-Name + M3-Trigger („Flächen/Volumen/Materiallisten korrekt") zielen auf Auswertung; `DRW` ist 2D-Zeichen-Interaktion (UX) ohne M3-Bezug und passt zu den UI-Werkzeugen von welle-5 — die Trennung hält welle-3 kohärent (Modul-5-Sizing, Auswertung ≠ 2D-Editor). |
