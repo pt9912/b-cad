@@ -166,6 +166,10 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
   (Given/When/Then; Wertebereiche = das *Was*); Lösungsmechanik
   (Algorithmen, Ports, Formeln, Fehler-Code-/`op`-Vokabular) gehört in
   `spec/spezifikation.md` bzw. ADRs — **nie ins Lastenheft**.
+- **Lastenheft-Schärfung zieht den Header-Version nach**
+  ([`harness/conventions.md` MR-010](harness/conventions.md)): der
+  `**Version:**`-Header von `spec/lastenheft.md` == oberste (jüngste)
+  §9-Historie-Zeile. Die MR-006-Linse prüft den Nachzug je Schärfungs-Slice.
 
 ## 5. Minimal Agent Workflow
 
@@ -177,6 +181,10 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
    Plan-Review** des Slice-Plans, Findings einarbeiten — HIGHs
    blockieren den Start
    ([`harness/conventions.md` MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)).
+   Geometrieschwere Implementierungs-Slices erhalten **zusätzlich** ein
+   unabhängiges **Code-Review vor der Welle-Closure** (Geometrie-Korrektheit
+   gegen die Spec; [MR-009](harness/conventions.md)) — HIGHs blockieren die
+   Closure.
 6. Engsten nützlichen Sensor laufen lassen.
 7. Repo-weiten Gate-Lauf vor Handoff (`make gates`).
 8. Doku/Indizes aktualisieren, falls ein öffentlicher Vertrag berührt.

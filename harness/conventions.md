@@ -302,6 +302,58 @@ sie.
   dafür (noch) nicht.
 - **Auflösungs-Trigger:** permanent.
 
+### MR-009 — Geometrielastiges Code-Review vor Welle-Closure
+
+- **Datum:** 2026-06-14
+- **Geltungsbereich:** Planning-Lifecycle
+  ([`docs/plan/planning/`](../docs/plan/planning/)),
+  [`AGENTS.md` §5](../AGENTS.md) (Workflow)
+- **Adaption:** Ein **geometrieschwerer Implementierungs-Slice** (neue
+  Bauteil-/Solid-Geometrie im Kern oder Geometrie-Adapter) wird **vor der
+  Welle-Closure** einem **unabhängigen Code-Review** (Reviewer ≠ Autor;
+  getrennter Agent/Session ohne Autoren-Kontext) unterzogen, das die
+  **Geometrie-Korrektheit gegen die Spezifikation** prüft — mindestens:
+  Orientierung/Winding (Außennormalen), Bündigkeit/Spaltfreiheit benachbarter
+  Körper, Höhen-/Maß-Exaktheit, Totalität bei Degeneration. **HIGH-Findings
+  blockieren die Closure** und werden vorher behoben. Ergänzend: die AK-Tests
+  des Slice sollen **geometrische Invarianten** sondieren (geschlossener-Körper-/
+  Bündigkeits-Sonden), nicht nur Bounding-Box/Dreiecks-Anzahl — die Korrektheit
+  gehört in die Tests, nicht nur in den Code.
+- **Begründung:** Viertes Vorkommen mit je substanziellem Befund (Kurs-Regel:
+  2× kategorisieren, 3× Regel — hier überfällig): slice-013b (HIGH: lateraler
+  Cutter-Überstand nur in z), slice-014b (HIGH: Dachflächen-Orientierung),
+  slice-015b (HIGH: OCC-Cutout-Boolean ungetestet), slice-016b (kein HIGH, aber
+  Test-Orakel-Lücken: invertierte Normalen/Stufen-Spalt wären durchgerutscht).
+  Durchgängig: **grünes Gate ≠ Geometrie-Korrektheit/Spec-Treue.** Zähler-Herkunft
+  [`welle-2-results.md` §5](../docs/plan/planning/done/welle-2-results.md) (#2/#5).
+- **Sensor:** das unabhängige Code-Review (inferential feedback); seit slice-016b
+  zusätzlich computational gehärtet (geometrische Invarianten-Sonden in den
+  AK-Tests, z. B. Divergenzsatz-Summe der Außennormalen).
+- **Auflösungs-Trigger:** permanent.
+
+### MR-010 — Lastenheft-Header-Version == oberste §9-Historie-Zeile
+
+- **Datum:** 2026-06-14
+- **Geltungsbereich:** [`../spec/lastenheft.md`](../spec/lastenheft.md),
+  MR-006-Review-Linse (Quellen-Konsistenz)
+- **Adaption:** Schärft ein Slice das Lastenheft (Reifephase-Klausel,
+  Outline → AK), **zieht er den Header `**Version:**` auf die Version der neu
+  ergänzten §9-Historie-Zeile nach.** Invariante: der Header-`Version:`-Wert ==
+  oberste (jüngste) §9-Historie-Zeile.
+- **Begründung:** Drittes Vorkommen (3×-Regel): slice-013a/014a/015a ergänzten
+  je eine §9-Historie-Zeile (0.1.3/0.1.4/0.1.5), zogen aber den Header **nicht**
+  nach — er blieb seit slice-012 auf 0.1.2, während die Historie auf 0.1.5
+  wuchs; erst slice-016a fiel auf den Drift und korrigierte (→ 0.1.6). Eine über
+  drei Schärfungs-Slices **stille** Inkonsistenz, vom docs-check (d-check prüft
+  keine Feld-Gleichheit) nicht gefangen. Zähler-Herkunft
+  [`welle-2-results.md` §5](../docs/plan/planning/done/welle-2-results.md) (#6).
+- **Sensor:** interim die MR-006-Plan-Review-Linse (Quellen-Konsistenz) prüft den
+  Header-Nachzug je Schärfungs-Slice. **Computational Promotion-Ziel:** eine
+  d-check-/`make`-Regel „Header-`Version:` == oberste §9-Historie-Zeile" (fängt
+  die Klasse fail-closed); bis dahin inferential.
+- **Auflösungs-Trigger:** permanent (Konvention); die computational-Sensor-
+  Promotion bleibt offener Tooling-Kandidat.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

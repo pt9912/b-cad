@@ -198,6 +198,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Familie (013b/014b/015b je 1 HIGH gefixt, 016b keine HIGH — Test-Orakel
   gehärtet). `make gates` grün am HEAD (116/116, Coverage 92,3 %). Ergebnisnotiz:
   `welle-2-results.md`.
+- **Steering-Festschreibung MR-009 + MR-010** (`harness/conventions.md`,
+  Pointer in `AGENTS.md` §4/§5; vor welle-3): **MR-009** „geometrielastiges
+  Code-Review vor Welle-Closure" — 4× Vorkommen (013b/014b/015b je 1 HIGH trotz
+  grüner Gates, 016b keiner); unabhängiges Code-Review der Geometrie-Korrektheit
+  gegen die Spec (Winding/Bündigkeit/Maße/Totalität), HIGH blockiert Closure +
+  geometrische Invarianten-Sonden in den AK-Tests. **MR-010** „Lastenheft-Header-
+  Version == oberste §9-Historie-Zeile" — 3× Drift (013a/014a/015a, erst 016a
+  korrigiert); MR-006-Linse prüft den Header-Nachzug, computational d-check-/
+  make-Regel als Promotion-Ziel.
 
 ### Notes
 - Dieses CHANGELOG ist eine bewusste Abweichung von der Kurs-Baseline (die
