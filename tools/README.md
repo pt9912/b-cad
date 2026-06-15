@@ -39,9 +39,9 @@ node tools/docs-check.js
 
 ### Herkunft und Drift
 
-Die Doku-Validierung läuft seit MR-007 über
+Die Doku-Validierung läuft seit [MR-007](../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check) über
 [d-check](https://github.com/pt9912/d-check) — digest-gepinntes
 Container-Image als Build-Stage (kein Bind-Mount), Konfiguration in
 [`../.d-check.yml`](../.d-check.yml). Das zuvor hier vendorte
-`docs-check.js` (MR-003, Kurs-Kopie) ist gelöscht; Historie: <!-- d-check:ignore (historisch: geloescht mit MR-007) -->
+`docs-check.js` ([MR-003](../harness/conventions.md#mr-003--docs-check-als-vendored-doku-sensor), Kurs-Kopie) ist gelöscht; Historie: <!-- d-check:ignore (historisch: geloescht mit [MR-007](../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check)) -->
 [`../harness/conventions.md` MR-007](../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check).
