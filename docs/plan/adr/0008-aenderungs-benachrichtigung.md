@@ -6,7 +6,7 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** LH-FA-D3-002 (Echtzeitaktualisierung), OBJ-003 (eine Quelle,
+**Bezug:** [LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung) (Echtzeitaktualisierung), [OBJ-003](../../../spec/lastenheft.md#3-projektziele) (eine Quelle,
 2D- und 3D-Sicht), ADR-0001 (Kern führt, Ports & Adapters), ADR-0007
 (Raum-Re-Detektion als Post-Commit-Schritt)
 
@@ -14,12 +14,12 @@
 
 ## Kontext
 
-LH-FA-D3-002 verlangt, dass Modelländerungen ohne expliziten
+[LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung) verlangt, dass Modelländerungen ohne expliziten
 Aktualisierungs-Schritt des Benutzers in der Darstellung ankommen. Der
 inkrementelle, transaktionale Rebuild des betroffenen Solids existiert
 seit slice-003a; die Raum-Re-Detektion (ADR-0007) läuft seit
 slice-009b als Post-Commit-Schritt. Offen war, **wie** die
-Darstellungs-Schicht (2D und 3D, OBJ-003) von committeten Änderungen
+Darstellungs-Schicht (2D und 3D, [OBJ-003](../../../spec/lastenheft.md#3-projektziele)) von committeten Änderungen
 erfährt — ohne die hexagonale Richtung zu verletzen (der Kern kennt
 keine Adapter, ADR-0001).
 
@@ -44,15 +44,15 @@ keine Adapter, ADR-0001).
    Wand-Mutation zusätzlich eine Raum-Änderungs-Meldung für das
    betroffene Geschoss (die 2D-Sicht hört auf Räume). Mehrere
    Meldungen pro Mutation sind zulässig (Mehr-Element-Updates, etwa
-   künftige Wandverschneidung LH-FA-WAL-006, sind damit nicht
-   verbaut). Abgelehnte/verworfene Mutationen (`E-VAL-001` Rejected,
+   künftige Wandverschneidung [LH-FA-WAL-006](../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden), sind damit nicht
+   verbaut). Abgelehnte/verworfene Mutationen ([`E-VAL-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) Rejected,
    Null-Längen-Wand) melden nicht.
 4. **Reihenfolge: Meldung nach allen Post-Commit-Schritten.** Erst
    Commit, dann Raum-Re-Detektion (ADR-0007), dann Benachrichtigung —
    ein Beobachter, der im Callback den Stand abfragt (Pull), sieht
    einen vollständig konsistenten Zustand.
 5. **Multiplizität und Registrierung:** mehrere Beobachter (2D- und
-   3D-Sicht, OBJ-003) über `subscribe`/`unsubscribe` am Service;
+   3D-Sicht, [OBJ-003](../../../spec/lastenheft.md#3-projektziele)) über `subscribe`/`unsubscribe` am Service;
    der Service hält nicht-besitzende Referenzen, Beobachter melden
    sich vor ihrer Zerstörung ab (Lebenszyklus-Pflicht der
    Adapter-Seite).
@@ -60,7 +60,7 @@ keine Adapter, ADR-0001).
    Beobachter-Aufruf — eine werfende Beobachter-Implementierung kippt
    die committete Mutation nicht und unterbricht die Meldung an
    weitere Beobachter nicht (Fehler wird verschluckt; sichtbar gemacht
-   wird er später über die REQ-TEC-006-Telemetrie). Callbacks dürfen
+   wird er später über die [REQ-TEC-006](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec)-Telemetrie). Callbacks dürfen
    **Abfragen** ausführen, aber **keine Mutationen** auslösen
    (Re-Entranz-Verbot als Vertrags-Pflicht; technische Durchsetzung
    wird mit dem Plugin-System neu bewertet, siehe
@@ -95,8 +95,8 @@ keine Adapter, ADR-0001).
 
 ## Konsequenzen
 
-- Positiv: 2D- und 3D-Sicht (OBJ-003) hängen an demselben Vertrag;
-  der Kern bleibt framework-frei; LH-FA-D3-002-AK sind mit einem
+- Positiv: 2D- und 3D-Sicht ([OBJ-003](../../../spec/lastenheft.md#3-projektziele)) hängen an demselben Vertrag;
+  der Kern bleibt framework-frei; [LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)-AK sind mit einem
   zählenden Port-Double prüfbar (slice-010b).
 - Folgepflicht (slice-010b): Port + `subscribe`/`unsubscribe` +
   Meldungen in `StructureEditService` (Reihenfolge nach
@@ -123,9 +123,9 @@ keine Adapter, ADR-0001).
 ## Re-Evaluierungs-Trigger
 
 - Nebenläufigkeit/Mehr-Fenster (Qt-Viewer-Strang, Mehrmonitorbetrieb
-  LH-FA-UI-004) → Option C (Queue) neu bewerten.
+  [LH-FA-UI-004](../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)) → Option C (Queue) neu bewerten.
 - Plugin-System (LH-FA-PLG-*): fremder Code als Beobachter → Kapselung
-  und Re-Entranz-Verbot technisch durchsetzen (Sandbox, LH-FA-PLG-004),
+  und Re-Entranz-Verbot technisch durchsetzen (Sandbox, [LH-FA-PLG-004](../../../spec/lastenheft.md#modul-plugin-system-plg)),
   nicht nur vertraglich.
 - Ein Rebuild-/Melde-Latenz-Budget wird Anforderung (neue
   `LH-QA-<NNN>`) → synchronen Pfad gegen Budget messen.

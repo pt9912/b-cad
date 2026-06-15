@@ -6,15 +6,15 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** REQ-TEC-003, LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005, ADR-0001
+**Bezug:** [REQ-TEC-003](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec), LH-FA-WAL-*, [LH-FA-D3-001](../../../spec/lastenheft.md#modul-3d-modellierung-d3), [LH-FA-DOR-004](../../../spec/lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen), [LH-FA-WIN-005](../../../spec/lastenheft.md#lh-fa-win-005--wandöffnung-automatisch-erzeugen), ADR-0001
 
 ---
 
 ## Kontext
 
 b-cad braucht einen 3D-Geometrie-Kern für Solids, boolesche Operationen
-(Wandöffnungen für Türen/Fenster, LH-FA-DOR-004/WIN-005) und Extrusion
-(2D → 3D, LH-FA-D3-001). Die Domäne soll diesen Kern nicht direkt kennen
+(Wandöffnungen für Türen/Fenster, [LH-FA-DOR-004](../../../spec/lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen)/WIN-005) und Extrusion
+(2D → 3D, [LH-FA-D3-001](../../../spec/lastenheft.md#modul-3d-modellierung-d3)). Die Domäne soll diesen Kern nicht direkt kennen
 (ADR-0001) — er steht hinter `GeometryKernelPort`.
 
 ## Entscheidung
@@ -23,11 +23,11 @@ Wir wählen **OpenCascade (OCC)** als Geometrie-Kern, gekapselt im
 Driven Adapter `src/adapters/geometry/` hinter `GeometryKernelPort`.
 
 **Scope (bewusst eng).** Diese Entscheidung legt **nur** das Backend des
-`GeometryKernelPort` fest: Solids, Extrusion (LH-FA-D3-001), boolesche
-Operationen / Wandöffnungen (LH-FA-DOR-004/WIN-005). **Nicht** Teil dieser
+`GeometryKernelPort` fest: Solids, Extrusion ([LH-FA-D3-001](../../../spec/lastenheft.md#modul-3d-modellierung-d3)), boolesche
+Operationen / Wandöffnungen ([LH-FA-DOR-004](../../../spec/lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen)/WIN-005). **Nicht** Teil dieser
 ADR:
 
-- **STEP-/Format-Export** (LH-FA-IO-005 u. a.) — gehört hinter
+- **STEP-/Format-Export** ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) u. a.) — gehört hinter
   `ModelExporterPort` in `src/adapters/io/` (`spec/architecture.md` §1.2)
   und damit in eine eigene **IO/Export-ADR**. Ob ein Exporter OCC nutzt,
   ist dort zu entscheiden (inkl. der Adapter-Grenzen-Frage Geometrie↔IO).
@@ -55,7 +55,7 @@ ADR:
 - Pro: ausgereifter BREP-Kern; STEP/IGES nativ; Extrusion, boolesche
   Operationen, Solids vorhanden; im CAD-Umfeld etabliert.
 - Contra: große Abhängigkeit; eigene API-Konventionen; Build-/Container-
-  Aufwand (Docker DevContainer mildert das, REQ-TEC-009).
+  Aufwand (Docker DevContainer mildert das, [REQ-TEC-009](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec)).
 
 ## Konsequenzen
 

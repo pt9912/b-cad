@@ -9,14 +9,14 @@ ausgearbeitet im AI-Harness-Lauf)
 
 **Bezug:** ADR-0009 (f) (Headless-/Testbarkeits-Strategie — wird im
 Mechanik-Detail präzisiert, nicht in der Substanz geändert), ADR-0004
-(Toolchain-Pinning), LH-FA-D3-002, ACC-002
+(Toolchain-Pinning), [LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung), [ACC-002](../../../spec/lastenheft.md#7-abnahmekriterien)
 
 ---
 
 ## Kontext
 
 ADR-0009 (f) legte fest, dass Qt-gebundene Tests und der
-ACC-002-Beleg „mit `QT_QPA_PLATFORM=offscreen` im bestehenden
+[ACC-002](../../../spec/lastenheft.md#7-abnahmekriterien)-Beleg „mit `QT_QPA_PLATFORM=offscreen` im bestehenden
 Container" laufen. **Implementierungs-Befund (slice-011b):** Die
 Ubuntu-26.04-Qt-offscreen-Plattform trägt **kein OpenGL** — sie ist
 ohne EGL-Integration gebaut; `QOpenGLContext::create()` schlägt fehl,
@@ -63,7 +63,7 @@ Mesa/llvmpipe (Software-Rasterizer).** Konkret:
 - Toolchain wächst um `xvfb` (+ X-Server-Abhängigkeiten) — gepinnt
   über den bestehenden apt-Snapshot; Beleg via `make versions`.
 - Der GL-Smoke-Test rendert echte Pixel (llvmpipe) — der
-  ACC-002-Beleg-Weg ist damit getestet, nicht nur behauptet.
+  [ACC-002](../../../spec/lastenheft.md#7-abnahmekriterien)-Beleg-Weg ist damit getestet, nicht nur behauptet.
 - Kein Render-Pfad-Doppel: Widget-Code ist derselbe im Test, im
   Beleg und am echten Display.
 

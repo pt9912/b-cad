@@ -20,11 +20,11 @@ Gewählt, weil:
   einem Port; ein Wechsel darf den Anwendungskern nicht berühren),
 - **mehrere Austauschformate** (IFC/DXF/STEP/STL/PDF/PNG) denselben
   Kern bedienen,
-- **2D- und 3D-Sicht aus einem Datenmodell** abgeleitet werden (OBJ-003)
+- **2D- und 3D-Sicht aus einem Datenmodell** abgeleitet werden ([OBJ-003](lastenheft.md#3-projektziele))
   — das Modell gehört in den framework-freien Kern,
 - **Testbarkeit ohne GUI/OCC/SQLite** über Test-Doubles der Ports
   möglich wird,
-- **Plugins** (OBJ-004) als weiterer Driving Adapter andocken, ohne den
+- **Plugins** ([OBJ-004](lastenheft.md#3-projektziele)) als weiterer Driving Adapter andocken, ohne den
   Kern zu ändern.
 
 ---
@@ -73,24 +73,24 @@ nur dort werden Adapter-Instanzen injiziert.
 
 | Port | Verantwortung | Bezug |
 |---|---|---|
-| `ManageProjectPort` | Projekt anlegen, speichern, laden, versionieren | LH-FA-BLD-001..004, ACC-005 |
-| `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, OBJ-002 |
-| `DetectRoomsPort` | Raum-Autoerkennung (geschlossene Wandzüge → Raumpolygone, Netto-Fläche je Raum als Auswertungs-Quelle) | LH-FA-ROM-001..003 |
-| `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten | LH-FA-EVL-001..006 |
-| `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation) | LH-FA-D3-001..006, ACC-002 |
-| `ExchangeModelPort` | Import/Export anstoßen (Format-neutral) | LH-FA-IO-001..008, ACC-003, ACC-004 |
+| `ManageProjectPort` | Projekt anlegen, speichern, laden, versionieren | [LH-FA-BLD-001](lastenheft.md#lh-fa-bld-001--projekt-anlegen)..004, [ACC-005](lastenheft.md#7-abnahmekriterien) |
+| `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, [OBJ-002](lastenheft.md#3-projektziele) |
+| `DetectRoomsPort` | Raum-Autoerkennung (geschlossene Wandzüge → Raumpolygone, Netto-Fläche je Raum als Auswertungs-Quelle) | [LH-FA-ROM-001](lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)..003 |
+| `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten | [LH-FA-EVL-001](lastenheft.md#lh-fa-evl-001--flächenberechnung)..006 |
+| `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation) | [LH-FA-D3-001](lastenheft.md#modul-3d-modellierung-d3)..006, [ACC-002](lastenheft.md#7-abnahmekriterien) |
+| `ExchangeModelPort` | Import/Export anstoßen (Format-neutral) | [LH-FA-IO-001](lastenheft.md#lh-fa-io-001--ifc-import)..008, [ACC-003](lastenheft.md#7-abnahmekriterien), [ACC-004](lastenheft.md#7-abnahmekriterien) |
 
 ### 1.2 Driven Ports (sekundär — der Kern steuert die Außenwelt)
 
 | Port | Verantwortung | Bezug |
 |---|---|---|
-| `GeometryKernelPort` | Solids, boolesche Operationen; extrudiert/tesselliert **Footprint-Polygone** (Footprint-Hoheit inkl. Eckenschluss im Kern, LH-FA-WAL-006.a/slice-012) und **subtrahiert vom Kern gelieferte Schnitt-Prismen** (Wandöffnungen für Türen/Fenster, LH-FA-DOR-004/WIN-005 — Öffnungs-Semantik bleibt im Kern, der Adapter rechnet nur Geometrie); Tessellation | LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005 |
-| `ProjectRepositoryPort` | Projekt **atomar** persistieren und laden; Versionshistorie | LH-FA-BLD-002..004, LH-QA-005 |
-| `ModelImporterPort` | externes Modell (IFC/DXF) in Domain-Bauteile lesen | LH-FA-IO-001, LH-FA-IO-003 |
-| `ModelExporterPort` | Domain-Modell in Zielformat schreiben (IFC/DXF/STEP/STL/PDF/PNG) | LH-FA-IO-002,004,005,006,007,008 |
-| `MaterialLibraryPort` | Materialien/Texturen/Kennwerte verwalten | LH-FA-MAT-001..006 |
+| `GeometryKernelPort` | Solids, boolesche Operationen; extrudiert/tesselliert **Footprint-Polygone** (Footprint-Hoheit inkl. Eckenschluss im Kern, [LH-FA-WAL-006](lastenheft.md#lh-fa-wal-006--wand-verbinden).a/slice-012) und **subtrahiert vom Kern gelieferte Schnitt-Prismen** (Wandöffnungen für Türen/Fenster, [LH-FA-DOR-004](lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen)/WIN-005 — Öffnungs-Semantik bleibt im Kern, der Adapter rechnet nur Geometrie); Tessellation | LH-FA-WAL-*, [LH-FA-D3-001](lastenheft.md#modul-3d-modellierung-d3), [LH-FA-DOR-004](lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen), [LH-FA-WIN-005](lastenheft.md#lh-fa-win-005--wandöffnung-automatisch-erzeugen) |
+| `ProjectRepositoryPort` | Projekt **atomar** persistieren und laden; Versionshistorie | [LH-FA-BLD-002](lastenheft.md#lh-fa-bld-002--projekt-speichern)..004, [LH-QA-005](lastenheft.md#lh-qa-005--crash-recovery) |
+| `ModelImporterPort` | externes Modell (IFC/DXF) in Domain-Bauteile lesen | [LH-FA-IO-001](lastenheft.md#lh-fa-io-001--ifc-import), [LH-FA-IO-003](lastenheft.md#lh-fa-io-001--ifc-import) |
+| `ModelExporterPort` | Domain-Modell in Zielformat schreiben (IFC/DXF/STEP/STL/PDF/PNG) | [LH-FA-IO-002](lastenheft.md#lh-fa-io-001--ifc-import),004,005,006,007,008 |
+| `MaterialLibraryPort` | Materialien/Texturen/Kennwerte verwalten | [LH-FA-MAT-001](lastenheft.md#lh-fa-mat-001--materialien-verwalten)..006 |
 | `TracingPort` | OTel-Spans emittieren (optional abschaltbar) | (ADR-Folge) |
-| `ModelChangedPort` | Beobachter-Schnittstelle: committete Modell-Mutationen melden (Push-Notify `element_id`/`op`, Pull-State über Abfrage-Ports); implementiert von Darstellungs-Adaptern | LH-FA-D3-002, OBJ-003 |
+| `ModelChangedPort` | Beobachter-Schnittstelle: committete Modell-Mutationen melden (Push-Notify `element_id`/`op`, Pull-State über Abfrage-Ports); implementiert von Darstellungs-Adaptern | [LH-FA-D3-002](lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung), [OBJ-003](lastenheft.md#3-projektziele) |
 
 ## 2. Schichten und Constraints
 
@@ -226,13 +226,13 @@ sequenceDiagram
 
 | Fehlerquelle | Behandlung-Schicht | Logging |
 |---|---|---|
-| Ungültiger Parameter (z. B. Wandstärke) | Service → Klemmung/Ablehnung `E-VAL-001` | `event=validation_rejected` |
-| Geometrie-Operation schlägt fehl | Geometrie-Adapter → Service `E-GEO-002` | `event=geometry_error` |
-| Schreibfehler / Medium voll | Persistenz-Adapter → `E-IO-002`, vorheriger Stand intakt | `event=persist_error` |
-| Format nicht erkannt (Import) | IO-Adapter → `E-IO-003`, kein Teil-Import | `event=import_rejected` |
+| Ungültiger Parameter (z. B. Wandstärke) | Service → Klemmung/Ablehnung [`E-VAL-001`](spezifikation.md#4-fehler-codes-und-logging-felder) | `event=validation_rejected` |
+| Geometrie-Operation schlägt fehl | Geometrie-Adapter → Service [`E-GEO-002`](spezifikation.md#4-fehler-codes-und-logging-felder) | `event=geometry_error` |
+| Schreibfehler / Medium voll | Persistenz-Adapter → [`E-IO-002`](spezifikation.md#4-fehler-codes-und-logging-felder), vorheriger Stand intakt | `event=persist_error` |
+| Format nicht erkannt (Import) | IO-Adapter → [`E-IO-003`](spezifikation.md#4-fehler-codes-und-logging-felder), kein Teil-Import | `event=import_rejected` |
 | Plugin-Fehlverhalten | Plugin-Host isoliert; Modell unverändert (Sandbox) | `event=plugin_error` |
 
-**Atomarität (LH-QA-005, LH-FA-BLD-002 Boundary).** Die Persistenz
+**Atomarität ([LH-QA-005](lastenheft.md#lh-qa-005--crash-recovery), [LH-FA-BLD-002](lastenheft.md#lh-fa-bld-002--projekt-speichern) Boundary).** Die Persistenz
 schreibt in eine Temp-Datei und ersetzt den bestehenden Stand erst nach
 erfolgreichem Schreiben (Rename). Damit bleibt der letzte konsistente
 Projektstand bei jedem Fehler intakt; kein halb geschriebenes Projekt

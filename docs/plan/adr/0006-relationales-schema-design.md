@@ -6,13 +6,13 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** OBJ-003, ADR-0001 (Kern führt), ADR-0003 (SQLite-Persistenz), LH-FA-WAL/DOR/WIN/ROF/SLB/STR/ROM/MAT-*, LH-QA-003 (Undo)
+**Bezug:** [OBJ-003](../../../spec/lastenheft.md#3-projektziele), ADR-0001 (Kern führt), ADR-0003 (SQLite-Persistenz), LH-FA-WAL/DOR/WIN/ROF/SLB/STR/ROM/MAT-*, [LH-QA-003](../../../spec/lastenheft.md#lh-qa-003--undoredo) (Undo)
 
 ---
 
 ## Kontext
 
-Das durchgängige Gebäudemodell (OBJ-003) wird über `ProjectRepositoryPort`
+Das durchgängige Gebäudemodell ([OBJ-003](../../../spec/lastenheft.md#3-projektziele)) wird über `ProjectRepositoryPort`
 in SQLite persistiert (ADR-0003). Offen war die **Form** des Schemas:
 Wie werden die heterogenen Bauteile (Wände, Türen, Fenster, Dächer,
 Decken, Treppen, generische Objekte) relational abgebildet? Der
@@ -31,14 +31,14 @@ Schema-Vorschlag (`spec/data-model.yaml`) wählt einen anderen Weg.
    Spalten** (`walls`, `rooms`, `roofs`, `slabs`, `stairs`, `objects`).
 2. **Class-Table-Inheritance für Öffnungen:** eine Basis-Tabelle
    `openings` (Position/Maße in der Wand) mit 1:1-Spezialisierungen
-   `doors`/`windows` (`opening_id` unique). Bildet LH-FA-DOR-004/WIN-005
+   `doors`/`windows` (`opening_id` unique). Bildet [LH-FA-DOR-004](../../../spec/lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen)/WIN-005
    (Wandöffnung) strukturell ab.
 3. **Variable Geometrie als JSON-Spalten** (`polygon_json`,
    `footprint_json`, `params_json`): Raumpolygone, Dach-Footprints und
    generische Objekt-Parameter sind formvariabel und werden **nicht**
    relational normalisiert.
 4. **Undo-Stack persistiert** (`undo_commands`, `command_index` +
-   `payload_json`): erfüllt LH-QA-003 (≥1000 Schritte) auch über
+   `payload_json`): erfüllt [LH-QA-003](../../../spec/lastenheft.md#lh-qa-003--undoredo) (≥1000 Schritte) auch über
    Sitzungs-/Projektgrenzen.
 5. **Referentielle Integrität & Lösch-Politik:** *besitzende* Beziehungen
    (Projekt → Bauteil, Geschoss → Bauteil) `on_delete: cascade`; *geteilte*
@@ -103,9 +103,9 @@ Auto-Increment-PK vorbehalten ist — sonst `E017`). Konformität ist mit
   Round-Trip Domain ↔ SQLite ist damit erfüllt (Review-Finding 1).
 - **Offen (nicht hier entschieden):** (a) die *Verzahnung* der
   `walls.classification` mit der parametrischen `wall_types`-Bibliothek
-  (LH-FA-WAL-007) — Auflösung im WAL-007-Slice; (b) LH-FA-BLD-004
+  ([LH-FA-WAL-007](../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen)) — Auflösung im WAL-007-Slice; (b) [LH-FA-BLD-004](../../../spec/lastenheft.md#lh-fa-bld-004--projektversionierung)
   Projektversionierung (History) ist **nicht** Teil dieses Schemas (nur
-  Undo, LH-QA-003).
+  Undo, [LH-QA-003](../../../spec/lastenheft.md#lh-qa-003--undoredo)).
 
 ## Fitness Function
 

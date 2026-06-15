@@ -6,15 +6,15 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** LH-FA-ROM-001 (Raum-Autoerkennung), LH-FA-ROM-002/003 und
-LH-FA-EVL-003 (Flächen-/Volumen-Konsumenten, Trade-off-Kontext),
+**Bezug:** [LH-FA-ROM-001](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen) (Raum-Autoerkennung), [LH-FA-ROM-002](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)/003 und
+[LH-FA-EVL-003](../../../spec/lastenheft.md#lh-fa-evl-003--wohnflächenberechnung) (Flächen-/Volumen-Konsumenten, Trade-off-Kontext),
 ADR-0001 (Kern führt), ADR-0006 (`rooms.polygon_json`)
 
 ---
 
 ## Kontext
 
-Die Raum-Autoerkennung (LH-FA-ROM-001) leitet aus geschlossenen
+Die Raum-Autoerkennung ([LH-FA-ROM-001](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)) leitet aus geschlossenen
 Wandzügen Räume mit Polygon und Fläche ab. Die Spezifikations-Outline
 (`spezifikation.md` §1) ließ zwei Lösungsfragen offen — §7 führte die
 erste als expliziten offenen Punkt:
@@ -24,7 +24,7 @@ erste als expliziten offenen Punkt:
    **Innenkante** (lichte Maße)?
 2. **Verschachtelungs-Repräsentation:** Wie wird der äußere Raum
    verschachtelter Wandzüge dargestellt, sodass „keine Doppelzählung
-   der Fläche" (LH-FA-ROM-001 Boundary) darstellbar und testbar ist?
+   der Fläche" ([LH-FA-ROM-001](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen) Boundary) darstellbar und testbar ist?
    Ein einfaches Polygon pro Zyklus kann ein Loch nicht ausdrücken
    (Plan-Review slice-009, Finding H1).
 
@@ -46,9 +46,9 @@ Begriffs, nicht Beiwerk.
    Raum-**Fläche ist die Netto-Fläche** (äußerer Ring minus
    Loch-Ringe).
 3. **Totalität:** Die Erkennung ist eine ableitende Berechnung und
-   **wirft kein `E-GEO-002`** — degenerierte Zyklen (Offset kollabiert,
+   **wirft kein [`E-GEO-002`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)** — degenerierte Zyklen (Offset kollabiert,
    selbstschneidend, Netto-Fläche ≤ 0) erzeugen *keinen Raum*, wie
-   offene Wandzüge. `E-GEO-002` bleibt mutierenden
+   offene Wandzüge. [`E-GEO-002`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) bleibt mutierenden
    Geometrie-Operationen vorbehalten (Präzisierung in
    `spezifikation.md` §1).
 
@@ -98,7 +98,7 @@ Begriffs, nicht Beiwerk.
   Raum-Persistenz-Slice fest.
 - Welle-1-Reichweite: Zyklen entstehen nur über endpunkt-verbundene
   Segmente (`GEOMETRY_TOLERANCE_MM`); Schnittpunkt-Knoten erst mit
-  Wandverschneidung (LH-FA-WAL-006).
+  Wandverschneidung ([LH-FA-WAL-006](../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)).
 
 ## Fitness Function
 
@@ -109,7 +109,7 @@ Begriffs, nicht Beiwerk.
 
 ## Re-Evaluierungs-Trigger
 
-- Wandverschneidung (LH-FA-WAL-006) führt Schnittpunkt-Knoten ein →
+- Wandverschneidung ([LH-FA-WAL-006](../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)) führt Schnittpunkt-Knoten ein →
   Offset-/Zyklen-Logik gegen T-Stöße neu prüfen.
 - Performance-Zielkomplexität (offener Punkt §7, M3) verlangt
   inkrementelle Erkennung → Vollerkennungs-Annahme neu bewerten.

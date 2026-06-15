@@ -7,8 +7,8 @@
 **Autor:** Dietmar Burkard (Entscheidungen (a)/(b) explizit gewählt;
 ausgearbeitet im AI-Harness-Lauf slice-011a)
 
-**Bezug:** REQ-TEC-002 (Qt 6 gesetzt), ACC-002, LH-FA-D3-001/002
-(sichtbare Hälfte), OBJ-003, ADR-0001 (Adapter-Grenzen), ADR-0002
+**Bezug:** [REQ-TEC-002](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) (Qt 6 gesetzt), [ACC-002](../../../spec/lastenheft.md#7-abnahmekriterien), [LH-FA-D3-001](../../../spec/lastenheft.md#modul-3d-modellierung-d3)/002
+(sichtbare Hälfte), [OBJ-003](../../../spec/lastenheft.md#3-projektziele), ADR-0001 (Adapter-Grenzen), ADR-0002
 (OCC nur als Port-Backend), ADR-0008 (Observer-Port,
 Push-Notify/Pull-State)
 
@@ -18,8 +18,8 @@ Push-Notify/Pull-State)
 
 `welle-1v-viewer` liefert die sichtbare Hälfte des Echtzeit-Vertrags:
 ein 3D-Fenster, das das extrudierte Gebäudemodell darstellt und
-committeten Änderungen ohne Benutzer-Refresh folgt (ACC-002,
-LH-FA-D3-002). REQ-TEC-002 setzt Qt 6 als GUI-Framework; offen war
+committeten Änderungen ohne Benutzer-Refresh folgt ([ACC-002](../../../spec/lastenheft.md#7-abnahmekriterien),
+[LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)). [REQ-TEC-002](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) setzt Qt 6 als GUI-Framework; offen war
 die **Bindungsform**: UI-Technologie, Weg der Geometrie ins Fenster,
 Sensor-Durchsetzung der Qt-Grenze, Threading/Observer-Verdrahtung,
 Composition-Root-Anbindung und die Headless-/Testbarkeits-Strategie
@@ -89,8 +89,8 @@ Benachrichtigungs-Vertrag ist ADR-0008.
      welle-1v **nicht** nötig (`tests/e2e/` bleibt leer —
      Begründung: das Surrogat plus offscreen deckt die AK; ein
      Treiber wird mit Interaktion/Selektion relevant).
-   - **ACC-002-Beleg:** make-Target `acc-002-beleg` rendert offscreen
-     ein ACC-001-Kern-Projekt und schreibt
+   - **[ACC-002](../../../spec/lastenheft.md#7-abnahmekriterien)-Beleg:** make-Target `acc-002-beleg` rendert offscreen
+     ein [ACC-001](../../../spec/lastenheft.md#7-abnahmekriterien)-Kern-Projekt und schreibt
      `docs/plan/planning/done/acc-002-beleg.png` + Begleit-`.md` <!-- d-check:ignore (geplant: entsteht mit dem acc-002-beleg-Target) -->
      (Projekt, Soll-Merkmale, Kommando, Commit-Hash, Datum,
      Abnahme-Satz). **Manueller Abnahme-Schritt des Projektinhabers,
@@ -146,7 +146,7 @@ Benachrichtigungs-Vertrag ist ADR-0008.
   Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3);
   `acc-002-beleg`-Target außerhalb `gates`.
 - Kamera/Shading sind selbst gebaut und bewusst minimal — jede
-  Erweiterung (Selektion, Schnitt-Ansichten LH-FA-D3-004..006)
+  Erweiterung (Selektion, Schnitt-Ansichten [LH-FA-D3-004](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)..006)
   läuft über den Re-Evaluierungs-Trigger, nicht über stilles
   Wachstum im Adapter.
 
@@ -166,7 +166,7 @@ Benachrichtigungs-Vertrag ist ADR-0008.
   Supersedes-ADR.
 - **Touch-/Fluid-UI-Anforderung** (neue LH-FA-UI-*) → (a) Qt Quick
   neu bewerten.
-- **Mehr-Fenster/Nebenläufigkeit** (LH-FA-UI-004) → zusammen mit
+- **Mehr-Fenster/Nebenläufigkeit** ([LH-FA-UI-004](../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)) → zusammen mit
   ADR-0008 Option C (Queue) neu bewerten.
 - **Plugin-System** (LH-FA-PLG-*) → Plugin-Ausnahme der Regel E
   definieren (Sandbox-Grenze).

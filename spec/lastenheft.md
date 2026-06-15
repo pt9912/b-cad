@@ -67,7 +67,7 @@ geschärft.
   when „Neues Projekt", then Rückfrage „Änderungen verwerfen?" vor dem
   Anlegen.
 - **Negative:** Given kein Schreibrecht im Default-Projektpfad, when
-  Projekt anlegen, then Fehler-Code `E-IO-001`, kein leerer
+  Projekt anlegen, then Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder), kein leerer
   Projektzustand mit verlorenem Vorgänger.
 
 **Out-of-Scope:** Projektvorlagen-Galerie (spätere Welle).
@@ -86,7 +86,7 @@ Projektdatei (SQLite) gespeichert.
   then der letzte konsistente Stand ist intakt (kein halb geschriebenes
   Projekt — vgl. LH-QA-005).
 - **Negative:** Given Zielmedium voll, when „Speichern", then
-  Fehler-Code `E-IO-002`, vorheriger Dateistand unverändert.
+  Fehler-Code [`E-IO-002`](spezifikation.md#4-fehler-codes-und-logging-felder), vorheriger Dateistand unverändert.
 
 #### LH-FA-BLD-003 — Projekt laden
 
@@ -122,7 +122,7 @@ folgende Segmente bilden zusammenhängende Wandzüge.
 - **Boundary:** Given zwei Punkte mit Abstand 0, when Segment beendet,
   then keine Null-Längen-Wand (verworfen, Hinweis).
 - **Negative:** Given Eingabe außerhalb des Zeichenbereichs, when
-  Punkt gesetzt, then Fehler-Code `E-GEO-001`.
+  Punkt gesetzt, then Fehler-Code [`E-GEO-001`](spezifikation.md#4-fehler-codes-und-logging-felder).
 
 #### LH-FA-WAL-002 — Wandstärke definieren
 
@@ -135,7 +135,7 @@ folgende Segmente bilden zusammenhängende Wandzüge.
   und 3D-Körper aktualisieren sich sofort (vgl. LH-FA-D3-002).
 - **Boundary:** Given Stärke = 50 mm oder 1000 mm, then akzeptiert;
   Given 49 mm oder 1001 mm, then auf Grenzwert geklemmt + Hinweis,
-  Fehler-Code `E-VAL-001`.
+  Fehler-Code [`E-VAL-001`](spezifikation.md#4-fehler-codes-und-logging-felder).
 
 #### LH-FA-WAL-003 — Wandhöhe definieren
 
@@ -552,7 +552,7 @@ ohne expliziten Aktualisierungs-Schritt des Benutzers.
   zeigt die 3D-Darstellung den geklemmten — tatsächlich übernommenen —
   Stand.
 - **Negative:** Given eine abgelehnte Parameteränderung (ungültige
-  Eingabe, vgl. `E-VAL-001`), when die Ablehnung erfolgt, then ändert
+  Eingabe, vgl. [`E-VAL-001`](spezifikation.md#4-fehler-codes-und-logging-felder)), when die Ablehnung erfolgt, then ändert
   sich die 3D-Darstellung nicht.
 
 **Out-of-Scope (LH-FA-D3-002):** Latenz-/Performance-Budget (bei
@@ -702,7 +702,7 @@ Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
   when importiert, then entsprechende b-cad-Bauteile entstehen; Anzahl
   Geschosse und Wände stimmt mit der Quelle überein.
 - **Negative:** Given eine nicht-IFC-Datei, when importiert, then
-  Fehler-Code `E-IO-003`, kein Teil-Import.
+  Fehler-Code [`E-IO-003`](spezifikation.md#4-fehler-codes-und-logging-felder), kein Teil-Import.
 
 - **LH-FA-IO-002 — IFC-Export.**
 - **LH-FA-IO-003 — DXF-Import.**
@@ -799,4 +799,4 @@ Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
 ## 9. Historie
 
 Ausgelagert nach [`lastenheft-historie.md`](lastenheft-historie.md)
-(slice-018a / MR-011 — Provenance-Datei außerhalb der `matrix`-Spec-Straten).
+(slice-018a / [MR-011](../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) — Provenance-Datei außerhalb der `matrix`-Spec-Straten).

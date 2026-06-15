@@ -2,18 +2,18 @@
 
 | ID | Titel | Status | Bezug |
 |---|---|---|---|
-| [0001](0001-hexagonale-architektur.md) | Hexagonale Architektur (Ports & Adapters) | Accepted (2026-06-08) | OBJ-002/003/004/005, LH-FA-* |
-| [0002](0002-geometrie-kern-opencascade.md) | Geometrie-Kern OpenCascade hinter `GeometryKernelPort` (Backend: Solids/Extrusion/Booleans/Wandöffnungen) | Accepted (2026-06-09) | REQ-TEC-003, LH-FA-WAL/D3-*, LH-FA-DOR-004/WIN-005 |
-| [0003](0003-persistenz-sqlite.md) | Projekt-Persistenz SQLite, atomar | Accepted (2026-06-09) | REQ-TEC-007, LH-FA-BLD-*, LH-QA-005 |
-| [0004](0004-toolchain-dependency-pinning.md) | Container-/Dependency-Pinning + Base-Version (24.04→26.04, node 24, Digest+Snapshot) | Accepted (2026-06-09) | REQ-TEC-009, Modul 14, spike-001 |
-| [0005](0005-drittanbieter-lizenz-attribution.md) | Drittanbieter-Lizenz-Attribution & Auslieferungs-Layout (ScanCode+REUSE, kuratiertes Manifest, dist-Layout) | Proposed (2026-06-08) | LH-QA-007 (vorgeschlagen), ADR-0002/0004, slice-006 |
-| [0006](0006-relationales-schema-design.md) | Relationales Schema-Design des Gebäudemodells (per-Typ-Tabellen, `openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack) | Accepted (2026-06-09) | OBJ-003, ADR-0001/0003, LH-QA-003 |
-| [0007](0007-raumerkennung-geometrie-basis.md) | Geometrie-Basis der Raumerkennung (Innenkante, Ring-Modell, Erkennung total) | Accepted (2026-06-11) | LH-FA-ROM-001/002/003, LH-FA-EVL-003, ADR-0001/0006 |
-| [0008](0008-aenderungs-benachrichtigung.md) | Änderungs-Benachrichtigung Kern → Darstellung (Observer-Port, Push-Notify/Pull-State, Kapselung) | Accepted (2026-06-11) | LH-FA-D3-002, OBJ-003, ADR-0001/0007 |
-| [0009](0009-gui-framework-qt6.md) | GUI-Framework-Bindung Qt 6 (Widgets, Tessellation über `ViewModelPort` — kein OCC in der GUI, Regel E, Headless-Strategie) | Accepted (2026-06-12) | REQ-TEC-002, ACC-002, LH-FA-D3-001/002, ADR-0001/0002/0008 |
-| [0010](0010-headless-gl-xvfb.md) | Headless-GL via Xvfb + Mesa/llvmpipe — präzisiert ADR-0009 (f): offscreen-QPA trägt kein GL (Implementierungs-Befund slice-011b) | Accepted (2026-06-12) | ADR-0009, ADR-0004, LH-FA-D3-002 |
-| [0011](0011-bauteil-hosting-wandoeffnung.md) | Bauteil-Hosting & Wandöffnungs-Modell (wand-gehostetes Element mit Wand-Referenz; Kern liefert Schnitt-Prismen, `GeometryKernelPort` subtrahiert; `WallGeometryChanged`-Wiederverwendung; Raumerkennung unberührt; Bauteil-Erweiterungs-Muster als welle-2-Leitplanke) | Accepted (2026-06-13) | LH-FA-DOR-001..004, LH-FA-WIN-001..005, ADR-0001/0002/0006/0007/0008 |
-| [0012](0012-evaluations-architektur.md) | Evaluations-Architektur (neuer `EvaluatePort` read-only Query; pure Ergebnis-Werttypen; pull, kein `op`; Fläche = Shoelace-Raum-Netto / Volumen analytisch im Kern — geklemmtes Öffnungsvolumen, **kein OCC-`GProp`**; Material nur konsumierte Eingabe; welle-3-Leitplanke) | Accepted (2026-06-14) | LH-FA-EVL-001..006, ADR-0001/0006/0007/0011 |
+| [0001](0001-hexagonale-architektur.md) | Hexagonale Architektur (Ports & Adapters) | Accepted (2026-06-08) | [OBJ-002](../../../spec/lastenheft.md#3-projektziele)/003/004/005, LH-FA-* |
+| [0002](0002-geometrie-kern-opencascade.md) | Geometrie-Kern OpenCascade hinter `GeometryKernelPort` (Backend: Solids/Extrusion/Booleans/Wandöffnungen) | Accepted (2026-06-09) | [REQ-TEC-003](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec), LH-FA-WAL/D3-*, [LH-FA-DOR-004](../../../spec/lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen)/WIN-005 |
+| [0003](0003-persistenz-sqlite.md) | Projekt-Persistenz SQLite, atomar | Accepted (2026-06-09) | [REQ-TEC-007](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec), LH-FA-BLD-*, [LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery) |
+| [0004](0004-toolchain-dependency-pinning.md) | Container-/Dependency-Pinning + Base-Version (24.04→26.04, node 24, Digest+Snapshot) | Accepted (2026-06-09) | [REQ-TEC-009](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec), Modul 14, spike-001 |
+| [0005](0005-drittanbieter-lizenz-attribution.md) | Drittanbieter-Lizenz-Attribution & Auslieferungs-Layout (ScanCode+REUSE, kuratiertes Manifest, dist-Layout) | Proposed (2026-06-08) | [LH-QA-007](../../../spec/lastenheft.md) (vorgeschlagen), ADR-0002/0004, slice-006 |
+| [0006](0006-relationales-schema-design.md) | Relationales Schema-Design des Gebäudemodells (per-Typ-Tabellen, `openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack) | Accepted (2026-06-09) | [OBJ-003](../../../spec/lastenheft.md#3-projektziele), ADR-0001/0003, [LH-QA-003](../../../spec/lastenheft.md#lh-qa-003--undoredo) |
+| [0007](0007-raumerkennung-geometrie-basis.md) | Geometrie-Basis der Raumerkennung (Innenkante, Ring-Modell, Erkennung total) | Accepted (2026-06-11) | [LH-FA-ROM-001](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)/002/003, [LH-FA-EVL-003](../../../spec/lastenheft.md#lh-fa-evl-003--wohnflächenberechnung), ADR-0001/0006 |
+| [0008](0008-aenderungs-benachrichtigung.md) | Änderungs-Benachrichtigung Kern → Darstellung (Observer-Port, Push-Notify/Pull-State, Kapselung) | Accepted (2026-06-11) | [LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung), [OBJ-003](../../../spec/lastenheft.md#3-projektziele), ADR-0001/0007 |
+| [0009](0009-gui-framework-qt6.md) | GUI-Framework-Bindung Qt 6 (Widgets, Tessellation über `ViewModelPort` — kein OCC in der GUI, Regel E, Headless-Strategie) | Accepted (2026-06-12) | [REQ-TEC-002](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec), [ACC-002](../../../spec/lastenheft.md#7-abnahmekriterien), [LH-FA-D3-001](../../../spec/lastenheft.md#modul-3d-modellierung-d3)/002, ADR-0001/0002/0008 |
+| [0010](0010-headless-gl-xvfb.md) | Headless-GL via Xvfb + Mesa/llvmpipe — präzisiert ADR-0009 (f): offscreen-QPA trägt kein GL (Implementierungs-Befund slice-011b) | Accepted (2026-06-12) | ADR-0009, ADR-0004, [LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung) |
+| [0011](0011-bauteil-hosting-wandoeffnung.md) | Bauteil-Hosting & Wandöffnungs-Modell (wand-gehostetes Element mit Wand-Referenz; Kern liefert Schnitt-Prismen, `GeometryKernelPort` subtrahiert; `WallGeometryChanged`-Wiederverwendung; Raumerkennung unberührt; Bauteil-Erweiterungs-Muster als welle-2-Leitplanke) | Accepted (2026-06-13) | [LH-FA-DOR-001](../../../spec/lastenheft.md#lh-fa-dor-001--tür-platzieren)..004, [LH-FA-WIN-001](../../../spec/lastenheft.md#lh-fa-win-001--fenster-platzieren)..005, ADR-0001/0002/0006/0007/0008 |
+| [0012](0012-evaluations-architektur.md) | Evaluations-Architektur (neuer `EvaluatePort` read-only Query; pure Ergebnis-Werttypen; pull, kein `op`; Fläche = Shoelace-Raum-Netto / Volumen analytisch im Kern — geklemmtes Öffnungsvolumen, **kein OCC-`GProp`**; Material nur konsumierte Eingabe; welle-3-Leitplanke) | Accepted (2026-06-14) | [LH-FA-EVL-001](../../../spec/lastenheft.md#lh-fa-evl-001--flächenberechnung)..006, ADR-0001/0006/0007/0011 |
 
 ## ADR-Folgepflichten (Status)
 
@@ -26,7 +26,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 |---|---|---|
 | ADR-0002 | `arch-check` **Regel C** (OCC-`.hxx` nur in `src/adapters/geometry/`) | **erfüllt** durch [slice-003b](../planning/done-archive/slice-003b-occ-extrusion.md) (2026-06-09) |
 | ADR-0003 | `arch-check` **Regel D** (`sqlite3*` nur in `src/adapters/persistence/`) | **erfüllt** durch slice-008a (2026-06-09) |
-| ADR-0003 | Crash-Recovery-Test (`kill -9`, LH-QA-005) | **erfüllt** durch slice-008b (2026-06-09) |
+| ADR-0003 | Crash-Recovery-Test (`kill -9`, [LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery)) | **erfüllt** durch slice-008b (2026-06-09) |
 | ADR-0007 | Innenkanten-Offset + Ring-Modell implementieren; Boundary-Test prüft Netto-Fläche verschachtelter Wandzüge | **erfüllt** durch [slice-009b](../planning/done-archive/slice-009b-raumerkennung-implementierung.md) (2026-06-11) |
 | ADR-0008 | Observer-Port + subscribe/unsubscribe + Meldungen im `StructureEditService` (nach `redetectRooms`), inkl. Kapselungs-Test (werfender Beobachter) | **erfüllt** durch slice-010b (2026-06-11) |
 | ADR-0009 | `arch-check` **Regel E** (Qt-Includes nur `src/adapters/ui/` + `src/main.cpp`) + Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3) + `acc-002-beleg`-Target außerhalb `gates` | **erfüllt** durch slice-011b (2026-06-12) |
@@ -36,7 +36,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Decken/Fundament** (LH-FA-SLB-*/FND-*): Domäne + Platten-Geometrie (`slab_geometry`, base_z via Mesh-Translation) + ViewModel/Viewer/Edit-Ops + Persistenz (`slabs`/`polygon_json` mit Cutouts) | **erfüllt** durch slice-015a/b/c (2026-06-14) |
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Treppen** (LH-FA-STR-*): Domäne + analytische Treppen-Geometrie (`stair_geometry`, Stufen-Polyeder + Geländer, kein OCC) + ViewModel/Viewer/Edit-Ops + Persistenz (`stairs`, `rise_mm` write-derived) | **erfüllt** durch slice-016a/b/c (2026-06-14) |
 | ADR-0012 | `architecture.md` §1.1 nachziehen — EVL-001..006 von `DetectRoomsPort` auf den neuen Driving-Port `EvaluatePort` | **erfüllt** durch slice-017a (2026-06-14) |
-| ADR-0012 | `EvaluatePort` + Auswertungs-Service (Shoelace-Raum-Netto-Fläche, analytisches Netto-Volumen mit geklemmtem Öffnungsvolumen, Listen-Aggregation) + pure Ergebnis-Werttypen + AK-Tests `LH-FA-EVL-*`; **MR-009** für den EVL-Impl (geometrie-korrektheits-nah) | **offen** (slice-017b ff.) |
+| ADR-0012 | `EvaluatePort` + Auswertungs-Service (Shoelace-Raum-Netto-Fläche, analytisches Netto-Volumen mit geklemmtem Öffnungsvolumen, Listen-Aggregation) + pure Ergebnis-Werttypen + AK-Tests `LH-FA-EVL-*`; **[MR-009](../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)** für den EVL-Impl (geometrie-korrektheits-nah) | **offen** (slice-017b ff.) |
 
 ## Konventionen
 
@@ -55,11 +55,11 @@ Noch nicht als ADR angelegt, in der Roadmap verortet:
   [ADR-0009](0009-gui-framework-qt6.md) (Accepted 2026-06-12,
   slice-011a); Folgepflichten → slice-011b.
 - Plugin-API-/ABI-Vertrag und Sandbox-Modell (LH-FA-PLG-*) — welle-5.
-- IFC-Bibliothek und -Schema-Version (LH-FA-IO-001/002) — welle-4.
-- STEP-/Format-Export-Backend hinter `ModelExporterPort` (LH-FA-IO-005;
+- IFC-Bibliothek und -Schema-Version ([LH-FA-IO-001](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002) — welle-4.
+- STEP-/Format-Export-Backend hinter `ModelExporterPort` ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import);
   aus ADR-0002 ausgegliedert) inkl. Adapter-Grenzen Geometrie↔IO — welle-4.
-- ~~Atomare Write-Strategie / Crash-Recovery-Detail (LH-QA-005)~~ →
+- ~~Atomare Write-Strategie / Crash-Recovery-Detail ([LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery))~~ →
   entschieden in [ADR-0003](0003-persistenz-sqlite.md) (Temp+Rename);
   Folgepflicht durch slice-008b erfüllt (Welle-1-Verifikation 2026-06-11).
 - Observability/OTel-Anbindung (`TracingPort`) — spätere Welle.
-- ~~Build-/Container-Strategie (REQ-TEC-009)~~ → als [ADR-0004](0004-toolchain-dependency-pinning.md) erfasst (Accepted 2026-06-09, aus spike-001).
+- ~~Build-/Container-Strategie ([REQ-TEC-009](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec))~~ → als [ADR-0004](0004-toolchain-dependency-pinning.md) erfasst (Accepted 2026-06-09, aus spike-001).

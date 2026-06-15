@@ -6,7 +6,7 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** REQ-TEC-007, LH-FA-BLD-002, LH-FA-BLD-003, LH-FA-BLD-004, LH-QA-005, ADR-0001
+**Bezug:** [REQ-TEC-007](../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec), [LH-FA-BLD-002](../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern), [LH-FA-BLD-003](../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden), [LH-FA-BLD-004](../../../spec/lastenheft.md#lh-fa-bld-004--projektversionierung), [LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery), ADR-0001
 
 ---
 
@@ -14,11 +14,11 @@
 
 Ein b-cad-Projekt (Geschosse, Bauteile, Material, Historie) muss
 persistent gespeichert, vollständig wieder geladen und versioniert
-werden (LH-FA-BLD-002..004). Datenverlust am Gebäudemodell ist der
+werden ([LH-FA-BLD-002](../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)..004). Datenverlust am Gebäudemodell ist der
 schärfste Fehlerfall (Repo-Klasse, siehe
 [`harness/conventions.md` §Repo-Klasse](../../../harness/conventions.md#repo-klasse)):
 ein Absturz darf den letzten konsistenten Stand nicht zerstören
-(LH-QA-005). Die Persistenz steht hinter `ProjectRepositoryPort`
+([LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery)). Die Persistenz steht hinter `ProjectRepositoryPort`
 (ADR-0001).
 
 ## Entscheidung
@@ -38,7 +38,7 @@ Schreiben erfolgt **atomar** (Schreiben in Temp-Datei, dann Rename).
 ### Option B — XML/JSON-Datei
 
 - Pro: menschenlesbar, einfach zu diffen.
-- Contra: bei großen Modellen langsam und speicherhungrig (LH-QA-001/002);
+- Contra: bei großen Modellen langsam und speicherhungrig ([LH-QA-001](../../../spec/lastenheft.md#lh-qa-001--performance-projektöffnung)/002);
   keine transaktionale Konsistenz; partielles Lesen schwierig.
 
 ### Option C — SQLite (gewählt)
@@ -50,12 +50,12 @@ Schreiben erfolgt **atomar** (Schreiben in Temp-Datei, dann Rename).
 
 ## Konsequenzen
 
-- Positiv: Transaktionen geben Konsistenz; Historie (LH-FA-BLD-004) als
+- Positiv: Transaktionen geben Konsistenz; Historie ([LH-FA-BLD-004](../../../spec/lastenheft.md#lh-fa-bld-004--projektversionierung)) als
   Tabelle; gezielte Abfragen für Auswertungen (LH-FA-EVL-*) möglich.
 - Negativ: Schema-Versionierung mit getesteter Aufwärts-Migration ist
   Pflicht (siehe [`spec/spezifikation.md` §2](../../../spec/spezifikation.md#2-datenstrukturen-und-schemas)).
 - Folgepflicht: Atomares Schreiben (Temp + Rename) als Hard-Anforderung;
-  Crash-Recovery-Test (LH-QA-005) `kill -9` zwischen Schreibphasen.
+  Crash-Recovery-Test ([LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery)) `kill -9` zwischen Schreibphasen.
 
 ## Fitness Function
 
@@ -69,11 +69,11 @@ Schreiben erfolgt **atomar** (Schreiben in Temp-Datei, dann Rename).
 
 - Wenn Mehrbenutzer-/gleichzeitiger Zugriff (aktuell out-of-scope,
   Lastenheft §6) doch gefordert wird.
-- Wenn Projektgrößen das RAM-/Performance-Budget (LH-QA-001/002) reißen.
+- Wenn Projektgrößen das RAM-/Performance-Budget ([LH-QA-001](../../../spec/lastenheft.md#lh-qa-001--performance-projektöffnung)/002) reißen.
 
 ## Geschichte
 
 | Datum | Ereignis | Verweis |
 |---|---|---|
 | 2026-06-08 | Proposed (aus Architektur-Outline, Bootstrap) | spec/architecture.md §3 |
-| 2026-06-09 | Accepted — umgesetzt in slice-008a: `ProjectRepositoryPort` + SQLite-Adapter (atomar via Temp+Rename), Round-Trip grün, arch-check Regel D. Crash-Recovery-Fitness (LH-QA-005) als Folgepflicht slice-008b | slice-008a |
+| 2026-06-09 | Accepted — umgesetzt in slice-008a: `ProjectRepositoryPort` + SQLite-Adapter (atomar via Temp+Rename), Round-Trip grün, arch-check Regel D. Crash-Recovery-Fitness ([LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery)) als Folgepflicht slice-008b | slice-008a |

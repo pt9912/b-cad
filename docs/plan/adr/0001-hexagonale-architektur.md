@@ -6,7 +6,7 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** OBJ-002, OBJ-003, OBJ-004, OBJ-005, LH-FA-BLD-*, LH-FA-IO-*, LH-FA-PLG-*
+**Bezug:** [OBJ-002](../../../spec/lastenheft.md#3-projektziele), [OBJ-003](../../../spec/lastenheft.md#3-projektziele), [OBJ-004](../../../spec/lastenheft.md#3-projektziele), [OBJ-005](../../../spec/lastenheft.md#3-projektziele), LH-FA-BLD-*, LH-FA-IO-*, LH-FA-PLG-*
 
 ---
 
@@ -16,8 +16,8 @@ b-cad hat mehrere externe Abhängigkeiten, die sich über den
 Lebenszyklus ändern oder austauschbar bleiben müssen: der
 Geometrie-Kern (OpenCascade, ADR-0002), die Persistenz (SQLite,
 ADR-0003), das GUI-Framework (Qt) und mehrere Austauschformate
-(IFC/DXF/STEP/STL). Gleichzeitig verlangt OBJ-003 ein **durchgängiges
-Datenmodell**, aus dem 2D- und 3D-Sicht abgeleitet werden, und OBJ-004
+(IFC/DXF/STEP/STL). Gleichzeitig verlangt [OBJ-003](../../../spec/lastenheft.md#3-projektziele) ein **durchgängiges
+Datenmodell**, aus dem 2D- und 3D-Sicht abgeleitet werden, und [OBJ-004](../../../spec/lastenheft.md#3-projektziele)
 **Erweiterbarkeit durch Plugins**. Das Datenmodell und die
 Anwendungslogik dürfen von keiner dieser konkreten Technologien direkt
 abhängen.
@@ -44,8 +44,8 @@ zeigt immer nach innen: Adapter hängen am Kern, nie umgekehrt.
 ### Option B — Monolithisch um OpenCascade herum
 
 - Pro: minimaler Adaptions-Overhead, volle OCC-Mächtigkeit überall.
-- Contra: OCC-Typen durchdringen das gesamte Programm; OBJ-003
-  (eigenes Datenmodell) und OBJ-004 (Plugins gegen stabile API) kaum
+- Contra: OCC-Typen durchdringen das gesamte Programm; [OBJ-003](../../../spec/lastenheft.md#3-projektziele)
+  (eigenes Datenmodell) und [OBJ-004](../../../spec/lastenheft.md#3-projektziele) (Plugins gegen stabile API) kaum
   haltbar; Tests brauchen OCC.
 
 ### Option C — Hexagonale Architektur (gewählt)

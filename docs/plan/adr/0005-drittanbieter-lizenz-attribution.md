@@ -6,7 +6,7 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** LH-QA-007 (vorgeschlagen, noch nicht im Lastenheft), [ADR-0002](0002-geometrie-kern-opencascade.md) (löst dessen offene Lizenz-Notiz), [ADR-0004](0004-toolchain-dependency-pinning.md) (gepinnte Dep-Versionen), [slice-006](../planning/open/slice-006-drittanbieter-attribution.md), [`releasing.md`](../../user/releasing.md)
+**Bezug:** [LH-QA-007](../../../spec/lastenheft.md) (vorgeschlagen, noch nicht im Lastenheft), [ADR-0002](0002-geometrie-kern-opencascade.md) (löst dessen offene Lizenz-Notiz), [ADR-0004](0004-toolchain-dependency-pinning.md) (gepinnte Dep-Versionen), [slice-006](../planning/open/slice-006-drittanbieter-attribution.md), [`releasing.md`](../../user/releasing.md)
 
 ---
 
@@ -87,7 +87,7 @@ Zwei Randbedingungen prägen die Entscheidung:
 - Positiv: LGPL-/Attributions-Pflichten werden erfüllt und **prüfbar**
   (Gate); Ergebnis ist reproduzierbar (an ADR-0004-Snapshot gekoppelt);
   die offene Lizenz-Notiz aus ADR-0002 ist geschlossen.
-- Folgepflicht: **LH-QA-007** (Attributions-Pflicht, abnahmebindend) muss
+- Folgepflicht: **[LH-QA-007](../../../spec/lastenheft.md)** (Attributions-Pflicht, abnahmebindend) muss
   ins Lastenheft. Umsetzung in **slice-006**, getriggert durch ein real
   gelinktes Release-Binary (ohne Binary ist Attribution Fiktion).
 - Folgepflicht: Bei Dep-Zuwachs oder Snapshot-Bump aus ADR-0004 muss das

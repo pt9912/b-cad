@@ -6,7 +6,7 @@
 
 **Autor:** Dietmar Burkard (slice-017a, ausgearbeitet im AI-Harness-Lauf)
 
-**Bezug:** LH-FA-EVL-001..006 (Flächen/Volumen/Wohnfläche/Material-/Tür-/
+**Bezug:** [LH-FA-EVL-001](../../../spec/lastenheft.md#lh-fa-evl-001--flächenberechnung)..006 (Flächen/Volumen/Wohnfläche/Material-/Tür-/
 Fensterlisten), ADR-0001 (Kern führt; Driving-Port = Use-Case-Schnittstelle),
 ADR-0006 (`materials`-Schema + `material_id`-FKs — Material-Persistenz bereits
 entschieden), ADR-0007 (Raumerkennung, **Netto-Fläche** — Quelle für
@@ -17,8 +17,8 @@ EVL-001/003), ADR-0011 (Öffnungs-Schnittprismen — Grundlage des Netto-Volumen
 ## Kontext
 
 welle-3-auswertung macht das Gebäudemodell **auswertbar** (Meilenstein M3):
-Flächen-, Volumen-, Wohnflächenberechnung (LH-FA-EVL-001..003) und Material-/
-Tür-/Fensterlisten (LH-FA-EVL-004..006). Anders als welle-2 erzeugt Auswertung
+Flächen-, Volumen-, Wohnflächenberechnung ([LH-FA-EVL-001](../../../spec/lastenheft.md#lh-fa-evl-001--flächenberechnung)..003) und Material-/
+Tür-/Fensterlisten ([LH-FA-EVL-004](../../../spec/lastenheft.md#lh-fa-evl-004--materiallisten)..006). Anders als welle-2 erzeugt Auswertung
 **keine** Geometrie — sie **leitet** Information aus dem bereits committeten
 Modell ab. Vor der Implementierung (slice-017b ff.) sind drei Lösungsfragen
 offen, die der reine Spec-Text nicht entscheidet:
@@ -38,7 +38,7 @@ offen, die der reine Spec-Text nicht entscheidet:
 Plan-Review HIGH-1): Der **Material-Persistenz-Vertrag** liegt in ADR-0006
 (`materials` + `material_id`-FKs an `walls`/`roofs`/`slabs`/`wall_types`). Die
 **Material-Domänen- und Zuweisungs-Autorität** (eigenes `material_id` vs. über
-`wall_type`) ist eine **Spezifikations-Entscheidung** (LH-FA-MAT-003.a,
+`wall_type`) ist eine **Spezifikations-Entscheidung** ([LH-FA-MAT-003](../../../spec/lastenheft.md#lh-fa-mat-003--materialzuweisung).a,
 `spezifikation.md` §2.1), **kein** ADR-Gewicht — Material erscheint in dieser
 ADR nur als **von der Auswertung konsumierte Eingabe**. (Eine eigene
 Material-Architektur-ADR wäre ein irreführend gebündeltes Leitplanken-ADR —
@@ -168,7 +168,7 @@ welle-3-Bedarf.
   Werttypen; Auswertungs-Service mit **Shoelace-Netto-Fläche** (Raum-Polygon),
   **analytischem Netto-Volumen** (Bauteil-Footprint·Höhe − **geklemmtes
   Öffnungsvolumen**, #4) und **Listen-Aggregation**; AK-Tests mit `LH-FA-EVL-*`
-  im Namen. **MR-009 greift für den EVL-Impl-Slice** — die Shoelace-Netto-/
+  im Namen. **[MR-009](../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) greift für den EVL-Impl-Slice** — die Shoelace-Netto-/
   Loch-Subtraktion ist geometrie-korrektheits-nah (Winding/Orientierung, keine
   Doppelzählung), also unabhängiges geometrielastiges Code-Review vor
   Welle-Closure.
@@ -187,7 +187,7 @@ welle-3-Bedarf.
 |---|---|---|
 | AK-Tests (slice-017b) | EVL Happy/Boundary/Negative gegen **analytische** Werte (Shoelace-Netto-Fläche = äußerer Ring − Löcher; Netto-Volumen = Footprint·Höhe − Öffnungs-Prismen; leeres Modell → Null/leer, kein Wurf) | `make test` |
 | Schichtung | `EvaluatePort`/Auswertungs-Service bleiben **pure Domäne** — **kein** OCC-/Qt-/SQLite-Typ, **kein `GeometryKernelPort`-Aufruf** für Volumen (analytisch im Kern); kein Adapter-Leck | `make arch-check` (ADR-0001) |
-| Geometrie-Korrektheit | EVL-Impl (Shoelace-Winding, Loch-Subtraktion, Netto-Volumen) unabhängig code-reviewt vor Welle-Closure | MR-009 (`harness/conventions.md`) |
+| Geometrie-Korrektheit | EVL-Impl (Shoelace-Winding, Loch-Subtraktion, Netto-Volumen) unabhängig code-reviewt vor Welle-Closure | [MR-009](../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) (`harness/conventions.md`) |
 
 ## Re-Evaluierungs-Trigger
 

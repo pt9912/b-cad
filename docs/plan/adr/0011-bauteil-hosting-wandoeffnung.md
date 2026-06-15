@@ -6,7 +6,7 @@
 
 **Autor:** Dietmar Burkard (slice-013a, ausgearbeitet im AI-Harness-Lauf)
 
-**Bezug:** LH-FA-DOR-001..004, LH-FA-WIN-001..005 (Türen/Fenster mit
+**Bezug:** [LH-FA-DOR-001](../../../spec/lastenheft.md#lh-fa-dor-001--tür-platzieren)..004, [LH-FA-WIN-001](../../../spec/lastenheft.md#lh-fa-win-001--fenster-platzieren)..005 (Türen/Fenster mit
 automatischer Wandöffnung), ADR-0001 (Kern führt, Port-Signatur =
 Kern-Hoheit), ADR-0002 (OCC-Boolean-Backend hinter `GeometryKernelPort`,
 für Wandöffnungen reserviert), ADR-0006 (`openings → doors/windows`-
@@ -21,7 +21,7 @@ welle-2-bauteile liefert die parametrischen Bauteile über die Wände
 hinaus. Türen (LH-FA-DOR-*) und Fenster (LH-FA-WIN-*) sind der erste
 Fall — und der einzige **wand-gehostete**: ein platziertes Tür-/
 Fenster-Bauteil erzeugt eine **Öffnung in seiner Wirtswand**
-(LH-FA-DOR-004/WIN-005). Vor der Implementierung (slice-013b) sind drei
+([LH-FA-DOR-004](../../../spec/lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen)/WIN-005). Vor der Implementierung (slice-013b) sind drei
 Lösungsfragen offen, die der reine Spec-Text nicht entscheidet:
 
 1. **Hosting-Repräsentation:** Wie wird ein wand-gehostetes Bauteil im
@@ -86,7 +86,7 @@ Das Persistenz-Schema ist **nicht** offen: `data-model.yaml` / `schema.sql`
    eigene Operation) legt slice-013b fest.
 
 3. **Geometrie-Erzeugung total + transaktional.** Eine fehlgeschlagene/
-   degenerierte Subtraktion meldet `E-GEO-002` (§4); das neue Wand-Solid
+   degenerierte Subtraktion meldet [`E-GEO-002`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) (§4); das neue Wand-Solid
    entsteht **vor dem Commit** — schlägt es fehl, bleibt das Modell
    unverändert und es ergeht keine Meldung (Muster slice-012
    Mehr-Element-Transaktion).
@@ -119,7 +119,7 @@ Das Persistenz-Schema ist **nicht** offen: `data-model.yaml` / `schema.sql`
       (framework-frei, ADR-0001), mit Referenzen statt Verschachtelung.
    2. **Driving-Port:** Operationen (anlegen/verschieben/ändern/löschen)
       am `EditStructurePort`, Parameter gegen §3-Wertebereiche validiert
-      (Klemmung → `E-VAL-001`, LH-FA-WAL-002.a).
+      (Klemmung → [`E-VAL-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder), [LH-FA-WAL-002](../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren).a).
    3. **Geometrie (Driven):** der Kern liefert **reine
       Geometrie-Werte** (Footprint-Polygone, Schnitt-Prismen, Solid-
       Parameter); der `GeometryKernelPort` extrudiert/subtrahiert/
@@ -134,7 +134,7 @@ Das Persistenz-Schema ist **nicht** offen: `data-model.yaml` / `schema.sql`
    5. **Persistenz:** Abbildung auf die vorhandene ADR-0006-Schema-
       Tabelle (für openings/roofs/slabs/stairs bereits modelliert);
       **nur** falls ein Feld fehlt → Schema-Schärfung + `make schema-check`
-      (separat, **nicht** in `gates`, MR-007).
+      (separat, **nicht** in `gates`, [MR-007](../../../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check)).
    6. **Viewer:** `ViewerScene` behandelt den `op` (Pull + idempotentes
       Ersetzen, ADR-0009), display-frei AK-getestet.
    7. **AK-Tests** mit `LH-`-ID im Namen; arch-check-Regeln A–E halten.
