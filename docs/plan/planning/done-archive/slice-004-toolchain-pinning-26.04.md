@@ -14,7 +14,7 @@ adr_refs: [ADR-0004]
 
 **Welle:** welle-1-mvp
 
-**Bezug:** ADR-0004 (Container-/Dependency-Pinning), REQ-TEC-009, Modul 14. Setzt die Empfehlung aus [`spike-001`](../done/spike-001-toolchain-reproduzierbarkeit.md) um.
+**Bezug:** ADR-0004 (Container-/Dependency-Pinning), REQ-TEC-009, Modul 14. Setzt die Empfehlung aus [`spike-001`](../done-archive/spike-001-toolchain-reproduzierbarkeit.md) um.
 
 **Autor:** Dietmar Burkard. **Datum:** 2026-06-08.
 

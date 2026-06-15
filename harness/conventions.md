@@ -354,6 +354,57 @@ sie.
 - **Auflösungs-Trigger:** permanent (Konvention); die computational-Sensor-
   Promotion bleibt offener Tooling-Kandidat.
 
+### MR-011 — Referenz-Integritäts-Gate (matrix, ids, spans, hostpaths)
+
+- **Datum:** 2026-06-15
+- **Geltungsbereich:** [`.d-check.yml`](../.d-check.yml), `spec/`,
+  [`AGENTS.md` §2.7](../AGENTS.md), `docs/plan/planning/done-archive/`,
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates)
+- **Adaption:** Das `docs-check`-Gate (MR-007, d-check ≥ v0.8.0) führt vier
+  weitere Module. **`matrix`** und **`ids`** setzen die **Regelwerk-Referenz-
+  Richtung** computational durch (Stable Dependencies Principle, §Referenz-
+  Richtung: „Spec → ADR existiert im bindenden Text nicht — auch nicht als
+  Quellen-Spalte"); **`spans`**/**`hostpaths`** sind Markdown-Span- und
+  Host-Pfad-Hygiene (0 Befunde).
+  - `matrix`: Klassen `spec-straten` (lastenheft/spezifikation/architecture)
+    · `adr` · `slice`; Regeln `spec-straten ↛ adr` **und** `↛ slice`;
+    `status.forbidden: [superseded, deprecated]`; Provenance-Ausnahme über
+    `exclude-sections` (`Historie` / `8. Historie` / `9. Historie` /
+    `Geschichte`). Fängt die **Link**-Form.
+  - `ids`: ADR-Muster auf `docs/plan/adr/`, `scope.roots: [spec]`,
+    `link-policy: always` — fängt die **nackten + Inline-Code**-Erwähnungen.
+    Zusammen erfasst matrix+ids **jede** Spec→ADR-Referenz. Der Voll-Korpus
+    (alle 7 ID-Familien über den Live-Korpus) bleibt **slice-018b**.
+- **§2.7-Reconciliation:** [`AGENTS.md` §2.7](../AGENTS.md) sagte zuvor
+  „`architecture.md` referenziert ADRs" — eine **undeklarierte Inkonsistenz**
+  ggü. dem Regelwerk (AGENTS rangiert darunter, [Source Precedence](README.md#source-precedence)).
+  §2.7 ist auf die Regelwerk-Richtung **verschärft** (ADR-Provenance nur in
+  den ADRs aufwärts + Rand-`## Geschichte`); die ~72 Spec→ADR-Körper-
+  Referenzen sind aufgelöst (Körper entfernt, Historie-Tabellen ausgelagert).
+  Verschärfung, keine Gate-Lockerung — §2.6 n/a.
+- **Historie-Auslagerung (Vise-Auflösung):** in `spec/` ist eine ADR-Referenz
+  nur sauber, wenn sie **entfernt** wird (Link → matrix-forbidden; nackt →
+  id-unlinked); nur in `exclude-sections` löst ein Link beide. Da b-cads
+  Historie-Headings **nummeriert** sind (`## 8. Historie` / `## 9. Historie`)
+  und der `exclude-sections`-Wert **wörtlich nach DoD** bleibt
+  (`[Historie, Geschichte, Änderungshistorie]`), sind die **Historie-Tabellen
+  ausgelagert** nach [`spec/spezifikation-historie.md`](../spec/spezifikation-historie.md)
+  und [`spec/lastenheft-historie.md`](../spec/lastenheft-historie.md) —
+  derivative Provenance-Dateien **außerhalb der `matrix`-Spec-Straten** (keine
+  eigene Anforderung, nicht normativ zitierbar). `exclude-sections` deckt damit
+  nur noch `architecture.md ## Geschichte` ab.
+- **`done-archive/`:** abgeschlossene Slice-/Spike-Pläne wandern per reinem
+  `git mv` (AGENTS §2.8) nach `docs/plan/planning/done-archive/` (eingefroren),
+  damit slice-018b den Voll-Korpus-`ids` sauber auf den Live-Korpus begrenzen
+  kann; `*-results.md` und die acc-002-Artefakte bleiben als lebende Referenz
+  in `done/`.
+- **Begründung:** Die d-check-v0.8.0-Hebung stellt `matrix`/`ids`/`spans`/
+  `hostpaths` bereit; die Referenz-Richtung war bis dahin nur inferential
+  (Plan-Review, MR-006). Computational feedforward (Modul 9/13) schließt die
+  Klasse fail-closed.
+- **Auflösungs-Trigger:** permanent (Zielzustand); der Voll-Korpus-`ids`
+  (slice-018b) ist Folge-Slice.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

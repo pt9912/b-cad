@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-018a — **Doku-Referenz-Gate** (`harness-steering`, MR-011): `done-archive/`
+  für abgeschlossene Slice-/Spike-Pläne (31 per reinem `git mv` archiviert;
+  `*-results.md` + acc-002-Artefakte bleiben in `done/`); `docs-check` um die
+  d-check-Module `matrix`/`ids`/`spans`/`hostpaths` erweitert. **Regelwerk-
+  Referenz-Richtung Spec→ADR** computational durchgesetzt: `matrix` (Link-Form)
+  + `ids` (nackt/Inline-Code, spec-gescopt, `link-policy: always`) — die ~72
+  Spec→ADR-Körper-Referenzen in `architecture.md`/`spezifikation.md`/
+  `lastenheft.md` aufgelöst (Körper entfernt, Historie-Tabellen nach
+  `spec/*-historie.md` ausgelagert, `## Geschichte`-Provenance-Rand in
+  `architecture.md`); `AGENTS.md` §2.7
+  reconcilet (Architektur-Körper ADR-referenzfrei). Folge-Slice slice-018b
+  (Voll-Korpus-`ids`, alle 7 ID-Familien).
 - Greenfield-Harness-Bootstrap nach AI-Harness-Kurs (Modul 2): stratifizierte Spec
   (Lastenheft/Spezifikation/Architektur), ADR-0001..0003, Roadmap, Planning-Lifecycle,
   `AGENTS.md`, `harness/` (README + Konventionen), Glossar, Releasing-Outline.

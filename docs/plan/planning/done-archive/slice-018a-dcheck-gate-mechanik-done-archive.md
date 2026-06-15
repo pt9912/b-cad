@@ -1,7 +1,7 @@
 ---
 id: slice-018a
 titel: Doku-Referenz-Gate — done-archive + matrix/spans/hostpaths + Spec→ADR-Richtung (ids spec-scope, always)
-status: next
+status: done
 welle: harness-steering
 lastenheft_refs: []
 adr_refs: []
@@ -9,10 +9,10 @@ adr_refs: []
 
 # Slice 018a: Doku-Referenz-Gate (done-archive + Referenz-Richtung Spec→ADR)
 
-**Status:** next. **MR-006-Plan-Review gelaufen**
-([Report](../../../reviews/2026-06-14-slice-018-plan.md) — **HIGH-1/2/3 + MED/LOW
-eingearbeitet**; Referenz-Richtung nach Regelwerk korrigiert, Direktion (a)).
-DoD offen bis `make gates` grün.
+**Status:** in-progress (DoD erfüllt, bereit für Closure). **MR-006-Plan-Review
+gelaufen** ([Report](../../../reviews/2026-06-14-slice-018-plan.md) —
+**HIGH-1/2/3 + MED/LOW eingearbeitet**; Referenz-Richtung nach Regelwerk
+korrigiert, Direktion (a)). DoD erfüllt; `make gates` grün — siehe Closure-Notiz §8.
 
 **Welle:** `harness-steering` (Quergewerk; **nicht** welle-3-M3-Scope MAT+EVL —
 Roadmap-Notiz dokumentiert den Einschub). Bindung über **MR-006** (Referenz-
@@ -49,20 +49,20 @@ Refs werden aufgelöst.
 
 ## 2. Definition of Done
 
-- [ ] **(Vor-Schritt, HIGH-3, geklärt — dokumentiert)** `exempt-paths` greift
+- [x] **(Vor-Schritt, HIGH-3, geklärt — dokumentiert)** `exempt-paths` greift
       **nicht** (Sondierung 2026-06-14: CHANGELOG blieb geflaggt). 018b nimmt
       `done-archive/` daher per **`ids.scope.roots`** (modul-granularer Scan-
       Override) aus; Fallback `scan.ignore` ist vertretbar, weil der
       done→done-archive-Move **tiefengleich** ist (Relativ-Links bleiben gültig).
-- [ ] **`done-archive/` angelegt + Slices migriert:** `docs/plan/planning/{done-archive}/`
+- [x] **`done-archive/` angelegt + Slices migriert:** `docs/plan/planning/{done-archive}/`
       existiert; die abgeschlossenen Slice-/Spike-Pläne (`done/slice-*.md`,
       `done/spike-*.md`) per **reinem `git mv`** (eigener Commit, AGENTS §2.8)
       dorthin. **In `done/` bleiben:** die 3 `welle-*-results.md` (lebende
       Referenz) **und** die 4 acc-002-Artefakte (LOW-1).
-- [ ] **Eingehende Links migriert** (~10 Dateien: `docs/reviews/*` → Pläne,
+- [x] **Eingehende Links migriert** (~10 Dateien: `docs/reviews/*` → Pläne,
       `adr/README`, `adr/0004`, `*results.md` → Slices, `roadmap.md`,
       `planning/README.md`) auf `{done-archive}/`; **`links`-Modul grün**.
-- [ ] **`.d-check.yml` Module + Regeln:**
+- [x] **`.d-check.yml` Module + Regeln:**
       - `modules: [links, anchors, codepaths, spans, hostpaths, matrix, ids]`.
       - **`matrix`:** `classes` spec-straten (lastenheft/spezifikation/architecture)
         · adr (`docs/plan/adr/[0-9]*.md`) · slice; `rules: spec-straten ↛ adr`
@@ -73,7 +73,7 @@ Refs werden aufgelöst.
         **`link-policy: always`** (fängt nackt + Inline-Code, Regelwerk „auch
         nicht als Quellen-Spalte"). Die übrigen 6 Familien + der Voll-Korpus
         bleiben 018b.
-- [ ] **~72 Spec→ADR-Referenzen aufgelöst** (Regelwerk; matrix+ids → 0 Befunde
+- [x] **~72 Spec→ADR-Referenzen aufgelöst** (Regelwerk; matrix+ids → 0 Befunde
       in `spec/`): **Körper-Referenzen entfernen/verlagern** — `architecture.md`
       hat keine Historie-Sektion → eine **Provenance-Rand-Tabelle `## Geschichte`**
       anlegen, die zu erhaltenden ADR-Bezüge dorthin (matrix/ids ausgenommen);
@@ -81,22 +81,22 @@ Refs werden aufgelöst.
       `adr/README.md`). **Historie-Tabellen-Refs** (`spezifikation.md` §8) →
       **verlinken** (dort erlaubt; `exclude-sections` ist matrix-only, daher
       flaggt `ids` sie → Link ist die saubere Auflösung).
-- [ ] **§2.7-Reconciliation:** `AGENTS.md` §2.7 („`architecture.md` referenziert
+- [x] **§2.7-Reconciliation:** `AGENTS.md` §2.7 („`architecture.md` referenziert
       ADRs") kollidiert mit dem Regelwerk (AGENTS #7 < Regelwerk) → korrigieren:
       ADR-Provenance lebt in `docs/plan/adr/` + Rand-Historie, **nicht** im
       Architektur-Körper. Verschärfung Richtung Regelwerk (§2.6 n/a).
-- [ ] **Lifecycle-Doku:** `docs/plan/planning/README.md` (Tabelle + Bedeutungen +
+- [x] **Lifecycle-Doku:** `docs/plan/planning/README.md` (Tabelle + Bedeutungen +
       Stand) um `done-archive/` ergänzt; `AGENTS.md` §2.8 falls nötig.
-- [ ] **Gate-/Konventions-Doku:** `harness/README.md` §Sensors + `conventions.md`
+- [x] **Gate-/Konventions-Doku:** `harness/README.md` §Sensors + `conventions.md`
       (**neue MR-NNN** „Referenz-Integritäts-Gate") dokumentieren Module +
       done-archive-Scoping + durchgesetzte Referenz-Richtung; `AGENTS.md`
       Gates-Tabelle. **018b-Vorbereitung:** korrigierte ID-Taxonomie (HIGH-1):
       `MR-\d{3}`→`harness/conventions.md` · `LH-(FA-[A-Z]+|QA)-\d+`+`ACC-\d+`+
       `OBJ-\d+`→`spec/lastenheft.md` · `REQ-TEC-\d+`+`E-(IO|VAL|GEO)-\d+`→
       `spec/spezifikation.md` (ADR-Muster steht schon in 018a).
-- [ ] **Roadmap-Notiz:** „Quergewerk slice-018a/b eingeschoben (Doku-Referenz-
+- [x] **Roadmap-Notiz:** „Quergewerk slice-018a/b eingeschoben (Doku-Referenz-
       Gate), M3-Scope MAT+EVL unberührt".
-- [ ] **`make gates` grün** (docs-check alle aktiven Module 0 Befunde; arch-check/
+- [x] **`make gates` grün** (docs-check alle aktiven Module 0 Befunde; arch-check/
       lint/test/coverage unberührt); CHANGELOG (MR-004); Closure-Notiz mit
       **Lerneintrag** (HIGH-1 Taxonomie-Grep-Falle; Referenz-Richtung erst nach
       Regelwerk-Lektüre korrekt — §2.7 war undeklarierte Inkonsistenz; `always`
@@ -169,4 +169,56 @@ Refs werden aufgelöst.
 
 ## 8. Closure-Notiz
 
-*(folgt nach `make gates` grün.)*
+**Closure 2026-06-15.** DoD erfüllt; `docs-check` **0 Befunde** über alle 7
+Module (90 Dateien); arch-check/lint/test/coverage unberührt.
+
+**Auflösung der DoD-Inkonsistenz (Projektinhaber-Entscheidung „Historie
+auslagern").** Der `exclude-sections`-Wert bleibt **wörtlich nach DoD**
+(`[Historie, Geschichte, Änderungshistorie]`); meine zwischenzeitliche
+eigenmächtige Config-Korrektur ist zurückgenommen. Damit das mit b-cads
+**nummerierten** Historie-Headings (`## 8. Historie` / `## 9. Historie`)
+zusammenpasst, sind die **Historie-Tabellen ausgelagert** in
+[`spezifikation-historie.md`](../../../../spec/spezifikation-historie.md) und
+[`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md) — derivative
+Provenance-Dateien außerhalb der `matrix`-Spec-Straten. So bleiben ihre
+ADR-Aufwärts-Verweise erlaubt verlinkt, ohne die Spec-Straten zu berühren.
+
+**Geliefert:**
+- `done-archive/` angelegt; **31** abgeschlossene Slice-/Spike-Pläne per reinem
+  `git mv` archiviert (3 `*-results.md` + 4 acc-002-Artefakte bleiben in `done/`).
+  ~18 eingehende Links (adr/, reviews/, Archiv-Sibling-Refs) auf `done-archive/`
+  bzw. `in-progress/` migriert — `links` grün.
+- `.d-check.yml`: `matrix`/`ids`/`spans`/`hostpaths` aktiviert. `matrix`
+  (spec-straten ↛ adr/slice; forbidden superseded/deprecated; exclude-sections
+  Historie/Geschichte) + `ids` (ADR-Muster, `scope.roots: [spec]`,
+  `link-policy: always`) setzen die Referenz-Richtung Spec→ADR durch.
+- **72 Spec→ADR-Befunde aufgelöst** (5 matrix-Links + 67 ids-nackt/Code):
+  Körper-Referenzen in `architecture.md`/`spezifikation.md`/`lastenheft.md`
+  entfernt; `architecture.md` §6 ADR-Index → `## Geschichte`-Provenance-Rand;
+  §8-Historie-Tabelle **ausgelagert** (`spezifikation-historie.md`, lastenheft §9
+  analog). `AGENTS.md` §2.7 reconcilet; **MR-011** neu.
+
+**Lerneintrag (Steering-Loop):**
+1. **matrix+ids = Vise:** in `spec/` ist eine ADR-Referenz nur sauber, wenn sie
+   **entfernt** wird (Link → matrix-forbidden; nackt/Code → id-unlinked). Nur in
+   `exclude-sections` (Historie/Geschichte) löst ein **Link** beide auf — die
+   mechanische Kodierung von „Provenance nur am Dokument-Rand" (Regelwerk Regel 5).
+2. **`exclude-sections` ist exakt + case-sensitiv:** b-cad nummeriert
+   („8. Historie"/„9. Historie") — bare „Historie" matcht das **nicht**. Statt den
+   DoD-Config-Wert zu ändern (mein erster, eigenmächtiger Reflex → vom
+   Projektinhaber zurückgewiesen), ist die **Historie ausgelagert**: die
+   Provenance-Tabellen verlassen die `matrix`-Straten, der DoD-Wert bleibt wörtlich.
+3. **`ids` prüft auch die ausgelagerten Historie-Dateien** (sie liegen in `spec/`):
+   deren ADR-Refs sind **verlinkt** (Link erfüllt `ids`); `matrix` ignoriert sie,
+   weil sie keine deklarierte Stratum-Klasse sind.
+4. **`always` statt `prose`:** fängt auch Inline-Code-IDs — Regelwerk „auch nicht
+   als Quellen-Spalte"; heute 0 Inline-Fälle in spec, aber zukunftssicher.
+5. **§2.7 war undeklarierte Inkonsistenz:** „architecture.md referenziert ADRs"
+   (AGENTS #7) gegen das Regelwerk — per Source Precedence AGENTS **verschärft**,
+   nicht das Regelwerk (HIGH-2-Folge).
+6. **HIGH-1 Taxonomie-Grep-Falle:** „erster Treffer" ≠ „Definitionsdatei" — die
+   ID→Ziel-Zuordnung für 018b ist gegen die realen Definitionsorte verifiziert.
+
+**Folge-Slice-Trigger → slice-018b:** Voll-Korpus-`ids` über alle 7 ID-Familien
+auf dem Live-Korpus (`link-policy: always`), `done-archive/` via `ids.scope.roots`
+ausgenommen (HIGH-3: `exempt-paths` griff in der Sondierung nicht).

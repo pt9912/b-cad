@@ -4,9 +4,46 @@
 # Alt-Tool. codepaths-Wurzeln an b-cad angepasst — die vendorte
 # Kurs-Kopie prüfte nur lab/, kurs/, tools/ (zwei davon existieren
 # hier nicht); ./ und ../ werden immer erkannt.
+# matrix/ids/spans/hostpaths: slice-018a (Referenz-Integritäts-Gate,
+# MR-011) — setzt die Regelwerk-Referenz-Richtung Spec→ADR durch.
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 scan:
   roots: ["."]
-modules: [links, anchors, codepaths]
+modules: [links, anchors, codepaths, spans, hostpaths, matrix, ids]
 codepaths:
   roots: [docs, spec, harness, tools, src]
+
+# Referenzmatrix (Regelwerk §Referenz-Richtung / SDP, MR-006): die
+# Spec-Straten verweisen nie abwärts auf ADRs oder Planning-Slices.
+# Fängt die Markdown-Link-Form. Provenance lebt außerhalb der Straten:
+# die Historie-Tabellen sind nach spec/<name>-historie.md ausgelagert
+# (keine matrix-Klasse); exclude-sections deckt nur noch architecture.md
+# ## Geschichte (Wert wörtlich nach slice-018a-DoD).
+matrix:
+  classes:
+    - name: spec-straten
+      paths: [spec/lastenheft.md, spec/spezifikation.md, spec/architecture.md]
+    - name: adr
+      paths: ["docs/plan/adr/[0-9]*.md"]
+    - name: slice
+      paths: ["docs/plan/planning/**/slice-*.md"]
+  rules:
+    - {from: spec-straten, to: adr, allow: false}
+    - {from: spec-straten, to: slice, allow: false}
+  status:
+    forbidden: [superseded, deprecated]
+  exclude-sections: [Historie, Geschichte, Änderungshistorie]
+
+# Linkpflicht für Kennungen (slice-018a, NICHT der Voll-Korpus): nur das
+# ADR-Muster, auf spec/ gescopt, link-policy always (fängt nackte UND
+# Inline-Code-Vorkommen — Regelwerk „auch nicht als Quellen-Spalte").
+# Zusammen mit matrix ist damit JEDE Spec→ADR-Referenz erfasst; die
+# Auflösung im spec-Körper ist Entfernen/Verlagern (Historie verlinken).
+# Die übrigen 6 ID-Familien + der Live-Korpus sind slice-018b.
+ids:
+  scope:
+    roots: [spec]
+  patterns:
+    - regex: 'ADR-\d{4}'
+      target: docs/plan/adr/
+      link-policy: always

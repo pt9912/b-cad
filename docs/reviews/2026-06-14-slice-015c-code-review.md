@@ -2,7 +2,7 @@
 
 **Datum:** 2026-06-14. **Reviewer:** unabhängiger Agent (Reviewer ≠ Autor),
 Modul 11. **Gegenstand:** uncommitteter Diff von slice-015c
-([Plan](../plan/planning/done/slice-015c-decken-fundament-persistenz.md)).
+([Plan](../plan/planning/done-archive/slice-015c-decken-fundament-persistenz.md)).
 
 ## Verdikt: HIGH-Findings vorhanden: nein — Closure hält
 

@@ -22,7 +22,7 @@ Slice entstanden und accepted).
 **Schnitt-Herkunft:** Aufteilung des ursprünglichen `slice-009` in die
 Entscheidungs-/Spec-Grundlage (**009a**, dieser Slice) und die
 Implementierung
-([**009b**](../done/slice-009b-raumerkennung-implementierung.md)) — Ergebnis
+([**009b**](../done-archive/slice-009b-raumerkennung-implementierung.md)) — Ergebnis
 des Plan-Reviews (Findings H1/M1/M2): ADR-0007 trägt mehr
 Entscheidungsgewicht als ursprünglich geplant, und ein ADR-Accept ist
 ein Review-Checkpoint, der nicht mitten in einem Implementierungs-Slice
@@ -84,7 +84,7 @@ ADR schärft die Spezifikation, nie das Lastenheft.
 | `docs/plan/adr/{0007-raumerkennung-geometrie-basis}.md` | neu | Lösungs-Entscheidung (a)+(b), MADR-Form, schärft `spezifikation.md` |
 | `docs/plan/adr/README.md` | ändern | ADR-Index ergänzen (AGENTS §4) |
 | `spec/spezifikation.md` | ändern | §1 präzisieren (vier Punkte aus DoD-2); §7 Punkt „Polygon-Basis" schließen |
-| diese Datei + [`slice-009b`](../done/slice-009b-raumerkennung-implementierung.md) | ändern | Frontmatter-`adr_refs` um ADR-0007 ergänzen, sobald die Datei existiert |
+| diese Datei + [`slice-009b`](../done-archive/slice-009b-raumerkennung-implementierung.md) | ändern | Frontmatter-`adr_refs` um ADR-0007 ergänzen, sobald die Datei existiert |
 
 ## 4. Trigger
 
@@ -94,7 +94,7 @@ ADR schärft die Spezifikation, nie das Lastenheft.
 ## 5. Closure-Trigger
 
 - DoD vollständig, ADR-0007 `Accepted`, `make gates` grün,
-  Closure-Notiz geschrieben → [slice-009b](../done/slice-009b-raumerkennung-implementierung.md)
+  Closure-Notiz geschrieben → [slice-009b](../done-archive/slice-009b-raumerkennung-implementierung.md)
   wird startbar.
 
 ## 6. Risiken und offene Punkte
