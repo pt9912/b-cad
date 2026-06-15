@@ -9,7 +9,7 @@
 # Digest-Hebungen
 # sind Routine-Pins mit Begründung im Commit-Body.
 
-FROM ghcr.io/pt9912/d-check@sha256:871751f9ed13cec8fadb610c538d735ad6c77a838a0384f645da916e829e4550 AS docs-check
+FROM ghcr.io/pt9912/d-check@sha256:5bccf9fb3d1c54639dec3a541771d2ea43db9a0c1c58c28b3f12f20d38133d1b AS docs-check
 WORKDIR /repo
 COPY . .
 

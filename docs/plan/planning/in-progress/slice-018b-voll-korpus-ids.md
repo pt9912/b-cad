@@ -149,8 +149,8 @@ Alle read-only, `.d-check.yml` danach zurückgesetzt:
 
 ## 9. Closure-Notiz
 
-**Closure 2026-06-15.** `make gates` grün; `docs-check` 0 Befunde über alle 8 Module
-(92 Dateien). Voll-Korpus-`ids` über alle 7 ID-Familien aktiv.
+**Closure 2026-06-15.** `make gates` grün; `docs-check` 0 Befunde über alle 7 Module.
+Voll-Korpus-`ids` über alle 7 ID-Familien aktiv (d-check-Pin v0.9.0).
 
 **Geliefert:**
 - `tools/idlink.py` (Linker-Generator): baut ID→(Ziel, Anker) aus den
@@ -166,8 +166,17 @@ Alle read-only, `.d-check.yml` danach zurückgesetzt:
    Regex um optionalen Backtick erweitert.
 2. **Family-Target-Filter:** ohne ihn überschrieb die spezifikation-`.a`-Überschrift
    die lastenheft-Definition ([LH-FA-ROM-001](../../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen) zeigte falsch nach spezifikation).
-3. **Mehrzeiliger Link mit nacktem ID** (AGENTS.md): zeilenbasiertes Linken erzeugte
-   einen nested-link → manuell auf Einzeiler gezogen; `spans`-Modul fing es.
+3. **Mehrzeilige Markdown-Konstrukte** (Link in AGENTS.md; Code-Span `make versions`
+   über CHANGELOG:66/67): zeilenbasierte Erkennung desynchronisiert.
+
+**Nach-Review-Härtung (unabhängiges Code-Review, 0 HIGH + 1 MED + LOW — [Report](../../../reviews/2026-06-15-slice-018b-code-review.md)):**
+- **MED-1 (Idempotenz):** idlink war nicht idempotent (Re-Run korrumpierte CHANGELOG:67
+  erneut zu Doppel-Backtick). Behoben: Inline-Code-Erkennung **dokument-weit**
+  (Carry-over über Zeilengrenzen) → Skript jetzt idempotent (2× Re-Run = 0 Änderungen).
+- **d-check-Pin auf v0.9.0** (Projektinhaber-Info): v0.8.0 strippte per Zeile, v0.9.0
+  dokument-weit (Wurzel der Mehrzeilen-Desync); bringt zudem Inline-HTML-Anker-Support
+  → Per-ID-Anker-Präzision (LOW-3 Kapitel-Fallback) künftig optional möglich.
+- **LOW-1** toter Code entfernt; **LOW-2** „8 Module" → 7 korrigiert.
 
 **Folge-Punkt (Spec-Lücke):** [`LH-QA-007`](../../../../spec/lastenheft.md) ist **nirgends definiert** (referenziert in
 adr/0005, adr/README, slice-006) → Datei-Fallback-Link gesetzt. Sollte in lastenheft

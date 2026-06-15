@@ -155,13 +155,32 @@ def covered(a, b, sps):
     return any(s <= a and b <= e for s, e in sps)
 
 # ---------------- Zeilen-Transformation ----------------
-def transform_line(line, src_rel, is_log, stats):
+def line_code_regions(line, code_open):
+    """Inline-Code-Regionen der Zeile mit Carry-over über Zeilengrenzen
+    (dokument-weit, fence-aware via process). Behebt die per-Zeile-Desync bei
+    mehrzeiligen `…`-Spans (MED-1; analog d-check v0.9.0 dokument-weit).
+    Gibt (regionen, offen_am_zeilenende)."""
+    regions, cur = [], code_open
+    seg = 0 if code_open else None
+    for i, ch in enumerate(line):
+        if ch == '`':
+            if cur:
+                regions.append((seg, i + 1)); cur = False
+            else:
+                seg = i; cur = True
+    if cur and seg is not None:
+        regions.append((seg, len(line)))  # offener Span läuft in die nächste Zeile
+    return regions, cur
+
+def transform_line(line, src_rel, is_log, codes, stats):
     links = spans(LINK_RE, line)
-    codes = spans(CODE_RE, line)
     actions = []  # (start, end, replacement)
     if not is_log:
-        # 1) Inline-Code-Spans mit linkbarer ID -> ganzen Span als Linktext wrappen
+        # 1) NUR volle Einzeilen-Code-Spans (hier geöffnet UND geschlossen) als
+        #    Linktext wrappen — Carry-over-Spans nicht anfassen.
         for cs0, cs1 in codes:
+            if cs1 - cs0 < 2 or line[cs0] != '`' or line[cs1 - 1] != '`':
+                continue
             if covered(cs0, cs1, links):
                 continue
             inner = line[cs0 + 1:cs1 - 1]
@@ -200,24 +219,20 @@ def transform_line(line, src_rel, is_log, stats):
         line = line[:s] + rep + line[e:]; last = s
     return line
 
-LOG_RE = re.compile(r'(^|/)CHANGELOG\.md$|^docs/reviews/|(^|/)[A-Za-z]+-historie\.md$')
-
-def is_log_file(rel):
-    return bool(LOG_RE.search(rel)) or rel.endswith("-historie.md") and rel.startswith("spec/")
-
 def process(rel, apply):
     full = os.path.join(ROOT, rel)
     is_log = rel == "CHANGELOG.md" or rel.startswith("docs/reviews/") or \
              (rel.startswith("spec/") and rel.endswith("-historie.md"))
     stats = {"link": 0, "code": 0, "tick": 0, "nolink": set()}
-    out, fenced, changed = [], False, False
+    out, fenced, code_open, changed = [], False, False, False
     for line in open(full, encoding="utf-8"):
         raw = line.rstrip("\n")
         if raw.lstrip().startswith("```"):
-            fenced = not fenced; out.append(line); continue
+            fenced = not fenced; code_open = False; out.append(line); continue
         if fenced or raw.lstrip().startswith("#"):
-            out.append(line); continue
-        new = transform_line(raw, rel, is_log, stats)
+            out.append(line); code_open = False; continue  # Heading/Fence bricht Span
+        codes, code_open = line_code_regions(raw, code_open)
+        new = transform_line(raw, rel, is_log, codes, stats)
         if new != raw:
             changed = True
         out.append(new + "\n")
