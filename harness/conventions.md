@@ -353,6 +353,10 @@ sie.
   die Klasse fail-closed); bis dahin inferential.
 - **Auflösungs-Trigger:** permanent (Konvention); die computational-Sensor-
   Promotion bleibt offener Tooling-Kandidat.
+  *(Referenz nachgezogen mit [MR-012](#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie),
+  2026-06-15 — die §9-Historie ist seit slice-018a nach
+  [`lastenheft-historie.md`](../spec/lastenheft-historie.md) ausgelagert; die
+  Invariante bezieht sich auf deren oberste Zeile.)*
 
 ### MR-011 — Referenz-Integritäts-Gate (matrix, ids, spans, hostpaths)
 
@@ -404,6 +408,27 @@ sie.
   Klasse fail-closed.
 - **Auflösungs-Trigger:** permanent (Zielzustand); der Voll-Korpus-`ids`
   (slice-018b) ist Folge-Slice.
+
+### MR-012 — MR-010-Invariante folgt der ausgelagerten Lastenheft-Historie
+
+- **Datum:** 2026-06-15
+- **Geltungsbereich:** [MR-010](#mr-010--lastenheft-header-version--oberste-9-historie-zeile),
+  [`../spec/lastenheft.md`](../spec/lastenheft.md),
+  [`../spec/lastenheft-historie.md`](../spec/lastenheft-historie.md)
+- **Adaption:** slice-018a (MR-011) hat die Lastenheft-Historie aus `## 9. Historie`
+  nach [`lastenheft-historie.md`](../spec/lastenheft-historie.md) ausgelagert — §9
+  ist nur noch ein Pointer-Stub. MR-010s Invariante „Header-`Version:` == oberste
+  §9-Historie-Zeile" bezieht sich daher ab jetzt auf die **oberste (jüngste) Zeile
+  in `lastenheft-historie.md`**. Substanz unverändert (Header == jüngster
+  Historie-Eintrag); nur der Fundort der Historie-Tabelle hat sich verschoben.
+- **Begründung:** MR-010 ist nach Aufnahme inhaltlich unveränderlich
+  ([AGENTS.md §2.5](../AGENTS.md)); die durch MR-011 erzwungene Historie-Auslagerung
+  macht MR-010s wörtliche „§9"-Referenz stale. Nachzug per neuem Eintrag (statt
+  In-Place-Edit), Lineage-Pointer an MR-010 — analog MR-003 → MR-007.
+- **Sensor:** unverändert die MR-006-Plan-Review-Linse (Quellen-Konsistenz); das
+  computational Promotion-Ziel aus MR-010 prüft den Header künftig gegen die oberste
+  Zeile von `lastenheft-historie.md`.
+- **Auflösungs-Trigger:** permanent (erbt MR-010).
 
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
