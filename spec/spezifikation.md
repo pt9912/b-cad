@@ -16,7 +16,7 @@ schärfen, **nicht** das Lastenheft.
 **Eingabe:** Menge der Wände eines Geschosses.
 **Ausgabe:** Menge erkannter Räume; je Raum ein Polygon auf
 **Innenkanten-Basis** im **Ring-Modell** (äußerer Ring + 0..n
-Loch-Ringe) mit **Netto-Fläche** (ADR-0007).
+Loch-Ringe) mit **Netto-Fläche**.
 
 **Auslösung:** Die Erkennung läuft **automatisch bei Modell-Mutation**
 (Wand anlegen/ändern/löschen) im Service — „automatisch … when er
@@ -41,7 +41,7 @@ Stand und löst selbst keine Erkennung aus.
    übergeht den Stich).
 3. Pro Zyklus das **Innenkanten-Polygon** ableiten: jede Kante um die
    halbe Wandstärke ihres Segments zum Zyklus-Inneren versetzt,
-   benachbarte Offset-Geraden geschnitten (ADR-0007).
+   benachbarte Offset-Geraden geschnitten.
    *Welle-1-Näherung:* bei **kollinearen Nachbarkanten ungleicher
    Stärke** springt die Ecke auf den Offset-Punkt der Folgekante
    (lineare Überblendung statt exakter Stufenkontur); die exakte
@@ -80,7 +80,7 @@ nur noch das Polygon (Prisma in +Z auf Wandhöhe).
 genau **eine** weitere Wand teilt (Grad-2-Knoten; Punkt-Gleichheit
 über `GEOMETRY_TOLERANCE_MM`), werden die beidseitigen Seitenkanten
 der zwei Wände **im Schnittpunkt verbunden** — Prinzip analog der
-Innenkanten-Konstruktion der Raumerkennung (ADR-0007), hier auf die
+Innenkanten-Konstruktion der Raumerkennung, hier auf die
 Wand-Außenkontur angewandt. Beide Wände enden an denselben
 Eck-Punkten (nahtlos, keine Überlappung, keine Kerbe).
 
@@ -109,7 +109,7 @@ inkrementellen Rebuild des betroffenen Solids (Echtzeit, LH-FA-D3-002).
 ### LH-FA-DOR-004.a / LH-FA-WIN-005.a — Wandöffnung (Schnitt-Prismen)
 
 Präzisiert die automatische Wandöffnung für Türen (LH-FA-DOR-*) und
-Fenster (LH-FA-WIN-*); Modell-Entscheidung in ADR-0011.
+Fenster (LH-FA-WIN-*).
 
 **Hosting & Position.** Eine Öffnung ist ein **eigenständiges
 Domänen-Element** mit Referenz auf ihre Wirtswand (`wall_id`). Ihre Lage
@@ -127,8 +127,8 @@ quer zur Wand an der Öffnungs-Position, das die Wandstärke voll (mit
 geringem Überstand ≥ `GEOMETRY_TOLERANCE_MM` je Seite für einen
 sauberen Schnitt) durchsetzt, extrudiert über `[sill, sill + height]`.
 Der `GeometryKernelPort` extrudiert das Wand-Footprint-Polygon und
-**subtrahiert die Schnitt-Prismen** (OCC-Boolean, ADR-0002) → Netto-
-Wand-Solid; der Adapter kennt keine Öffnungs-Semantik (ADR-0011).
+**subtrahiert die Schnitt-Prismen** (OCC-Boolean) → Netto-
+Wand-Solid; der Adapter kennt keine Öffnungs-Semantik.
 
 **Klemmung (LH-FA-WAL-002.a, `E-VAL-001`).** Breite/Höhe/Brüstung werden
 gegen §3 geklemmt; reicht `sill + height` über die Wandhöhe, wird die
@@ -148,7 +148,7 @@ löschen) meldet `op = WallGeometryChanged` für die **Wirtswand**
 (§5-Vokabular, kein neuer `op`) — die Öffnung ist ein Hohlraum im
 Wand-Solid, kein eigenes Solid (welle-2). Es findet **keine
 Raum-Re-Detektion** statt: eine Öffnung ändert weder Wandachse noch
-Wandstärke, daher bleiben Raumerkennung (ADR-0007) und Footprint/
+Wandstärke, daher bleiben Raumerkennung und Footprint/
 Eckenschluss (LH-FA-WAL-006.a) unberührt; die ROM- und WAL-006-AK-Tests
 bleiben textlich unverändert grün. Abgelehnte Mutationen melden nicht.
 
@@ -156,12 +156,12 @@ bleiben textlich unverändert grün. Abgelehnte Mutationen melden nicht.
 
 Sammelblock, deckt **LH-FA-ROF-001..005** (Sattel/Walm/Pult, Neigung,
 Überstand); Reifephase-Teilumfang welle-2 (Lastenheft 0.1.4). Modell-
-Einordnung über ADR-0011 (#6, Bauteil-Erweiterungs-Muster) — keine
+Einordnung über das Bauteil-Erweiterungs-Muster (#6) — keine
 eigene Grundsatz-ADR; die Geometrie wird **hier** normativ festgelegt.
 
 **Grundriss-Herkunft (welle-2):** Das Dach hat einen **expliziten
 rechteckigen Grundriss** `b × t` (Parameter; persistiert als
-`roofs.footprint_json`, ADR-0006). Die Auto-Ableitung aus dem
+`roofs.footprint_json`). Die Auto-Ableitung aus dem
 Geschoss-Wandumriss bleibt späterer Ausbau (keine Kopplung an
 Wand-Mutationen in welle-2).
 
@@ -183,7 +183,7 @@ das Dach kragt also um `o` über den Grundriss hinaus.
    gleiche Neigung am Giebel) eingerückt — deterministisch aus Neigung
    und Giebelbreite, keine freie Größe.
 
-**Firsthöhe abgeleitet:** `roofs.height_mm` (nullable, ADR-0006) ist
+**Firsthöhe abgeleitet:** `roofs.height_mm` (nullable) ist
 **nicht** Eingabe, sondern die aus `p`/Überstand berechnete Firsthöhe.
 
 **Klemmung/Totalität:** Neigung `p` auf `[ROOF_PITCH_MIN_DEG,
@@ -194,19 +194,19 @@ oder degenerierter Grundriss (Seite < `GEOMETRY_TOLERANCE_MM`) erzeugt
 
 **Folge-Meldung:** Eine Dach-Mutation (Anlage/Neigung/Überstand/Form/
 Entfernen) meldet `op = RoofChanged` **storey-bezogen** (neuer `op` im
-D3-002.a-Vokabular, ADR-0011 #6 neuer Bauteil-Typ); der Beobachter lädt
+D3-002.a-Vokabular, neuer Bauteil-Typ); der Beobachter lädt
 die Dächer des Geschosses neu (`ViewModelPort.roofMeshes`). **Keine
 `RoomsChanged`** (Dächer berühren die Raumerkennung nicht). Das
 Dach-Netz entsteht **analytisch im Kern** (`roof_geometry`), nicht über
-OCC — der ADR-0009-Vertrag „framework-freie Netze über `ViewModelPort`"
+OCC — der Vertrag „framework-freie Netze über `ViewModelPort`"
 bleibt erfüllt (die OCC-Tessellation gilt dem extrudierten Wand-Solid).
 
 ### LH-FA-SLB-001.a — Platten-Geometrie (Decken & Fundament)
 
 Sammelblock, deckt **LH-FA-SLB-001..003** (Decken) **und LH-FA-FND-001..003**
-(Fundament/Bodenplatte). Modell-Einordnung über ADR-0011 (#6); keine
+(Fundament/Bodenplatte). Modell-Einordnung über das Bauteil-Erweiterungs-Muster; keine
 eigene Grundsatz-ADR. Beide sind **horizontale Platten** und liegen im
-Schema gemeinsam in `slabs` (Diskriminator `slab_type`, ADR-0006).
+Schema gemeinsam in `slabs` (Diskriminator `slab_type`).
 
 **Platten-Solid:** Eine Platte ist ein **Grundriss-Polygon, vertikal um
 die Dicke extrudiert** — ein flaches Prisma. Geometrisch dasselbe
@@ -224,7 +224,7 @@ Dicke/Tiefe ist auf §3 geklemmt (`E-VAL-001`).
 
 **Ausschnitte (`SLB-003`):** als **boolesche Subtraktion** von
 Schnitt-Prismen aus dem Platten-Solid — Wiederverwendung von
-`model::CutPrism` und des OCC-Boolean-Backends (ADR-0002), wie bei den
+`model::CutPrism` und des OCC-Boolean-Backends, wie bei den
 Wandöffnungen (LH-FA-DOR-004.a). Ein Ausschnitt wird **auf den
 Platten-Umriss begrenzt**: rand-/außenliegende, degenerierte (Fläche <
 `GEOMETRY_TOLERANCE_MM²`) oder nicht-endliche Ausschnitte werden an der
@@ -243,12 +243,12 @@ z-Überstand `[−ε,Dicke+ε]` bleibt für Ober-/Unterseite).
 **unverändert** — das Volumen ist z-invariant, und der Kern **verschiebt
 das fertige Platten-Netz um `base_z`** (reine Mesh-Translation, NACH dem
 Ausschnitt-Boolean). Damit ist **kein** Port-Signatur-Eingriff nötig
-(ADR-0001-Kern-Hoheit gewahrt ohne Migration; die Cutout-`CutPrism`s
+(Kern-Hoheit gewahrt ohne Migration; die Cutout-`CutPrism`s
 liegen relativ zum Solid `[0,Dicke]`, nicht bei `base_z`).
 
 **Folge-Meldung:** Eine Platten-Mutation (Anlage/Dicke/Ausschnitt/
 Entfernen) meldet `op = SlabChanged` **storey-bezogen** (neuer `op` im
-D3-002.a-Vokabular, ADR-0011 #6); der Beobachter lädt die Platten neu
+D3-002.a-Vokabular); der Beobachter lädt die Platten neu
 (`ViewModelPort.slabMeshes`). **Keine `RoomsChanged`** (Platten berühren
 die Raumerkennung nicht).
 
@@ -256,11 +256,11 @@ die Raumerkennung nicht).
 
 Sammelblock, deckt **LH-FA-STR-001..004** (erzeugen, Stufenanzahl, Laufbreite,
 Geländer); Reifephase-Teilumfang welle-2 (Lastenheft 0.1.6). Modell-Einordnung
-über ADR-0011 (#6, Bauteil-Erweiterungs-Muster) — keine eigene Grundsatz-ADR;
+über das Bauteil-Erweiterungs-Muster (#6) — keine eigene Grundsatz-ADR;
 die Geometrie wird **hier** normativ festgelegt.
 
 **Teilumfang (welle-2):** eine **gerade einläufige Treppe**. Das `stairs`-Schema
-(ADR-0006) trägt genau die Parameter dafür (`start_x/y_mm`, `width_mm`,
+trägt genau die Parameter dafür (`start_x/y_mm`, `width_mm`,
 `step_count`, `rise_mm`, `tread_mm`, `from_storey_id`/`to_storey_id`) und **kein**
 Podest-/Wendel-/Richtungs-Feld. Mehrläufige, gewendelte und Podest-Treppen
 bleiben offen (späterer Vollumfang).
@@ -280,7 +280,7 @@ Größe statt Doppel-Eingabe" entspricht der Dach-Firsthöhe (LH-FA-ROF-001.a).
 
 **Stufen-Konstruktion (analytisches Polyeder im Kern):** die Treppe entsteht
 **analytisch im Kern** (Präzedenz `roof_geometry`/`slab_geometry`), **nicht** über
-OCC — der ADR-0009-Vertrag „framework-freie Netze über `ViewModelPort`" bleibt
+OCC — der Vertrag „framework-freie Netze über `ViewModelPort`" bleibt
 erfüllt. `step_count` Quader; Stufe `i` (0-basiert) spannt in Treppen-lokalen
 Koordinaten `x ∈ [i·tread, (i+1)·tread]` (Aufstiegsrichtung), `y ∈ [0, width]`
 (Laufbreite), `z ∈ [0, (i+1)·rise]` (solides Stufenprofil vom Boden zur
@@ -311,8 +311,7 @@ Sicht-Query bleibt total (kein Wurf); ein fehlgeschlagener mutierender Solid-Bau
 meldet `E-GEO-002`.
 
 **Folge-Meldung:** Eine Treppen-Mutation (Anlage/Stufenanzahl/Breite/Entfernen)
-meldet `op = StairChanged` (neuer `op` im D3-002.a-§5-Span-Vokabular, ADR-0011 #6
-neuer Bauteil-Typ). **Geschoss-Bindung (begründet):** anders als Dach/Decke (je
+meldet `op = StairChanged` (neuer `op` im D3-002.a-§5-Span-Vokabular, neuer Bauteil-Typ). **Geschoss-Bindung (begründet):** anders als Dach/Decke (je
 ein Geschoss) spannt die Treppe zwei; die Meldung wird an die **untere Etage
 (`from_storey`)** gebunden — dort liegen Start/Anker (`start_x/y_mm`) und die
 `base_z` der Treppe (die obere Etage ist nur Ziel der abgeleiteten Steigung). Der
@@ -323,7 +322,7 @@ Sicht wird mit der Mehr-Geschoss-Stapelung später möglich). **Keine
 
 ### LH-FA-D3-002.a — Echtzeitaktualisierung (Benachrichtigungs-Vertrag)
 
-Präzisiert LH-FA-D3-002; Mechanik-Entscheidung in ADR-0008.
+Präzisiert LH-FA-D3-002.
 
 **Auslösung und Synchronität:** Jede committete Modell-Mutation
 (Geschoss anlegen, Wand anlegen, Wand-Parameter ändern) wird
@@ -366,7 +365,7 @@ D3-002 bis zur Benachrichtigungs-/Abfrage-Grenze; die sichtbare
 auf dieser Basis — der Lastenheft-Wortlaut bleibt benutzer-beobachtbar
 und wird zusammen mit ACC-002 dort erfüllt.
 
-**Welle-1v-Operationalisierung von „sichtbar" (ADR-0009):**
+**Welle-1v-Operationalisierung von „sichtbar":**
 „Sichtbar" heißt: ein Qt-6-Widgets-3D-Fenster zeigt den
 **extrudierten Stand als tesselliertes Netz**, bezogen über den
 `ViewModelPort` (framework-freie Dreiecksnetze je `element_id`;
@@ -382,16 +381,15 @@ ACC-002-Beleg entsteht als manueller Abnahme-Schritt
 
 ### LH-FA-EVL-001.a — Auswertungen (Flächen/Volumen/Wohnfläche/Listen)
 
-Sammelblock, deckt **LH-FA-EVL-001..006**; Modell-Einordnung über **ADR-0012**
-(Evaluations-Architektur). Auswertung ist eine **reine read-only-Ableitung** aus
+Sammelblock, deckt **LH-FA-EVL-001..006**; Modell-Einordnung über die **Evaluations-Architektur**. Auswertung ist eine **reine read-only-Ableitung** aus
 dem committeten Modell über den neuen Driving-Port **`EvaluatePort`** (kein
 `DetectRoomsPort`-Überladen; pure Ergebnis-Werttypen; **kein** `…Changed`-`op`,
 pull-on-demand). **Analytisch im Kern, kein OCC-`GProp`** (keine
 `GeometryKernelPort`-Anfrage für eine Zahl).
 
 **Fläche (EVL-001/003) — Shoelace auf dem Raum-Netto-Polygon.** Die
-Netto-Grundfläche je Raum ist die **Shoelace-Fläche des ADR-0007-Raumpolygons**
-(äußerer Innenkanten-Ring **minus** Loch-Ringe — die ADR-0007-Netto-Definition
+Netto-Grundfläche je Raum ist die **Shoelace-Fläche des Raumpolygons**
+(äußerer Innenkanten-Ring **minus** Loch-Ringe — die Netto-Definition
 wird **wiederverwendet**, keine zweite Semantik, keine Doppelzählung). ROM-002
 (Raumfläche) / ROM-003 (Raumvolumen) sind die **Per-Raum-Quelle**; EVL
 **aggregiert** sie je Geschoss/Gebäude (Bericht) — **eine** Flächen-Semantik.
@@ -409,7 +407,7 @@ Schnitt-Prismen sind das Boolean-**Werkzeug**, nicht das Volumen-Maß).
 **Eck-Näherung (welle-3, benannt):** die Summe der Wand-Volumina **doppelzählt**
 den Miter-Sporn endpunkt-verbundener Wände (slice-012-Footprint) — kleine
 Über-Zählung, bewusst in Kauf genommen; das exakte vereinigte Volumen
-(Footprint-Union je Geschoss) ist Re-Eval (ADR-0012, parallel
+(Footprint-Union je Geschoss) ist Re-Eval (parallel
 WAL-006-Vollumfang).
 
 **Listen (EVL-004/005/006) — Aggregation über das Modell.** Die Materialliste
@@ -432,13 +430,13 @@ Auswertung (kein Wurf); die Auswertung **mutiert nie** (read-only).
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
-(ADR-0001 — die Abhängigkeit zeigt nach innen):
+(die Abhängigkeit zeigt nach innen):
 
 1. **Domänen-Modell (Kern, Wahrheit)** — pure Werttypen in
    `src/hexagon/model/`, framework-frei. Quelle der Wahrheit für *was* ein
    Bauteil ist.
 2. **Persistenz-Schema (Adapter-Abbildung)** — wie das Domänen-Modell in
-   SQLite gespeichert wird (ADR-0003). **Es bildet das Domänen-Modell ab,
+   SQLite gespeichert wird. **Es bildet das Domänen-Modell ab,
    treibt es nicht.**
 
 ### 2.1 Domänen-Modell (Kern)
@@ -452,8 +450,8 @@ Pure Werttypen in `src/hexagon/model/`, framework-frei. Implementiert
 folgen als Erweiterung; `Storey` gewinnt später `level_index`/`elevation`
 aus dem Persistenz-Schema (§2.2).
 
-**Material (welle-3, LH-FA-MAT-*, von ADR-0012/EVL konsumiert):** `model::Material`
-als pure Werte aus dem `materials`-Schema (ADR-0006):
+**Material (welle-3, LH-FA-MAT-*, von EVL konsumiert):** `model::Material`
+als pure Werte aus dem `materials`-Schema:
 `{ id, name, category, u_value?, cost_per_m2?, cost_per_m3?, color_hex?, texture_path? }`.
 **FK-Zuweisungs-Autorität:** ein Bauteil (`walls`/`roofs`/`slabs`) trägt ein
 **eigenes** `material_id` (Override); `wall_types.material_id` ist die
@@ -462,14 +460,13 @@ den `wall_type`) ist Datenfluss → §1 `LH-FA-EVL-001.a` (LH-FA-MAT-003.a).
 `stairs`/`openings`/`doors` tragen in welle-3 **kein** Material (benannte Lücke);
 `windows.frame_material` ist Freitext, **kein** `materials`-FK.
 
-### 2.2 Persistenz-Schema (SQLite, ADR-0003 / ADR-0006)
+### 2.2 Persistenz-Schema (SQLite)
 
 Maschinenlesbare **Quelle der Wahrheit**: [`data-model.yaml`](data-model.yaml)
 im **d-migrate Neutral-Format** (`schema_format: "1.0"`) — d-migrate
 generiert daraus die dialekt-spezifische DDL (Ziel: SQLite, kein
-hand-geschriebenes SQL). Design (per-Typ-Tabellen,
-`openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack):
-[ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md).
+hand-geschriebenes SQL). Design: per-Typ-Tabellen,
+`openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack.
 
 Kerntabellen (welle-1) — vollständig in `data-model.yaml`:
 
@@ -484,7 +481,7 @@ Kerntabellen (welle-1) — vollständig in `data-model.yaml`:
 | `undo_commands` | persistierter Undo-Stack (LH-QA-003) |
 
 **Migrationsregel:** Schema-Version steigt monoton; jede Erhöhung braucht
-eine getestete Aufwärts-Migration (vgl. `releasing.md`, ADR-0003).
+eine getestete Aufwärts-Migration (vgl. `releasing.md`).
 
 **Offene Punkte:** (a) `wall_types`-Bibliothek vs. `WallType`-Enum
 (Klassifikation, LH-FA-WAL-007) — Koexistenz, Auflösung im WAL-007-Slice;
@@ -593,40 +590,24 @@ nicht im Bootstrap.
 
 | System | Version | Vertrag (Outline) |
 |---|---|---|
-| OpenCascade | im Adapter gepinnt (ADR-0002) | `GeometryKernelPort` — Solids, boolesche Operationen, Extrusion |
+| OpenCascade | im Adapter gepinnt | `GeometryKernelPort` — Solids, boolesche Operationen, Extrusion |
 | Qt | 6.x (REQ-TEC-002) | GUI-Adapter, keine Kern-Bindung |
-| SQLite | im Adapter gepinnt (ADR-0003) | `ProjectRepositoryPort`, atomar |
+| SQLite | im Adapter gepinnt | `ProjectRepositoryPort`, atomar |
 | IFC | Schema-Version offen (ADR-Folge) | `ModelImporterPort`/`ModelExporterPort` |
 
 ## 7. Offene Punkte
 
 - ~~Raumerkennung: Mittellinie vs. Innenkante als Polygon-Basis
-  (beeinflusst Wohnflächenberechnung LH-FA-EVL-003)~~ → entschieden in
-  ADR-0007 (Innenkante, Ring-Modell; §1).
+  (beeinflusst Wohnflächenberechnung LH-FA-EVL-003)~~ → entschieden
+  (Innenkante, Ring-Modell; §1).
 - Performance-Zielkomplexität der Raumerkennung (M3).
 - IFC-Schema-Version und -Bibliothek (ADR in welle-4-austausch).
 - Zielplattformen (siehe `releasing.md`).
 
 ## 8. Historie
 
-| Datum | Änderung | ADR |
-|---|---|---|
-| 2026-06-08 | Initiale Outline aus Lastenheft-Wertebereichen; Fehler-Codes und OTel-Span-Skelett | Greenfield-Bootstrap |
-| 2026-06-11 | §1 LH-FA-ROM-001.a präzisiert: Innenkanten-Basis + Ring-Modell, Auslösung bei Modell-Mutation, Endpunkt-Knoten-Einschränkung (welle-1), Erkennung total (kein `E-GEO-002`); §7-Punkt Polygon-Basis geschlossen | ADR-0007 |
-| 2026-06-11 | §1 Kollaps-Kriterium präzisiert: Kantenrichtungs-Erhalt statt reiner Flächen-Prüfung (Doppel-Inversion erzeugt Phantom-Polygon positiver Fläche) | ADR-0007 |
-| 2026-06-11 | §1 LH-FA-D3-002.a ergänzt: Benachrichtigungs-Vertrag (Observer-Port, Push-Notify/Pull-State, Reihenfolge nach Re-Detektion, Beobachter-Pflichten) + welle-1-Operationalisierung „sichtbar" | ADR-0008 |
-| 2026-06-11 | §1 ROM-001.a präzisiert (Welle-1-Code-Review M1/M2): minimale Zyklen via Flächen-Traversierung — geteilte Knoten (Grad ≥ 3) abgedeckt, Stichkanten ignoriert; Näherung für kollineare Nachbarkanten ungleicher Stärke dokumentiert | ADR-0007 |
-| 2026-06-12 | §1 D3-002.a ergänzt: welle-1v-Operationalisierung „sichtbar" (Qt-Widgets-Fenster, Tessellation über `ViewModelPort`, Szenen-Surrogat, ACC-002-Beleg als manueller Abnahme-Schritt) | ADR-0009 |
-| 2026-06-12 | §1 LH-FA-WAL-006.a neu (Eckenschluss-Footprint-Regel, Footprint-Hoheit im Kern, Begrenzung/Rückfälle, EVL-Hinweis Shoelace) + D3-002.a-Mehr-Element-Update (`WallGeometryChanged`, Reihenfolge, Transaktions-Satz) + §3 `WALL_MITER_LIMIT`; zwei WAL-006-Verweise auf Vollumfang präzisiert | slice-012 (Lastenheft 0.1.2) |
-| 2026-06-13 | §1 LH-FA-DOR-004.a/WIN-005.a neu (Wandöffnung als Schnitt-Prismen im Kern, boolesche Subtraktion über `GeometryKernelPort`, Klemmung/Ablehnung, Totalität/Transaktion, `WallGeometryChanged` der Wirtswand, Raumerkennung/Footprint unberührt) + §3 Tür-/Fenster-/Brüstungs-Wertebereiche | ADR-0011 (slice-013a) |
-| 2026-06-13 | §3 Default-Maße bei Tür-/Fenster-Anlage (`DEFAULT_DOOR_*`/`DEFAULT_WINDOW_*`) — Implementierung der Anlage (Muster `DEFAULT_WALL_THICKNESS_MM`) | slice-013b |
-| 2026-06-13 | §3 `OPENING_CUT_OVERSHOOT_MM` — Cutter-Überstand für koplanar-freien Boolean (Code-Review-Befund H1: §1-Überstand „je Seite" war nur in Z realisiert, jetzt auch lateral) | slice-013b Code-Review |
-| 2026-06-13 | §1 `LH-FA-ROF-001.a` neu (Dach-Geometrie Teilumfang Rechteck-Grundriss: Traufrechteck, Pult/Sattel/Walm-Konstruktion + Höhenformeln, Walm-Einrückbetrag, Firsthöhe abgeleitet, Totalität) + §3 Neigungs-/Überstands-Bereiche + Defaults (= `roofs`-Schema) | slice-014a |
-| 2026-06-13 | §1 `LH-FA-SLB-001.a` neu (Platten-Geometrie Decken+Fundament: Polygon × Dicke an `base_z` je `slab_type`, Ausschnitte als Boolean/`CutPrism`, Totalität; Port-base_z-Frage an 015b) + §3 Decken-/Fundament-Dicke-Bereiche + Defaults | slice-015a |
-| 2026-06-13 | §1 `LH-FA-SLB-001.a` Port-base_z-Frage geschlossen: kein Port-Wechsel — Mesh-Translation um `base_z` nach dem Boolean, Cutouts relativ `[0,Dicke]`; `SlabChanged`-`op` (storey-bezogen, kein `RoomsChanged`) | slice-015b |
-| 2026-06-13 | §1 `LH-FA-SLB-001.a` „auf den Platten-Umriss begrenzt" präzisiert: rand-/außenliegende, degenerierte und nicht-endliche Ausschnitte werden an der API **abgelehnt** (Containment-Vorbedingung) — innenliegende Aussparungen sind damit koplanar-frei, **kein** lateraler Überstand nötig (anders als die Wand durchspannende Öffnung, §1 DOR-004.a) | slice-015b Code-Review (H1) |
-| 2026-06-14 | §1 `LH-FA-STR-001.a` neu (Treppen-Geometrie Teilumfang gerade einläufige Treppe: Stufen-Quader-Polyeder im Kern wie `roof_geometry`, `rise = Geschosshöhe/step_count` abgeleitet, feste +x-Aufstiegsrichtung, Geländer als generierte Geometrie ohne Schema-Spalte, `StairChanged`-`op` an `from_storey` gebunden + `stairMeshes` projektweit) + §3 Stair-Wertebereiche (Breite/Stufenanzahl/Auftritt geklemmt, Steigung informativ) + Defaults | slice-016a |
-| 2026-06-14 | §1 `LH-FA-EVL-001.a` neu (Auswertungs-Architektur ADR-0012: `EvaluatePort` read-only/pull; Fläche = Shoelace-Raum-Netto, **Netto-Volumen analytisch im Kern** = Footprint·Höhe − geklemmtes Öffnungsvolumen, **kein** Roh-Prisma/OCC-`GProp`; benannte Miter-Eck-Näherung; Listen-Aggregation über material-tragende `walls`/`roofs`/`slabs`, `windows.frame_material`-Freitext ausgenommen; Material-Auflösungsregel eigenes vs. `wall_type`) + §2.1 `model::Material` + FK-Autorität + §3 `LIVING_AREA_FACTOR` | slice-017a |
+Ausgelagert nach [`spezifikation-historie.md`](spezifikation-historie.md)
+(slice-018a / MR-011 — Provenance-Datei außerhalb der `matrix`-Spec-Straten).
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 
@@ -635,14 +616,14 @@ Die technischen Rahmenbedingungen aus dem Domänen-Ursprung. Sie sind
 Lastenheft bleibt unberührt. ID-Klasse `REQ-TEC-<NNN>` deklariert in
 [`../harness/conventions.md` MR-002](../harness/conventions.md#mr-002--id-schema-für-b-cad).
 
-| ID | Rahmenbedingung | Wahl | ADR / Bezug |
-|---|---|---|---|
-| REQ-TEC-001 | Sprache | C++20 | ADR-0001 |
-| REQ-TEC-002 | GUI | Qt 6 | ADR-Folge (GUI-Adapter) |
-| REQ-TEC-003 | Geometrie-Kern | OpenCascade | ADR-0002 |
-| REQ-TEC-004 | Build | CMake | ADR-0001 §CMake-Targets |
-| REQ-TEC-005 | Tests | GoogleTest | — |
-| REQ-TEC-006 | Logging/Observability | OpenTelemetry | §5, ADR-Folge |
-| REQ-TEC-007 | Persistenz | SQLite | ADR-0003 |
-| REQ-TEC-008 | Plugin-Architektur | Shared Libraries | ADR-Folge (Plugin-API) |
-| REQ-TEC-009 | Containerisierung | Docker DevContainer | ADR-Folge (Modul 14) |
+| ID | Rahmenbedingung | Wahl |
+|---|---|---|
+| REQ-TEC-001 | Sprache | C++20 |
+| REQ-TEC-002 | GUI | Qt 6 |
+| REQ-TEC-003 | Geometrie-Kern | OpenCascade |
+| REQ-TEC-004 | Build | CMake |
+| REQ-TEC-005 | Tests | GoogleTest |
+| REQ-TEC-006 | Logging/Observability | OpenTelemetry |
+| REQ-TEC-007 | Persistenz | SQLite |
+| REQ-TEC-008 | Plugin-Architektur | Shared Libraries |
+| REQ-TEC-009 | Containerisierung | Docker DevContainer |

@@ -13,7 +13,7 @@ CMake-Optionen, Schema) lebt in [`spezifikation.md`](spezifikation.md)
 und den ADRs.
 
 **Architektur-Stil.** b-cad folgt einer **hexagonalen Architektur
-(Ports & Adapters)** ([ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md)).
+(Ports & Adapters)**.
 Gewählt, weil:
 
 - der **Geometrie-Kern austauschbar** bleiben muss (OpenCascade hinter
@@ -76,36 +76,36 @@ nur dort werden Adapter-Instanzen injiziert.
 | `ManageProjectPort` | Projekt anlegen, speichern, laden, versionieren | LH-FA-BLD-001..004, ACC-005 |
 | `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, OBJ-002 |
 | `DetectRoomsPort` | Raum-Autoerkennung (geschlossene Wandzüge → Raumpolygone, Netto-Fläche je Raum als Auswertungs-Quelle) | LH-FA-ROM-001..003 |
-| `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten | LH-FA-EVL-001..006, ADR-0012 |
-| `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation, ADR-0009) | LH-FA-D3-001..006, ACC-002, ADR-0009 |
+| `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten | LH-FA-EVL-001..006 |
+| `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation) | LH-FA-D3-001..006, ACC-002 |
 | `ExchangeModelPort` | Import/Export anstoßen (Format-neutral) | LH-FA-IO-001..008, ACC-003, ACC-004 |
 
 ### 1.2 Driven Ports (sekundär — der Kern steuert die Außenwelt)
 
 | Port | Verantwortung | Bezug |
 |---|---|---|
-| `GeometryKernelPort` | Solids, boolesche Operationen; extrudiert/tesselliert **Footprint-Polygone** (Footprint-Hoheit inkl. Eckenschluss im Kern, LH-FA-WAL-006.a/slice-012) und **subtrahiert vom Kern gelieferte Schnitt-Prismen** (Wandöffnungen für Türen/Fenster, LH-FA-DOR-004/WIN-005, ADR-0011 — Öffnungs-Semantik bleibt im Kern, der Adapter rechnet nur Geometrie); Tessellation ADR-0009 | LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005 |
+| `GeometryKernelPort` | Solids, boolesche Operationen; extrudiert/tesselliert **Footprint-Polygone** (Footprint-Hoheit inkl. Eckenschluss im Kern, LH-FA-WAL-006.a/slice-012) und **subtrahiert vom Kern gelieferte Schnitt-Prismen** (Wandöffnungen für Türen/Fenster, LH-FA-DOR-004/WIN-005 — Öffnungs-Semantik bleibt im Kern, der Adapter rechnet nur Geometrie); Tessellation | LH-FA-WAL-*, LH-FA-D3-001, LH-FA-DOR-004, LH-FA-WIN-005 |
 | `ProjectRepositoryPort` | Projekt **atomar** persistieren und laden; Versionshistorie | LH-FA-BLD-002..004, LH-QA-005 |
 | `ModelImporterPort` | externes Modell (IFC/DXF) in Domain-Bauteile lesen | LH-FA-IO-001, LH-FA-IO-003 |
 | `ModelExporterPort` | Domain-Modell in Zielformat schreiben (IFC/DXF/STEP/STL/PDF/PNG) | LH-FA-IO-002,004,005,006,007,008 |
 | `MaterialLibraryPort` | Materialien/Texturen/Kennwerte verwalten | LH-FA-MAT-001..006 |
 | `TracingPort` | OTel-Spans emittieren (optional abschaltbar) | (ADR-Folge) |
-| `ModelChangedPort` | Beobachter-Schnittstelle: committete Modell-Mutationen melden (Push-Notify `element_id`/`op`, Pull-State über Abfrage-Ports); implementiert von Darstellungs-Adaptern | LH-FA-D3-002, OBJ-003, ADR-0008 |
+| `ModelChangedPort` | Beobachter-Schnittstelle: committete Modell-Mutationen melden (Push-Notify `element_id`/`op`, Pull-State über Abfrage-Ports); implementiert von Darstellungs-Adaptern | LH-FA-D3-002, OBJ-003 |
 
 ## 2. Schichten und Constraints
 
-| Schicht | Pfad | Verantwortlichkeit | Darf importieren | Darf NICHT importieren | ADR |
-|---|---|---|---|---|---|
-| Domain-Modell | `src/hexagon/model/` | parametrische Bauteil-Typen, pure Werte, keine I/O, keine Framework-Typen | — (nur Standardbibliothek) | alles andere | ADR-0001 |
-| Driven Ports | `src/hexagon/ports/driven/` | abstrakte Infrastruktur-Schnittstellen | model | services, adapters, Qt/OCC/SQLite | ADR-0001 |
-| Driving Ports | `src/hexagon/ports/driving/` | abstrakte Use-Case-Schnittstellen | model | services, adapters | ADR-0001 |
-| Services | `src/hexagon/services/` | Anwendungslogik; implementiert Driving Ports, nutzt Driven Ports | model, ports | adapters, Qt/OCC/SQLite | ADR-0001 |
-| Geometrie-Adapter | `src/adapters/geometry/` | erfüllt `GeometryKernelPort` via OpenCascade | model, ports/driven | andere Adapter, GUI | ADR-0001, ADR-0002 |
-| Persistenz-Adapter | `src/adapters/persistence/` | erfüllt `ProjectRepositoryPort` via SQLite | model, ports/driven | andere Adapter, GUI | ADR-0001, ADR-0003 |
-| IO-Adapter | `src/adapters/io/` | erfüllt Importer/Exporter-Ports | model, ports/driven | andere Adapter, GUI | ADR-0001 |
-| GUI-Adapter | `src/adapters/ui/` | Qt; ruft Driving Ports auf | model, ports/driving, ports/driven (*nur* zur Implementierung von Beobachter-Schnittstellen, z. B. `ModelChangedPort` — ADR-0009) | Driven Adapter direkt, OCC, SQLite | ADR-0001, ADR-0009 |
-| Plugin-Host | `src/adapters/plugin/` | lädt Plugins, vermittelt Driving Ports (Sandbox) | model, ports/driving | Driven Adapter direkt | ADR-0001 |
-| Composition Root | `src/main.cpp` | verdrahtet Adapter mit Kern | alles | — | ADR-0001 |
+| Schicht | Pfad | Verantwortlichkeit | Darf importieren | Darf NICHT importieren |
+|---|---|---|---|---|
+| Domain-Modell | `src/hexagon/model/` | parametrische Bauteil-Typen, pure Werte, keine I/O, keine Framework-Typen | — (nur Standardbibliothek) | alles andere |
+| Driven Ports | `src/hexagon/ports/driven/` | abstrakte Infrastruktur-Schnittstellen | model | services, adapters, Qt/OCC/SQLite |
+| Driving Ports | `src/hexagon/ports/driving/` | abstrakte Use-Case-Schnittstellen | model | services, adapters |
+| Services | `src/hexagon/services/` | Anwendungslogik; implementiert Driving Ports, nutzt Driven Ports | model, ports | adapters, Qt/OCC/SQLite |
+| Geometrie-Adapter | `src/adapters/geometry/` | erfüllt `GeometryKernelPort` via OpenCascade | model, ports/driven | andere Adapter, GUI |
+| Persistenz-Adapter | `src/adapters/persistence/` | erfüllt `ProjectRepositoryPort` via SQLite | model, ports/driven | andere Adapter, GUI |
+| IO-Adapter | `src/adapters/io/` | erfüllt Importer/Exporter-Ports | model, ports/driven | andere Adapter, GUI |
+| GUI-Adapter | `src/adapters/ui/` | Qt; ruft Driving Ports auf | model, ports/driving, ports/driven (*nur* zur Implementierung von Beobachter-Schnittstellen, z. B. `ModelChangedPort`) | Driven Adapter direkt, OCC, SQLite |
+| Plugin-Host | `src/adapters/plugin/` | lädt Plugins, vermittelt Driving Ports (Sandbox) | model, ports/driving | Driven Adapter direkt |
+| Composition Root | `src/main.cpp` | verdrahtet Adapter mit Kern | alles | — |
 
 **Konsequenz:** Die GUI darf weder OpenCascade noch SQLite direkt
 aufrufen — jeder Zugriff geht über einen Driving-Port in den Kern und
@@ -171,13 +171,13 @@ zusätzlich statisch.
 
 ## 3. Externe Abhängigkeiten
 
-| System | Rolle | ADR | Substituierbarkeit |
-|---|---|---|---|
-| OpenCascade (OCC) | Geometrie-Kern: Solids, boolesche Operationen, Extrusion | ADR-0002 | hinter `GeometryKernelPort` — Wechsel berührt nur `adapters/geometry/` |
-| Qt 6 | GUI-Framework (Driving Adapter) | ADR-Folge (geplant) | Kern bleibt Qt-frei; GUI ist Adapter |
-| SQLite | Projekt-Persistenz (atomar) | ADR-0003 | hinter `ProjectRepositoryPort` |
-| IFC/DXF/STEP/STL-Bibliotheken | Austauschformate | ADR-Folge (geplant) | je Format ein Adapter hinter Importer/Exporter-Port |
-| OpenTelemetry | Tracing/Observability | ADR-Folge (geplant) | hinter `TracingPort`, optional abschaltbar |
+| System | Rolle | Substituierbarkeit |
+|---|---|---|
+| OpenCascade (OCC) | Geometrie-Kern: Solids, boolesche Operationen, Extrusion | hinter `GeometryKernelPort` — Wechsel berührt nur `adapters/geometry/` |
+| Qt 6 | GUI-Framework (Driving Adapter) | Kern bleibt Qt-frei; GUI ist Adapter |
+| SQLite | Projekt-Persistenz (atomar) | hinter `ProjectRepositoryPort` |
+| IFC/DXF/STEP/STL-Bibliotheken | Austauschformate | je Format ein Adapter hinter Importer/Exporter-Port |
+| OpenTelemetry | Tracing/Observability | hinter `TracingPort`, optional abschaltbar |
 
 Externe Abhängigkeiten dürfen nur in Adaptern auftreten, nie im Kern.
 
@@ -239,11 +239,21 @@ Projektstand bei jedem Fehler intakt; kein halb geschriebenes Projekt
 ist beobachtbar. Operationalisiert durch einen künftigen ADR
 (Write-Strategie, analog zur Index-Write-Strategie des Kurs-Beispiels).
 
-## 6. ADR-Index
+## Geschichte
 
-Vollständige Liste in
-[`../docs/plan/adr/README.md`](../docs/plan/adr/README.md).
+Provenance-Rand (Regelwerk Regel 5): welche ADRs diese — derivative —
+Architektur-Sicht prägen. Die normative Begründung lebt in den ADRs
+selbst (Aufwärts-Verweis ADR → Spec); der Vollindex steht in
+[`../docs/plan/adr/README.md`](../docs/plan/adr/README.md). Diese
+Tabelle trägt keine eigene Anforderung und keine zeitliche Schicht
+(meilensteinfrei).
 
-- [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) — Hexagonale Architektur (Ports & Adapters); Abhängigkeitsrichtung über getrennte CMake-Targets erzwungen. **Accepted.**
-- [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md) — Geometrie-Kern OpenCascade hinter `GeometryKernelPort` (Backend: Solids/Extrusion/Booleans/Wandöffnungen; STEP-Export ausgegliedert in künftige IO/Export-ADR). **Accepted.**
-- [ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md) — Projekt-Persistenz SQLite, atomar geschrieben. **Proposed.**
+| Architektur-Aspekt | Prägende ADR |
+|---|---|
+| Hexagonale Zerlegung (Ports & Adapters), CMake-Target-Trennung | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) |
+| Geometrie-Kern OpenCascade hinter `GeometryKernelPort` | [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md) |
+| Projekt-Persistenz SQLite (atomar) | [ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md) |
+| Änderungs-Benachrichtigung über `ModelChangedPort` | [ADR-0008](../docs/plan/adr/0008-aenderungs-benachrichtigung.md) |
+| Framework-freie Tessellation über `ViewModelPort` | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) |
+| Bauteil-Erweiterungs-Muster (Wandöffnungen, Dach, Decken, Fundament, Treppen) | [ADR-0011](../docs/plan/adr/0011-bauteil-hosting-wandoeffnung.md) |
+| Auswertungs-Architektur `EvaluatePort` (read-only/pull) | [ADR-0012](../docs/plan/adr/0012-evaluations-architektur.md) |

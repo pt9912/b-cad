@@ -86,9 +86,19 @@ ist ein ADR plus Carveout, kein PR-Kommentar.
 
 ### 2.7 Architektur ist sprach- und meilensteinfrei
 
-`spec/architecture.md` referenziert ADRs, aber **keine** Wellen, Slices,
-Commit-Hashes oder Closure-Daten. Die zeitliche Schicht lebt in
-`docs/plan/planning/`.
+`spec/architecture.md` ist ein **derivatives Sicht-Stratum**: es trägt
+**keine** Wellen, Slices, Commit-Hashes oder Closure-Daten (die zeitliche
+Schicht lebt in `docs/plan/planning/`) und — seit slice-018a — **keine
+Abwärts-Referenz auf ADRs im Körper**. Maßgeblich ist das Regelwerk
+(§Referenz-Richtung): „Spec → ADR existiert im bindenden Text nicht — auch
+nicht als Quellen-Spalte"; die frühere Lesart „referenziert ADRs" war eine
+undeklarierte Inkonsistenz (AGENTS rangiert unter dem Regelwerk, §1). Die
+normative Begründung lebt in den ADRs selbst (Aufwärts-Verweis ADR → Spec);
+ADR-Provenance einer Architektur-Aussage steht nur in der Provenance-Rand-
+Tabelle `## Geschichte` (matrix-`exclude-sections`) und im Vollindex
+[`docs/plan/adr/README.md`](docs/plan/adr/README.md). Computational
+durchgesetzt vom `docs-check`-Gate (Module `matrix` + `ids`,
+[`MR-011`](harness/conventions.md)).
 
 ### 2.8 git mv + Inhaltsänderung = zwei Commits
 
@@ -129,7 +139,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 
 | Target | Zweck | Bindung |
 |---|---|---|
-| `make docs-check` | Doku-Konsistenz: interne Markdown-Links/Anker/Inline-Code-Pfade (d-check) | MR-007 |
+| `make docs-check` | Doku-Konsistenz: interne Links/Anker/Inline-Code-Pfade + **Referenz-Richtung Spec→ADR** (d-check-Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | MR-007, MR-011 |
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl existiert im Makefile (fängt halluzinierte Gates) | Modul 13 |
 | `make arch-check` | hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/`adapters/`; kein Adapter→Adapter; OCC-`.hxx` nur in `adapters/geometry/`, Regel C; `sqlite3*` nur in `adapters/persistence/`, Regel D; Qt-Header nur in `adapters/ui/` + `src/main.cpp`, Regel E) | ADR-0001, ADR-0002, ADR-0003, ADR-0009 |
 | `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001, AGENTS §2.4 |
