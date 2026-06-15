@@ -106,13 +106,13 @@ Immutability-Disziplin wie bei Accepted-ADRs,
 
   | Artefakt | Schema | Beispiel |
   |---|---|---|
-  | Funktionale Anforderung | `LH-FA-<BEREICH>-<NNN>` | `LH-FA-WAL-002` |
-  | Nichtfunktionale Anforderung | `LH-QA-<NNN>` | `LH-QA-001` |
-  | Technische Rahmenbedingung | `REQ-TEC-<NNN>` | `REQ-TEC-003` |
-  | Projektziel | `OBJ-<NNN>` | `OBJ-002` |
+  | Funktionale Anforderung | `LH-FA-<BEREICH>-<NNN>` | [`LH-FA-WAL-002`](../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) |
+  | Nichtfunktionale Anforderung | `LH-QA-<NNN>` | [`LH-QA-001`](../spec/lastenheft.md#lh-qa-001--performance-projektöffnung) |
+  | Technische Rahmenbedingung | `REQ-TEC-<NNN>` | [`REQ-TEC-003`](../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) |
+  | Projektziel | `OBJ-<NNN>` | [`OBJ-002`](../spec/lastenheft.md#3-projektziele) |
   | Benutzerrolle | `ROLE-<NNN>` | `ROLE-002` |
-  | Abnahmekriterium | `ACC-<NNN>` | `ACC-001` |
-  | Architektur-Entscheidung | `ADR-<NNNN>` | `ADR-0001` |
+  | Abnahmekriterium | `ACC-<NNN>` | [`ACC-001`](../spec/lastenheft.md#7-abnahmekriterien) |
+  | Architektur-Entscheidung | `ADR-<NNNN>` | [`ADR-0001`](../docs/plan/adr/0001-hexagonale-architektur.md) |
   | Carveout | `CO-<NNN>` | `CO-001` |
   | Slice | `slice-<NNN>` | `slice-001` |
   | Welle | `welle-<NN>-<titel>` | `welle-1-mvp` |
@@ -138,7 +138,7 @@ Lastenheft-Ursprung (C++20, Qt 6, OpenCascade, CMake, GoogleTest, OTel,
 SQLite, Shared-Library-Plugins, Docker DevContainer). Sie sind
 **fortschreibbar** und leben daher in
 [`spec/spezifikation.md` §Technische Rahmenbedingungen](../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec),
-nicht im vertraglichen Lastenheft; ADRs (z. B. ADR-0002/0003) schärfen
+nicht im vertraglichen Lastenheft; ADRs (z. B. [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md)/0003) schärfen
 sie.
 
 ### MR-003 — docs-check als vendored Doku-Sensor
@@ -265,7 +265,7 @@ sie.
   slice-009 (HIGH H1 → ADR-Scope + Split), slice-010 (HIGH F1 →
   Lastenheft-Grenzverletzung abgefangen), slice-011 (Review
   2026-06-12: 3 HIGH — Pflicht-Lücke Headless-Strategie, behauptete
-  Sensor-Deckung ohne Sensor, ACC-002-Beleg ohne Erzeugungsweg).
+  Sensor-Deckung ohne Sensor, [ACC-002](../spec/lastenheft.md#7-abnahmekriterien)-Beleg ohne Erzeugungsweg).
 - **Auflösungs-Trigger:** permanent.
 
 ### MR-008 — Lastenheft-Schärfung bleibt lösungsfrei
@@ -412,11 +412,11 @@ Schwelle · Reproduzierbarkeit) **eine** Zusatzklasse:
 
 | Klasse | Form | Bedeutung | Beispiel (geplant) |
 |---|---|---|---|
-| LH-Bindung | `LH-FA-<…>` · `LH-QA-<…>` | Gate prüft direkt eine Anforderung aus `spec/lastenheft.md` | `LH-QA-003` als Bindung eines künftigen Undo/Redo-Tiefen-Tests; `LH-FA-WAL-002` als Bindung eines Wandstärken-Grenzwert-Tests |
+| LH-Bindung | `LH-FA-<…>` · `LH-QA-<…>` | Gate prüft direkt eine Anforderung aus `spec/lastenheft.md` | [`LH-QA-003`](../spec/lastenheft.md#lh-qa-003--undoredo) als Bindung eines künftigen Undo/Redo-Tiefen-Tests; [`LH-FA-WAL-002`](../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) als Bindung eines Wandstärken-Grenzwert-Tests |
 
 Die Klasse ist *deklariert*, aber noch *ungebunden* — keines der realen
 Gates trägt bislang eine LH-Bindung. Erster Kandidat ist das geplante
-`make coverage-gate-critical` (LH-QA-005); mit seiner Promotion aus dem
+`make coverage-gate-critical` ([LH-QA-005](../spec/lastenheft.md#lh-qa-005--crash-recovery)); mit seiner Promotion aus dem
 "Nicht behauptet"-Block der Sensors-Tabelle in
 [`README.md`](README.md#sensors-feedback-gates) wird die Klasse erstmals
 real gebunden (Promotion-Trigger, Kurs-Modul 2).
@@ -442,7 +442,7 @@ Inklusions-Achsen aus (Schwelle ≥ 2 von 3: 1 Konventions-Härte ·
 | GUI-Adapter | `src/adapters/ui/` (geplant) | 1 (Qt-Adapter-Konvention, nur Driving-Ports) · 2 (UI↔Driving-Port-Inventur) · 3 (`src/adapters/ui/`) → **3/3** | Greenfield |
 | Plugin-Host | `src/adapters/plugin/`, `plugins/` (geplant) | 1 (Plugin-API-/Lifecycle-/Sandbox-Konvention) · 2 (ABI-/API-Vertrags-Inventur) · 3 (`src/adapters/plugin/`) → **3/3** | Greenfield |
 | Import/Export-Adapter | `src/adapters/io/` (geplant) | 1 (Format-Adapter-Konvention je IFC/DXF/STEP/STL hinter Importer/Exporter-Port) · 2 (Round-Trip-Inventur) · 3 (`src/adapters/io/`) → **3/3** | Greenfield |
-| Build & Toolchain | `Makefile`, `tools/`, `CMakeLists.txt`, `src/*/CMakeLists.txt`, `.devcontainer/` (existieren seit slice-001: docs-check- + build-Gate) | 1 (CMake-/Container-/docs-check-Konvention, MR-003, ADR-0001) · 2 (Reproduzierbarkeits-Inventur) · 3 (Build-Datei-Familie) → **3/3** | Greenfield |
+| Build & Toolchain | `Makefile`, `tools/`, `CMakeLists.txt`, `src/*/CMakeLists.txt`, `.devcontainer/` (existieren seit slice-001: docs-check- + build-Gate) | 1 (CMake-/Container-/docs-check-Konvention, MR-003, [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md)) · 2 (Reproduzierbarkeits-Inventur) · 3 (Build-Datei-Familie) → **3/3** | Greenfield |
 | Test-Infrastruktur | `tests/` (geplant) | 1 (GoogleTest-/Determinismus-Konvention) · 2 (Test-ohne-`LH`-ID als Diskrepanz) · 3 (`tests/`) → **3/3** | Greenfield |
 
 **Sub-Area-Aspirantinnen** (< 2 Achsen, bewusst *nicht* als Sub-Area
@@ -461,7 +461,7 @@ BF-Sub-Area-Zeile mit Graduation-Bedingung.
 
 | Begriff | Bedeutung in b-cad |
 |---|---|
-| Gebäudemodell | das durchgängige, parametrische Datenmodell, aus dem 2D- und 3D-Darstellung abgeleitet werden (OBJ-003). |
+| Gebäudemodell | das durchgängige, parametrische Datenmodell, aus dem 2D- und 3D-Darstellung abgeleitet werden ([OBJ-003](../spec/lastenheft.md#3-projektziele)). |
 | Geometrie-Kern | OpenCascade (OCC), hinter einem Port gekapselt — die Domäne kennt nur den Port, nicht OCC. |
-| Raum-Autoerkennung | Ableitung geschlossener Raumpolygone aus Wandzügen (`LH-FA-ROM-001`). |
+| Raum-Autoerkennung | Ableitung geschlossener Raumpolygone aus Wandzügen ([`LH-FA-ROM-001`](../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)). |
 | Slice | kleinste lieferbare Einheit eines b-cad-Features mit eigenem Plan und eigener DoD. |

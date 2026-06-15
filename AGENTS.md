@@ -48,8 +48,8 @@ CMake-Targets (`bcad_hexagon` ohne externe Deps) — siehe
 
 Jeder Projekt-Schreibvorgang schreibt in eine Temp-Datei und ersetzt den
 bestehenden Stand erst nach Erfolg (Rename). Kein halb geschriebenes
-Projekt darf beobachtbar sein (LH-QA-005, LH-FA-BLD-002). Plugins dürfen
-das Modell nicht umgehen (Sandbox, LH-FA-PLG-004).
+Projekt darf beobachtbar sein ([LH-QA-005](spec/lastenheft.md#lh-qa-005--crash-recovery), [LH-FA-BLD-002](spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)). Plugins dürfen
+das Modell nicht umgehen (Sandbox, [LH-FA-PLG-004](spec/lastenheft.md#modul-plugin-system-plg)).
 
 **Falsch:** Projektdatei direkt in-place überschreiben / `fopen(path, "w")`.
 **Richtig:** in `path.tmp` schreiben, `fsync`, dann atomar nach `path` renamen.
@@ -57,7 +57,7 @@ das Modell nicht umgehen (Sandbox, LH-FA-PLG-004).
 ### 2.3 Docker-only (DevContainer)
 
 Build und Gates laufen über den reproduzierbaren Docker-DevContainer
-(REQ-TEC-009) via `make`. Host braucht nur Docker und GNU `make` — kein
+([REQ-TEC-009](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec)) via `make`. Host braucht nur Docker und GNU `make` — kein
 lokales Qt-/OCC-SDK.
 
 **Begründung:** Toolchain-Reproduzierbarkeit + Supply-Chain-Defense.
@@ -139,23 +139,23 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 
 | Target | Zweck | Bindung |
 |---|---|---|
-| `make docs-check` | Doku-Konsistenz: interne Links/Anker/Inline-Code-Pfade + **Referenz-Richtung Spec→ADR** (d-check-Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | MR-007, MR-011 |
+| `make docs-check` | Doku-Konsistenz: interne Links/Anker/Inline-Code-Pfade + **Referenz-Richtung Spec→ADR** (d-check-Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | [MR-007](harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [MR-011](harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) |
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl existiert im Makefile (fängt halluzinierte Gates) | Modul 13 |
-| `make arch-check` | hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/`adapters/`; kein Adapter→Adapter; OCC-`.hxx` nur in `adapters/geometry/`, Regel C; `sqlite3*` nur in `adapters/persistence/`, Regel D; Qt-Header nur in `adapters/ui/` + `src/main.cpp`, Regel E) | ADR-0001, ADR-0002, ADR-0003, ADR-0009 |
-| `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001, AGENTS §2.4 |
-| `make test` | GoogleTest: Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite); Viewer headless via Xvfb | ADR-0009/0010 |
+| `make arch-check` | hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/`adapters/`; kein Adapter→Adapter; OCC-`.hxx` nur in `adapters/geometry/`, Regel C; `sqlite3*` nur in `adapters/persistence/`, Regel D; Qt-Header nur in `adapters/ui/` + `src/main.cpp`, Regel E) | [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md), [ADR-0002](docs/plan/adr/0002-geometrie-kern-opencascade.md), [ADR-0003](docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) |
+| `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md), AGENTS §2.4 |
+| `make test` | GoogleTest: Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite); Viewer headless via Xvfb | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md)/0010 |
 | `make coverage-gate` | bootstrap-aware Line-Coverage ≥ `COVERAGE_THRESHOLD` (Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 |
-| `make build` | Target-Kette kompilieren; CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
+| `make build` | Target-Kette kompilieren; CMake-Target-Trennung (Kern ohne Adapter-Deps) | [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md) |
 | `make gates` | docs-check · gate-consistency · arch-check · lint · test · coverage-gate | — |
-| `make schema-check` | ADR-0006-Drift: `schema.sql` == d-migrate(`data-model.yaml`); **nicht** in `gates` (d-migrate aus dem Gate-Pfad) → CI-Befehlsliste | ADR-0006 |
-| `make acc-002-beleg` | ACC-002-Beleg-Bild headless rendern — **kein Gate**, manueller Abnahme-Schritt, nicht in `gates` | ADR-0009 (f)/0010 |
-| `make run` | App im Container am lokalen Display starten — **kein Gate** (GPU via `/dev/dri`, sonst llvmpipe) | ADR-0009 |
+| `make schema-check` | [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md)-Drift: `schema.sql` == d-migrate(`data-model.yaml`); **nicht** in `gates` (d-migrate aus dem Gate-Pfad) → CI-Befehlsliste | [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md) |
+| `make acc-002-beleg` | [ACC-002](spec/lastenheft.md#7-abnahmekriterien)-Beleg-Bild headless rendern — **kein Gate**, manueller Abnahme-Schritt, nicht in `gates` | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) (f)/0010 |
+| `make run` | App im Container am lokalen Display starten — **kein Gate** (GPU via `/dev/dri`, sonst llvmpipe) | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) |
 
 **Geplant (noch NICHT behauptet):**
 
 | Target (geplant) | Zweck | Bindung |
 |---|---|---|
-| `make coverage-gate-critical` | Critical-Path-Coverage: Persistenz/Crash-Recovery (Datenverlust = schärfster Fehlerfall) | LH-QA-005 |
+| `make coverage-gate-critical` | Critical-Path-Coverage: Persistenz/Crash-Recovery (Datenverlust = schärfster Fehlerfall) | [LH-QA-005](spec/lastenheft.md#lh-qa-005--crash-recovery) |
 | `make ci` | gates + Extras | — |
 | `make fullbuild` | volle Closure inkl. Runtime-Image + Image-Hash | — |
 
@@ -170,8 +170,8 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 - Neue ADRs müssen [`docs/plan/adr/README.md`](docs/plan/adr/README.md) aktualisieren.
 - Roadmap/Status-Geschichte lebt in `docs/plan/planning/`, nicht in `spec/architecture.md`.
 - Slice-Lifecycle-Bewegung ist reiner `git mv` (siehe §2.8).
-- **Lastenheft-Schärfung bleibt lösungsfrei** ([`harness/conventions.md`
-  MR-008](harness/conventions.md)): schärft ein Slice eine Anforderung
+- **Lastenheft-Schärfung bleibt lösungsfrei**
+  ([`harness/conventions.md` MR-008](harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)): schärft ein Slice eine Anforderung
   von Outline auf AK-Niveau, sind die AK benutzer-beobachtbar
   (Given/When/Then; Wertebereiche = das *Was*); Lösungsmechanik
   (Algorithmen, Ports, Formeln, Fehler-Code-/`op`-Vokabular) gehört in
@@ -179,7 +179,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 - **Lastenheft-Schärfung zieht den Header-Version nach**
   ([`harness/conventions.md` MR-010](harness/conventions.md)): der
   `**Version:**`-Header von `spec/lastenheft.md` == oberste (jüngste)
-  §9-Historie-Zeile. Die MR-006-Linse prüft den Nachzug je Schärfungs-Slice.
+  §9-Historie-Zeile. Die [MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Linse prüft den Nachzug je Schärfungs-Slice.
 
 ## 5. Minimal Agent Workflow
 

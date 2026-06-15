@@ -47,7 +47,7 @@ Stage, keine Bind-Mounts): `make docs-check`, `make gate-consistency`,
 | [`../spec/lastenheft.md`](../spec/lastenheft.md) | `LH-FA-*`/`LH-QA-*` mit Akzeptanzkriterien |
 | [`../spec/spezifikation.md`](../spec/spezifikation.md) | Wertebereiche, Fehler-Codes, OTel-Spans |
 | [`../spec/architecture.md`](../spec/architecture.md) | hexagonale Schichten, Ports, Constraints |
-| [`../docs/plan/adr/`](../docs/plan/adr/) | ADR-0001 (Hexagonal), 0002 (OCC), 0003 (SQLite) |
+| [`../docs/plan/adr/`](../docs/plan/adr/) | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) (Hexagonal), 0002 (OCC), 0003 (SQLite) |
 | [`../docs/plan/planning/`](../docs/plan/planning/) | Slices und Roadmap |
 | [`../AGENTS.md`](../AGENTS.md) | Hard Rules, Workflow |
 | [`conventions.md`](conventions.md) | Strukturregeln, `MR-*`-Adaptionen, Modus-Deklaration |
@@ -63,15 +63,15 @@ Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
 |---|---|---|
 | `make docs-check` | interne Links, Anker, Inline-Code-Pfade + **Referenz-Richtung Spec→ADR** (`matrix`/`ids`) + Span-/Host-Pfad-Hygiene; kein Pfad aus dem Repo, keine Abwärts-Referenz Spec → ADR — via d-check (digest-gepinnt, `.d-check.yml`; Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | [`MR-007`](conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [`MR-011`](conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) |
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl (AGENTS §3 / §Sensors) existiert im Makefile — fängt halluzinierte Gates | Modul 13 |
-| `make arch-check` | hexagonale Schichtung: Kern importiert kein Qt/OCC/SQLite/`adapters/`; kein Adapter importiert einen anderen; OCC-`.hxx` nur in `adapters/geometry/` (Regel C); `sqlite3*` nur in `adapters/persistence/` (Regel D); Qt-Header nur in `adapters/ui/` + `src/main.cpp` (Regel E) | ADR-0001, ADR-0002, ADR-0003, ADR-0009 |
-| `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | ADR-0001 §Fitness (AGENTS.md §2.4) |
-| `make test` | GoogleTest-Suite: prüft Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite); Viewer-AK display-frei (Szenen-Surrogat) + GL-Smoke headless via Xvfb/llvmpipe | ADR-0009 (f), ADR-0010 |
+| `make arch-check` | hexagonale Schichtung: Kern importiert kein Qt/OCC/SQLite/`adapters/`; kein Adapter importiert einen anderen; OCC-`.hxx` nur in `adapters/geometry/` (Regel C); `sqlite3*` nur in `adapters/persistence/` (Regel D); Qt-Header nur in `adapters/ui/` + `src/main.cpp` (Regel E) | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md), [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md), [ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) |
+| `make lint` | clang-tidy (0 Befunde in `src/`) + Suppression-Gate | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) §Fitness (AGENTS.md §2.4) |
+| `make test` | GoogleTest-Suite: prüft Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite); Viewer-AK display-frei (Szenen-Surrogat) + GL-Smoke headless via Xvfb/llvmpipe | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) (f), [ADR-0010](../docs/plan/adr/0010-headless-gl-xvfb.md) |
 | `make coverage-gate` | Line-Coverage ≥ Schwelle (bootstrap-aware, Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 (siehe AGENTS.md §3) |
-| `make build` | Target-Kette kompiliert; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | ADR-0001 |
+| `make build` | Target-Kette kompiliert; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) |
 | `make gates` | Aggregat: docs-check · gate-consistency · arch-check · lint · test · coverage-gate (+ `record-gates`-Nachweis) | — |
-| `make schema-check` | ADR-0006-Drift: committete `schema.sql` == d-migrate(`data-model.yaml`). **Nicht** in `make gates` (d-migrate aus dem hermetischen Gate-Pfad gehalten) — gehört in die **CI-Befehlsliste** | ADR-0006 |
-| `make acc-002-beleg` | **kein Gate:** rendert das ACC-001-Kern-Demo headless (Xvfb) und schreibt das ACC-002-Beleg-Bild — manueller Abnahme-Schritt des Projektinhabers, bewusst nicht in `gates` | ADR-0009 (f), ADR-0010 |
-| `make run` | **kein Gate:** startet die App im Container am lokalen Display (X11/XWayland; GPU-Durchreichung via `/dev/dri`, sonst llvmpipe-Fallback; vorher ggf. `xhost +local:`) | ADR-0009, AGENTS §2.9 |
+| `make schema-check` | [ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md)-Drift: committete `schema.sql` == d-migrate(`data-model.yaml`). **Nicht** in `make gates` (d-migrate aus dem hermetischen Gate-Pfad gehalten) — gehört in die **CI-Befehlsliste** | [ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md) |
+| `make acc-002-beleg` | **kein Gate:** rendert das [ACC-001](../spec/lastenheft.md#7-abnahmekriterien)-Kern-Demo headless (Xvfb) und schreibt das [ACC-002](../spec/lastenheft.md#7-abnahmekriterien)-Beleg-Bild — manueller Abnahme-Schritt des Projektinhabers, bewusst nicht in `gates` | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) (f), [ADR-0010](../docs/plan/adr/0010-headless-gl-xvfb.md) |
+| `make run` | **kein Gate:** startet die App im Container am lokalen Display (X11/XWayland; GPU-Durchreichung via `/dev/dri`, sonst llvmpipe-Fallback; vorher ggf. `xhost +local:`) | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md), AGENTS §2.9 |
 
 **Warum `build` nicht in `gates`:** `test`, `lint` und `coverage-gate`
 sind Dockerfile-Stages `FROM build` und **kompilieren die Target-Kette
@@ -93,7 +93,7 @@ Ersatz für `make gates` in CI (letzte Instanz).
 **Nicht behauptet (geplant).** Sobald real, wandern sie mit Vertrag und
 Bindung in die obige Tabelle:
 
-- `make coverage-gate-critical` — Critical-Path-Coverage (Persistenz/Recovery, LH-QA-005), höhere Schwelle. Bindung: LH-QA-005.
+- `make coverage-gate-critical` — Critical-Path-Coverage (Persistenz/Recovery, [LH-QA-005](../spec/lastenheft.md#lh-qa-005--crash-recovery)), höhere Schwelle. Bindung: [LH-QA-005](../spec/lastenheft.md#lh-qa-005--crash-recovery).
 - `make ci` / `make fullbuild` — weitere Aggregat-/Closure-Gates (inkl. Image-Hash, Modul 14).
 
 **Aktueller Lauf-Status:** wird hier **nicht** geführt — Lauf-Wahrheit
@@ -114,11 +114,11 @@ pro Commit gehört in CI, nicht in diese Datei (Rang 9; Kurs-Modul 13).
 
 - **Datenverlust am Gebäudemodell ist der schärfste Fehlerfall.**
   Persistenz schreibt atomar (Temp + Rename); Crash-Recovery erhält den
-  letzten konsistenten Stand (LH-QA-005, LH-FA-BLD-002).
+  letzten konsistenten Stand ([LH-QA-005](../spec/lastenheft.md#lh-qa-005--crash-recovery), [LH-FA-BLD-002](../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)).
 - **Kein OCC/Qt/SQLite im Kern.** Geometrie-, GUI- und DB-Technologie
-  leben ausschließlich in Adaptern (ADR-0001).
+  leben ausschließlich in Adaptern ([ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md)).
 - **Plugins laufen in einer Sandbox** und dürfen das Modell nicht
-  umgehen oder korruptieren (LH-FA-PLG-004).
+  umgehen oder korruptieren ([LH-FA-PLG-004](../spec/lastenheft.md#modul-plugin-system-plg)).
 - b-cad ist **keine Statik-/Tragwerksberechnung** — „Tragwand" ist eine
   Klassifikation, keine Bemessung (Lastenheft §6).
 

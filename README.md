@@ -3,7 +3,7 @@
 > **Projekt-Status:** Welle `welle-3-auswertung` aktiv. **Meilenstein M2
 > erreicht** — Kern-MVP (Wände, Raumerkennung, OCC-Extrusion, SQLite-Persistenz
 > inkl. Crash-Recovery, Änderungs-Benachrichtigung; welle-1, M1), sichtbarer
-> Qt-6-3D-Viewer (welle-1v, ACC-002) und **alle parametrischen Bauteile** —
+> Qt-6-3D-Viewer (welle-1v, [ACC-002](spec/lastenheft.md#7-abnahmekriterien)) und **alle parametrischen Bauteile** —
 > Türen/Fenster, Dach, Decken/Fundament, Treppen (welle-2) — sind implementiert.
 > Aktuell: **Auswertungen** (Flächen/Volumen/Wohnfläche, Material) über einen
 > read-only `EvaluatePort`. Einstieg: [`harness/README.md`](harness/README.md).
@@ -25,21 +25,21 @@ richtet sich an **beide Rollen** mit *einem* Werkzeug
 ([`spec/lastenheft.md` §2/§3](spec/lastenheft.md)):
 
 - **Private Bauherren** modellieren ihr Gebäude geführt und ohne
-  CAD-Kenntnisse (OBJ-001) — Räume werden z. B. beim Schließen eines
-  Wandzugs automatisch erkannt (LH-FA-ROM-001).
+  CAD-Kenntnisse ([OBJ-001](spec/lastenheft.md#3-projektziele)) — Räume werden z. B. beim Schließen eines
+  Wandzugs automatisch erkannt ([LH-FA-ROM-001](spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)).
 - **Architekten und Planer** führen vollständige Planungen durch und
-  tauschen über offene Formate aus — IFC, DXF, STEP, STL (OBJ-005).
-- **Erweiterbarkeit** über ein Plugin-System (OBJ-004) statt
+  tauschen über offene Formate aus — IFC, DXF, STEP, STL ([OBJ-005](spec/lastenheft.md#3-projektziele)).
+- **Erweiterbarkeit** über ein Plugin-System ([OBJ-004](spec/lastenheft.md#3-projektziele)) statt
   Funktions-Monolith.
 
 ## Kerngedanke
 
 **Ein Modell, viele Sichten.** Jedes Bauteil ist parametrisch
-(OBJ-002); Grundriss, Schnitt und 3D-Darstellung sind *abgeleitete
-Sichten* auf dasselbe Gebäudemodell (OBJ-003) — es gibt keine zweite,
+([OBJ-002](spec/lastenheft.md#3-projektziele)); Grundriss, Schnitt und 3D-Darstellung sind *abgeleitete
+Sichten* auf dasselbe Gebäudemodell ([OBJ-003](spec/lastenheft.md#3-projektziele)) — es gibt keine zweite,
 manuell synchron zu haltende Geometrie. Ändert sich ein Parameter
 (Wandstärke, Geschosshöhe), folgen alle Sichten in Echtzeit
-(LH-FA-D3-002).
+([LH-FA-D3-002](spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)).
 
 Die Architektur verkörpert das: ein **framework-freier Domain-Kern**
 (hexagonal, [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md))
@@ -56,10 +56,10 @@ Ernstfall.** Die Hard Rules des Repos sind genau dort am schärfsten
 
 - **Atomares Speichern** via Temp+Rename — ein abgebrochener
   Schreibvorgang hinterlässt nie eine halbe Projektdatei
-  (LH-FA-BLD-002, ADR-0003).
+  ([LH-FA-BLD-002](spec/lastenheft.md#lh-fa-bld-002--projekt-speichern), [ADR-0003](docs/plan/adr/0003-persistenz-sqlite.md)).
 - **Crash-Recovery** ist getestet, nicht behauptet: ein
-  `kill -9`-Test (fork+SIGKILL) gehört zur Test-Suite (LH-QA-005).
-- **Definierte Fehler-Codes** (`E-IO-001`/`E-IO-002`, …) statt
+  `kill -9`-Test (fork+SIGKILL) gehört zur Test-Suite ([LH-QA-005](spec/lastenheft.md#lh-qa-005--crash-recovery)).
+- **Definierte Fehler-Codes** ([`E-IO-001`](spec/spezifikation.md#4-fehler-codes-und-logging-felder)/[`E-IO-002`](spec/spezifikation.md#4-fehler-codes-und-logging-felder), …) statt
   stiller Fehlschläge ([`spec/spezifikation.md`](spec/spezifikation.md)).
 
 Auch der **Entstehungsprozess** ist abgesichert: Spec führt, Code folgt
@@ -81,16 +81,16 @@ Precedence und Hard Rules in [`AGENTS.md`](AGENTS.md).
 
 | Bereich | Wahl | Entscheidung |
 |---|---|---|
-| Sprache | C++20 | REQ-TEC-001 |
+| Sprache | C++20 | [REQ-TEC-001](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) |
 | Architektur | hexagonal (Ports & Adapters) | [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md) |
 | Geometrie-Kern | OpenCascade (hinter Port) | [ADR-0002](docs/plan/adr/0002-geometrie-kern-opencascade.md) |
-| GUI | Qt 6 (Driving Adapter) | REQ-TEC-002 |
+| GUI | Qt 6 (Driving Adapter) | [REQ-TEC-002](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) |
 | Persistenz | SQLite (atomar, hinter Port) | [ADR-0003](docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md) |
-| Build | CMake | REQ-TEC-004, [ADR-0004](docs/plan/adr/0004-toolchain-dependency-pinning.md) |
-| Tests | GoogleTest | REQ-TEC-005 |
-| Observability | OpenTelemetry | REQ-TEC-006 |
-| Plugins | Shared Libraries | REQ-TEC-008 |
-| Container | Docker DevContainer | REQ-TEC-009 |
+| Build | CMake | [REQ-TEC-004](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec), [ADR-0004](docs/plan/adr/0004-toolchain-dependency-pinning.md) |
+| Tests | GoogleTest | [REQ-TEC-005](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) |
+| Observability | OpenTelemetry | [REQ-TEC-006](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) |
+| Plugins | Shared Libraries | [REQ-TEC-008](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) |
+| Container | Docker DevContainer | [REQ-TEC-009](spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) |
 
 ## Verzeichnisstruktur
 
@@ -128,10 +128,10 @@ b-cad/
 > Stand: **welle-3-auswertung aktiv** (M3 offen). Umgesetzt: Domain-Kern,
 > Wände, Raumerkennung, OCC-Extrusion, SQLite-Persistenz inkl. Crash-Recovery
 > und Änderungs-Benachrichtigung (welle-1, M1); Qt-6-3D-Viewer (welle-1v,
-> ACC-002); **alle parametrischen Bauteile** — Türen/Fenster, Dach,
-> Decken/Fundament, Treppen, je inkl. Persistenz (welle-2, M2, ADR-0011);
+> [ACC-002](spec/lastenheft.md#7-abnahmekriterien)); **alle parametrischen Bauteile** — Türen/Fenster, Dach,
+> Decken/Fundament, Treppen, je inkl. Persistenz (welle-2, M2, [ADR-0011](docs/plan/adr/0011-bauteil-hosting-wandoeffnung.md));
 > erste Auswertungen — `EvaluatePort` + Flächen/Wohnfläche (slice-017a/b,
-> ADR-0012). Offen: Volumen + Material-/Bauteil-Listen, slice-006 Attribution.
+> [ADR-0012](docs/plan/adr/0012-evaluations-architektur.md)). Offen: Volumen + Material-/Bauteil-Listen, slice-006 Attribution.
 > Struktur:
 > [`spec/architecture.md` §2.1](spec/architecture.md#21-verzeichnis--und-build-struktur).
 > Aktueller Stand der Slices: [`docs/plan/planning/README.md`](docs/plan/planning/README.md).
