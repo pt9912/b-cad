@@ -11,10 +11,10 @@ welle: welle-1-mvp
 **Autor:** Dietmar Burkard. **Closure-Datum:** 2026-06-12.
 
 **Welle-Ziel (Roadmap):** Ein lauffähiges b-cad, mit dem sich ein
-Einfamilienhaus im Sinne von ACC-001 in Grundzügen erstellen lässt —
+Einfamilienhaus im Sinne von [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien) in Grundzügen erstellen lässt —
 Projekt anlegen/speichern/laden, Geschosse, Wände, automatische
 Raumerkennung, 3D-Extrusion in Echtzeit **als Kern-Vertrag**. Die
-*sichtbare* 3D-Darstellung (ACC-002) liefert `welle-1v-viewer`
+*sichtbare* 3D-Darstellung ([ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)) liefert `welle-1v-viewer`
 (Scope-Entscheidung slice-010a, Roadmap-Drift-Tabelle 2026-06-11).
 
 ---
@@ -39,20 +39,20 @@ Raumerkennung, 3D-Extrusion in Echtzeit **als Kern-Vertrag**. Die
 | spike-001 | Toolchain-Reproduzierbarkeit erprobt |
 | slice-001 | Build-Skelett & DevContainer (`make build` grün) |
 | slice-002 | Code-Gates real & gepromotet (`make gates` grün) |
-| slice-003a | Domain-Kern & Wände mit Grenzwert-Verhalten (LH-FA-WAL-001/002/003, LH-FA-BLD-001, LH-FA-FLR-001), OCC-frei |
-| slice-003b | OCC-Extrusion (LH-FA-D3-001) hinter `GeometryKernelPort` + arch-check Regel C |
-| slice-004 | Gepinnte Toolchain 26.04/node24, Digest+Snapshot (ADR-0004) |
+| slice-003a | Domain-Kern & Wände mit Grenzwert-Verhalten ([LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen)/002/003, [LH-FA-BLD-001](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen), [LH-FA-FLR-001](../../../../spec/lastenheft.md#modul-geschosse-flr)), OCC-frei |
+| slice-003b | OCC-Extrusion ([LH-FA-D3-001](../../../../spec/lastenheft.md#modul-3d-modellierung-d3)) hinter `GeometryKernelPort` + arch-check Regel C |
+| slice-004 | Gepinnte Toolchain 26.04/node24, Digest+Snapshot ([ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)) |
 | slice-005 | Gate-Consistency-Sensor |
-| slice-007 | Datenmodell-Definition (`spec/data-model.yaml`) + ADR-0006 |
-| slice-008a | Persistenz speichern/laden, atomar via Temp+Rename (LH-FA-BLD-002/003, ADR-0003) |
-| slice-008b | Crash-Recovery (`kill -9`, LH-QA-005) + Fehlercodes E-IO-001/002 |
-| slice-009a | ADR-0007 accepted (Innenkante + Ring-Modell) + Spec-Schärfung Raumerkennung |
-| slice-009b | Raum-Autoerkennung implementiert (LH-FA-ROM-001), 5 AK-Tests |
-| slice-010a | LH-FA-D3-002 auf AK-Niveau + ADR-0008 accepted (Observer-Port) |
-| slice-010b | Kern-Benachrichtigung implementiert (LH-FA-D3-002), 6 AK-Tests |
+| slice-007 | Datenmodell-Definition (`spec/data-model.yaml`) + [ADR-0006](../../adr/0006-relationales-schema-design.md) |
+| slice-008a | Persistenz speichern/laden, atomar via Temp+Rename ([LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/003, [ADR-0003](../../adr/0003-persistenz-sqlite.md)) |
+| slice-008b | Crash-Recovery (`kill -9`, [LH-QA-005](../../../../spec/lastenheft.md#lh-qa-005--crash-recovery)) + Fehlercodes [E-IO-001](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)/002 |
+| slice-009a | [ADR-0007](../../adr/0007-raumerkennung-geometrie-basis.md) accepted (Innenkante + Ring-Modell) + Spec-Schärfung Raumerkennung |
+| slice-009b | Raum-Autoerkennung implementiert ([LH-FA-ROM-001](../../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)), 5 AK-Tests |
+| slice-010a | [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung) auf AK-Niveau + [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md) accepted (Observer-Port) |
+| slice-010b | Kern-Benachrichtigung implementiert ([LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)), 6 AK-Tests |
 
 **Nicht Teil der Welle (bewusst):** sichtbarer 3D-Viewer →
-`welle-1v-viewer` (ACC-002 bleibt offen, bis er geliefert ist);
+`welle-1v-viewer` ([ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien) bleibt offen, bis er geliefert ist);
 slice-006 (Drittanbieter-Attribution) war nie Closure-Trigger und
 bleibt in `open/` (Vorbedingungen siehe Slice).
 
@@ -69,7 +69,7 @@ behoben** in Commit `330d5d0` (2026-06-11):
   AK-Test `GeteilteWandErzeugtBeideRaeume`.
 - **M2:** Kollineare Nachbarkanten ungleicher Stärke als dokumentierte
   Welle-1-Näherung definiert und mit gepinntem Erwartungswert getestet.
-- **M3, L1–L4 + Verifier-Befunde** (LH-FA-ROM-001, LH-FA-D3-002):
+- **M3, L1–L4 + Verifier-Befunde** ([LH-FA-ROM-001](../../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen), [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)):
   siehe Commit-Message `330d5d0`.
 
 ## 4. Carveout-Audit (zwingend bei Welle-Closure)
@@ -93,8 +93,8 @@ Welle-Closure, hier festgeschrieben:**
    M4, Review-010 F1/F2) — Konventions-Kandidat, in der
    010a-Closure erwähnt.
 3. **„Post-Commit-Schritte sind total": 2×** — bereits im Repo
-   dokumentiert (ADR-0008 §Konsequenzen); vertagt auf 3. Vorkommen
-   (Kandidaten: Autosave LH-QA-004, OTel REQ-TEC-006).
+   dokumentiert ([ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md) §Konsequenzen); vertagt auf 3. Vorkommen
+   (Kandidaten: Autosave [LH-QA-004](../../../../spec/lastenheft.md#lh-qa-004--autosave), OTel [REQ-TEC-006](../../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec)).
 
 **Welle-Lerneintrag (geschärfte Regel als Kandidat):** Der größte
 Review-Fund der Welle (M1, §3) lag in der *Reichweite* einer
@@ -107,7 +107,7 @@ Boundary-AK, nicht erst ins Review.
 
 ## 6. Nachfolge
 
-- **M1 (Meilenstein „Lauffähiges MVP"): erreicht** — ACC-001-Kern
+- **M1 (Meilenstein „Lauffähiges MVP"): erreicht** — [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)-Kern
   erstellbar + `make gates` grün; Viewer ist per Drift-Entscheidung
   2026-06-11 nicht Teil des M1-Triggers.
 - Kandidaten für die nächste Welle: `welle-1v-viewer` (braucht

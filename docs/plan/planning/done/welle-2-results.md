@@ -15,10 +15,10 @@ hinaus — **Türen + Fenster** (mit automatischer Wandöffnung), **Treppen**,
 **Dach**, **Decken**, **Fundament**. Jedes Modul vom Lastenheft-Outline auf
 AK-Niveau geschärft (Reifephase-Klausel), in `spec/spezifikation.md`
 spezifiziert, hinter den bestehenden Ports (`EditStructurePort`/
-`GeometryKernelPort`/`ViewModelPort`) implementiert, der ADR-0008-Mechanik
-im Viewer folgend und über das ADR-0006-Schema persistiert. Erfüllt
+`GeometryKernelPort`/`ViewModelPort`) implementiert, der [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)-Mechanik
+im Viewer folgend und über das [ADR-0006](../../adr/0006-relationales-schema-design.md)-Schema persistiert. Erfüllt
 **Meilenstein M2** („Haus mit Türen, Fenstern, Dach vollständig") und die
-**Bauteil-Hälfte von ACC-001**. Architektur-Leitplanke: **ADR-0011 (#6)**
+**Bauteil-Hälfte von [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)**. Architektur-Leitplanke: **[ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md) (#6)**
 „Bauteil-Erweiterungs-Muster" — **kein neuer Grundsatz-ADR pro Bauteil**.
 
 ---
@@ -47,7 +47,7 @@ im Viewer folgend und über das ADR-0006-Schema persistiert. Erfüllt
 
 | Familie | Slices | Ergebnis |
 |---|---|---|
-| **ADR-Leitplanke** | slice-013a | **ADR-0011** „Bauteil-Hosting & Wandöffnungs-Modell" accepted (Hosting, Öffnungs-Boolean, Notification, Persistenz + verallgemeinertes Erweiterungs-Muster #6 als Welle-Leitplanke); Lastenheft DOR/WIN Outline→AK |
+| **ADR-Leitplanke** | slice-013a | **[ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md)** „Bauteil-Hosting & Wandöffnungs-Modell" accepted (Hosting, Öffnungs-Boolean, Notification, Persistenz + verallgemeinertes Erweiterungs-Muster #6 als Welle-Leitplanke); Lastenheft DOR/WIN Outline→AK |
 | **Türen + Fenster** | slice-013b/c | Öffnungen als wand-gehostete Bauteile (`model::Opening` + `CutPrism`, OCC-`BRepAlgoAPI_Cut`/TKBO), automatische Wandöffnung sichtbar, `WallGeometryChanged`; Persistenz `openings`/`doors`/`windows`-CTI. Code-Review 013b: 1 HIGH (lateraler Cutter-Überstand) gefixt |
 | **Dach** | slice-014a/b/c | Sattel/Walm/Pult über rechteckigem Grundriss (analytisches `roof_geometry`, kein OCC), `RoofChanged`; Persistenz `roofs`/`footprint_json` (erste JSON-Ser/De). Code-Review 014b: 1 HIGH gefixt |
 | **Decken + Fundament** | slice-015a/b/c | horizontale Platten (`slab_geometry`, base_z via Mesh-Translation, Ausschnitt-Boolean), `SlabChanged`; Persistenz `slabs`/verschachteltes `polygon_json` (footprint + cutouts). Code-Review 015b: 1 HIGH (OCC-Cutout ungetestet) gefixt; 015c-Code-Review: 1 MED (`stod`-Totalität) |
@@ -55,7 +55,7 @@ im Viewer folgend und über das ADR-0006-Schema persistiert. Erfüllt
 
 **Bezug zu welle-1/-1v:** welle-1 lieferte den Kern-Vertrag
 (Projekt/Geschosse/Wände/Raumerkennung/OCC-Extrusion + Echtzeit-
-Benachrichtigung), welle-1v die sichtbare Hälfte (3D-Viewer, ACC-002).
+Benachrichtigung), welle-1v die sichtbare Hälfte (3D-Viewer, [ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)).
 welle-2 baut **vier Bauteil-Familien** additiv darauf — ohne Port-Signatur-
 Migration der bestehenden Wand-/Viewer-Pfade.
 
@@ -75,7 +75,7 @@ Migration der bestehenden Wand-/Viewer-Pfade.
 
 ## 3. Review & Verifikation vor Closure
 
-**Zweistufige Review-Disziplin je Slice** (Kurs-Modul 11): (a) **MR-006
+**Zweistufige Review-Disziplin je Slice** (Kurs-Modul 11): (a) **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 Plan-Review** vor jedem Implementierungs-Start (unabhängig, HIGH blockiert) —
 über alle 12 Slices keine HIGH, durchweg MED/LOW eingearbeitet; (b)
 **geometrielastiges Code-Review** nach jeder geometrieschweren Implementierung
@@ -84,7 +84,7 @@ Plan-Review** vor jedem Implementierungs-Start (unabhängig, HIGH blockiert) —
 **Unabhängige Welle-Verifikation** (Reviewer ≠ Autor, eigener Agent, vor
 dieser Closure): geprüft 1–8 (Gates real grün; alle vier Familien vollständig
 mit Domäne + Geometrie + ViewModel/Viewer + Edit-Ops + Persistenz;
-Traceability je Modul über AK-Tests mit `LH-`-ID im Namen; ADR-0011-#6-Index
+Traceability je Modul über AK-Tests mit `LH-`-ID im Namen; [ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md)-#6-Index
 vollständig **erfüllt**; keine aktiven Carveouts; M2 sachlich erreicht;
 Teilumfänge ehrlich benannt; keine halluzinierten Gates).
 
@@ -116,7 +116,7 @@ aufzulösen, nichts nachzutragen.
 Fortschreibung aus [`welle-1v-results.md` §5](welle-1v-results.md) plus die in
 welle-2 akkumulierten Praxis-Zähler (Kurs-Regel: 2× kategorisieren, 3× Regel):
 
-1. **„Lösung schärft nie das Lastenheft": geschlossen → Konvention MR-008.**
+1. **„Lösung schärft nie das Lastenheft": geschlossen → Konvention [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei).**
    Der in welle-1v bei 3× stehende Zähler wurde zu Wellenbeginn als
    [`MR-008`](../../../../harness/conventions.md) (+ AGENTS §4) festgeschrieben.
    In welle-2 durchgängig wirksam: jede a-Slice (013a/014a/015a/016a) schärfte
@@ -156,7 +156,7 @@ welle-2 akkumulierten Praxis-Zähler (Kurs-Regel: 2× kategorisieren, 3× Regel)
    trägt jetzt über vier Familien hinweg konsistent in beide Richtungen
    (013c/015c-cutouts round-trippen ↔ roofs-height/Treppen-rise nicht).
 
-**Welle-Lerneintrag:** Die ADR-0011-Leitplanke (#6, ein Erweiterungs-Muster
+**Welle-Lerneintrag:** Die [ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md)-Leitplanke (#6, ein Erweiterungs-Muster
 statt ein ADR je Bauteil) hat sich über **vier** Familien getragen — ohne
 neuen Grundsatz-ADR, ohne Port-Signatur-Migration der Bestands-Pfade. Der
 gemeinsame `reloadKeyed`-Viewer-Helfer (Roof+Slab+Stair) und das geteilte
@@ -168,7 +168,7 @@ amortisiert sich ab dem dritten Bauteil sichtbar.
 - **M2 (Meilenstein „Vollständige Bauteile") erreicht** — Türen/Fenster/Dach
   (+ Decken/Fundament/Treppen) erstellbar, sichtbar und persistent; Roadmap
   §Meilensteine mit dieser Closure auf **erreicht** gesetzt.
-- **ACC-001-Bauteil-Hälfte** geliefert (parametrische Bauteile am Gebäudemodell).
+- **[ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)-Bauteil-Hälfte** geliefert (parametrische Bauteile am Gebäudemodell).
 - **Nächste Welle (Planungs-Entscheidung, kein Automatismus):**
   `welle-3-auswertung` (Material `MAT`, Auswertungen `EVL`, Bemaßung/Layer
   `DRW`). **EVL muss auf der Footprint-Fläche (Shoelace) aufsetzen**, nicht auf

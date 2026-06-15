@@ -3,8 +3,8 @@ id: slice-006
 titel: Drittanbieter-Lizenz-Attribution & Auslieferungs-Layout
 status: open
 welle: unzugeordnet (Release-Vorbereitung — siehe docs/user/releasing.md; Roadmap hat noch keine Release-Welle, §6)
-lastenheft_refs: []  # LH-QA-007 (Attributions-Pflicht) vorgeschlagen, noch NICHT geschrieben — Vorbedingung, siehe §4/§6
-adr_refs: [ADR-0002, ADR-0004, ADR-0005]  # 0002: offene Lizenz-Notiz „GPL-Teile prüfen"; 0004: gepinnte Dep-Versionen = Attributions-Grundlage; 0005: Tooling+Layout (Proposed — Annahme noch offen)
+lastenheft_refs: []  # [LH-QA-007](../../../../spec/lastenheft.md) (Attributions-Pflicht) vorgeschlagen, noch NICHT geschrieben — Vorbedingung, siehe §4/§6
+adr_refs: [[ADR-0002](../../adr/0002-geometrie-kern-opencascade.md), [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md), [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md)]  # 0002: offene Lizenz-Notiz „GPL-Teile prüfen"; 0004: gepinnte Dep-Versionen = Attributions-Grundlage; 0005: Tooling+Layout (Proposed — Annahme noch offen)
 ---
 
 # Slice 006: Drittanbieter-Lizenz-Attribution & Auslieferungs-Layout
@@ -13,7 +13,7 @@ adr_refs: [ADR-0002, ADR-0004, ADR-0005]  # 0002: offene Lizenz-Notiz „GPL-Tei
 
 **Welle:** unzugeordnet (Release-Vorbereitung — an welle-1-mvp-Closure gekoppelt, siehe [`releasing.md`](../../../user/releasing.md))
 
-**Bezug:** ADR-0002 (offene Lizenz-Notiz), ADR-0004 (gepinnte Dep-Versionen = Attributions-Grundlage), ADR-0005 (Attribution-Tooling & Layout, *Proposed*). **Ausstehend:** Annahme von ADR-0005, LH-QA-007 (Attributions-Pflicht, noch nicht im Lastenheft) — siehe §4/§6.
+**Bezug:** [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md) (offene Lizenz-Notiz), [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md) (gepinnte Dep-Versionen = Attributions-Grundlage), [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) (Attribution-Tooling & Layout, *Proposed*). **Ausstehend:** Annahme von [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md), [LH-QA-007](../../../../spec/lastenheft.md) (Attributions-Pflicht, noch nicht im Lastenheft) — siehe §4/§6.
 
 **Autor:** Dietmar Burkard. **Datum:** 2026-06-08.
 
@@ -53,7 +53,7 @@ zurückgestellte Distributions-Aspekt eingelöst.
 
 - [ ] **Manifest & Volltexte:** kuratiertes `tools/licenses-manifest.*` (Dep → Version → SPDX-ID → Quelle) als Single Source of Truth; `LICENSES/*.txt` via REUSE gefüllt, `OCCT-exception.txt` als Nicht-SPDX manuell; ScanCode-Lauf über die gelinkten/vendored Quellen nur zur **Gegenkontrolle** (kein Auto-Inventar, C++/Linker-Realität).
 - [ ] **Generierung & Install-Layout:** `NOTICE` + `THIRD_PARTY_LICENSES.md` aus Manifest (+ScanCode-JSON) generiert; CMake-`install()` erzeugt den exakten `dist/`-Baum aus §1 (`bin/b-cad` + `share/doc/b-cad/...`).
-- [ ] **Gate-Promotion:** `make license-check` (Allowlist + Vollständigkeit: jede gelinkte Dep hat Manifest-Eintrag + Volltext) real im Makefile mit ID-Kommentar, in `make gates`/`make fullbuild` gehängt. Sequenz: `license-check` steht **heute nicht** in AGENTS §3 — die **Annahme von ADR-0005** trägt zuerst die *Geplant*-Zeile nach, dieser Slice promotet sie dann nach **Real** (Promotion-Trigger, Modul 13).
+- [ ] **Gate-Promotion:** `make license-check` (Allowlist + Vollständigkeit: jede gelinkte Dep hat Manifest-Eintrag + Volltext) real im Makefile mit ID-Kommentar, in `make gates`/`make fullbuild` gehängt. Sequenz: `license-check` steht **heute nicht** in AGENTS §3 — die **Annahme von [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md)** trägt zuerst die *Geplant*-Zeile nach, dieser Slice promotet sie dann nach **Real** (Promotion-Trigger, Modul 13).
 
 ## 3. Plan (vor Code)
 
@@ -72,12 +72,12 @@ zurückgestellte Distributions-Aspekt eingelöst.
 
 - **slice-002 done** — Gate-Framework + AGENTS-§3-Promotions-Mechanik stehen (`suppression-gate.sh`, `arch-check.sh`, `make gates`-Aggregation); `make license-check` ist ein Geschwister-Sensor.
 - **Reales Release-Binary existiert** — `bin/b-cad` mit echt gelinkten Drittanbieter-Deps (Qt/OCC/SQLite), d. h. `make fullbuild` herstellbar. *Ohne reales Binary ist Attribution Fiktion* — harter Sequenz-Constraint (AGENTS §3: „noch kein Code").
-- **ADR-Kette accepted + LH-QA-007 im Lastenheft** — die Attribution begründet sich aus einer Kette noch *Proposed*er bzw. ungeschriebener Entscheidungen, die alle vor Aktivierung **Accepted** sein müssen (Annahme-, kein Schreib-Trigger für die existierenden):
+- **ADR-Kette accepted + [LH-QA-007](../../../../spec/lastenheft.md) im Lastenheft** — die Attribution begründet sich aus einer Kette noch *Proposed*er bzw. ungeschriebener Entscheidungen, die alle vor Aktivierung **Accepted** sein müssen (Annahme-, kein Schreib-Trigger für die existierenden):
   - [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md) — OCC-Bindung = Lizenz-Prämisse (LGPL-2.1 + OCCT-exception). *Accepted (2026-06-09).*
   - **Qt-Framework-Bindung** — liefert die LGPL-3.0-Prämisse, ist aber **noch kein ADR** (offenes ADR-Thema, [adr/README §Offene Themen](../../adr/README.md)). Reale Vorbedingungs-Lücke.
   - [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md) — gepinnte Versionen = Manifest-Grundlage (Dep→Version). *Accepted (2026-06-09).*
   - [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) — Tooling + Layout. *Proposed* (existiert; offen nur die Annahme).
-  - **LH-QA-007** (Attributions-Pflicht, abnahmebindend) — real noch nicht im Lastenheft. Dieser Slice setzt um, schreibt das Requirement nicht.
+  - **[LH-QA-007](../../../../spec/lastenheft.md)** (Attributions-Pflicht, abnahmebindend) — real noch nicht im Lastenheft. Dieser Slice setzt um, schreibt das Requirement nicht.
 
 ## 5. Closure-Trigger
 
@@ -85,7 +85,7 @@ zurückgestellte Distributions-Aspekt eingelöst.
 
 ## 6. Risiken und offene Punkte
 
-- **Spec-Vorbedingung offen:** `ADR-0005` (Tooling=ScanCode+REUSE, `dist/`-Layout, OCCT-exception als Nicht-SPDX, kuratiertes Manifest statt Auto-Scan) existiert als *Proposed* und muss vor Aktivierung **Accepted** sein. `LH-QA-007` (Attributions-Pflicht, abnahmebindend) ist **noch nicht im Lastenheft** — echte offene Vorbedingung. Beide sind Vorbedingung dieses Slice, nicht Teil davon — Source-Precedence-Disziplin (AGENTS §1, §2.5).
+- **Spec-Vorbedingung offen:** [`ADR-0005`](../../adr/0005-drittanbieter-lizenz-attribution.md) (Tooling=ScanCode+REUSE, `dist/`-Layout, OCCT-exception als Nicht-SPDX, kuratiertes Manifest statt Auto-Scan) existiert als *Proposed* und muss vor Aktivierung **Accepted** sein. [`LH-QA-007`](../../../../spec/lastenheft.md) (Attributions-Pflicht, abnahmebindend) ist **noch nicht im Lastenheft** — echte offene Vorbedingung. Beide sind Vorbedingung dieses Slice, nicht Teil davon — Source-Precedence-Disziplin (AGENTS §1, §2.5).
 - **Keine Release-Welle in der Roadmap:** [`roadmap.md`](../in-progress/roadmap.md) endet bei welle-5; Distribution ist in `releasing.md` nur „spätere Welle". Welle-Zuordnung dieses Slice offen — ggf. eigener Roadmap-Eintrag + Historische Trigger-Verschiebung.
 - **C++/Linker-Realität:** ScanCode findet System-/Conan-/vcpkg-Deps ohne vorliegende Quellen evtl. nicht — deshalb kuratiertes Manifest als Wahrheit, Scan nur zur Gegenkontrolle. Die Bezugsform der Deps (vendored/Conan/vcpkg/System) bestimmt, was der Scan überhaupt sieht.
 - **OCCT-exception ist Nicht-SPDX:** REUSE kann den Text nicht ziehen → manuell ablegen und im Manifest als Sonderfall markieren.
@@ -100,16 +100,16 @@ zurückgestellte Distributions-Aspekt eingelöst.
 ### Sub-Area: Lizenz-Tooling & Dep-Manifest
 
 - **Modus:** GF
-- **Konventionen-Dichte:** jetzt niedrig (kein Manifest-Format verankert); zur Aktivierung mittel-hoch, sobald ADR-0005 das Format und das `dist/`-Layout festschreibt (Doc führt).
-- **Phase-Reife:** Phase 0 → Phase 4 mit ADR-0005 (Konvention steht, Tooling wird daran gemessen).
+- **Konventionen-Dichte:** jetzt niedrig (kein Manifest-Format verankert); zur Aktivierung mittel-hoch, sobald [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) das Format und das `dist/`-Layout festschreibt (Doc führt).
+- **Phase-Reife:** Phase 0 → Phase 4 mit [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) (Konvention steht, Tooling wird daran gemessen).
 - **Evidenz-/Diskrepanz-Risiko:** niedrig — neues `tools/`-Areal, kein Bestandscode; Risiko liegt in der Vollständigkeit der Dep-Erfassung, nicht in Doku-Drift.
-- **Reconciliation-Aufwand:** keiner (GF), sofern ADR-0005 vorab accepted.
+- **Reconciliation-Aufwand:** keiner (GF), sofern [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) vorab accepted.
 
 ### Sub-Area: Release-/Auslieferungs-Layout (CMake install + releasing.md)
 
 - **Modus:** Hybrid
 - **Konventionen-Dichte:** niedrig. `releasing.md` ist Phase-2-Outline und verspricht die Release-Strategie (Doc führt für das „Was"), aber das konkrete `install()`-Layout existiert nirgends; `releasing.md` schiebt Distribution explizit weg.
-- **Phase-Reife:** Phase 2 → Phase 4. Hybrid-Symptom: für die *Pflicht* (Artefakt trägt Attribution) führt die Doku (GF-Richtung, via LH-QA-007), für das *konkrete Layout* gibt es noch keinen Code — ADR-0005 setzt es (Proposed, vor Aktivierung anzunehmen).
+- **Phase-Reife:** Phase 2 → Phase 4. Hybrid-Symptom: für die *Pflicht* (Artefakt trägt Attribution) führt die Doku (GF-Richtung, via [LH-QA-007](../../../../spec/lastenheft.md)), für das *konkrete Layout* gibt es noch keinen Code — [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) setzt es (Proposed, vor Aktivierung anzunehmen).
 - **Evidenz-/Diskrepanz-Risiko:** niedrig — kein widersprüchlicher Bestand, eher Lücke als Drift.
 - **Reconciliation-Aufwand:** ~0,5 Slice-Anteil — `releasing.md`-Checkliste + Roadmap-Release-Welle nachziehen. Graduation-Trigger: **Promotion-Trigger** (Layout-Konvention nach `harness/conventions.md` als `MR-<NNN>`, sobald der erste `dist/`-Baum steht).
 

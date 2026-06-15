@@ -11,7 +11,7 @@ DevContainer) und der erste Welle-Closure existieren.
 
 Ein Release von b-cad ist ein **versioniertes Desktop-Artefakt** je
 Zielplattform, gebaut aus einem reproduzierbaren Container
-(Docker DevContainer, REQ-TEC-009 / ADR-Folge). Versionsschema:
+(Docker DevContainer, [REQ-TEC-009](../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) / ADR-Folge). Versionsschema:
 `Major.Minor.Patch`, gekoppelt an erreichte Meilensteine der
 [Roadmap](../plan/planning/in-progress/roadmap.md).
 
@@ -25,7 +25,7 @@ erfüllt hat (siehe Roadmap) und `make fullbuild` (geplant) grün ist.
 - [ ] Alle Slices der Welle in `done/` mit Closure-Notiz.
 - [ ] `make gates` und `make fullbuild` grün.
 - [ ] Projektdatei-Format abwärtskompatibel **oder** Migration vorhanden
-      und getestet (vgl. LH-FA-BLD-002/003, ADR-0003).
+      und getestet (vgl. [LH-FA-BLD-002](../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/003, [ADR-0003](../plan/adr/0003-persistenz-sqlite.md)).
 - [ ] Abnahmekriterien der Welle nachgewiesen.
 - [ ] Reproduzierbarer Build-Hash dokumentiert.
 

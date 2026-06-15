@@ -2,24 +2,24 @@
 
 **Artefakt:** [`acc-002-beleg.png`](acc-002-beleg.png) (1280×800,
 deterministischer Offscreen-Render).
-**Manueller Abnahme-Schritt — kein Gate** (ADR-0009 (f), slice-011b
+**Manueller Abnahme-Schritt — kein Gate** ([ADR-0009](../../adr/0009-gui-framework-qt6.md) (f), slice-011b
 DoD-4).
 
 ## Verwendetes Projekt
 
-ACC-001-Kern-Demo aus der Composition Root
+[ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)-Kern-Demo aus der Composition Root
 (`src/main.cpp` §`buildAcc001KernDemo`): EG 8 m × 6 m Außenwände +
 Trennwand bei x = 3 m (→ **zwei automatisch erkannte Räume**,
-LH-FA-ROM-001), OG (2700 mm) mit vier Außenwänden; abschließend eine
+[LH-FA-ROM-001](../../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)), OG (2700 mm) mit vier Außenwänden; abschließend eine
 **committete Parameteränderung** (Trennwand-Stärke → 115 mm) — der
-dargestellte Stand folgte ihr über den ADR-0008-Vertrag ohne
-Benutzer-Refresh (sichtbare Hälfte LH-FA-D3-002).
+dargestellte Stand folgte ihr über den [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)-Vertrag ohne
+Benutzer-Refresh (sichtbare Hälfte [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)).
 
 ## Sichtbare Soll-Merkmale
 
-- Extrudierte Wände als 3D-Solids (LH-FA-D3-001): geschlossener
+- Extrudierte Wände als 3D-Solids ([LH-FA-D3-001](../../../../spec/lastenheft.md#modul-3d-modellierung-d3)): geschlossener
   8×6-m-Wandzug, Wandstärken körperlich sichtbar.
-- **Geschlossene Außenecken** (LH-FA-WAL-006-Teilumfang, slice-012):
+- **Geschlossene Außenecken** ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)-Teilumfang, slice-012):
   endpunkt-verbundene Wände verschneiden sich — keine Eck-Kerben
   (2D-Verifikation:
   [`acc-002-befund-2d-ecken-geschlossen.png`](acc-002-befund-2d-ecken-geschlossen.png);
@@ -40,7 +40,7 @@ höherem OG-Rand: 2700 vs. 2500 mm).
 ## Erzeugung
 
 - **Kommando:** `make acc-002-beleg` (rendert headless via Xvfb +
-  Mesa/llvmpipe, ADR-0010; Target ist **nicht** in `make gates`).
+  Mesa/llvmpipe, [ADR-0010](../../adr/0010-headless-gl-xvfb.md); Target ist **nicht** in `make gates`).
 - **Code-Stand:** Commit `8fe8dad` (slice-011b-Viewer + slice-012-
   Eckenschluss); `make gates` grün auf diesem Stand (63/63 Tests,
   Coverage 94,2 %).
@@ -50,7 +50,7 @@ höherem OG-Rand: 2700 vs. 2500 mm).
 ## Abnahme (Projektinhaber)
 
 - [x] **Abgenommen (Runde 2):** „Das Gebäude wird automatisch als
-  3D-Modell dargestellt" (ACC-002) ist am Beleg-Bild
+  3D-Modell dargestellt" ([ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)) ist am Beleg-Bild
   benutzer-beobachtbar erfüllt; der Runde-1-Befund (offene
   Außenecken) ist behoben. — Dietmar Burkard, 2026-06-12
   (erklärt im Sitzungs-Dialog).
@@ -59,7 +59,7 @@ höherem OG-Rand: 2700 vs. 2500 mm).
 die Wände schließen an den Außenecken nicht (fehlendes
 ½×½-Stärke-Quadrat; Befund-Grundriss:
 [`acc-002-befund-2d-ecken.png`](acc-002-befund-2d-ecken.png)).
-Ursache ist fehlender LH-FA-WAL-006-Umfang, kein Viewer-Fehler →
+Ursache ist fehlender [LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)-Umfang, kein Viewer-Fehler →
 Eckenschluss vorgezogen als
 [slice-012](../done-archive/slice-012-eckenschluss-wal006-teil.md); der
 Beleg wird danach regeneriert und erneut vorgelegt.
