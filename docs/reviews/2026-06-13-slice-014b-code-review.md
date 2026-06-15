@@ -17,7 +17,7 @@ alle Flächennormalen außen/oben, kein Copy-Paste-Vertausch im y-Zweig,
 total bei Degeneration). **Linse B:** Schichtung (Regel A, Kern
 framework-frei), Notification (genau `RoofChanged`, nie `RoomsChanged`,
 no-op/Reject schweigen), `switch` exhaustiv, keine Suppression, Wand-Pfad
-additiv-unberührt, ADR-0011-#6.3-Abweichung konsistent dokumentiert.
+additiv-unberührt, `ADR-0011`-#6.3-Abweichung konsistent dokumentiert.
 
 ## Findings & Auflösung
 

@@ -22,7 +22,7 @@ läuft erst beim nächsten Pull). Der Kern-Test nutzt nur das analytische
 Double (kann OCC-Koplanarität nicht reproduzieren). Zugleich akzeptierte
 `addSlabCutout` jedes Polygon ungeprüft (`push_back` + Kommentar „auf den
 Umriss begrenzt der Boolean") — ohne Validierung und ohne die von
-spez. §1 LH-FA-SLB-001.a geforderte Begrenzung auf den Platten-Umriss.
+spez. §1 `LH-FA-SLB-001`.a geforderte Begrenzung auf den Platten-Umriss.
 Ein rand-/außenliegender Ausschnitt erzeugt die 013b-Koplanaritätsfalle.
 
 **Fix (Nachschärfungs-Commit):**
@@ -42,7 +42,7 @@ Ein rand-/außenliegender Ausschnitt erzeugt die 013b-Koplanaritätsfalle.
   außenliegender Ausschnitt wird abgelehnt und ändert das Netz nicht.
   Neuer Kern-AK `CutoutNurInnenliegendAkzeptiert` (innen/außen/Kante/
   degeneriert/zu-wenig-Punkte/NaN).
-- Spec §1 LH-FA-SLB-001.a + §8-Historie: Begrenzung als Ablehnung
+- Spec §1 `LH-FA-SLB-001`.a + §8-Historie: Begrenzung als Ablehnung
   präzisiert (Containment-Vorbedingung).
 
 ## MEDIUM (mit HIGH-1-Fix erledigt)

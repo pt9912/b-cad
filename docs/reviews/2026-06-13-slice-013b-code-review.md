@@ -37,7 +37,7 @@ will; die Tests trafen nur achsenparallele, mittige Öffnungen.
 `half + kOpeningCutOvershootMm` + Z-Rand an Standfläche/Krone); der
 Adapter ist entsprechend dumm (kein Überstand mehr im Adapter —
 Verantwortung nicht mehr gespalten). Code ist damit **spec-konform**
-(Richtung MR-001). Neuer Robustheits-AK: `DiagonaleWandMitOeffnung`
+(Richtung `MR-001`). Neuer Robustheits-AK: `DiagonaleWandMitOeffnung`
 (OCC, koplanare Flächen auf der Diagonale gerade vermieden).
 
 ### M1 (MEDIUM) — Volumen-Orakel XY-blind → **behoben**
@@ -58,7 +58,7 @@ Wandhöhe / Breite ~ 0 / nicht-endlicher Offset / Null-Längen-Wand →
 ### L1 (LOW) — Zwischen-Shape-Null bei sequenziellem Cut → **behoben**
 
 `makeNetSolid` prüft jetzt `!op.IsDone() || op.Shape().IsNull()` →
-E-GEO-002.
+`E-GEO-002`.
 
 ### Linse B MEDIUM (lint-Risiko `corner`-Lambda) — **kein Befund**
 
