@@ -142,8 +142,8 @@ folgende Segmente bilden zusammenhängende Wandzüge.
 Parametrisch im Bereich **500 mm bis 10000 mm** (Grenzwert-Verhalten
 analog LH-FA-WAL-002).
 
-- **LH-FA-WAL-004 — Wand verschieben.**
-- **LH-FA-WAL-005 — Wand teilen.**
+- <a id="lh-fa-wal-004"></a>**LH-FA-WAL-004 — Wand verschieben.**
+- <a id="lh-fa-wal-005"></a>**LH-FA-WAL-005 — Wand teilen.**
 
 #### LH-FA-WAL-006 — Wand verbinden
 
@@ -195,10 +195,10 @@ Default-Material und Auswertungs-Kategorie.
   Fläche).
 - **Negative:** Given ein offener Wandzug, then kein Raum; kein Fehler.
 
-- **LH-FA-ROM-002 — Raumfläche berechnen.**
-- **LH-FA-ROM-003 — Raumvolumen berechnen.**
-- **LH-FA-ROM-004 — Raumbezeichnung.**
-- **LH-FA-ROM-005 — Raumkategorien** {Wohnen, Schlafen, Küche, Bad,
+- <a id="lh-fa-rom-002"></a>**LH-FA-ROM-002 — Raumfläche berechnen.**
+- <a id="lh-fa-rom-003"></a>**LH-FA-ROM-003 — Raumvolumen berechnen.**
+- <a id="lh-fa-rom-004"></a>**LH-FA-ROM-004 — Raumbezeichnung.**
+- <a id="lh-fa-rom-005"></a>**LH-FA-ROM-005 — Raumkategorien** {Wohnen, Schlafen, Küche, Bad,
   Technik, Sonstige}.
 
 ### Modul Türen (`DOR`)
@@ -559,10 +559,10 @@ ohne expliziten Aktualisierungs-Schritt des Benutzers.
 Bedarf eigene `LH-QA`-Anforderung); gleichzeitige Aktualisierung
 mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 
-- **LH-FA-D3-003 — Perspektivansicht.**
-- **LH-FA-D3-004 — Orthogonale Ansichten.**
-- **LH-FA-D3-005 — Schnittebenen.**
-- **LH-FA-D3-006 — Explosionsansicht.**
+- <a id="lh-fa-d3-003"></a>**LH-FA-D3-003 — Perspektivansicht.**
+- <a id="lh-fa-d3-004"></a>**LH-FA-D3-004 — Orthogonale Ansichten.**
+- <a id="lh-fa-d3-005"></a>**LH-FA-D3-005 — Schnittebenen.**
+- <a id="lh-fa-d3-006"></a>**LH-FA-D3-006 — Explosionsansicht.**
 
 ### Modul Zeichnungsfunktionen (`DRW`)
 
@@ -704,13 +704,13 @@ Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
 - **Negative:** Given eine nicht-IFC-Datei, when importiert, then
   Fehler-Code [`E-IO-003`](spezifikation.md#4-fehler-codes-und-logging-felder), kein Teil-Import.
 
-- **LH-FA-IO-002 — IFC-Export.**
-- **LH-FA-IO-003 — DXF-Import.**
-- **LH-FA-IO-004 — DXF-Export.**
-- **LH-FA-IO-005 — STEP-Export.**
-- **LH-FA-IO-006 — STL-Export.**
-- **LH-FA-IO-007 — PDF-Export** (maßstäblicher Plan, vgl. ACC-004).
-- **LH-FA-IO-008 — PNG-Export.**
+- <a id="lh-fa-io-002"></a>**LH-FA-IO-002 — IFC-Export.**
+- <a id="lh-fa-io-003"></a>**LH-FA-IO-003 — DXF-Import.**
+- <a id="lh-fa-io-004"></a>**LH-FA-IO-004 — DXF-Export.**
+- <a id="lh-fa-io-005"></a>**LH-FA-IO-005 — STEP-Export.**
+- <a id="lh-fa-io-006"></a>**LH-FA-IO-006 — STL-Export.**
+- <a id="lh-fa-io-007"></a>**LH-FA-IO-007 — PDF-Export** (maßstäblicher Plan, vgl. ACC-004).
+- <a id="lh-fa-io-008"></a>**LH-FA-IO-008 — PNG-Export.**
 
 ### Modul Benutzeroberfläche (`UI`)
 

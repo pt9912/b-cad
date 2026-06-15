@@ -85,6 +85,11 @@ def slugify(heading):
             b.append('-')
     return "".join(b)
 
+# ---------------- HTML-Anker (DC-FA-ANCH-001.b, d-check v0.9.0) ----------------
+# `id="…"` an beliebigem Tag, `name="…"` nur an <a> — wörtlich (case-sensitiv).
+HTML_ID   = re.compile(r'<[a-zA-Z][^>]*?\bid\s*=\s*"([^"]*)"')
+HTML_NAME = re.compile(r'<a\b[^>]*?\bname\s*=\s*"([^"]*)"')
+
 # ---------------- ID -> (target_file, anchor|None) ----------------
 def build_map():
     idmap = {}
@@ -96,13 +101,18 @@ def build_map():
         full = os.path.join(ROOT, tgt)
         if not os.path.exists(full):
             continue
-        prec, sect = {}, {}
+        prec, sect, html = {}, {}, {}
         cur, counts, fenced = None, {}, False
         for line in open(full, encoding="utf-8"):
             if line.lstrip().startswith("```"):
                 fenced = not fenced; continue
             if fenced:
                 continue
+            # Expliziter Inline-HTML-Anker (<a id/name>) -> präziser Per-ID-Anker.
+            for av in HTML_ID.findall(line) + HTML_NAME.findall(line):
+                fam = fam_of(av.upper())
+                if fam and TARGET.get(fam) == tgt:
+                    html[av.upper()] = av
             m = re.match(r'^#{1,6}\s+(.*?)\s*$', line)
             if m:
                 base = slugify(m.group(1))
@@ -119,13 +129,17 @@ def build_map():
                     if TARGET.get(fam_of(idv)) != tgt:
                         continue
                     # Definitions-Position: ID hinter Tabellen-Pipe/Bullet (Marker
-                    # Pflicht), optional Backtick/Fett (E-Codes stehen als `| `E-IO-001` |`)
-                    if re.match(r'^\s*[|*+-]\s*(?:[`*]+)?' + re.escape(idv) + r'\b', line):
+                    # Pflicht), optional vorangestellter `<a …></a>`-Anker (slice-018c),
+                    # optional Backtick/Fett (E-Codes stehen als `| `E-IO-001` |`)
+                    if re.match(r'^\s*[|*+-]\s*(?:<a\b[^>]*>\s*</a>\s*)?(?:[`*]+)?'
+                                + re.escape(idv) + r'\b', line):
                         sect.setdefault(idv, cur)
         for k, v in sect.items():
             idmap.setdefault(k, (tgt, v))
         for k, v in prec.items():
             idmap[k] = (tgt, v)   # Heading-präzise gewinnt
+        for k, v in html.items():
+            idmap[k] = (tgt, v)   # expliziter Per-ID-Anker gewinnt (höchste Präzedenz)
     return idmap
 
 IDMAP = build_map()
@@ -172,9 +186,22 @@ def line_code_regions(line, code_open):
         regions.append((seg, len(line)))  # offener Span läuft in die nächste Zeile
     return regions, cur
 
+NORM_RE = re.compile(r'(?<!!)\[([^\]]+)\]\(([^)]+)\)')
+
 def transform_line(line, src_rel, is_log, codes, stats):
     links = spans(LINK_RE, line)
     actions = []  # (start, end, replacement)
+    # 0) bestehende [<ID>](…)-Links auf das kanonische Ziel normalisieren
+    #    (self-healing, idempotent): Linktext == genau eine Familien-ID, kein
+    #    Bild-Link, nicht inTarget; schreibt nur, wenn Ziel != kanonisch.
+    for lm in NORM_RE.finditer(line):
+        txt, url = lm.group(1), lm.group(2)
+        if not ANY.fullmatch(txt) or in_target(src_rel, TARGET[fam_of(txt)]):
+            continue
+        canon = link_for(src_rel, txt)
+        if canon and canon != url:
+            actions.append((lm.start(), lm.end(), "[%s](%s)" % (txt, canon)))
+            stats["norm"] += 1
     if not is_log:
         # 1) NUR volle Einzeilen-Code-Spans (hier geöffnet UND geschlossen) als
         #    Linktext wrappen — Carry-over-Spans nicht anfassen.
@@ -223,7 +250,7 @@ def process(rel, apply):
     full = os.path.join(ROOT, rel)
     is_log = rel == "CHANGELOG.md" or rel.startswith("docs/reviews/") or \
              (rel.startswith("spec/") and rel.endswith("-historie.md"))
-    stats = {"link": 0, "code": 0, "tick": 0, "nolink": set()}
+    stats = {"link": 0, "code": 0, "tick": 0, "norm": 0, "nolink": set()}
     out, fenced, code_open, changed = [], False, False, False
     for line in open(full, encoding="utf-8"):
         raw = line.rstrip("\n")
@@ -239,10 +266,10 @@ def process(rel, apply):
     if apply and changed:
         open(full, "w", encoding="utf-8").write("".join(out))
     tag = "LOG " if is_log else "norm"
-    n = stats["link"] + stats["code"] + stats["tick"]
+    n = stats["link"] + stats["code"] + stats["tick"] + stats["norm"]
     if n or stats["nolink"]:
-        print("[%s] %-55s link=%d code=%d tick=%d %s" %
-              (tag, rel, stats["link"], stats["code"], stats["tick"],
+        print("[%s] %-55s link=%d code=%d tick=%d norm=%d %s" %
+              (tag, rel, stats["link"], stats["code"], stats["tick"], stats["norm"],
                ("NOLINK:" + ",".join(sorted(stats["nolink"]))) if stats["nolink"] else ""))
     return n
 

@@ -27,7 +27,7 @@ Driven Adapter `src/adapters/geometry/` hinter `GeometryKernelPort`.
 Operationen / Wandöffnungen ([LH-FA-DOR-004](../../../spec/lastenheft.md#lh-fa-dor-004--wandöffnung-automatisch-erzeugen)/WIN-005). **Nicht** Teil dieser
 ADR:
 
-- **STEP-/Format-Export** ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) u. a.) — gehört hinter
+- **STEP-/Format-Export** ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-005) u. a.) — gehört hinter
   `ModelExporterPort` in `src/adapters/io/` (`spec/architecture.md` §1.2)
   und damit in eine eigene **IO/Export-ADR**. Ob ein Exporter OCC nutzt,
   ist dort zu entscheiden (inkl. der Adapter-Grenzen-Frage Geometrie↔IO).

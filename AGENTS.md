@@ -193,7 +193,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
    ([`harness/conventions.md` MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)).
    Geometrieschwere Implementierungs-Slices erhalten **zusätzlich** ein
    unabhängiges **Code-Review vor der Welle-Closure** (Geometrie-Korrektheit
-   gegen die Spec; [MR-009](harness/conventions.md)) — HIGHs blockieren die
+   gegen die Spec; [MR-009](harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)) — HIGHs blockieren die
    Closure.
 6. Engsten nützlichen Sensor laufen lassen.
 7. Repo-weiten Gate-Lauf vor Handoff (`make gates`).

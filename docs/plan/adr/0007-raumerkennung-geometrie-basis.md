@@ -6,7 +6,7 @@
 
 **Autor:** Dietmar Burkard
 
-**Bezug:** [LH-FA-ROM-001](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen) (Raum-Autoerkennung), [LH-FA-ROM-002](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)/003 und
+**Bezug:** [LH-FA-ROM-001](../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen) (Raum-Autoerkennung), [LH-FA-ROM-002](../../../spec/lastenheft.md#lh-fa-rom-002)/003 und
 [LH-FA-EVL-003](../../../spec/lastenheft.md#lh-fa-evl-003--wohnflächenberechnung) (Flächen-/Volumen-Konsumenten, Trade-off-Kontext),
 ADR-0001 (Kern führt), ADR-0006 (`rooms.polygon_json`)
 

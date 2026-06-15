@@ -56,7 +56,7 @@ Noch nicht als ADR angelegt, in der Roadmap verortet:
   slice-011a); Folgepflichten → slice-011b.
 - Plugin-API-/ABI-Vertrag und Sandbox-Modell (LH-FA-PLG-*) — welle-5.
 - IFC-Bibliothek und -Schema-Version ([LH-FA-IO-001](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002) — welle-4.
-- STEP-/Format-Export-Backend hinter `ModelExporterPort` ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import);
+- STEP-/Format-Export-Backend hinter `ModelExporterPort` ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-005);
   aus ADR-0002 ausgegliedert) inkl. Adapter-Grenzen Geometrie↔IO — welle-4.
 - ~~Atomare Write-Strategie / Crash-Recovery-Detail ([LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery))~~ →
   entschieden in [ADR-0003](0003-persistenz-sqlite.md) (Temp+Rename);

@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-018c — **Per-ID-Anker-Präzision** (`harness-steering`): die 17 in slice-018b
+  auf das Geschwister-Heading verlinkten Bullet-Sub-IDs (`LH-FA` D3/IO/ROM/WAL) per
+  **Inline-HTML-Anker** (`<a id>`, d-check v0.9.0) auf präzise Per-ID-Anker gehoben.
+  `tools/idlink.py` lernt HTML-Anker (höchste Präzedenz, `sect`-Regex gehärtet) +
+  normalisiert bestehende ID-Links (idempotent, self-healing); 7 Repoints (6 Sub-ID +
+  1 `MR-009`-Self-Heal). Negativ-Beleg: 6 anchor-missing ohne Anker. Unabhängiges
+  `MR-006`-Review (3 HIGH + 2 MED eingearbeitet).
 - slice-018b — **Voll-Korpus-Link-Hygiene** (`MR-011`): `ids` über alle 7 ID-Familien
   im Live-Korpus (link-policy always), done-archive via scope.ignore raus. 718
   Kennungs-Vorkommen aufgelöst — 480 Links (normativer Korpus, Kapitel-/Heading-Anker

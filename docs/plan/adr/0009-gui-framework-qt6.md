@@ -146,7 +146,7 @@ Benachrichtigungs-Vertrag ist ADR-0008.
   Gate-Doku-Nachzug (`harness/README.md` §Sensors, `AGENTS.md` §3);
   `acc-002-beleg`-Target außerhalb `gates`.
 - Kamera/Shading sind selbst gebaut und bewusst minimal — jede
-  Erweiterung (Selektion, Schnitt-Ansichten [LH-FA-D3-004](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)..006)
+  Erweiterung (Selektion, Schnitt-Ansichten [LH-FA-D3-004](../../../spec/lastenheft.md#lh-fa-d3-004)..006)
   läuft über den Re-Evaluierungs-Trigger, nicht über stilles
   Wachstum im Adapter.
 
