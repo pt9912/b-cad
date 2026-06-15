@@ -3,7 +3,7 @@
 **Datum:** 2026-06-15. **Reviewer:** unabhängiger Agent (kein Autoren-Kontext),
 verifiziert gegen reale Quellen (Read/Grep/Bash, d-check-Source im Schwester-Repo,
 read-only Probe-Läufe). **Gegenstand:** Implementierung von
-[slice-018b](../plan/planning/in-progress/slice-018b-voll-korpus-ids.md) —
+[slice-018b](../plan/planning/done-archive/slice-018b-voll-korpus-ids.md) —
 `tools/idlink.py`, `.d-check.yml`, generierter Diff über ~53 Doku-Dateien
 (`git diff 5fd01c5..HEAD`). Baum am Ende sauber.
 
