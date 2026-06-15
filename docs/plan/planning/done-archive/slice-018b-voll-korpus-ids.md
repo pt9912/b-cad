@@ -178,9 +178,13 @@ Voll-Korpus-`ids` über alle 7 ID-Familien aktiv (d-check-Pin v0.9.0).
   → Per-ID-Anker-Präzision (LOW-3 Kapitel-Fallback) künftig optional möglich.
 - **LOW-1** toter Code entfernt; **LOW-2** „8 Module" → 7 korrigiert.
 
-**Folge-Punkt (Spec-Lücke):** [`LH-QA-007`](../../../../spec/lastenheft.md) ist **nirgends definiert** (referenziert in
-adr/0005, adr/README, slice-006) → Datei-Fallback-Link gesetzt. Sollte in lastenheft
-definiert oder die Referenzen bereinigt werden (slice-006-Kontext).
+**Folge-Punkt (präzisiert):** [`LH-QA-007`](../../../../spec/lastenheft.md) ist **bewusst noch
+nicht definiert** — von [ADR-0005](../../adr/0005-drittanbieter-lizenz-attribution.md) +
+[slice-006](../open/slice-006-drittanbieter-attribution.md) am 2026-06-08 (`0b01d37`) als
+„vorgeschlagen, noch nicht im Lastenheft" eingeführte **ausstehende Vorbedingung** (kein
+verwaister Ref). 018b setzte den Datei-Fallback-Link; die saubere Auflösung ist **nicht**
+„bereinigen", sondern es bei **slice-006-Aktivierung** ins Lastenheft zu schreiben + die
+Fallback-Links auf den präzisen Anker zu heben.
 
 **Stehende Konvention:** im normativen Korpus IDs als Link, in Logs als Inline-Code —
 vom Gate erzwungen.

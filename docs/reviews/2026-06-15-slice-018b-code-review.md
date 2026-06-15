@@ -49,14 +49,14 @@ ausgelieferte Diff ist semantisch sauber.
   verankerten IDs lösen auf reale Heading-Slugs (eigener `HeadingSlugs`-Nachbau → 0
   anchor-missing), konsistent mit grünem `anchors`-Modul.
 - **Cross-Stratum korrekt:** `E-*` in `lastenheft.md`/`architecture.md` → `spezifikation.md`;
-  `OBJ`/`ACC` aus Fundstellen → `lastenheft.md`; Self-Target (`E-VAL-001` in
+  `OBJ`/`ACC` aus Fundstellen → `lastenheft.md`; Self-Target (``E-VAL-001`` in
   `spezifikation.md`) korrekt `inTarget`-frei.
-- **Definitions-Anker, nicht Referenz:** `OBJ`→§3, `ACC`→§7, `REQ-TEC`→§9, `LH-FA-WAL-006`→eigenes `####` — keine ID auf einer reinen Referenz-Sektion.
+- **Definitions-Anker, nicht Referenz:** `OBJ`→§3, `ACC`→§7, `REQ-TEC`→§9, ``LH-FA-WAL-006``→eigenes `####` — keine ID auf einer reinen Referenz-Sektion.
 - **Mehrzeilen-Mangling systematisch:** nur CHANGELOG:67 (MED-1); alle anderen Zeilen
   mit ungerader Backtick-Zahl korrekt; keine fälschliche Verlinkung von `EVL-001..006`
   (matcht `LH-FA-`-Regex korrekt nicht).
-- **Keine fälschlich verlinkten Schema-Beispiele:** conventions.md `MR-002`-Tabelle —
-  Real-IDs verlinkt, Platzhalter (`LH-FA-<BEREICH>`) bleiben nackt, `MR-002` Self-Target.
+- **Keine fälschlich verlinkten Schema-Beispiele:** conventions.md ``MR-002``-Tabelle —
+  Real-IDs verlinkt, Platzhalter (`LH-FA-<BEREICH>`) bleiben nackt, ``MR-002`` Self-Target.
 - **Apply-Robustheit:** rechts→links + Überlappungs-Guard korrekt (Mehr-ID-Zeilen,
   gemischt Code+nackt, Bereiche).
 - **DoD §3:** alle Haken berechtigt (Gate grün belegt).
