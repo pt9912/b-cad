@@ -1,7 +1,7 @@
 ---
 id: slice-018b
 titel: Voll-Korpus-ids — Link-Hygiene aller 7 ID-Familien (Linker-Skript)
-status: next
+status: in-progress
 welle: harness-steering
 lastenheft_refs: []
 adr_refs: []
@@ -10,13 +10,13 @@ adr_refs: []
 # Slice 018b: Voll-Korpus-`ids` (Link-Hygiene, alle 7 ID-Familien)
 
 **Status:** next. Folge-Slice von [slice-018a](../done-archive/slice-018a-dcheck-gate-mechanik-done-archive.md)
-(done). **MR-006-Plan-Review gelaufen**
+(done). **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen**
 ([Report](../../../reviews/2026-06-15-slice-018b-plan.md) — 2 HIGH + 3 MED + LOW
 **eingearbeitet**: D3-Regex behoben, Discovery neu erhoben, Cross-Stratum-Links,
 Code-Span-Pflicht, Historie-`exempt-paths`). DoD offen bis `make gates` grün.
 
-**Welle:** `harness-steering` (Quergewerk; setzt 018a fort). Bindung über **MR-006**
-(Referenz-Richtung) + **MR-007** (docs-check via d-check) + **MR-011** (Referenz-
+**Welle:** `harness-steering` (Quergewerk; setzt 018a fort). Bindung über **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)**
+(Referenz-Richtung) + **[MR-007](../../../../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check)** (docs-check via d-check) + **[MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)** (Referenz-
 Integritäts-Gate) statt LH/ADR — Harness-Sensor-Slice.
 
 **Autor:** Dietmar Burkard. **Datum:** 2026-06-15.
@@ -77,28 +77,28 @@ Alle read-only, `.d-check.yml` danach zurückgesetzt:
 
 ## 3. Definition of Done
 
-- [ ] **`.d-check.yml`:** `ids` auf alle 7 Familien (Targets §2), `scope.roots: ["."]`
+- [x] **`.d-check.yml`:** `ids` auf alle 7 Familien (Targets §2), `scope.roots: ["."]`
       + `scope.ignore: [docs/plan/planning/done-archive]`, `link-policy: always`;
       `exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]` je Muster
       (LOW-1: `exempt-paths` befreit nur Inline-Code → Logs **zusätzlich** backticken).
-- [ ] **Linker-Skript** `tools/{idlink.py}` (neu; läuft im Container wie docs-check):
+- [x] **Linker-Skript** `tools/{idlink.py}` (neu; läuft im Container wie docs-check):
       baut ID→(Ziel, Anker) aus den Definitionsdateien (d-check-`Slugify` exakt;
       Definitions-Position = ID hinter Tabellen-Pipe/Bullet, **nicht** Umbruch-Prosa);
       ersetzt die von d-check geflaggten nackten Vorkommen — **zwei Modi:**
       Logs → Inline-Code (backticken), Rest → Markdown-Link.
-- [ ] **Normativer Korpus verlinkt** (480 nach Log-Ausschluss): `spec/*` (außer
+- [x] **Normativer Korpus verlinkt** (480 nach Log-Ausschluss): `spec/*` (außer
       Historie), `docs/plan/adr/*`, `harness/*`, `AGENTS.md`, `docs/plan/planning/*`
       (roadmap/README/results), `README.md`, `docs/glossar.md`, `docs/user/*`,
       `tools/README.md`.
-- [ ] **Logs backticked + exempt:** `CHANGELOG.md`, `docs/reviews/**`,
+- [x] **Logs backticked + exempt:** `CHANGELOG.md`, `docs/reviews/**`,
       `spec/*-historie.md` — IDs als Inline-Code, `exempt-paths` aktiv → 0 Befunde.
-- [ ] **Edge-Cases behandelt:** Bereiche (`LH-FA-EVL-001..006` → `001` verlinkt,
-      `..006` bleibt) · Suffixe (`…006.a`, angehängte Begriffe `ACC-002-Beleg`) ·
+- [x] **Edge-Cases behandelt:** Bereiche ([`LH-FA-EVL-001..006`](../../../../spec/lastenheft.md#lh-fa-evl-001--flächenberechnung) → `001` verlinkt,
+      `..006` bleibt) · Suffixe (`…006.a`, angehängte Begriffe [`ACC-002-Beleg`](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
       Mehrfach-pro-Zeile · **`D3`-Modul**. **MED-3:** unter `link-policy: always` sind
       im normativen Korpus **beide** Formen link-pflichtig (nackt **und** Inline-Code);
       „nur die nackte" gilt **nur** in `exempt-paths`-Dateien. Skript-Verhalten dokumentiert.
-- [ ] **`make gates` grün** (docs-check 0 Befunde über alle aktiven Module);
-      arch-check/lint/test/coverage unberührt. CHANGELOG (MR-004); Closure-Notiz mit
+- [x] **`make gates` grün** (docs-check 0 Befunde über alle aktiven Module);
+      arch-check/lint/test/coverage unberührt. CHANGELOG ([MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)); Closure-Notiz mit
       **Lerneintrag**.
 
 ## 4. Plan (vor Code)
@@ -110,7 +110,7 @@ Alle read-only, `.d-check.yml` danach zurückgesetzt:
 | `.d-check.yml` | ändern | 7 Familien, `scope.ignore`, `exempt-paths` |
 | `spec/*`, `docs/plan/adr/*`, `harness/*`, `AGENTS.md`, `docs/plan/planning/*`, `README.md`, `docs/glossar.md`, `docs/user/*`, `tools/README.md` | ändern (generiert) | Links setzen |
 | `CHANGELOG.md`, `docs/reviews/**`, `spec/*-historie.md` | ändern (generiert) | IDs → Inline-Code |
-| `docs/reviews/{2026-06-15-slice-018b-plan.md}` | neu | MR-006-Report |
+| `docs/reviews/{2026-06-15-slice-018b-plan.md}` | neu | [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report |
 
 ## 5. Trigger
 
@@ -121,7 +121,7 @@ Alle read-only, `.d-check.yml` danach zurückgesetzt:
 
 - DoD vollständig, `make gates` grün. **Stehende Konvention danach:** in Logs IDs
   als Inline-Code, sonst als Link — vom Gate erzwungen. Optionaler Folge-Punkt:
-  MR-010-Formulierung auf die ausgelagerte `lastenheft-historie.md` ziehen.
+  [MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)-Formulierung auf die ausgelagerte `lastenheft-historie.md` ziehen.
 
 ## 7. Risiken und offene Punkte
 
@@ -144,9 +144,34 @@ Alle read-only, `.d-check.yml` danach zurückgesetzt:
 
 - **Modus:** GF. Bestands-Doku, Gate auf Voll-Korpus-Link-Hygiene gehoben; der
   Linker erzeugt den Diff, `ids`/`links`/`anchors` validieren jeden Schritt. Risiko
-  mittel (Masse), aber maschinell generiert + orakel-geprüft. MR-008 n/a (keine
+  mittel (Masse), aber maschinell generiert + orakel-geprüft. [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei) n/a (keine
   AK-/Inhalts-Änderung — reine Referenz-Form).
 
 ## 9. Closure-Notiz
 
-*(folgt nach `make gates` grün.)*
+**Closure 2026-06-15.** `make gates` grün; `docs-check` 0 Befunde über alle 8 Module
+(92 Dateien). Voll-Korpus-`ids` über alle 7 ID-Familien aktiv.
+
+**Geliefert:**
+- `tools/idlink.py` (Linker-Generator): baut ID→(Ziel, Anker) aus den
+  Definitionsdateien (d-check-`Slugify` 1:1 portiert; Definitions-Position mit
+  Marker-Pflicht inkl. Backtick-Tabellen; Family-Target-Filter; Cross-Stratum-
+  Auflösung). d-check als Orakel.
+- **718 Vorkommen gelöst:** 480 Links (normativer Korpus, Kapitel-/Heading-Anker
+  + ADR-Datei) + 238 Backticks (Logs CHANGELOG/reviews/`*-historie.md`).
+  `.d-check.yml`: 7 Familien, `scope.ignore` done-archive, `exempt-paths` Logs.
+
+**Lerneintrag (d-check-Orakel-Iteration — 3 Bug-Klassen gefangen, 718 → 0 in 2 Runden):**
+1. **E-Codes als `| `[E-IO-001](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)` |`** (Inline-Code in der Tabellenzelle) → Def-Position-
+   Regex um optionalen Backtick erweitert.
+2. **Family-Target-Filter:** ohne ihn überschrieb die spezifikation-`.a`-Überschrift
+   die lastenheft-Definition ([LH-FA-ROM-001](../../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen) zeigte falsch nach spezifikation).
+3. **Mehrzeiliger Link mit nacktem ID** (AGENTS.md): zeilenbasiertes Linken erzeugte
+   einen nested-link → manuell auf Einzeiler gezogen; `spans`-Modul fing es.
+
+**Folge-Punkt (Spec-Lücke):** [`LH-QA-007`](../../../../spec/lastenheft.md) ist **nirgends definiert** (referenziert in
+adr/0005, adr/README, slice-006) → Datei-Fallback-Link gesetzt. Sollte in lastenheft
+definiert oder die Referenzen bereinigt werden (slice-006-Kontext).
+
+**Stehende Konvention:** im normativen Korpus IDs als Link, in Logs als Inline-Code —
+vom Gate erzwungen.

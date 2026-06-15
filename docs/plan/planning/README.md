@@ -21,24 +21,24 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 | Verzeichnis | Slices |
 |---|---|
 | `open/` | slice-006 (Drittanbieter-Attribution) |
-| `next/` | **slice-018b** (Voll-Korpus-`ids` — MR-006-Review ausstehend) |
-| `in-progress/` | — (nur `roadmap.md`) |
+| `next/` | — |
+| `in-progress/` | **slice-018b** (Voll-Korpus-`ids` — Implementierung) · `roadmap.md` |
 | `done/` | **Lebende Referenz:** `welle-1-results.md` · `welle-1v-results.md` · `welle-2-results.md` + acc-002-Artefakte (Beleg/Befund). |
-| `done-archive/` | **(eingefroren, slice-018a)** **welle-1-mvp:** slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit), slice-005 (Gate-Consistency-Sensor), slice-003a (Domain-Kern & Wände, OCC-frei), slice-003b (OCC-Extrusion + arch-check Regel C), slice-004 (Toolchain-Pinning 26.04/node24 + Snapshot), slice-007 (Datenmodell-Definition + ADR-0006), slice-008a (Persistenz: SQLite-Adapter + arch-check Regel D), slice-008b (Persistenz-Härtung: Crash-Recovery + E-IO-Codes), slice-009a/009b (Raumerkennung: ADR-0007 + Implementierung), slice-010a/010b (Echtzeit-Benachrichtigung: ADR-0008 + Implementierung). **welle-1v-viewer:** slice-011a/011b (Qt-6-Viewer: ADR-0009/0010 + Implementierung), slice-012 (Eckenschluss WAL-006-Teilumfang). **welle-2-bauteile:** slice-013a (Bauteil-Hosting & Wandöffnung: ADR-0011 + AK-Schärfung DOR/WIN), slice-013b (Türen + Fenster implementiert: Öffnung als boolesche Subtraktion), slice-013c (Öffnungs-Persistenz: openings/doors/windows-Round-Trip; ADR-0011 vollständig), slice-014a (Dach: LH-FA-ROF AK-Schärfung + Spec-Geometrie, Teilumfang Rechteck), slice-014b (Dach implementiert: Sattel/Walm/Pult analytisch, Viewer folgt), slice-014c (Dach-Persistenz: roofs/footprint_json-Round-Trip), slice-015a (Decken+Fundament: LH-FA-SLB/FND AK-Schärfung + Spec-Platten-Geometrie), slice-015b (Decken+Fundament implementiert: Platten als Extrusion + Mesh-Translation auf base_z, Cutout-Boolean, SlabChanged-Viewer) |
+| `done-archive/` | **(eingefroren, slice-018a)** **welle-1-mvp:** slice-001 (Build-Skelett), slice-002 (Code-Gates), spike-001 (Toolchain-Reproduzierbarkeit), slice-005 (Gate-Consistency-Sensor), slice-003a (Domain-Kern & Wände, OCC-frei), slice-003b (OCC-Extrusion + arch-check Regel C), slice-004 (Toolchain-Pinning 26.04/node24 + Snapshot), slice-007 (Datenmodell-Definition + [ADR-0006](../adr/0006-relationales-schema-design.md)), slice-008a (Persistenz: SQLite-Adapter + arch-check Regel D), slice-008b (Persistenz-Härtung: Crash-Recovery + E-IO-Codes), slice-009a/009b (Raumerkennung: [ADR-0007](../adr/0007-raumerkennung-geometrie-basis.md) + Implementierung), slice-010a/010b (Echtzeit-Benachrichtigung: [ADR-0008](../adr/0008-aenderungs-benachrichtigung.md) + Implementierung). **welle-1v-viewer:** slice-011a/011b (Qt-6-Viewer: [ADR-0009](../adr/0009-gui-framework-qt6.md)/0010 + Implementierung), slice-012 (Eckenschluss WAL-006-Teilumfang). **welle-2-bauteile:** slice-013a (Bauteil-Hosting & Wandöffnung: [ADR-0011](../adr/0011-bauteil-hosting-wandoeffnung.md) + AK-Schärfung DOR/WIN), slice-013b (Türen + Fenster implementiert: Öffnung als boolesche Subtraktion), slice-013c (Öffnungs-Persistenz: openings/doors/windows-Round-Trip; [ADR-0011](../adr/0011-bauteil-hosting-wandoeffnung.md) vollständig), slice-014a (Dach: LH-FA-ROF AK-Schärfung + Spec-Geometrie, Teilumfang Rechteck), slice-014b (Dach implementiert: Sattel/Walm/Pult analytisch, Viewer folgt), slice-014c (Dach-Persistenz: roofs/footprint_json-Round-Trip), slice-015a (Decken+Fundament: LH-FA-SLB/FND AK-Schärfung + Spec-Platten-Geometrie), slice-015b (Decken+Fundament implementiert: Platten als Extrusion + Mesh-Translation auf base_z, Cutout-Boolean, SlabChanged-Viewer) |
 
 slice-001/002 sind abgeschlossen (DoD erfüllt, Closure-Notiz vorhanden;
 die `make gates`-Verifikation ist dort als Punkt-in-Zeit belegt — der
 aktuelle Lauf-Status gehört in CI, nicht in diese Doku, Modul 13).
-spike-001 hat die Toolchain-Reproduzierbarkeit untersucht → ADR-0004
+spike-001 hat die Toolchain-Reproduzierbarkeit untersucht → [ADR-0004](../adr/0004-toolchain-dependency-pinning.md)
 (Proposed) + slice-004 (Digest+Snapshot-Pinning, Migration 26.04/node24).
 slice-003a (Domain-Kern & Wände, OCC-frei) ist abgeschlossen; der
 ursprüngliche slice-003 wurde in 003a (Kern) + 003b (OCC-Extrusion)
 geschnitten (Roadmap §Historische Trigger-Verschiebungen). slice-003b
 (erster OCC-Code + arch-check Regel C), slice-004 (gepinnte 26.04/node24-
 Toolchain + apt-Snapshot), slice-007 (Datenmodell-Definition,
-d-migrate-validiert + ADR-0006) und slice-008a (SQLite-Persistenz hinter
+d-migrate-validiert + [ADR-0006](../adr/0006-relationales-schema-design.md)) und slice-008a (SQLite-Persistenz hinter
 `ProjectRepositoryPort`, atomar + arch-check Regel D) und slice-008b
-(Persistenz-Härtung: Crash-Recovery `kill -9` + `E-IO-001`/`E-IO-002`) sind
+(Persistenz-Härtung: Crash-Recovery `kill -9` + [`E-IO-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)/[`E-IO-002`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)) sind
 abgeschlossen; offen: slice-006.
 
 ## Roadmap

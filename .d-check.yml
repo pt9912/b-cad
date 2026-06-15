@@ -34,16 +34,43 @@ matrix:
     forbidden: [superseded, deprecated]
   exclude-sections: [Historie, Geschichte, Änderungshistorie]
 
-# Linkpflicht für Kennungen (slice-018a, NICHT der Voll-Korpus): nur das
-# ADR-Muster, auf spec/ gescopt, link-policy always (fängt nackte UND
-# Inline-Code-Vorkommen — Regelwerk „auch nicht als Quellen-Spalte").
-# Zusammen mit matrix ist damit JEDE Spec→ADR-Referenz erfasst; die
-# Auflösung im spec-Körper ist Entfernen/Verlagern (Historie verlinken).
-# Die übrigen 6 ID-Familien + der Live-Korpus sind slice-018b.
+# Linkpflicht für Kennungen (slice-018b, MR-011): alle 7 ID-Familien über den
+# Voll-Korpus, link-policy always (nackte UND Inline-Code-Vorkommen). done-archive
+# via scope.ignore raus (eingefroren). Logs (CHANGELOG/reviews/*-historie) via
+# exempt-paths — befreit aber NUR Inline-Code, daher dort IDs als Inline-Code
+# (backtick). Anker/Links generiert von tools/idlink.py, von diesem Gate validiert.
+# LH-FA-Regex D3-fest ([A-Z][A-Z0-9]*); Cross-Stratum: Ziel = kanonische
+# Definitionsdatei der Familie, unabhängig von der Fundstelle.
 ids:
   scope:
-    roots: [spec]
+    roots: ["."]
+    ignore: ["docs/plan/planning/done-archive"]
   patterns:
     - regex: 'ADR-\d{4}'
       target: docs/plan/adr/
       link-policy: always
+      exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
+    - regex: 'MR-\d{3}'
+      target: harness/conventions.md
+      link-policy: always
+      exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
+    - regex: 'LH-(FA-[A-Z][A-Z0-9]*|QA)-\d+'
+      target: spec/lastenheft.md
+      link-policy: always
+      exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
+    - regex: 'ACC-\d+'
+      target: spec/lastenheft.md
+      link-policy: always
+      exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
+    - regex: 'OBJ-\d+'
+      target: spec/lastenheft.md
+      link-policy: always
+      exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
+    - regex: 'REQ-TEC-\d+'
+      target: spec/spezifikation.md
+      link-policy: always
+      exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
+    - regex: 'E-(IO|VAL|GEO)-\d+'
+      target: spec/spezifikation.md
+      link-policy: always
+      exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
