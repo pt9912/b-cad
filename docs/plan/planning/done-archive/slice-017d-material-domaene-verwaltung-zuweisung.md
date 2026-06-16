@@ -1,7 +1,7 @@
 ---
 id: slice-017d
 titel: Material — Domäne + Verwaltung + Zuweisung (in-memory, EditStructurePort/EvaluatePort)
-status: in-progress
+status: done
 welle: welle-3-auswertung
 lastenheft_refs: [[LH-FA-MAT-001](../../../../spec/lastenheft.md#lh-fa-mat-001--materialien-verwalten), [LH-FA-MAT-002](../../../../spec/lastenheft.md#lh-fa-mat-002--materialbibliothek), [LH-FA-MAT-003](../../../../spec/lastenheft.md#lh-fa-mat-003--materialzuweisung), [LH-FA-MAT-005](../../../../spec/lastenheft.md#lh-fa-mat-005--u-wert), [LH-FA-MAT-006](../../../../spec/lastenheft.md#lh-fa-mat-006--kostenkennwerte)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0006](../../adr/0006-relationales-schema-design.md), [ADR-0012](../../adr/0012-evaluations-architektur.md)]
@@ -9,11 +9,10 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0006](../.
 
 # Slice 017d: Material — Domäne + Verwaltung + Zuweisung (in-memory)
 
-**Status:** in-progress. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen** (unabhängig, ohne
-Autoren-Kontext): 1 HIGH + 1 MED + 2 LOW eingearbeitet
-([Report](../../../reviews/2026-06-16-slice-017d-plan.md)) — HIGH-1
-(removeMaterial = `on_delete: restrict`-Treue, nicht stilles Räumen) gelöst →
-**startbar**. **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (keine Geometrie — reine Domänen-Eigenschaft + Aggregation).
+**Status:** done (2026-06-16, `make gates` grün, 137 Tests). Unabhängiges
+**[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review** (1 HIGH removeMaterial-RESTRICT + 1 MED + 2 LOW
+eingearbeitet) ([Report](../../../reviews/2026-06-16-slice-017d-plan.md)).
+**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (keine Geometrie/Persistenz/Parsing). Closure-Notiz §8.
 
 **Welle:** welle-3-auswertung (vierter Slice; Material-Strang, parallel zu EVL).
 

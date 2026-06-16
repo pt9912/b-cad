@@ -68,9 +68,17 @@ in §Historische Trigger-Verschiebungen).
   Wand/Decke-Fundament/Treppe), **analytisch im Kern** (kein
   `GeometryKernelPort`/`Solid.volume_mm3`, [ADR-0012](../../adr/0012-evaluations-architektur.md) #4). Dach zurückgestellt
   (dicke-los, benannte Lücke + Re-Eval). **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) 0 HIGH**; `make gates` grün (131 Tests).
-- ⏳ offen: Listen EVL-004/005/006 · **Material-Strang** (`model::Material` +
-  Zuweisung + `material_id`-Round-Trip, die welle-2-`NULL`-Felder) ·
-  Welle-Verifikation + `done/welle-3-results.md`.
+- ✓ **slice-017d** — **Material-System** (MAT-001/002/003/005/006, **in-memory**):
+  `model::Material` (Kennwerte U-Wert/Kosten) + projekt-eigene Verwaltung/Zuweisung
+  über `EditStructurePort` + read-only Liste/Auflösung über `EvaluatePort`
+  (`effectiveMaterial` — Quelle EVL-004/006). `removeMaterial` `restrict`-treu,
+  Material-Mutationen op-frei. **Override** geliefert, `wall_type`-Fallback
+  zurückgestellt. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 1 HIGH** (removeMaterial-RESTRICT) eingearbeitet,
+  **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a**; `make gates` grün (137 Tests).
+- ⏳ offen: **slice-017e** (Material-**Persistenz**: `materials`-Tabelle +
+  `material_id`-Round-Trip, die welle-2-`NULL`-Felder — **höhere Review-Latte**:
+  Parsing/Schema-Drift/stille Datenverfälschung) · Listen EVL-004/005/006 ·
+  `wall_type`-Fallback-Lücke · Welle-Verifikation + `done/welle-3-results.md`.
 
 ## Nächste Wellen
 
