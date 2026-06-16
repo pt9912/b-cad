@@ -75,10 +75,16 @@ in §Historische Trigger-Verschiebungen).
   Material-Mutationen op-frei. **Override** geliefert, `wall_type`-Fallback
   zurückgestellt. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 1 HIGH** (removeMaterial-RESTRICT) eingearbeitet,
   **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a**; `make gates` grün (137 Tests).
-- ⏳ offen: **slice-017e** (Material-**Persistenz**: `materials`-Tabelle +
-  `material_id`-Round-Trip, die welle-2-`NULL`-Felder — **höhere Review-Latte**:
-  Parsing/Schema-Drift/stille Datenverfälschung) · Listen EVL-004/005/006 ·
-  `wall_type`-Fallback-Lücke · Welle-Verifikation + `done/welle-3-results.md`.
+- ✓ **slice-017e** — **Material-Persistenz** (in-memory → durabel): das
+  `SqliteProjectRepository` round-trippt die `materials`-Bibliothek +
+  `material_id`-Zuweisung (Wand/Dach/Decke) in der atomaren Speicher-Transaktion
+  (**NULL-sicher** über zentrale `*Optional*`-Helfer — kein „NULL → 0"; ID-/FK-
+  Erhalt; **kein Schema-Drift**, `make schema-check` grün; `density` ohne
+  Domänenfeld zurückgestellt). **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH** + **Code-Review** (höhere
+  Latte) **0 HIGH**; `make gates` grün (139 Tests).
+- ⏳ offen: Listen EVL-004/005/006 (Material-/Kostenliste über `effectiveMaterial`,
+  jetzt durabel) · `wall_type`-Fallback-Lücke · Welle-Verifikation +
+  `done/welle-3-results.md` → **M3**.
 
 ## Nächste Wellen
 

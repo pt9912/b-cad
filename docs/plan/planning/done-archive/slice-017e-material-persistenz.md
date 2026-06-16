@@ -1,7 +1,7 @@
 ---
 id: slice-017e
 titel: Material-Persistenz — materials-Tabelle + material_id-Round-Trip (SqliteProjectRepository)
-status: in-progress
+status: done
 welle: welle-3-auswertung
 lastenheft_refs: [[LH-FA-MAT-001](../../../../spec/lastenheft.md#lh-fa-mat-001--materialien-verwalten), [LH-FA-MAT-003](../../../../spec/lastenheft.md#lh-fa-mat-003--materialzuweisung), [LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0003](../../adr/0003-persistenz-sqlite.md), [ADR-0006](../../adr/0006-relationales-schema-design.md)]
@@ -9,14 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0003](../.
 
 # Slice 017e: Material-Persistenz — materials + material_id-Round-Trip
 
-**Status:** in-progress. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen** (unabhängig, ohne
-Autoren-Kontext): **0 HIGH**, 3 LOW/INFO (Wording F1/F2/F3) eingearbeitet
-([Report](../../../reviews/2026-06-16-slice-017e-plan.md)) → **startbar**.
-**Höhere Review-Latte (Projektinhaber 2026-06-16):** zusätzlich zum [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-
-Review ein **unabhängiges Code-Review** (Persistenz-Fehlerklassen Parsing /
-Schema-Drift / stille Datenverfälschung, Steering-#4 aus slice-015c) — **gelaufen,
-0 HIGH** (1 LOW gehärtet, 2 INFO; [Report](../../../reviews/2026-06-16-slice-017e-code-review.md)).
-**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (keine Geometrie).
+**Status:** done (2026-06-16, `make schema-check` + `make gates` grün, 139 Tests).
+Unabhängig (höhere Review-Latte, Persistenz): **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review** (0 HIGH)
++ **Code-Review** (0 HIGH, 1 LOW gehärtet
+— [Report](../../../reviews/2026-06-16-slice-017e-code-review.md)).
+**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (keine Geometrie). Closure-Notiz §8.
 
 **Welle:** welle-3-auswertung (fünfter Slice; Material-Strang, Persistenz-Hälfte —
 macht 017d durabel; Gegenstück 013c/014c/015c/016c).
