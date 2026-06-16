@@ -1,7 +1,7 @@
 ---
 id: slice-017g
 titel: Auswertung Kosten — MAT-006 (Kostenkennwerte je Material in die Summe)
-status: in-progress
+status: done
 welle: welle-3-auswertung
 lastenheft_refs: [[LH-FA-MAT-006](../../../../spec/lastenheft.md#lh-fa-mat-006--kostenkennwerte)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../../adr/0012-evaluations-architektur.md)]
@@ -9,12 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../.
 
 # Slice 017g: Auswertung Kosten — MAT-006
 
-**Status:** in-progress. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen** (unabhängig): **0 HIGH**,
-2 LOW Politur (direkter `<optional>`-Include; §1-Kosten in den Listen-Block
-einweben) — bei der Umsetzung
-([Report](../../../reviews/2026-06-16-slice-017g-plan.md)) → **startbar**.
-**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (keine Geometrie). **Kein Code-Review** (kein Persistenz/Parsing) —
-kleiner Aggregations-Slice.
+**Status:** done (2026-06-16, `make gates` grün, 145 Tests). Schließt die
+**Material-Kennwert-Nutzung** (welle-3-Substanz MAT+EVL komplett). Unabhängiges
+**[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review** (0 HIGH, 2 LOW Politur eingearbeitet —
+[Report](../../../reviews/2026-06-16-slice-017g-plan.md)). **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a**, kein
+Code-Review (read-only). Closure-Notiz §8.
 
 **Welle:** welle-3-auswertung (siebter Slice; schließt die **Material-Kennwert-
 Nutzung** — letzter Auswertungs-Baustein vor der Welle-Verifikation).

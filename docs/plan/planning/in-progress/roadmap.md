@@ -88,9 +88,15 @@ in §Historische Trigger-Verschiebungen).
   **Dach ausgenommen** — Volumen-Lücke; deterministisch) + `doorList()`/
   `windowList()` (Maße). Read-only-Aggregation, kein `op`. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH**
   (1 LOW §1-Konsistenz), **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a**; `make gates` grün (144 Tests).
-- ⏳ offen (welle-3-Closure): **Kosten-Auswertung** (MAT-006, Menge×`cost_per_m3`,
-  kleiner Folge-Schritt) · `wall_type`-Fallback-Lücke · **Welle-3-Verifikation +
-  `done/welle-3-results.md` → Meilenstein M3 „Auswertbar"**.
+- ✓ **slice-017g** — **Kosten-Auswertung** (MAT-006) — **schließt die Material-
+  Kennwert-Nutzung**: die Materialliste trägt je Material `cost = Menge ×
+  `cost_per_m3`` (`MaterialLine.cost`) + Projekt-Summe (`MaterialReport.total_cost`);
+  kein Kennwert → `nullopt` (≠ kostenlos); `cost_per_m2`-Lücke benannt. Additive
+  Erweiterung (kein neuer Port). **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH**, **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a**; gates grün
+  (145 Tests). **→ welle-3-Substanz (MAT + EVL) komplett.**
+- ⏳ offen (welle-3-Closure): `wall_type`-Fallback (optional) · **Welle-3-Verifikation
+  (unabhängig) + Carveout-Audit + `done/welle-3-results.md` → Meilenstein M3
+  „Auswertbar"**.
 
 ## Nächste Wellen
 
