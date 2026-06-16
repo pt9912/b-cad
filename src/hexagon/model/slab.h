@@ -1,8 +1,10 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 
 #include "hexagon/model/footprint.h"
+#include "hexagon/model/material.h"  // MaterialId
 #include "hexagon/model/wall.h"  // StoreyId
 
 namespace bcad::hexagon::model {
@@ -27,6 +29,7 @@ struct Slab {
     Footprint footprint{};               // Grundriss-Polygon
     double thickness_mm{};               // Decke: Dicke; Fundament: Tiefe
     std::vector<Footprint> cutouts{};    // Aussparungen (LH-FA-SLB-003)
+    std::optional<MaterialId> material_id{};  // eigenes Material (Override, MAT-003)
 };
 
 }  // namespace bcad::hexagon::model

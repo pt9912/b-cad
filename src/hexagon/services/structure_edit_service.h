@@ -98,6 +98,22 @@ public:
                                                   int count) override;
     bool removeStair(model::StairId stair) override;
 
+    // Material (LH-FA-MAT-*, ADR-0006/0012): projekt-eigene Materialien
+    // verwalten/zuweisen. Material = Bauteil-Eigenschaft; KEIN `op`
+    // (Pull-Konsum durch die Auswertung). removeMaterial ist `restrict`-treu
+    // (noch zugewiesenes Material nicht löschbar, ADR-0006).
+    std::optional<model::MaterialId> addMaterial(
+        const model::Material& prototype) override;
+    bool updateMaterial(model::MaterialId id,
+                        const model::Material& values) override;
+    bool removeMaterial(model::MaterialId id) override;
+    bool setWallMaterial(model::WallId wall,
+                         std::optional<model::MaterialId> material) override;
+    bool setRoofMaterial(model::RoofId roof,
+                         std::optional<model::MaterialId> material) override;
+    bool setSlabMaterial(model::SlabId slab,
+                         std::optional<model::MaterialId> material) override;
+
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
 
@@ -111,6 +127,16 @@ public:
     // Bauteiltyp-Subtotale, analytisch im Kern (`volume_geometry`); const ⇒
     // keine Mutation, kein op, kein GeometryKernelPort, kein Solid.volume_mm3.
     model::VolumeReport volume() const override;
+
+    // EvaluatePort (LH-FA-MAT-002/003): read-only Material-Liste + effektive
+    // Auflösung (Override; kein `wall_type`-Fallback in welle-3, Totalität).
+    const std::vector<model::Material>& materials() const override;
+    std::optional<model::Material> effectiveMaterial(
+        model::WallId wall) const override;
+    std::optional<model::Material> effectiveMaterial(
+        model::RoofId roof) const override;
+    std::optional<model::Material> effectiveMaterial(
+        model::SlabId slab) const override;
 
     // ViewModelPort (LH-FA-D3-001, ADR-0009 (b)): tessellierter Stand für
     // die Darstellung — totale Queries (Tessellations-Fehler ⇒ leer),
@@ -210,6 +236,7 @@ private:
     int next_roof_id_{1};
     int next_slab_id_{1};
     int next_stair_id_{1};
+    int next_material_id_{1};
 };
 
 }  // namespace bcad::hexagon::services

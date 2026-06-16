@@ -11,6 +11,7 @@ add_executable(bcad_tests
     hexagon/test_evaluate.cpp
     hexagon/test_evaluate_volume.cpp
     hexagon/test_greeting_service.cpp
+    hexagon/test_material.cpp
     hexagon/test_model_change_notification.cpp
     hexagon/test_openings.cpp
     hexagon/test_roof_geometry.cpp

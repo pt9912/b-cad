@@ -3,6 +3,7 @@
 #include <optional>
 
 #include "hexagon/model/footprint.h"  // Footprint (Slab-Ausschnitt)
+#include "hexagon/model/material.h"  // Material, MaterialId
 #include "hexagon/model/opening.h"  // OpeningId, OpeningKind, SwingDirection
 #include "hexagon/model/roof.h"     // Roof, RoofId, RoofType
 #include "hexagon/model/segment.h"
@@ -148,6 +149,40 @@ public:
 
     // Entfernt eine Treppe; meldet `StairChanged`. `false` bei unbekannt.
     virtual bool removeStair(model::StairId stair) = 0;
+
+    // --- Material: projekt-eigene Materialien (LH-FA-MAT-*, ADR-0006/0012) ---
+    // Material ist eine Bauteil-Eigenschaft, KEINE Geometrie; Material-
+    // Mutationen melden KEINEN `op` (kein gerendertes Szenen-Korrelat in
+    // welle-3 — Pull-Konsum durch die Auswertung, ADR-0012-Geist).
+
+    // Legt ein Material an (LH-FA-MAT-001); `id` vom Service vergeben.
+    // Abgelehnt (kein Wert), wenn der Name leer/whitespace-only ist
+    // (MAT-001 Negative).
+    virtual std::optional<model::MaterialId> addMaterial(
+        const model::Material& prototype) = 0;
+
+    // Ändert Name/Kategorie/Kennwerte eines Materials (LH-FA-MAT-001/005/006).
+    // `false` bei unbekannter Id oder leerem/whitespace-Namen (Modell
+    // unverändert).
+    virtual bool updateMaterial(model::MaterialId id,
+                                const model::Material& values) = 0;
+
+    // Entfernt ein Material (LH-FA-MAT-001). `on_delete: restrict`-Treue
+    // (ADR-0006): ein **noch zugewiesenes** Material ist NICHT löschbar →
+    // `false`, Modell unverändert (kein stiller Verlust der Zuweisung); ebenso
+    // bei unbekannter Id. Erst löschbar, wenn kein Bauteil es referenziert.
+    virtual bool removeMaterial(model::MaterialId id) = 0;
+
+    // Weist einem Bauteil (Wand/Dach/Decke) ein Material zu bzw. ab
+    // (LH-FA-MAT-003, Override). `std::nullopt` = „kein Material" (immer ok).
+    // `false` bei unbekanntem Bauteil oder unbekannter Material-Id (Modell
+    // unverändert). Kein Fehler bei „kein Material" (MAT-003 Negative).
+    virtual bool setWallMaterial(model::WallId wall,
+                                 std::optional<model::MaterialId> material) = 0;
+    virtual bool setRoofMaterial(model::RoofId roof,
+                                 std::optional<model::MaterialId> material) = 0;
+    virtual bool setSlabMaterial(model::SlabId slab,
+                                 std::optional<model::MaterialId> material) = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

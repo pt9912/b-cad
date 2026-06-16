@@ -1,8 +1,11 @@
 #include "hexagon/services/structure_edit_service.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <optional>
 #include <stdexcept>
+#include <string>
 
 #include "hexagon/model/constants.h"
 #include "hexagon/services/opening_geometry.h"
@@ -995,6 +998,177 @@ model::Stair& StructureEditService::mutableStair(model::StairId id) {
         throw std::out_of_range("mutableStair: unbekannte Treppen-Id");
     }
     return *it;
+}
+
+// --- Material: projekt-eigene Materialien (LH-FA-MAT-*, ADR-0006/0012) ---
+
+namespace {
+
+// Name-Pflicht (MAT-001 Negative): leer oder nur Whitespace → ungültig.
+bool isBlankName(const std::string& s) {
+    return std::all_of(s.begin(), s.end(), [](unsigned char c) {
+        return std::isspace(c) != 0;
+    });
+}
+
+bool materialExists(const model::Building& b, model::MaterialId id) {
+    return std::any_of(b.materials.begin(), b.materials.end(),
+                       [id](const model::Material& m) { return m.id == id; });
+}
+
+// `on_delete: restrict` (ADR-0006 #5): wird das Material noch von einem Bauteil
+// (Wand/Dach/Decke) referenziert? `optional<MaterialId> == MaterialId` vergleicht
+// den enthaltenen Wert (nur true bei has_value && gleich).
+bool materialReferenced(const model::Building& b, model::MaterialId id) {
+    const auto any_ref = [id](const auto& container) {
+        return std::any_of(container.begin(), container.end(),
+                           [id](const auto& c) { return c.material_id == id; });
+    };
+    return any_ref(b.walls) || any_ref(b.roofs) || any_ref(b.slabs);
+}
+
+// Override-Auflösung (MAT-003): eigenes material_id → sein Material. welle-3:
+// KEIN wall_type-Template-Fallback (Wand-Typ ist Enum). Kein eigenes Material
+// oder dangling Id → std::nullopt (Totalität).
+std::optional<model::Material> resolveOwnMaterial(
+    const model::Building& b, std::optional<model::MaterialId> own) {
+    if (!own.has_value()) {
+        return std::nullopt;
+    }
+    const auto it = std::find_if(
+        b.materials.begin(), b.materials.end(),
+        [&own](const model::Material& m) { return m.id == *own; });
+    return (it != b.materials.end()) ? std::optional<model::Material>(*it)
+                                     : std::nullopt;
+}
+
+}  // namespace
+
+std::optional<model::MaterialId> StructureEditService::addMaterial(
+    const model::Material& prototype) {
+    if (isBlankName(prototype.name)) {
+        return std::nullopt;  // MAT-001 Negative: ohne Name abgelehnt
+    }
+    model::Material material = prototype;
+    material.id = static_cast<model::MaterialId>(next_material_id_);
+    building_.materials.push_back(material);
+    ++next_material_id_;
+    return material.id;  // kein op (Pull-Konsum, ADR-0012)
+}
+
+bool StructureEditService::updateMaterial(model::MaterialId id,
+                                          const model::Material& values) {
+    if (isBlankName(values.name)) {
+        return false;  // leerer Name → Modell unverändert
+    }
+    const auto it = std::find_if(
+        building_.materials.begin(), building_.materials.end(),
+        [id](const model::Material& m) { return m.id == id; });
+    if (it == building_.materials.end()) {
+        return false;  // unbekannte Id
+    }
+    model::Material updated = values;
+    updated.id = id;  // Id ist unveränderlich
+    *it = updated;
+    return true;
+}
+
+bool StructureEditService::removeMaterial(model::MaterialId id) {
+    const auto it = std::find_if(
+        building_.materials.begin(), building_.materials.end(),
+        [id](const model::Material& m) { return m.id == id; });
+    if (it == building_.materials.end()) {
+        return false;  // unbekannt
+    }
+    // `on_delete: restrict` (ADR-0006 #5): noch zugewiesenes Material ist nicht
+    // löschbar — kein stiller Verlust der Zuweisung.
+    if (materialReferenced(building_, id)) {
+        return false;
+    }
+    building_.materials.erase(it);
+    return true;
+}
+
+bool StructureEditService::setWallMaterial(
+    model::WallId wall_id, std::optional<model::MaterialId> material) {
+    if (material.has_value() && !materialExists(building_, *material)) {
+        return false;  // unbekannte Material-Id
+    }
+    const auto it = std::find_if(
+        building_.walls.begin(), building_.walls.end(),
+        [wall_id](const model::Wall& w) { return w.id == wall_id; });
+    if (it == building_.walls.end()) {
+        return false;  // unbekanntes Bauteil
+    }
+    it->material_id = material;  // zuweisen oder abwählen (nullopt); kein op
+    return true;
+}
+
+bool StructureEditService::setRoofMaterial(
+    model::RoofId roof_id, std::optional<model::MaterialId> material) {
+    if (material.has_value() && !materialExists(building_, *material)) {
+        return false;
+    }
+    const auto it = std::find_if(
+        building_.roofs.begin(), building_.roofs.end(),
+        [roof_id](const model::Roof& r) { return r.id == roof_id; });
+    if (it == building_.roofs.end()) {
+        return false;
+    }
+    it->material_id = material;
+    return true;
+}
+
+bool StructureEditService::setSlabMaterial(
+    model::SlabId slab_id, std::optional<model::MaterialId> material) {
+    if (material.has_value() && !materialExists(building_, *material)) {
+        return false;
+    }
+    const auto it = std::find_if(
+        building_.slabs.begin(), building_.slabs.end(),
+        [slab_id](const model::Slab& s) { return s.id == slab_id; });
+    if (it == building_.slabs.end()) {
+        return false;
+    }
+    it->material_id = material;
+    return true;
+}
+
+const std::vector<model::Material>& StructureEditService::materials() const {
+    return building_.materials;  // MAT-002, read-only
+}
+
+std::optional<model::Material> StructureEditService::effectiveMaterial(
+    model::WallId wall_id) const {
+    const auto it = std::find_if(
+        building_.walls.begin(), building_.walls.end(),
+        [wall_id](const model::Wall& w) { return w.id == wall_id; });
+    if (it == building_.walls.end()) {
+        return std::nullopt;  // unbekanntes Bauteil
+    }
+    return resolveOwnMaterial(building_, it->material_id);
+}
+
+std::optional<model::Material> StructureEditService::effectiveMaterial(
+    model::RoofId roof_id) const {
+    const auto it = std::find_if(
+        building_.roofs.begin(), building_.roofs.end(),
+        [roof_id](const model::Roof& r) { return r.id == roof_id; });
+    if (it == building_.roofs.end()) {
+        return std::nullopt;
+    }
+    return resolveOwnMaterial(building_, it->material_id);
+}
+
+std::optional<model::Material> StructureEditService::effectiveMaterial(
+    model::SlabId slab_id) const {
+    const auto it = std::find_if(
+        building_.slabs.begin(), building_.slabs.end(),
+        [slab_id](const model::Slab& s) { return s.id == slab_id; });
+    if (it == building_.slabs.end()) {
+        return std::nullopt;
+    }
+    return resolveOwnMaterial(building_, it->material_id);
 }
 
 }  // namespace bcad::hexagon::services

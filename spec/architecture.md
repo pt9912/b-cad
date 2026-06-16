@@ -74,9 +74,9 @@ nur dort werden Adapter-Instanzen injiziert.
 | Port | Verantwortung | Bezug |
 |---|---|---|
 | `ManageProjectPort` | Projekt anlegen, speichern, laden, versionieren | [LH-FA-BLD-001](lastenheft.md#lh-fa-bld-001--projekt-anlegen)..004, [ACC-005](lastenheft.md#7-abnahmekriterien) |
-| `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, [OBJ-002](lastenheft.md#3-projektziele) |
+| `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch); **projekt-eigene Materialien verwalten/zuweisen** (Material = Bauteil-Eigenschaft) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, [LH-FA-MAT-001](lastenheft.md#lh-fa-mat-001--materialien-verwalten)/003, [OBJ-002](lastenheft.md#3-projektziele) |
 | `DetectRoomsPort` | Raum-Autoerkennung (geschlossene Wandzüge → Raumpolygone, Netto-Fläche je Raum als Auswertungs-Quelle) | [LH-FA-ROM-001](lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)..003 |
-| `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten | [LH-FA-EVL-001](lastenheft.md#lh-fa-evl-001--flächenberechnung)..006 |
+| `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten; **Material-Auflösung/-Liste** (Override-Auflösung je Bauteil als Quelle der Material-/Kostenlisten) | [LH-FA-EVL-001](lastenheft.md#lh-fa-evl-001--flächenberechnung)..006, [LH-FA-MAT-002](lastenheft.md#lh-fa-mat-002--materialbibliothek)/003 |
 | `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation) | [LH-FA-D3-001](lastenheft.md#modul-3d-modellierung-d3)..006, [ACC-002](lastenheft.md#7-abnahmekriterien) |
 | `ExchangeModelPort` | Import/Export anstoßen (Format-neutral) | [LH-FA-IO-001](lastenheft.md#lh-fa-io-001--ifc-import)..008, [ACC-003](lastenheft.md#7-abnahmekriterien), [ACC-004](lastenheft.md#7-abnahmekriterien) |
 
@@ -88,7 +88,7 @@ nur dort werden Adapter-Instanzen injiziert.
 | `ProjectRepositoryPort` | Projekt **atomar** persistieren und laden; Versionshistorie | [LH-FA-BLD-002](lastenheft.md#lh-fa-bld-002--projekt-speichern)..004, [LH-QA-005](lastenheft.md#lh-qa-005--crash-recovery) |
 | `ModelImporterPort` | externes Modell (IFC/DXF) in Domain-Bauteile lesen | [LH-FA-IO-001](lastenheft.md#lh-fa-io-001--ifc-import), [LH-FA-IO-003](lastenheft.md#lh-fa-io-003) |
 | `ModelExporterPort` | Domain-Modell in Zielformat schreiben (IFC/DXF/STEP/STL/PDF/PNG) | [LH-FA-IO-002](lastenheft.md#lh-fa-io-002),004,005,006,007,008 |
-| `MaterialLibraryPort` | Materialien/Texturen/Kennwerte verwalten | [LH-FA-MAT-001](lastenheft.md#lh-fa-mat-001--materialien-verwalten)..006 |
+| `MaterialLibraryPort` | **externer** Material-Katalog/-Import (welle-3 zurückgestellt; die projekt-eigene Material-Verwaltung/-Zuweisung läuft über `EditStructurePort`/`EvaluatePort`, da `materials` projekt-eigen sind) | [LH-FA-MAT-002](lastenheft.md#lh-fa-mat-002--materialbibliothek) |
 | `TracingPort` | OTel-Spans emittieren (optional abschaltbar) | (ADR-Folge) |
 | `ModelChangedPort` | Beobachter-Schnittstelle: committete Modell-Mutationen melden (Push-Notify `element_id`/`op`, Pull-State über Abfrage-Ports); implementiert von Darstellungs-Adaptern | [LH-FA-D3-002](lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung), [OBJ-003](lastenheft.md#3-projektziele) |
 
@@ -257,3 +257,4 @@ Tabelle trägt keine eigene Anforderung und keine zeitliche Schicht
 | Framework-freie Tessellation über `ViewModelPort` | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) |
 | Bauteil-Erweiterungs-Muster (Wandöffnungen, Dach, Decken, Fundament, Treppen) | [ADR-0011](../docs/plan/adr/0011-bauteil-hosting-wandoeffnung.md) |
 | Auswertungs-Architektur `EvaluatePort` (read-only/pull) | [ADR-0012](../docs/plan/adr/0012-evaluations-architektur.md) |
+| Material als Bauteil-Eigenschaft (Verwaltung/Zuweisung driving, read-only-Auflösung) | [ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md) + [ADR-0012](../docs/plan/adr/0012-evaluations-architektur.md) |

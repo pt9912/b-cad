@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "hexagon/model/material.h"
 #include "hexagon/model/opening.h"
 #include "hexagon/model/roof.h"
 #include "hexagon/model/slab.h"
@@ -23,6 +24,7 @@ struct Building {
     std::vector<Roof> roofs;
     std::vector<Slab> slabs;
     std::vector<Stair> stairs;
+    std::vector<Material> materials;  // projekt-eigene Materialien (LH-FA-MAT-*)
 };
 
 }  // namespace bcad::hexagon::model

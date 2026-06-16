@@ -1,8 +1,14 @@
 #pragma once
 
+#include <optional>
+#include <vector>
+
 #include "hexagon/model/area_report.h"
+#include "hexagon/model/material.h"  // Material, MaterialId
+#include "hexagon/model/roof.h"      // RoofId
+#include "hexagon/model/slab.h"      // SlabId
 #include "hexagon/model/volume_report.h"
-#include "hexagon/model/wall.h"  // model::StoreyId
+#include "hexagon/model/wall.h"  // model::StoreyId, WallId
 
 namespace bcad::hexagon::ports::driving {
 
@@ -29,6 +35,24 @@ public:
     // GeometryKernelPort, KEIN Lesen von Solid.volume_mm3. Dach ist welle-3
     // ausgenommen (dicke-loses Modell). Leeres Modell -> alle Felder 0.
     virtual model::VolumeReport volume() const = 0;
+
+    // EVL-Material-Vorbau (LH-FA-MAT-002/003, read-only): Quelle für die
+    // späteren Material-/Kostenlisten (EVL-004/006).
+
+    // Liste der projekt-eigenen Materialien (MAT-002).
+    virtual const std::vector<model::Material>& materials() const = 0;
+
+    // Effektives Material eines Bauteils (MAT-003 Override-Auflösung): das
+    // eigene `material_id` zu seinem `Material` aufgelöst. welle-3-Teilumfang:
+    // KEIN `wall_type`-Template-Fallback (Wand-Typ ist Enum, keine material-
+    // tragende Typ-Entität). Unbekanntes Bauteil / kein Material -> std::nullopt
+    // (Totalität, kein Wurf).
+    virtual std::optional<model::Material> effectiveMaterial(
+        model::WallId wall) const = 0;
+    virtual std::optional<model::Material> effectiveMaterial(
+        model::RoofId roof) const = 0;
+    virtual std::optional<model::Material> effectiveMaterial(
+        model::SlabId slab) const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

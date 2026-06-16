@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+
+#include "hexagon/model/material.h"  // MaterialId
 #include "hexagon/model/point2d.h"
 #include "hexagon/model/wall.h"  // StoreyId
 
@@ -29,6 +32,7 @@ struct Roof {
     double base_z_mm{};      // Traufhöhe / Aufstandshöhe
     double pitch_deg{};      // Dachneigung (LH-FA-ROF-004)
     double overhang_mm{};    // Dachüberstand (LH-FA-ROF-005)
+    std::optional<MaterialId> material_id{};  // eigenes Material (Override, MAT-003)
 };
 
 }  // namespace bcad::hexagon::model

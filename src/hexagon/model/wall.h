@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+
+#include "hexagon/model/material.h"  // MaterialId
 #include "hexagon/model/point2d.h"
 #include "hexagon/model/wall_type.h"
 
@@ -22,6 +25,7 @@ struct Wall {
     double thickness_mm{};
     double height_mm{};
     WallType type{WallType::Innen};
+    std::optional<MaterialId> material_id{};  // eigenes Material (Override, MAT-003)
 };
 
 }  // namespace bcad::hexagon::model

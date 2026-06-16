@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-017d — **Material-System** (`LH-FA-MAT-001/002/003/005/006`, welle-3,
+  in-memory): `model::Material` (pure Werte, Kennwerte U-Wert/Kosten) + projekt-
+  eigene Material-Verwaltung/-Zuweisung über `EditStructurePort`
+  (`addMaterial`/`updateMaterial`/`removeMaterial`/`set{Wall,Roof,Slab}Material`)
+  und read-only Material-Liste/Auflösung über `EvaluatePort` (`materials()`,
+  `effectiveMaterial(...)` — Quelle für EVL-004/006). `removeMaterial` ist
+  `on_delete: restrict`-treu (noch zugewiesenes Material nicht löschbar);
+  Material-Mutationen sind **op-frei** (Pull-Konsum). **Override-Auflösung**
+  geliefert, `wall_type`-Template-Fallback zurückgestellt (kein material-
+  tragender Wandtyp im Domänenmodell). Port-Reconciliation in `architecture.md`
+  (`MaterialLibraryPort` driven = externer Katalog). Kein neuer ADR/keine
+  Persistenz (→ slice-017e). Unabhängiges `MR-006`-Review (1 HIGH + 1 MED + 2 LOW
+  eingearbeitet); `MR-009` n/a.
 - slice-017c — **Volumen-Auswertung** (`LH-FA-EVL-002`, welle-3): `EvaluatePort.volume()`
   liefert das gebäudeweite **Netto-Material-Volumen** in m³ + Bauteiltyp-Subtotale
   (`VolumeReport`: Wand · Decke/Fundament · Treppe), **analytisch im Kern** (neue

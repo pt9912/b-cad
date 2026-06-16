@@ -445,6 +445,22 @@ Bauteils ist sein eigenes `material_id`; **fehlt es, gilt das `material_id`
 seines `wall_type`** (Default über den Typ) — `wall_types.material_id` als
 Vorlage, das Bauteil-`material_id` als Override (Werttyp/FK-Autorität siehe §2.1).
 
+**Material-Verwaltung/-Zuweisung (welle-3-Teilumfang, MAT-001/002/003).**
+Materialien sind **projekt-eigen** (`materials.project_id`) und werden über den
+Bauteil-Edit-Port **angelegt/geändert/entfernt** (MAT-001) und **gelistet**
+(MAT-002); ein Material **ohne Name** (leer oder nur Whitespace) wird
+**abgelehnt** (MAT-001-Negative). Zuweisung (MAT-003) setzt das **eigene
+`material_id`** an Wand/Dach/Decke (Override) bzw. **wählt ab** („kein Material",
+kein Fehler). Ein **noch zugewiesenes** Material ist **nicht löschbar**
+(`on_delete: restrict` — kein stiller Verlust der Zuweisung; erst löschbar, wenn
+unreferenziert). Material-Mutationen sind **op-frei** (per Pull
+von der Auswertung konsumiert, **kein** gerendertes Szenen-Korrelat in welle-3 —
+Farbe/Textur = MAT-004, Sicht). **Auflösungs-Teilumfang:** geliefert ist der
+**Override** (eigenes `material_id` → effektives Material); der
+**`wall_type`-Template-Fallback** ist **zurückgestellt** — das Domänenmodell
+trägt den Wandtyp als Enum, **keine** material-tragende Wall-Type-Entität;
+**Re-Eval** mit Einführung einer solchen Entität.
+
 **Totalität:** ein leeres/lückenhaftes Modell liefert eine Null-/leere
 Auswertung (kein Wurf); die Auswertung **mutiert nie** (read-only).
 
