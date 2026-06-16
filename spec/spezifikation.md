@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-08.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-16.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -482,6 +482,60 @@ trägt.
 **Totalität:** ein leeres/lückenhaftes Modell liefert eine Null-/leere
 Auswertung (kein Wurf); die Auswertung **mutiert nie** (read-only).
 
+### LH-FA-IO-001.a — IFC-Import/-Export (Subset-Mapping, Teilumfang)
+
+Bezug: [`LH-FA-IO-001`](lastenheft.md#lh-fa-io-001--ifc-import) (Import),
+[`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002) (Export) — **Sammelblock** (deckt
+beide). IFC wird über einen **selbst getragenen IFC-SPF-Subset-Codec** im
+IO-Adapter (`adapters/io/`) gelesen/geschrieben — der Geometrie-Kern
+(OpenCascade) deckt STEP/STL, **nicht** IFC. Dieser Block legt das **Mapping** im
+welle-4-Subset fest; die Port-/Adapter-Mechanik (`ExchangeService`, Signaturen)
+ist slice-019b (Lösungsfreiheit der Ebenen). Backend-Provenance: § Historie.
+
+**Encoding.** IFC im **STEP-Physical-File** (ISO 10303-21, `.ifc`-Klartext);
+Schema **IFC4** beim Export, **IFC4 und IFC2x3** beim Import (soweit die
+Subset-Entitäten schema-kompatibel sind).
+
+**Entitäts-Subset (welle-4).** Räumliche Struktur `IfcProject` → `IfcSite`
+(optional) → `IfcBuilding` → `IfcBuildingStorey`, Komposition über
+`IfcRelAggregates`; Bauteil-Verortung über `IfcRelContainedInSpatialStructure`.
+Bauteil: **gerade, achsen-getragene Wände** — beim **Import** aus
+Achs-Repräsentation + Dicke (`IfcMaterialLayerSetUsage`/`IfcMaterialLayerSet`) +
+Höhe auf eine b-cad-Wand abgebildet; beim **Export** als **`IfcWall` mit
+`IfcMaterialLayerSetUsage`** geschrieben — **nicht** `IfcWallStandardCase` (in
+IFC4 deprecated), der Import akzeptiert jedoch **beide** Wandformen
+(Rückwärts-Kompatibilität IFC2x3). Längeneinheit mm (`IfcUnitAssignment` beim
+Export gesetzt, beim Import respektiert).
+
+**Anzahl-Treue.** Der Import erzeugt je `IfcBuildingStorey` ein b-cad-Geschoss
+und je gerader Wand eine b-cad-Wand — **Geschoss- und Wand-Anzahl stimmen mit der
+Quelle überein** ([`LH-FA-IO-001`](lastenheft.md#lh-fa-io-001--ifc-import) Happy).
+Export → Import (Roundtrip, [`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002)) erhält
+Geschoss- und Wand-Anzahl.
+
+**Atomarer Import (kein Teil-Import).** Der Import baut zuerst ein **vollständiges
+In-Memory-Domänenmodell** und übergibt es erst nach fehlerfreiem Parsen; jeder
+Parse-/Format-Fehler oder eine unbekannte Entität in **tragender** Rolle
+(fehlende Pflicht-Referenz der räumlichen Struktur) → [`E-IO-003`](#4-fehler-codes-und-logging-felder)
+(`event=import_rejected`), **kein** Teil-Import (vorheriger Projektstand intakt).
+Nicht-IFC-/inhaltlich-kaputte Eingabe → ebenfalls [`E-IO-003`](#4-fehler-codes-und-logging-felder).
+Ein nicht beschreibbarer **Export**-Zielpfad → [`E-IO-001`](#4-fehler-codes-und-logging-felder)
+(Schreibrecht; kein Teil-Export, Zielpfad unverändert — Muster Projekt-Persistenz
+[`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern)).
+
+**Subset-Grenze (benannte Lücke, Teilumfang welle-4).** Entitäten außerhalb des
+Subsets — Türen/Fenster (`IfcDoor`/`IfcWindow`), Dach (`IfcRoof`), Decken/
+Fundament (`IfcSlab`), Treppen (`IfcStair`), beliebige BREP-/Swept-Solid-Geometrie
+nicht-prismatischer Wände, Property-Sets/Materialien über den Layer hinaus,
+Georeferenzierung — werden beim **Import übersprungen** (kein Abbruch, solange die
+räumliche Pflicht-Struktur trägt) und beim **Export nicht geschrieben**. Ausbau =
+späterer Re-Eval auf eine echte IFC-Bibliothek (Provenance § Historie).
+
+**Totalität & Determinismus.** Eine valide, aber strukturlose IFC-Datei (kein
+Geschoss/keine Wand) → leeres/teil-leeres Modell **ohne Wurf**; eine leere Datei
+ebenso. Die Reihenfolge der erzeugten Bauteile ist aus der Quell-Reihenfolge
+deterministisch abgeleitet.
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -648,7 +702,7 @@ nicht im Bootstrap.
 | OpenCascade | im Adapter gepinnt | `GeometryKernelPort` — Solids, boolesche Operationen, Extrusion |
 | Qt | 6.x (REQ-TEC-002) | GUI-Adapter, keine Kern-Bindung |
 | SQLite | im Adapter gepinnt | `ProjectRepositoryPort`, atomar |
-| IFC | Schema-Version offen (ADR-Folge) | `ModelImporterPort`/`ModelExporterPort` |
+| IFC | **IFC4** (Export) / **IFC2x3 + IFC4** (Import-Subset) | `ModelImporterPort`/`ModelExporterPort` (IFC-SPF-Subset-Codec, §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import)) |
 
 ## 7. Offene Punkte
 
@@ -656,7 +710,9 @@ nicht im Bootstrap.
   (beeinflusst Wohnflächenberechnung [LH-FA-EVL-003](lastenheft.md#lh-fa-evl-003--wohnflächenberechnung))~~ → entschieden
   (Innenkante, Ring-Modell; §1).
 - Performance-Zielkomplexität der Raumerkennung (M3).
-- IFC-Schema-Version und -Bibliothek (ADR in welle-4-austausch).
+- ~~IFC-Schema-Version und -Bibliothek (ADR in welle-4-austausch)~~ → entschieden
+  (IFC-SPF-Subset-Codec; IFC4-Export / IFC2x3+4-Import; §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import),
+  Provenance § Historie); DXF-/STEP-/STL-/PDF-/PNG-Backends bleiben offen (welle-4).
 - Zielplattformen (siehe `releasing.md`).
 
 ## 8. Historie

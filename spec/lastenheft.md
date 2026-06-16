@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.7
+**Version:** 0.1.8
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -696,15 +696,37 @@ Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
 
 **Beschreibung:** Import eines IFC-Modells in das b-cad-Gebäudemodell.
 
+**Teilumfang (welle-4):** Import deckt **Geschosse und gerade Wände**; weitere
+Bauteile (Türen, Fenster, Dach, Decken, Treppen) werden beim Import
+**übersprungen** — ausdrücklich offen, kein stiller Vollumfang.
+
 **Akzeptanzkriterien:**
 
-- **Happy Path:** Given eine valide IFC-Datei mit Wänden/Geschossen,
-  when importiert, then entsprechende b-cad-Bauteile entstehen; Anzahl
-  Geschosse und Wände stimmt mit der Quelle überein.
-- **Negative:** Given eine nicht-IFC-Datei, when importiert, then
-  Fehler-Code [`E-IO-003`](spezifikation.md#4-fehler-codes-und-logging-felder), kein Teil-Import.
+- **Happy Path:** Given eine valide IFC-Datei mit Geschossen und Wänden,
+  when importiert, then entsprechende b-cad-Geschosse und -Wände entstehen;
+  **Anzahl Geschosse und Wände stimmt mit der Quelle überein**.
+- **Boundary:** Given eine valide IFC-Datei ohne Geschosse/Wände (strukturlos
+  oder leer), when importiert, then entsteht ein leeres bzw. teil-leeres Modell
+  **ohne Absturz**.
+- **Negative:** Given eine nicht-IFC-Datei (oder eine inhaltlich kaputte
+  IFC-Datei), when importiert, then Fehler-Code [`E-IO-003`](spezifikation.md#4-fehler-codes-und-logging-felder),
+  **kein Teil-Import** (vorheriger Projektstand unberührt).
 
-- <a id="lh-fa-io-002"></a>**LH-FA-IO-002 — IFC-Export.**
+#### <a id="lh-fa-io-002"></a>LH-FA-IO-002 — IFC-Export
+
+**Beschreibung:** Export des b-cad-Gebäudemodells als IFC-Datei.
+
+**Teilumfang (welle-4):** Export schreibt **Geschosse und gerade Wände**; weitere
+Bauteile werden **nicht geschrieben** (siehe LH-FA-IO-001).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein b-cad-Modell mit Geschossen und Wänden, when nach IFC
+  exportiert, then entsteht eine IFC-Datei, die **re-importiert dieselbe Anzahl
+  Geschosse und Wände** ergibt (Roundtrip).
+- **Negative:** Given ein nicht beschreibbarer Zielpfad (fehlendes Schreibrecht),
+  when exportiert, then Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder),
+  **kein Teil-Export**; der Zielpfad bleibt unverändert.
 - <a id="lh-fa-io-003"></a>**LH-FA-IO-003 — DXF-Import.**
 - <a id="lh-fa-io-004"></a>**LH-FA-IO-004 — DXF-Export.**
 - <a id="lh-fa-io-005"></a>**LH-FA-IO-005 — STEP-Export.**

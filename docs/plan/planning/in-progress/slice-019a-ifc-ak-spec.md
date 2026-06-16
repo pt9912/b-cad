@@ -1,7 +1,7 @@
 ---
 id: slice-019a
 titel: IFC-Import/-Export — AK-Schärfung [LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002 & Spec-Mapping (Subset, parametrisiert auf [ADR-0013](../../adr/0013-ifc-bibliothek.md))
-status: in-progress
+status: done
 welle: welle-4-austausch
 lastenheft_refs: [[LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import), [LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md), [ADR-0013](../../adr/0013-ifc-bibliothek.md)]
@@ -9,9 +9,9 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0002](../.
 
 # Slice 019a: IFC-Import/-Export — AK-Schärfung & Spec-Mapping
 
-**Status:** in-progress (2026-06-16). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen
-(**0 HIGH / 0 MED / 3 LOW**; implementierungs-bereit, Start nicht blockiert) —
-LOW eingearbeitet.
+**Status:** done (2026-06-16). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen
+(**0 HIGH / 0 MED / 3 LOW**, LOW eingearbeitet); DoD vollständig, `make gates`
+grün, Closure-Notiz §8.
 
 **Plan-Review ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)):**
 [Report](../../../reviews/2026-06-16-slice-019a-plan.md) — **keine HIGH/MED**
@@ -63,7 +63,7 @@ ausdrücklich offen (benannte Lücke, Muster ROF-Rechteck-Teilumfang / WAL-006).
 
 ## 2. Definition of Done
 
-- [ ] **Lastenheft [LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) + [LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002) auf AK-Niveau geschärft**
+- [x] **Lastenheft [LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) + [LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002) auf AK-Niveau geschärft**
       (**lösungsfrei, benutzer-beobachtbar** — **keine** IFC-Entitätsnamen/
       Encoding/Mapping-Mechanik im Lastenheft-Text, die gehören in §1; [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)):
       je Happy/Boundary/Negative über *sichtbare* Ergebnisse.
@@ -81,7 +81,7 @@ ausdrücklich offen (benannte Lücke, Muster ROF-Rechteck-Teilumfang / WAL-006).
       Decken/Treppen) werden **übersprungen bzw. nicht geschrieben** — ausdrücklich
       offen, kein stiller Vollumfang. + Header-Nachzug + `lastenheft-historie.md`
       0.1.8 (**[MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/[MR-012](../../../../harness/conventions.md#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie)**: Header-`Version:` == oberste Historie-Zeile).
-- [ ] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)** (Sammelblock —
+- [x] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)** (Sammelblock —
       **deckt IO-001 + IO-002**, Muster [`LH-FA-ROF-001.a`](../../../../spec/lastenheft.md#lh-fa-rof-001--satteldach)): das IFC-Mapping
       innerhalb des **[ADR-0013](../../adr/0013-ifc-bibliothek.md)-Subsets** — **Encoding** IFC-SPF (ISO 10303-21);
       **Entitäts-Subset** räumliche Komposition `IfcProject`→`IfcSite` (optional)
@@ -95,18 +95,18 @@ ausdrücklich offen (benannte Lücke, Muster ROF-Rechteck-Teilumfang / WAL-006).
       Teil-Import**); **Totalität** (degenerierte/leere Datei → leeres Modell,
       kein Wurf). Mechanik, **kein** Lastenheft. + `spezifikation-historie.md` +
       `**Letzte Änderung:**`-Header der `spezifikation.md` nachziehen (LOW-1, kein Gate).
-- [ ] **`spec/spezifikation.md` §6 + §7 nachgezogen ([ADR-0013](../../adr/0013-ifc-bibliothek.md)-Folgepflicht):**
+- [x] **`spec/spezifikation.md` §6 + §7 nachgezogen ([ADR-0013](../../adr/0013-ifc-bibliothek.md)-Folgepflicht):**
       §6-Vertragstabelle IFC-Zeile „Schema-Version offen (ADR-Folge)" → auf den
       **entschiedenen Stand** (IFC4-Export / IFC2x3+4-Import-Subset, [ADR-0013](../../adr/0013-ifc-bibliothek.md));
       §7-Offene-Punkte-Zeile „IFC-Schema-Version und -Bibliothek" **gestrichen**
       (entschieden). ADR-Index-Folgepflicht-Zeile abhaken (im Closure-Commit).
-- [ ] **`spec/architecture.md`:** voraussichtlich **unverändert** — `ExchangeModelPort`/
+- [x] **`spec/architecture.md`:** voraussichtlich **unverändert** — `ExchangeModelPort`/
       `ModelImporterPort`/`ModelExporterPort`/`ExchangeService`/`adapters/io/` +
       der IFC-Import-Use-Case (§4) sind **bereits deklariert**; falls die §1-Spec-
       Entscheidung doch eine Doku-Präzisierung impliziert, mit Begründung — sonst
       bewusst nicht geändert (Port-Signatur ist slice-019b; Lösungsfreiheit der
       Ebenen).
-- [ ] **Reine Doku/Entscheidung — kein Code, keine Tests, kein ADR** ([ADR-0013](../../adr/0013-ifc-bibliothek.md)
+- [x] **Reine Doku/Entscheidung — kein Code, keine Tests, kein ADR** ([ADR-0013](../../adr/0013-ifc-bibliothek.md)
       deckt das Backend; das Mapping ist eine Spec-Entscheidung). `make gates`
       grün; `make schema-check` unberührt (kein Schema-Bezug); Closure-Notiz mit
       Lerneintrag. **Nicht Teil dieser DoD:** slice-019b (IFC-Impl: `ExchangeService`
@@ -189,5 +189,47 @@ ausdrücklich offen (benannte Lücke, Muster ROF-Rechteck-Teilumfang / WAL-006).
 
 ## 8. Closure-Notiz
 
-*(wird bei `done` ausgefüllt — Closure-Kriterien beobachtbar, Lerneintrag in
-einer der drei Formen: geschärfte Regel · neuer Sensor · benannte Spec-Lücke.)*
+**Closure-Kriterien (beobachtbar):**
+
+- **Lastenheft 0.1.8:** [`LH-FA-IO-001`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) (Import) + [`LH-FA-IO-002`](../../../../spec/lastenheft.md#lh-fa-io-002) (Export-Stub →
+  voll) auf AK-Niveau (Happy/Boundary/Negative, lösungsfrei/benutzer-beobachtbar);
+  **Teilumfang Geschosse + gerade Wände** explizit (weitere Bauteile übersprungen/
+  nicht geschrieben, offen — Muster ROF/WAL-006); Header 0.1.8 == oberste
+  `lastenheft-historie.md`-Zeile ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/012).
+- **`spezifikation.md` §1 [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)** (Sammelblock IO-001+002): IFC-SPF-
+  Encoding (ISO 10303-21), Entitäts-Subset (Projekt→Gelände→Gebäude→Geschoss +
+  gerade Wände), Export IFC4 `IfcWall`+`IfcMaterialLayerSetUsage` (**nicht**
+  deprecated `IfcWallStandardCase`), Import IFC4+IFC2x3, atomarer Import
+  ([`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder), kein Teil-Import; Export-Schreibrecht [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)), Subset-Lücke/
+  Totalität. **§6** IFC-Vertragszeile auf entschiedenen Stand, **§7** IFC-Offene-
+  Punkte-Zeile gestrichen ([ADR-0013](../../adr/0013-ifc-bibliothek.md)-Folgepflicht, README-Index abgehakt). `**Letzte
+  Änderung:**` der `spezifikation.md` nachgezogen (LOW-1). + `spezifikation-historie.md`.
+- **Spec-Straten ADR-frei ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)):** [ADR-0013](../../adr/0013-ifc-bibliothek.md)-Provenance **nur** in den
+  `*-historie.md`; der `spezifikation.md`-Körper trägt **keinen** ADR-Verweis
+  (matrix `spec-straten ↛ adr`) — beim Edit gefangen (5 eingeschlichene ADR-Refs)
+  und auf „§ Historie" umgestellt.
+- **`architecture.md` bewusst unverändert:** `ExchangeModelPort`/`ModelImporterPort`/
+  `ModelExporterPort`/`ExchangeService`/`adapters/io/` + §4-Use-Case lagen vor
+  (Port-Signatur ist slice-019b; Lösungsfreiheit der Ebenen).
+- **Kein Code/Test/ADR/Schema** ([ADR-0013](../../adr/0013-ifc-bibliothek.md) deckt das Backend); `make gates` grün
+  (2026-06-16); `make schema-check` unberührt (kein Schema-Bezug).
+
+**Lerneintrag (benannte Spec-Lücke + geschärfte Praxis):**
+
+- **Benannte Spec-Lücke:** der IFC-Subset (Geschosse + gerade Wände) ist explizit
+  begrenzt; Türen/Fenster/Dach/Decke/Treppe, beliebige Geometrie, Property-Sets
+  und Georeferenzierung sind als Re-Eval-Trigger benannt ([ADR-0013](../../adr/0013-ifc-bibliothek.md), echte
+  IFC-Bibliothek) — kein stiller Vollumfang (Muster ROF-Rechteck/WAL-006).
+- **[MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)-Reflex bei spec→ADR-Provenance (geschärfte Praxis):** ein Schärfungs-
+  Slice, der eine *frische* ADR-Entscheidung in die Spec einarbeitet, ist versucht,
+  die ADR im Körper zu zitieren — die `matrix`-Richtungsregel verlangt die
+  Provenance in der `*-historie.md`. Hier vor dem Gate-Lauf selbst per `grep ADR-`
+  gefangen; das `matrix`-Modul fängt die Klasse zusätzlich fail-closed.
+- **Schema-Voraussicht entfällt:** IFC ist Import/Export ohne Schema-Bezug — anders
+  als die welle-2-Bauteil-Slices kein `schema-check`-Berührungspunkt.
+
+**Restrisiko / Nachfolge:** slice-019b (IFC-Implementierung: `ExchangeService` +
+`ModelImporterPort`/`ModelExporterPort` + IFC-SPF-Subset-Codec + AK-Tests
+[`LH-FA-IO-001`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/`002` **+ Adapter-Pfad-Integrationstest** + neue `arch-check`-io-Regel)
+wird startbar — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review davor. Danach STEP/STL-/DXF-/PDF/PNG-Backends (je
+Schwester-ADR).
