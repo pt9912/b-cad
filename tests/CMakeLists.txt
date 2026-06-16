@@ -9,6 +9,7 @@ find_package(GTest REQUIRED)   # REQ-TEC-005
 add_executable(bcad_tests
     hexagon/test_bootstrap_info.cpp
     hexagon/test_evaluate.cpp
+    hexagon/test_evaluate_lists.cpp
     hexagon/test_evaluate_volume.cpp
     hexagon/test_greeting_service.cpp
     hexagon/test_material.cpp

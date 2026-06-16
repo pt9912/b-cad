@@ -1171,4 +1171,66 @@ std::optional<model::Material> StructureEditService::effectiveMaterial(
     return resolveOwnMaterial(building_, it->material_id);
 }
 
+// EVL-004 (spez. §1): Materialliste — je effektivem Material die Bauteil-Anzahl
+// + die Menge = Σ Netto-Volumen (m³) über Wand + Decke/Fundament (Reuse
+// `volume_geometry`/EVL-002, mm³→m³). Bauteile ohne Material übersprungen
+// (Boundary). **Dach NICHT iteriert** — material-tragend, aber Volumen welle-3
+// zurückgestellt (benannte Lücke). Gruppierung nach `MaterialId` (`std::map` →
+// deterministisch). Read-only, kein op.
+model::MaterialReport StructureEditService::materialList() const {
+    std::map<model::MaterialId, model::MaterialLine> groups;
+    for (const model::Wall& w : building_.walls) {
+        const std::optional<model::Material> eff = effectiveMaterial(w.id);
+        if (!eff.has_value()) {
+            continue;  // kein Material → nicht gruppiert (Boundary)
+        }
+        model::MaterialLine& line = groups[eff->id];
+        line.material = *eff;
+        line.component_count += 1;
+        line.quantity_m3 +=
+            wallNetVolumeMm3(w, building_.walls, building_.openings) / kMm3PerM3;
+    }
+    for (const model::Slab& s : building_.slabs) {
+        const std::optional<model::Material> eff = effectiveMaterial(s.id);
+        if (!eff.has_value()) {
+            continue;
+        }
+        model::MaterialLine& line = groups[eff->id];
+        line.material = *eff;
+        line.component_count += 1;
+        line.quantity_m3 += slabNetVolumeMm3(s) / kMm3PerM3;
+    }
+    model::MaterialReport report;
+    report.lines.reserve(groups.size());
+    for (auto& [id, line] : groups) {
+        report.total_m3 += line.quantity_m3;
+        report.lines.push_back(std::move(line));
+    }
+    return report;
+}
+
+// EVL-005 (spez. §1): Türliste — platzierte Türen mit Maßen; Anzahl = Größe.
+std::vector<model::DoorLine> StructureEditService::doorList() const {
+    std::vector<model::DoorLine> doors;
+    for (const model::Opening& o : building_.openings) {
+        if (o.kind == model::OpeningKind::Door) {
+            doors.push_back(model::DoorLine{o.width_mm, o.height_mm});
+        }
+    }
+    return doors;
+}
+
+// EVL-006 (spez. §1): Fensterliste — platzierte Fenster mit Maßen (inkl.
+// Brüstung); Anzahl = Größe.
+std::vector<model::WindowLine> StructureEditService::windowList() const {
+    std::vector<model::WindowLine> windows;
+    for (const model::Opening& o : building_.openings) {
+        if (o.kind == model::OpeningKind::Window) {
+            windows.push_back(
+                model::WindowLine{o.width_mm, o.height_mm, o.sill_height_mm});
+        }
+    }
+    return windows;
+}
+
 }  // namespace bcad::hexagon::services

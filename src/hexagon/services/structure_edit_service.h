@@ -138,6 +138,14 @@ public:
     std::optional<model::Material> effectiveMaterial(
         model::SlabId slab) const override;
 
+    // EvaluatePort (LH-FA-EVL-004/005/006): read-only Listen-Aggregationen —
+    // Materialliste (Volumen je effektivem Material über Wand+Decke, Dach
+    // ausgenommen) + Tür-/Fensterlisten (Maße). const, kein op, kein
+    // GeometryKernelPort.
+    model::MaterialReport materialList() const override;
+    std::vector<model::DoorLine> doorList() const override;
+    std::vector<model::WindowLine> windowList() const override;
+
     // ViewModelPort (LH-FA-D3-001, ADR-0009 (b)): tessellierter Stand für
     // die Darstellung — totale Queries (Tessellations-Fehler ⇒ leer),
     // on demand über den GeometryKernelPort.

@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-017f — **EVL-Listen** (`LH-FA-EVL-004/005/006`, welle-3 — **schließt das
+  EVL-Modul**): `EvaluatePort.materialList()` (Materialliste: je effektivem
+  Material die Bauteil-Anzahl + Menge = Σ Netto-Volumen m³ über Wand+Decke,
+  Reuse `effectiveMaterial`/`volume_geometry`; Bauteile ohne Material nicht
+  gruppiert; **Dach ausgenommen** — Volumen welle-3 zurückgestellt, benannte
+  Lücke; deterministisch nach `MaterialId`), `doorList()`/`windowList()`
+  (Tür-/Fensterlisten mit Maßen). Neue pure Werttypen `MaterialReport`/
+  `MaterialLine`/`DoorLine`/`WindowLine`. Read-only-Aggregation (kein `op`, kein
+  `GeometryKernelPort`). spez. §1 nachgezogen (EVL-004-Menge = Volumen,
+  `roofs`-Lücke). Unabhängiges `MR-006`-Review (0 HIGH, 1 LOW eingearbeitet);
+  `MR-009` n/a.
 - slice-017e — **Material-Persistenz** (`LH-FA-MAT-001/003`, `LH-FA-BLD-002`, welle-3):
   die `materials`-Bibliothek + die `material_id`-Zuweisung an Wand/Dach/Decke
   round-trippen im `SqliteProjectRepository` (`insertMaterials`/`loadMaterials` +

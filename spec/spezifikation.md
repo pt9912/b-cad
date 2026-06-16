@@ -432,13 +432,18 @@ erhält (nicht-prismatisches/komplexes Volumen), wird die analytische
 Volumen-Schicht neu bewertet.
 
 **Listen (EVL-004/005/006) — Aggregation über das Modell.** Die Materialliste
-(EVL-004) gruppiert die **material-tragenden Bauteile** (`walls`/`roofs`/`slabs`
-mit `material_id`) je Material und summiert die Menge (Fläche/Volumen).
-`stairs`/`openings`/`doors`/`windows` tragen kein `material_id` und sind eine
-**benannte Lücke**; **`windows.frame_material` ist Freitext (kein `materials`-FK)
-und fließt NICHT in die EVL-004-Aggregation** (sonst zwei inkonsistente Quellen).
+(EVL-004) gruppiert die **material-tragenden Bauteile mit Netto-Volumen**
+(`walls`/`slabs` mit `material_id`) je Material und summiert die Menge =
+**Netto-Volumen (m³)** über Wand + Decke/Fundament (EVL-002/`volume_geometry`,
+welle-3-Einheit). Bauteile **ohne** Material werden nicht gruppiert (Boundary).
+**Dach welle-3 ausgenommen:** ein `roof` ist zwar material-tragend, sein
+**Volumen ist zurückgestellt** (dicke-loses Modell, s. o.) → **nicht** in die
+EVL-004-Aggregation (benannte Lücke; Re-Eval mit Dach-Volumen-Semantik). Ebenso
+tragen `stairs`/`openings`/`doors`/`windows` kein `material_id` (**benannte
+Lücke**), und **`windows.frame_material` ist Freitext (kein `materials`-FK) und
+fließt NICHT in die EVL-004-Aggregation** (sonst zwei inkonsistente Quellen).
 Tür-/Fensterlisten (EVL-005/006) zählen die `openings`/`doors`/`windows` mit
-ihren Maßen.
+ihren Maßen (Anzahl = Listengröße).
 
 **Material-Auflösungsregel (Datenfluss):** das **effektive** Material eines
 Bauteils ist sein eigenes `material_id`; **fehlt es, gilt das `material_id`

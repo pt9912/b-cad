@@ -5,6 +5,8 @@
 
 #include "hexagon/model/area_report.h"
 #include "hexagon/model/material.h"  // Material, MaterialId
+#include "hexagon/model/material_line.h"  // MaterialReport (EVL-004)
+#include "hexagon/model/opening_line.h"   // DoorLine, WindowLine (EVL-005/006)
 #include "hexagon/model/roof.h"      // RoofId
 #include "hexagon/model/slab.h"      // SlabId
 #include "hexagon/model/volume_report.h"
@@ -53,6 +55,23 @@ public:
         model::RoofId roof) const = 0;
     virtual std::optional<model::Material> effectiveMaterial(
         model::SlabId slab) const = 0;
+
+    // EVL-Listen (LH-FA-EVL-004/005/006, read-only Aggregation): pull, kein
+    // `op`, kein `GeometryKernelPort`.
+
+    // EVL-004 Materialliste: je effektivem Material die Bauteil-Anzahl + die
+    // Menge = Σ Netto-Volumen (m³) über Wand + Decke/Fundament. Bauteile ohne
+    // Material erscheinen nicht (Boundary). Dach welle-3 ausgenommen (Volumen-
+    // Lücke). Deterministisch (nach MaterialId).
+    virtual model::MaterialReport materialList() const = 0;
+
+    // EVL-005 Türliste: die platzierten Türen mit ihren Maßen (Breite/Höhe);
+    // „Anzahl" = Listengröße.
+    virtual std::vector<model::DoorLine> doorList() const = 0;
+
+    // EVL-006 Fensterliste: die platzierten Fenster mit ihren Maßen
+    // (Breite/Höhe/Brüstung); „Anzahl" = Listengröße.
+    virtual std::vector<model::WindowLine> windowList() const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving
