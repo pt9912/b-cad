@@ -1,6 +1,6 @@
 # Roadmap — b-cad
 
-**Status:** Aktiv. **Letzte Änderung:** 2026-06-15.
+**Status:** Aktiv. **Letzte Änderung:** 2026-06-16.
 
 **Format-Regel:** Reihenfolge von **Wellen**, keine Reihenfolge von
 Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
@@ -54,7 +54,7 @@ in §Historische Trigger-Verschiebungen).
 - Unabhängige Welle-Verifikation (analog welle-1/-2) + Closure-Notiz in
   `done/welle-3-results.md` inkl. zwingendem Carveout-Audit.
 
-**Fortschritt (Stand 2026-06-14):**
+**Fortschritt (Stand 2026-06-16):**
 - ✓ **slice-017a** — Auswertungs-/Material-Architektur (**[ADR-0012](../../adr/0012-evaluations-architektur.md) „Evaluations-
   Architektur" accepted**) + Lastenheft-EVL/MAT-Schärfung (0.1.7) + Spec
   (`EvaluatePort` read-only/pull; Fläche = Shoelace-Raum-Netto/[ADR-0007](../../adr/0007-raumerkennung-geometrie-basis.md);
@@ -63,8 +63,12 @@ in §Historische Trigger-Verschiebungen).
 - ✓ **slice-017b** — **`EvaluatePort` implementiert** + Flächen EVL-001/003
   (Netto-Grundfläche je Raum/Geschoss + Wohnfläche), read-only-Aggregation der
   `Room.net_area_mm2`. `model::AreaReport`, `kLivingAreaFactor=1`. 122 Tests grün.
-- ⏳ offen: **slice-017c** (EVL-002 **Volumen** — geometrie-schwer, **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
-  greift**) · Listen EVL-004/005/006 · **Material-Strang** (`model::Material` +
+- ✓ **slice-017c** — **EVL-002 Volumen** implementiert: `EvaluatePort.volume()` →
+  gebäudeweites Netto-Material-Volumen (m³) + Bauteiltyp-Subtotale (`VolumeReport`:
+  Wand/Decke-Fundament/Treppe), **analytisch im Kern** (kein
+  `GeometryKernelPort`/`Solid.volume_mm3`, [ADR-0012](../../adr/0012-evaluations-architektur.md) #4). Dach zurückgestellt
+  (dicke-los, benannte Lücke + Re-Eval). **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) 0 HIGH**; `make gates` grün (131 Tests).
+- ⏳ offen: Listen EVL-004/005/006 · **Material-Strang** (`model::Material` +
   Zuweisung + `material_id`-Round-Trip, die welle-2-`NULL`-Felder) ·
   Welle-Verifikation + `done/welle-3-results.md`.
 

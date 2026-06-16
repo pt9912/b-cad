@@ -1,7 +1,7 @@
 ---
 id: slice-017c
 titel: Auswertung Volumen — EvaluatePort.volume() + EVL-002 (Bauteil-Netto-Volumen, analytisch im Kern)
-status: in-progress
+status: done
 welle: welle-3-auswertung
 lastenheft_refs: [[LH-FA-EVL-002](../../../../spec/lastenheft.md#lh-fa-evl-002--volumenberechnung)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md), [ADR-0012](../../adr/0012-evaluations-architektur.md)]
@@ -9,11 +9,10 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0011](../.
 
 # Slice 017c: Auswertung Volumen — EvaluatePort.volume() + EVL-002
 
-**Status:** in-progress. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen** (unabhängig, ohne
-Autoren-Kontext): 1 HIGH + 3 MED + 2 LOW eingearbeitet
-([Report](../../../reviews/2026-06-16-slice-017c-plan.md)) — HIGH-1
-(§1-„Dach"-Klausel entfernen) gelöst → **startbar**. Geometrieschwer →
-**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) greift** (unabhängiges Code-Review vor Welle-Closure).
+**Status:** done (2026-06-16, `make gates` grün, 131 Tests). Unabhängig (ohne
+Autoren-Kontext): **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review** (1 HIGH + 3 MED + 2 LOW eingearbeitet)
++ **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review** (0 HIGH, closure-ready)
+([Report](../../../reviews/2026-06-16-slice-017c-plan.md)). Closure-Notiz §8.
 
 **Welle:** welle-3-auswertung (dritter Slice; zweite Auswertungs-Implementierung,
 erstmals geometrie-korrektheits-nah).
