@@ -396,19 +396,40 @@ wird **wiederverwendet**, keine zweite Semantik, keine Doppelzählung). ROM-002
 **Wohnfläche (EVL-003)** = Summe der Raum-Netto-Flächen (welle-3-Teilumfang;
 Anrechnungsfaktoren offen, `LIVING_AREA_FACTOR = 1` §3).
 
-**Volumen (EVL-002) — Bauteil-Netto-Volumen analytisch im Kern.** Je Bauteil:
-Dach/Platte/Treppe aus ihrem analytischen Solid; **Wand** =
+**Volumen (EVL-002) — Bauteil-Netto-Volumen analytisch im Kern.** Das
+Netto-Material-Volumen deckt in welle-3 **Wand · Decke/Fundament · Treppe** (je
+ein `VolumeReport`-Subtotal + Summe `total_m3`; **Dach ausgenommen**, s. u.). Je
+Bauteil: **Platte/Treppe** aus ihrem analytischen Solid (Treppe = Σ Stufenkörper
+`tread · width · Geschosshöhe · (step_count+1)/2`, **geländer-frei**); **Wand** =
 Bauteil-Footprint-Fläche (Shoelace) · Höhe **minus** das **real entfernte,
 geklemmte Öffnungsvolumen** je Öffnung
 (`width · thickness · clamped_height`,
 `clamped_height = min(sill+height, Wandhöhe) − max(0, sill)`) — **NICHT** das
 überstands-behaftete Roh-Schnittprisma (`OPENING_CUT_OVERSHOOT_MM`; die
-Schnitt-Prismen sind das Boolean-**Werkzeug**, nicht das Volumen-Maß).
+Schnitt-Prismen sind das Boolean-**Werkzeug**, nicht das Volumen-Maß). Die
+Auswertung ist **rein analytisch im Kern** und liest **nicht** das adapter-
+gemessene `Solid.volume_mm3` (das wäre eine driven-Volumenmessung — keine reine
+Kern-Query).
 **Eck-Näherung (welle-3, benannt):** die Summe der Wand-Volumina **doppelzählt**
 den Miter-Sporn endpunkt-verbundener Wände (slice-012-Footprint) — kleine
 Über-Zählung, bewusst in Kauf genommen; das exakte vereinigte Volumen
 (Footprint-Union je Geschoss) ist Re-Eval (parallel
 WAL-006-Vollumfang).
+**Aussparungs-Näherung (welle-3, benannt):** überlappende Platten-Aussparungen
+werden analytisch über die **Summe** der Einzelflächen abgezogen (nicht ihre
+Vereinigung) — eine kleine **Unter-Zählung** im seltenen Überlappungsfall (der
+reale Boolean entfernt die Vereinigung); das exakte Vereinigungs-Volumen ist
+Re-Eval (parallel zur Wand-Eck-Näherung).
+
+**Dach-Volumen — welle-3 zurückgestellt (benannte Lücke).** Das Dachmodell ist
+**dicke-los** (Shell aus geneigten Flächen, unten offen) und trägt damit **kein
+wohldefiniertes Bauteil-/Material-Solid**; der einzige berechenbare Dachkörper
+wäre **umbauter Raum**, kein Material-Volumen, und gehört nicht in dieselbe
+Netto-Material-Summe wie Wand/Decke/Treppe (Massenermittlung). Das Geländer der
+Treppe ist generierte Render-Geometrie (kein Material) und bleibt ebenso
+**ausgenommen**. **Re-Eval:** sobald das Dach eine Dicke-/Material-Semantik
+erhält (nicht-prismatisches/komplexes Volumen), wird die analytische
+Volumen-Schicht neu bewertet.
 
 **Listen (EVL-004/005/006) — Aggregation über das Modell.** Die Materialliste
 (EVL-004) gruppiert die **material-tragenden Bauteile** (`walls`/`roofs`/`slabs`

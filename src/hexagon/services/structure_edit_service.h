@@ -107,6 +107,11 @@ public:
     model::AreaReport floorArea(model::StoreyId storey) const override;
     model::AreaReport livingArea() const override;
 
+    // EvaluatePort (LH-FA-EVL-002): gebäudeweites Netto-Material-Volumen +
+    // Bauteiltyp-Subtotale, analytisch im Kern (`volume_geometry`); const ⇒
+    // keine Mutation, kein op, kein GeometryKernelPort, kein Solid.volume_mm3.
+    model::VolumeReport volume() const override;
+
     // ViewModelPort (LH-FA-D3-001, ADR-0009 (b)): tessellierter Stand für
     // die Darstellung — totale Queries (Tessellations-Fehler ⇒ leer),
     // on demand über den GeometryKernelPort.

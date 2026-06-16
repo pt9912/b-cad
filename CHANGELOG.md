@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-017c — **Volumen-Auswertung** (`LH-FA-EVL-002`, welle-3): `EvaluatePort.volume()`
+  liefert das gebäudeweite **Netto-Material-Volumen** in m³ + Bauteiltyp-Subtotale
+  (`VolumeReport`: Wand · Decke/Fundament · Treppe), **analytisch im Kern** (neue
+  `services/volume_geometry`: Wand = Footprint·Höhe − geklemmte Öffnungen; Platte =
+  (Fläche − Ausschnitte)·Dicke; Treppe = Σ Stufenkörper, geländer-frei) — **kein**
+  `GeometryKernelPort`/`Solid.volume_mm3` (reine Kern-Query). **Dach zurückgestellt**
+  (dicke-loses Modell, benannte Lücke + Re-Eval; spez. §1). Unabhängiges `MR-006`-Review
+  (1 HIGH + 3 MED + 2 LOW eingearbeitet); `MR-009` greift.
 - slice-018c — **Per-ID-Anker-Präzision** (`harness-steering`): die 17 in slice-018b
   auf das Geschwister-Heading verlinkten Bullet-Sub-IDs (`LH-FA` D3/IO/ROM/WAL) per
   **Inline-HTML-Anker** (`<a id>`, d-check v0.9.0) auf präzise Per-ID-Anker gehoben.

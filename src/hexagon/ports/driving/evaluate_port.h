@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hexagon/model/area_report.h"
+#include "hexagon/model/volume_report.h"
 #include "hexagon/model/wall.h"  // model::StoreyId
 
 namespace bcad::hexagon::ports::driving {
@@ -21,6 +22,13 @@ public:
     // EVL-003: Wohnfläche (gebäudeweit) = Summe der Raum-Netto-Grundflächen
     // × kLivingAreaFactor (m²). Modell ohne Räume -> leerer Report.
     virtual model::AreaReport livingArea() const = 0;
+
+    // EVL-002: gebäudeweites Netto-MATERIAL-Volumen (m³) + Bauteiltyp-Subtotale
+    // (Wand/Decke-Fundament/Treppe). Analytisch im Kern (Footprint·Höhe −
+    // geklemmte Öffnungen; (Fläche − Ausschnitte)·Dicke; Stufenkörper) — KEIN
+    // GeometryKernelPort, KEIN Lesen von Solid.volume_mm3. Dach ist welle-3
+    // ausgenommen (dicke-loses Modell). Leeres Modell -> alle Felder 0.
+    virtual model::VolumeReport volume() const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

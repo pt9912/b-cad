@@ -13,6 +13,7 @@ add_library(bcad_hexagon
     services/slab_geometry.cpp
     services/stair_geometry.cpp
     services/structure_edit_service.cpp
+    services/volume_geometry.cpp
     services/wall_footprint.cpp
 )
 

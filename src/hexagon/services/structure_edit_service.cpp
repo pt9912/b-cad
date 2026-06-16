@@ -10,6 +10,7 @@
 #include "hexagon/services/room_detection.h"
 #include "hexagon/services/slab_geometry.h"
 #include "hexagon/services/stair_geometry.h"
+#include "hexagon/services/volume_geometry.h"
 #include "hexagon/services/wall_footprint.h"
 
 namespace bcad::hexagon::services {
@@ -103,18 +104,9 @@ Range stairTreadRange() {
     return Range{model::kStairTreadMinMm, model::kStairTreadMaxMm};
 }
 
-// Vorzeichenlose Polygon-Fläche (Shoelace) — Degenerations-Prüfung des
-// Platten-Grundrisses.
-double polygonArea(const model::Footprint& footprint) {
-    double twice = 0.0;
-    const std::size_t n = footprint.points.size();
-    for (std::size_t i = 0; i < n; ++i) {
-        const model::Point2D& a = footprint.points[i];
-        const model::Point2D& b = footprint.points[(i + 1) % n];
-        twice += (a.x_mm * b.y_mm) - (b.x_mm * a.y_mm);
-    }
-    return std::abs(twice) * 0.5;
-}
+// (Die vorzeichenlose Polygon-Fläche `polygonArea` lebt seit slice-017c in
+// `volume_geometry.h` — konsolidierte Quelle; der Platten-Degenerations-Check
+// unten nutzt sie über den Namespace.)
 
 }  // namespace
 
@@ -256,6 +248,9 @@ namespace {
 // mm² → m²: 1 m² = 1 000 000 mm² (LH-FA-EVL-001 „in m²").
 constexpr double kMm2PerM2 = 1.0e6;
 
+// mm³ → m³: 1 m³ = 1 000 000 000 mm³ (LH-FA-EVL-002 „in m³").
+constexpr double kMm3PerM3 = 1.0e9;
+
 }  // namespace
 
 // EVL-001 (ADR-0012): Netto-Grundfläche je Raum des Geschosses + Summe (m²).
@@ -288,6 +283,29 @@ model::AreaReport StructureEditService::livingArea() const {
             report.total_m2 += area_m2;
         }
     }
+    return report;
+}
+
+// EVL-002 (spez. §1 LH-FA-EVL-001.a): gebäudeweites Netto-MATERIAL-Volumen +
+// Bauteiltyp-Subtotale, analytisch im Kern (`volume_geometry`), mm³→m³. Wand:
+// Footprint·Höhe − geklemmte Öffnungen; Platte: (Fläche − Ausschnitte)·Dicke;
+// Treppe: Stufenkörper (geländer-frei). KEIN GeometryKernelPort, KEIN Lesen
+// von solids_[].volume_mm3 (das wäre die OCC-Adapter-Messung). Dach welle-3
+// ausgenommen (dicke-loses Modell). Leeres Modell → alle Felder 0, kein Wurf.
+model::VolumeReport StructureEditService::volume() const {
+    model::VolumeReport report;
+    for (const model::Wall& w : building_.walls) {
+        report.walls_m3 +=
+            wallNetVolumeMm3(w, building_.walls, building_.openings) / kMm3PerM3;
+    }
+    for (const model::Slab& s : building_.slabs) {
+        report.slabs_m3 += slabNetVolumeMm3(s) / kMm3PerM3;
+    }
+    for (const model::Stair& st : building_.stairs) {
+        report.stairs_m3 +=
+            stairNetVolumeMm3(st, storeyHeight(st.from_storey_id)) / kMm3PerM3;
+    }
+    report.total_m3 = report.walls_m3 + report.slabs_m3 + report.stairs_m3;
     return report;
 }
 
