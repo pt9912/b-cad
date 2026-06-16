@@ -14,6 +14,7 @@
 | [0010](0010-headless-gl-xvfb.md) | Headless-GL via Xvfb + Mesa/llvmpipe — präzisiert ADR-0009 (f): offscreen-QPA trägt kein GL (Implementierungs-Befund slice-011b) | Accepted (2026-06-12) | ADR-0009, ADR-0004, [LH-FA-D3-002](../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung) |
 | [0011](0011-bauteil-hosting-wandoeffnung.md) | Bauteil-Hosting & Wandöffnungs-Modell (wand-gehostetes Element mit Wand-Referenz; Kern liefert Schnitt-Prismen, `GeometryKernelPort` subtrahiert; `WallGeometryChanged`-Wiederverwendung; Raumerkennung unberührt; Bauteil-Erweiterungs-Muster als welle-2-Leitplanke) | Accepted (2026-06-13) | [LH-FA-DOR-001](../../../spec/lastenheft.md#lh-fa-dor-001--tür-platzieren)..004, [LH-FA-WIN-001](../../../spec/lastenheft.md#lh-fa-win-001--fenster-platzieren)..005, ADR-0001/0002/0006/0007/0008 |
 | [0012](0012-evaluations-architektur.md) | Evaluations-Architektur (neuer `EvaluatePort` read-only Query; pure Ergebnis-Werttypen; pull, kein `op`; Fläche = Shoelace-Raum-Netto / Volumen analytisch im Kern — geklemmtes Öffnungsvolumen, **kein OCC-`GProp`**; Material nur konsumierte Eingabe; welle-3-Leitplanke) | Accepted (2026-06-14) | [LH-FA-EVL-001](../../../spec/lastenheft.md#lh-fa-evl-001--flächenberechnung)..006, ADR-0001/0006/0007/0011 |
+| [0013](0013-ifc-bibliothek.md) | IFC-Bibliothek und -Schema-Version (IFC-SPF-Subset-Codec im IO-Adapter, **Option D** — kein Bibliotheks-Zukauf jetzt; Export IFC4 `IfcWall`+`IfcMaterialLayerSetUsage` / Import IFC4+IFC2x3-Subset; atomar/[`E-IO-003`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder); Re-Eval auf IfcOpenShell/web-ifc; STEP/STL/DXF/PDF/PNG = Schwester-ADRs; welle-4-Leitplanke) | **Accepted** (2026-06-16) | [LH-FA-IO-001](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002, [ACC-003](../../../spec/lastenheft.md#7-abnahmekriterien), [OBJ-005](../../../spec/lastenheft.md#3-projektziele), ADR-0001/0002/0004/0005 |
 
 ## ADR-Folgepflichten (Status)
 
@@ -36,7 +37,10 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Decken/Fundament** (LH-FA-SLB-*/FND-*): Domäne + Platten-Geometrie (`slab_geometry`, base_z via Mesh-Translation) + ViewModel/Viewer/Edit-Ops + Persistenz (`slabs`/`polygon_json` mit Cutouts) | **erfüllt** durch slice-015a/b/c (2026-06-14) |
 | ADR-0011 (#6) | Bauteil-Erweiterungs-Muster für **Treppen** (LH-FA-STR-*): Domäne + analytische Treppen-Geometrie (`stair_geometry`, Stufen-Polyeder + Geländer, kein OCC) + ViewModel/Viewer/Edit-Ops + Persistenz (`stairs`, `rise_mm` write-derived) | **erfüllt** durch slice-016a/b/c (2026-06-14) |
 | ADR-0012 | `architecture.md` §1.1 nachziehen — EVL-001..006 von `DetectRoomsPort` auf den neuen Driving-Port `EvaluatePort` | **erfüllt** durch slice-017a (2026-06-14) |
-| ADR-0012 | `EvaluatePort` + Auswertungs-Service (Shoelace-Raum-Netto-Fläche, analytisches Netto-Volumen mit geklemmtem Öffnungsvolumen, Listen-Aggregation) + pure Ergebnis-Werttypen + AK-Tests `LH-FA-EVL-*`; **[MR-009](../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)** für den EVL-Impl (geometrie-korrektheits-nah) | **offen** (slice-017b ff.) |
+| ADR-0012 | `EvaluatePort` + Auswertungs-Service (Shoelace-Raum-Netto-Fläche, analytisches Netto-Volumen mit geklemmtem Öffnungsvolumen, Listen-Aggregation) + pure Ergebnis-Werttypen + AK-Tests `LH-FA-EVL-*`; **[MR-009](../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)** für den EVL-Impl (geometrie-korrektheits-nah) | **erfüllt** durch slice-017b–g (welle-3-Closure 2026-06-16, [MR-009](../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) für 017c) |
+| ADR-0013 | `spec/spezifikation.md` §6 (Vertragstabelle »IFC Schema-Version offen«) + §7 Offene Punkte nachziehen — Schema-Version mit ADR entschieden (IFC4-Export / IFC2x3+4-Import-Subset) | **offen** (IFC-Schärfungs-Slice) |
+| ADR-0013 | `arch-check`-**Regel** (Format-/IFC-Symbole nur in `src/adapters/io/`, analog Regel C/D/E) | **offen** (IFC-Impl-Slice) |
+| ADR-0013 | IFC-SPF-Subset-Codec im IO-Adapter (`ModelImporterPort`/`ModelExporterPort` + `ExchangeService`) + AK-Tests [`LH-FA-IO-001`](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/`002` + **Adapter-Pfad-Integrationstest** (Datei→Domain→Datei, [`E-IO-003`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) durch echten Adapter) | **offen** (IFC-Impl-Slice) |
 
 ## Konventionen
 
@@ -55,7 +59,9 @@ Noch nicht als ADR angelegt, in der Roadmap verortet:
   [ADR-0009](0009-gui-framework-qt6.md) (Accepted 2026-06-12,
   slice-011a); Folgepflichten → slice-011b.
 - Plugin-API-/ABI-Vertrag und Sandbox-Modell (LH-FA-PLG-*) — welle-5.
-- IFC-Bibliothek und -Schema-Version ([LH-FA-IO-001](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002) — welle-4.
+- ~~IFC-Bibliothek und -Schema-Version ([LH-FA-IO-001](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002)~~ → als
+  **[ADR-0013](0013-ifc-bibliothek.md)** angelegt (**Proposed** 2026-06-16,
+  Accept ausstehend) — welle-4.
 - STEP-/Format-Export-Backend hinter `ModelExporterPort` ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-005);
   aus ADR-0002 ausgegliedert) inkl. Adapter-Grenzen Geometrie↔IO — welle-4.
 - ~~Atomare Write-Strategie / Crash-Recovery-Detail ([LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery))~~ →

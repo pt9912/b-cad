@@ -11,21 +11,56 @@ Feature-Sequenz, kein Reconciliation-Plan.
 
 ## Aktuelle Welle
 
-**Keine aktive Welle.** **welle-3-auswertung** ist **abgeschlossen** — **Meilenstein
-M3 „Auswertbar" erreicht** (2026-06-16): Flächen/Volumen/Wohnfläche + Material-/
-Kosten-/Tür-/Fensterlisten als reine Ableitung aus dem committeten Modell
-(`EvaluatePort` read-only/pull, [ADR-0012](../../adr/0012-evaluations-architektur.md)).
-Closure-Notiz: [`../done/welle-3-results.md`](../done/welle-3-results.md)
-(unabhängige Verifikation + Carveout-Audit). Die nächste Welle
-(**welle-4-austausch**) startet als **bewusste Planungs-Entscheidung** nach dem
-Trigger „welle-3 done + ADR zu IFC-Bibliothek accepted" (siehe
-[§Nächste Wellen](#nächste-wellen)).
+**Welle-ID:** welle-4-austausch
+**Start:** 2026-06-16 (bewusste Planungs-Entscheidung nach welle-3-Closure
+[`../done/welle-3-results.md`](../done/welle-3-results.md) + Accept von
+[ADR-0013](../../adr/0013-ifc-bibliothek.md) — Trigger „welle-3 done + ADR zu
+IFC-Bibliothek accepted" erfüllt)
+**Geplantes Ende:** offen (Aufwands-Schätzung L)
+
+**Welle-Ziel:** b-cad wird **offen austauschbar** ([OBJ-005](../../../../spec/lastenheft.md#3-projektziele)): Import/Export der
+offenen Formate — **IFC** ([LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002), **DXF** ([LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/004),
+**STEP** ([LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)), **STL** ([LH-FA-IO-006](../../../../spec/lastenheft.md#lh-fa-io-006)) + **PDF/PNG-Export**
+([LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007)/008). Jedes Format liegt hinter einem **Driven-Adapter**
+(`ModelImporterPort`/`ModelExporterPort`, angestoßen über `ExchangeModelPort`/
+`ExchangeService`, `adapters/io/`) — der Kern bleibt **format-frei**
+([ADR-0001](../../adr/0001-hexagonale-architektur.md)). Erfüllt **Meilenstein M4**
+(„Offen austauschbar", [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)/[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
+
+**Scope-Entscheidung 2026-06-16:** das **IFC-Backend** fällt zuerst (Roadmap-
+Trigger) — [ADR-0013](../../adr/0013-ifc-bibliothek.md) **accepted**: ein selbst
+getragener IFC-SPF-**Subset**-Codec (Option D, [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)-konform — kein
+Bibliotheks-Zukauf jetzt; Re-Eval auf IfcOpenShell/web-ifc benannt). Die übrigen
+Backends sind **eigene** Entscheidungen: **STEP/STL** OCC-nativ (aus
+[ADR-0002](../../adr/0002-geometrie-kern-opencascade.md) ausgegliedert), **DXF**
+eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
+
+**Closure-Trigger** (deliverable-granular; konkrete Slices emergieren mit
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review):
+- ✓ **IFC-Backend-ADR** ([ADR-0013](../../adr/0013-ifc-bibliothek.md)) accepted
+  (zwei unabhängige Review-Runden, 0 HIGH).
+- **IFC-Schärfung + Impl:** [LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002-AK (lösungsfrei,
+  [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)) +
+  Spec-§6/§7-Nachzug; `ExchangeService` + Importer/Exporter + Subset-Codec;
+  AK-Tests + **Adapter-Pfad-Integrationstest**; neue `arch-check`-io-Regel.
+- **STEP/STL-Export-Backend-ADR** (OCC-nativ, `ModelExporterPort`-Naht) + Impl.
+- **DXF-Backend-ADR** + Import/Export.
+- **PDF/PNG-Export** (maßstäblicher Plan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
+- Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
+  [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) (IFC-Export) + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (PDF) erfüllt → **Meilenstein M4**.
+
+**Fortschritt (Stand 2026-06-16):**
+- ✓ **[ADR-0013](../../adr/0013-ifc-bibliothek.md) „IFC-Bibliothek" accepted** —
+  IFC-Backend = vendierter SPF-Subset-Codec (Option D); zwei unabhängige
+  Review-Runden (0 HIGH, 5 MED + 4 LOW eingearbeitet). Welle-Trigger erfüllt,
+  Welle **gestartet**.
+- ⏳ offen: IFC-Schärfung/Impl · STEP/STL-ADR · DXF-ADR · PDF/PNG ·
+  Welle-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen
 
 | Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
 |---|---|---|---|
-| welle-4-austausch | welle-3 done + ADR zu IFC-Bibliothek accepted | IFC/DXF/STEP/STL-Adapter (`IO`), PDF/PNG-Export | L |
 | welle-5-erweiterung | welle-4 done | Plugin-System (`PLG`), UI-Themes/Docking + **2D-Zeichen-Werkzeuge `DRW`** (Bemaßung/Layer/Fangpunkte/Gruppen, aus welle-3 zurückgestellt), Mehrsprachigkeit ([`LH-QA-006`](../../../../spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)) | M |
 
 ## Meilensteine
@@ -46,7 +81,7 @@ flowchart LR
     W1V[welle-1v-viewer<br/>done 2026-06-13]
     W2[welle-2-bauteile<br/>done 2026-06-14]
     W3[welle-3-auswertung<br/>done 2026-06-16]
-    W4[welle-4-austausch]
+    W4[welle-4-austausch<br/>aktiv]
     W5[welle-5-erweiterung]
 
     W1 --> W1V

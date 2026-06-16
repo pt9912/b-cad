@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **welle-4-austausch gestartet** + **`ADR-0013` (IFC-Bibliothek) accepted** (2026-06-16):
+  erster Schritt der Austausch-Welle. `ADR-0013` entscheidet das **IFC-Backend** —
+  ein **selbst getragener, vendierter IFC-SPF-Subset-Codec** in `src/adapters/io/`
+  (Option D: kein Bibliotheks-Zukauf jetzt — `ADR-0004`-konform, kein vcpkg/Conan/
+  Source-Build), Export **IFC4** (`IfcWall`+`IfcMaterialLayerSetUsage`) / Import
+  IFC4+IFC2x3-Subset (`IfcProject`→`IfcSite`→`IfcBuilding`→`IfcBuildingStorey` +
+  Standard-Wände), atomar (`E-IO-003`, kein Teil-Import). OCC (`ADR-0002`) liefert
+  STEP/STL nativ, **kann aber kein IFC** → STEP/STL/DXF/PDF/PNG bleiben
+  **Schwester-ADRs**. **Re-Eval auf IfcOpenShell/web-ifc**, sobald voller
+  IFC-Reichtum nötig + `ADR-0004`-konform installierbar. **Zwei unabhängige
+  Review-Runden vor Accept** (Subagent + Projektinhaber): **0 HIGH**, 5 MED + 4 LOW
+  eingearbeitet (u. a. `IfcWallStandardCase`-IFC4-Deprecation → `IfcWall`;
+  Fitness Function um Adapter-Pfad-Integrationstest erweitert; Spec-§6/§7-Nachzug
+  als Folgepflicht; Re-Eval-Trigger beobachtbar gemacht). Report
+  `docs/reviews/2026-06-16-adr-0013-text-review.md`; Folgepflichten im ADR-Index.
+  Roadmap: welle-3 → Abgeschlossene Wellen, **welle-4-austausch** nun §Aktuelle Welle.
+  Reine Doku/Entscheidung (kein Code); `make gates` grün (145/145, Coverage 92,7 %).
 - **Welle-3-auswertung abgeschlossen** (Closure 2026-06-16): das Gebäudemodell ist
   **auswertbar** — Flächen (Shoelace-Raum-Netto + Wohnfläche, `LH-FA-EVL-001`/003),
   **Volumen analytisch im Kern** (`LH-FA-EVL-002`: Wand/Decke/Treppe; Dach dicke-los
