@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Welle-3-auswertung abgeschlossen** (Closure 2026-06-16): das Gebäudemodell ist
+  **auswertbar** — Flächen (Shoelace-Raum-Netto + Wohnfläche, `LH-FA-EVL-001`/003),
+  **Volumen analytisch im Kern** (`LH-FA-EVL-002`: Wand/Decke/Treppe; Dach dicke-los
+  zurückgestellt), **Material-System** (`LH-FA-MAT-001`/002/003/005, projekt-eigen über
+  `EditStructurePort`, `on_delete: restrict`-treu, **NULL-sicher** round-trippt über
+  SQLite ohne Schema-Drift), **Listen** (`LH-FA-EVL-004`/005/006: Material-Menge = Σ
+  Netto-Volumen, Tür-/Fensterlisten) + **Kosten** (`LH-FA-MAT-006`: `Menge × cost_per_m3`)
+  — alles reine read-only-Ableitung über `EvaluatePort` (`ADR-0012`: **kein**
+  `GeometryKernelPort`/`Solid.volume_mm3`). **7 Slices** (017a–017g) in `done-archive/`,
+  getragen von der **`ADR-0012`-Leitplanke** ohne neuen Grundsatz-ADR je Auswertung.
+  **Meilenstein M3 „Auswertbar" erreicht**. Unabhängige Welle-Verifikation (0 HIGH, 1 LOW
+  behoben) + Carveout-Audit (keine aktiven); geometrielastiges Code-Review für 017c
+  (Volumen, 0 HIGH) + Code-Review (höhere Latte) für 017e (Persistenz, 0 HIGH).
+  `wall_type`-Template-Fallback bewusst zurückgestellt (welle-4+, Projektinhaber-
+  Entscheidung). `make gates` grün am HEAD (145/145, Coverage 92,7 %), `make schema-check`
+  grün. Ergebnisnotiz: `welle-3-results.md`.
 - slice-017g — **Kosten-Auswertung** (`LH-FA-MAT-006`, welle-3): die Materialliste
   (`EvaluatePort.materialList()`) trägt je Material die **Kosten** =
   `quantity_m3 × cost_per_m3` (`MaterialLine.cost`) + die **Projekt-Material-

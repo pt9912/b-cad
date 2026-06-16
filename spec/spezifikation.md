@@ -451,8 +451,10 @@ ihren Maßen (Anzahl = Listengröße).
 
 **Material-Auflösungsregel (Datenfluss):** das **effektive** Material eines
 Bauteils ist sein eigenes `material_id`; **fehlt es, gilt das `material_id`
-seines `wall_type`** (Default über den Typ) — `wall_types.material_id` als
-Vorlage, das Bauteil-`material_id` als Override (Werttyp/FK-Autorität siehe §2.1).
+seines `wall_type`** (Default über den Typ — **welle-3 zurückgestellt: geliefert
+ist Override-only**, s. „Auflösungs-Teilumfang" unten) — `wall_types.material_id`
+als Vorlage, das Bauteil-`material_id` als Override (Werttyp/FK-Autorität siehe
+§2.1).
 
 **Material-Verwaltung/-Zuweisung (welle-3-Teilumfang, MAT-001/002/003).**
 Materialien sind **projekt-eigen** (`materials.project_id`) und werden über den
