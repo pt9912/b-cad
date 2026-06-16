@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-019a — **IFC-Import/Export AK-Schärfung + Spec-Mapping** (`LH-FA-IO-001`/002,
+  welle-4): `LH-FA-IO-001`/002 von Outline auf AK-Niveau (lösungsfrei — Import/Export
+  von Geschossen + geraden Wänden, Anzahl-Treue, Roundtrip, `E-IO-003`/`E-IO-001`;
+  Teilumfang explizit, weitere Bauteile übersprungen/nicht geschrieben), Lastenheft
+  0.1.8. spez. §1 `LH-FA-IO-001.a` (IFC-SPF-Subset-Mapping, IFC4-Export
+  `IfcWall`+`IfcMaterialLayerSetUsage` / Import IFC4+IFC2x3, atomar). `ADR-0013`-
+  Folgepflicht eingelöst (§6/§7-Nachzug); **`MR-011`**: ADR-Provenance nur in
+  `*-historie.md`, Spec-Körper ADR-frei. Unabhängiges `MR-006`-Plan-Review (0 HIGH,
+  3 LOW eingearbeitet). Reine Doku/Entscheidung, kein Code; gates grün (145/145).
 - **welle-4-austausch gestartet** + **`ADR-0013` (IFC-Bibliothek) accepted** (2026-06-16):
   erster Schritt der Austausch-Welle. `ADR-0013` entscheidet das **IFC-Backend** —
   ein **selbst getragener, vendierter IFC-SPF-Subset-Codec** in `src/adapters/io/`

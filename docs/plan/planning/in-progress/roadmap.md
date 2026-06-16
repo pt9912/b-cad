@@ -58,9 +58,12 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   Outline auf AK (lösungsfrei, Lastenheft 0.1.8); spez. §1 [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)
   (IFC-SPF-Subset-Mapping, IFC4-Export `IfcWall`/Import IFC4+2x3, atomar) + §6/§7-
   Nachzug ([ADR-0013](../../adr/0013-ifc-bibliothek.md)-Folgepflicht). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**; reine Doku, gates grün (145).
-- ⏳ offen: **slice-019b** (IFC-Impl: `ExchangeService` + Importer/Exporter +
-  SPF-Subset-Codec + Adapter-Pfad-Integrationstest + `arch-check`-io-Regel) ·
-  STEP/STL-ADR · DXF-ADR · PDF/PNG · Welle-Verifikation → `done/welle-4-results.md`.
+- ⏳ **slice-019b** (IFC-Impl: `ExchangeService` + Importer/Exporter +
+  SPF-Subset-Codec + Adapter-Pfad-Integrationstest) — **Plan + [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) (0 HIGH)
+  liegen vor** (`in-progress/slice-019b-ifc-import.md`), **Implementierung
+  ausstehend** (Zwei-Commit-Split).
+- ⏳ offen: STEP/STL-ADR · DXF-ADR · PDF/PNG · Welle-Verifikation →
+  `done/welle-4-results.md`.
 
 ## Nächste Wellen
 
