@@ -1,7 +1,7 @@
 ---
 id: slice-017f
 titel: Auswertung Listen — EVL-004/005/006 (Material-/Tür-/Fensterlisten, Aggregation)
-status: in-progress
+status: done
 welle: welle-3-auswertung
 lastenheft_refs: [[LH-FA-EVL-004](../../../../spec/lastenheft.md#lh-fa-evl-004--materiallisten), [LH-FA-EVL-005](../../../../spec/lastenheft.md#lh-fa-evl-005--türlisten), [LH-FA-EVL-006](../../../../spec/lastenheft.md#lh-fa-evl-006--fensterlisten)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../../adr/0012-evaluations-architektur.md)]
@@ -9,11 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../.
 
 # Slice 017f: Auswertung Listen — EVL-004/005/006
 
-**Status:** in-progress. **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen** (unabhängig, ohne
-Autoren-Kontext): **0 HIGH**, 1 LOW (§1-Edit zweiteilig: Menge=Volumen + `roofs`
-in die Lücke) eingearbeitet ([Report](../../../reviews/2026-06-16-slice-017f-plan.md))
-→ **startbar**. **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (keine neue Geometrie — reine Aggregation, wie
-017b; das Volumen-Reuse ist bereits in 017c code-reviewt).
+**Status:** done (2026-06-16, `make gates` grün, 144 Tests). **Schließt das
+EVL-Modul.** Unabhängiges **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review** (0 HIGH, 1 LOW §1-Konsistenz
+eingearbeitet — [Report](../../../reviews/2026-06-16-slice-017f-plan.md)).
+**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (keine neue Geometrie — Reuse der 017c-Volumen-Helfer).
+Closure-Notiz §8.
 
 **Welle:** welle-3-auswertung (sechster Slice; **schließt das EVL-Modul** —
 letzte Auswertungs-Listen).
