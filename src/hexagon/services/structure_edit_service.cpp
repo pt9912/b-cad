@@ -1203,7 +1203,13 @@ model::MaterialReport StructureEditService::materialList() const {
     model::MaterialReport report;
     report.lines.reserve(groups.size());
     for (auto& [id, line] : groups) {
+        // Kosten (LH-FA-MAT-006): Menge × cost_per_m3, falls das Material einen
+        // Kostenkennwert trägt; sonst nullopt („kein Kennwert" ≠ Kosten 0).
+        if (line.material.cost_per_m3.has_value()) {
+            line.cost = line.quantity_m3 * *line.material.cost_per_m3;
+        }
         report.total_m3 += line.quantity_m3;
+        report.total_cost += line.cost.value_or(0.0);
         report.lines.push_back(std::move(line));
     }
     return report;

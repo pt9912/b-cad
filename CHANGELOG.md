@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-017g — **Kosten-Auswertung** (`LH-FA-MAT-006`, welle-3): die Materialliste
+  (`EvaluatePort.materialList()`) trägt je Material die **Kosten** =
+  `quantity_m3 × cost_per_m3` (`MaterialLine.cost`) + die **Projekt-Material-
+  Kosten-Summe** (`MaterialReport.total_cost`). Material **ohne** `cost_per_m3` →
+  `cost` = `std::nullopt` (kein Kostenkennwert ≠ kostenlos), trägt 0 zur Summe.
+  `cost_per_m2` (Flächen-Kosten) welle-3 zurückgestellt (benannte Lücke — EVL-004
+  führt Volumen). Additive Erweiterung der 017f-`MaterialReport` (kein neuer Port/
+  Werttyp). Unabhängiges `MR-006`-Review (0 HIGH); `MR-009` n/a. **Schließt die
+  Material-Kennwert-Nutzung.**
 - slice-017f — **EVL-Listen** (`LH-FA-EVL-004/005/006`, welle-3 — **schließt das
   EVL-Modul**): `EvaluatePort.materialList()` (Materialliste: je effektivem
   Material die Bauteil-Anzahl + Menge = Σ Netto-Volumen m³ über Wand+Decke,

@@ -171,3 +171,31 @@ TEST(Evaluate_LH_FA_EVL_004, LeerUndReadOnly) {
     EXPECT_DOUBLE_EQ(first.total_m3, second.total_m3);
     EXPECT_EQ(svc.building().walls.size(), walls_before);
 }
+
+// MAT-006: Kosten je Material = Menge × cost_per_m3 + Summe; Material ohne
+// Kostenkennwert → cost nullopt (nicht 0) und trägt 0 zur Summe bei.
+TEST(Evaluate_LH_FA_MAT_006, KostenJeMaterialUndSumme) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    model::Material m1 = makeMat("Beton", "Tragwerk");
+    m1.cost_per_m3 = 100.0;  // Kostenkennwert
+    const model::MaterialId mat1 = *svc.addMaterial(m1);
+    const model::MaterialId mat2 =
+        *svc.addMaterial(makeMat("Ziegel", "Wand"));  // ohne Kennwert
+
+    const model::WallId w1 = addWall(svc, {{0.0, 0.0}, {4000.0, 0.0}});  // 2,4 m³
+    ASSERT_TRUE(svc.setWallMaterial(w1, mat1));
+    const model::WallId w2 =
+        addWall(svc, {{0.0, 1000.0}, {4000.0, 1000.0}});  // 2,4 m³
+    ASSERT_TRUE(svc.setWallMaterial(w2, mat2));
+
+    const model::MaterialReport report = svc.materialList();
+    ASSERT_EQ(report.lines.size(), 2U);
+    // mat1 (Beton): 2,4 m³ × 100 = 240 Kosten.
+    ASSERT_TRUE(report.lines[0].cost.has_value());
+    EXPECT_NEAR(*report.lines[0].cost, 240.0, kTolM3);
+    // mat2 (Ziegel): kein Kostenkennwert → nullopt, NICHT 0.
+    EXPECT_FALSE(report.lines[1].cost.has_value());
+    // total_cost = nur mat1 = 240 (mat2 trägt 0 bei).
+    EXPECT_NEAR(report.total_cost, 240.0, kTolM3);
+}

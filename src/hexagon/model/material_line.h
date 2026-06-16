@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 
 #include "hexagon/model/material.h"
@@ -17,6 +18,11 @@ struct MaterialLine {
     Material material{};
     int component_count{0};
     double quantity_m3{0.0};
+    // Kosten der Zeile (LH-FA-MAT-006) = quantity_m3 × material.cost_per_m3,
+    // falls das Material einen Kostenkennwert trägt; sonst std::nullopt
+    // („kein Kostenkennwert" ≠ Kosten 0). `cost_per_m2` ist welle-3 nicht
+    // genutzt (EVL-004 führt Volumen — benannte Lücke, spez. §1).
+    std::optional<double> cost{};
 };
 
 // Ergebnis der Materiallisten-Auswertung (LH-FA-EVL-004): je Material eine
@@ -26,6 +32,9 @@ struct MaterialLine {
 struct MaterialReport {
     std::vector<MaterialLine> lines;
     double total_m3{0.0};
+    // Projekt-Material-Kosten (LH-FA-MAT-006) = Σ der Zeilen-Kosten; Materialien
+    // ohne Kostenkennwert tragen 0 bei.
+    double total_cost{0.0};
 };
 
 }  // namespace bcad::hexagon::model

@@ -436,6 +436,10 @@ Volumen-Schicht neu bewertet.
 (`walls`/`slabs` mit `material_id`) je Material und summiert die Menge =
 **Netto-Volumen (m³)** über Wand + Decke/Fundament (EVL-002/`volume_geometry`,
 welle-3-Einheit). Bauteile **ohne** Material werden nicht gruppiert (Boundary).
+**Kosten (MAT-006):** je Material `Menge × cost_per_m3` (Projekt-Summe Σ); ein
+Material **ohne** `cost_per_m3` trägt **keine** Kosten (NULL, nicht „kostenlos").
+**`cost_per_m2`** (Flächen-Kosten) ist welle-3 **nicht** genutzt — EVL-004 führt
+Volumen (benannte Lücke; Re-Eval mit flächen-basierter Aggregation).
 **Dach welle-3 ausgenommen:** ein `roof` ist zwar material-tragend, sein
 **Volumen ist zurückgestellt** (dicke-loses Modell, s. o.) → **nicht** in die
 EVL-004-Aggregation (benannte Lücke; Re-Eval mit Dach-Volumen-Semantik). Ebenso
