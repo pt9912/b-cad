@@ -460,6 +460,13 @@ Farbe/Textur = MAT-004, Sicht). **Auflösungs-Teilumfang:** geliefert ist der
 **`wall_type`-Template-Fallback** ist **zurückgestellt** — das Domänenmodell
 trägt den Wandtyp als Enum, **keine** material-tragende Wall-Type-Entität;
 **Re-Eval** mit Einführung einer solchen Entität.
+**Persistenz:** die `materials`-Bibliothek und die `material_id`-Zuweisung
+(Wand/Dach/Decke) round-trippen über die Projekt-Persistenz (SQLite, in der
+atomaren Speicher-Transaktion); optionale Kennwerte werden **NULL-sicher**
+geladen (kein Wert ⇒ `null`, **nicht** `0`). Die Schema-Spalte `materials.density`
+hat **kein** Domänenfeld (spez. §2.1) und wird daher **nicht** round-getrippt
+(`NULL` via Spalten-Auslassung) — sie round-trippt, sobald die Domäne `density`
+trägt.
 
 **Totalität:** ein leeres/lückenhaftes Modell liefert eine Null-/leere
 Auswertung (kein Wurf); die Auswertung **mutiert nie** (read-only).

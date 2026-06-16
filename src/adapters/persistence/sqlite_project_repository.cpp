@@ -444,6 +444,93 @@ void insertProject(Db& db) {
     stmt.step();
 }
 
+// --- Material-Persistenz (slice-017e): NULL-sichere Optional-Bindung/-Lesung ---
+// KORREKTHEITS-KERN: `sqlite3_column_double`/`_int` liefert für `NULL` still
+// `0.0`/`0` — daher beim Laden IMMER `sqlite3_column_type == SQLITE_NULL` prüfen,
+// sonst würde „kein Wert" zu 0 verfälscht (stille Korruption, slice-015c-Klasse).
+// Eine Quelle der Wahrheit für alle optionalen Spalten.
+
+void bindOptionalDouble(Stmt& stmt, int pos, const std::optional<double>& v) {
+    if (v.has_value()) {
+        sqlite3_bind_double(stmt.get(), pos, *v);
+    } else {
+        sqlite3_bind_null(stmt.get(), pos);
+    }
+}
+
+void bindOptionalText(Stmt& stmt, int pos, const std::optional<std::string>& v) {
+    if (v.has_value()) {
+        sqlite3_bind_text(stmt.get(), pos, v->c_str(), -1, SQLITE_TRANSIENT);
+    } else {
+        sqlite3_bind_null(stmt.get(), pos);
+    }
+}
+
+void bindOptionalMaterial(Stmt& stmt, int pos,
+                          const std::optional<hexagon::model::MaterialId>& m) {
+    if (m.has_value()) {
+        sqlite3_bind_int(stmt.get(), pos, static_cast<int>(*m));
+    } else {
+        sqlite3_bind_null(stmt.get(), pos);
+    }
+}
+
+std::optional<double> columnOptionalDouble(Stmt& stmt, int col) {
+    if (sqlite3_column_type(stmt.get(), col) == SQLITE_NULL) {
+        return std::nullopt;
+    }
+    return sqlite3_column_double(stmt.get(), col);
+}
+
+std::optional<std::string> columnOptionalText(Stmt& stmt, int col) {
+    if (sqlite3_column_type(stmt.get(), col) == SQLITE_NULL) {
+        return std::nullopt;
+    }
+    const auto* text = sqlite3_column_text(stmt.get(), col);
+    // text == nullptr nur bei SQLite-interner OOM/Encoding-Konversion (Spalte
+    // ist nicht NULL-typisiert) — als nullopt behandeln statt present-empty
+    // (Code-Review L1), damit „kein Wert" eindeutig bleibt.
+    if (text == nullptr) {
+        return std::nullopt;
+    }
+    return std::string(reinterpret_cast<const char*>(text));
+}
+
+std::optional<hexagon::model::MaterialId> columnOptionalMaterial(Stmt& stmt,
+                                                                 int col) {
+    if (sqlite3_column_type(stmt.get(), col) == SQLITE_NULL) {
+        return std::nullopt;
+    }
+    return static_cast<hexagon::model::MaterialId>(
+        sqlite3_column_int(stmt.get(), col));
+}
+
+// Materialien (LH-FA-MAT-*, ADR-0006): projekt-eigene Material-Bibliothek. VOR
+// walls/roofs/slabs (FK `material_id → materials.id`, `foreign_keys=ON`).
+// `density` ist KEIN Domänenfeld (spez. §2.1) → aus der INSERT-Spaltenliste
+// ausgelassen (⇒ `NULL`, Muster wie roofs.`height_mm`). Kennwerte/Texte
+// optional → NULL-sicher gebunden.
+void insertMaterials(Db& db, const hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "INSERT INTO materials (id,project_id,name,category,color_hex,"
+              "texture_path,u_value,cost_per_m2,cost_per_m3) "
+              "VALUES (?,1,?,?,?,?,?,?,?);");
+    for (const auto& material : building.materials) {
+        sqlite3_bind_int(stmt.get(), 1, static_cast<int>(material.id));
+        sqlite3_bind_text(stmt.get(), 2, material.name.c_str(), -1,
+                          SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt.get(), 3, material.category.c_str(), -1,
+                          SQLITE_TRANSIENT);
+        bindOptionalText(stmt, 4, material.color_hex);
+        bindOptionalText(stmt, 5, material.texture_path);
+        bindOptionalDouble(stmt, 6, material.u_value);
+        bindOptionalDouble(stmt, 7, material.cost_per_m2);
+        bindOptionalDouble(stmt, 8, material.cost_per_m3);
+        stmt.step();
+        stmt.reset();
+    }
+}
+
 void insertStoreys(Db& db, const hexagon::model::Building& building) {
     Stmt stmt(db,
               "INSERT INTO storeys (id,project_id,name,level_index,"
@@ -468,7 +555,8 @@ void insertWalls(Db& db, const hexagon::model::Building& building) {
     Stmt stmt(db,
               "INSERT INTO walls (id,project_id,storey_id,classification,"
               "start_x_mm,start_y_mm,end_x_mm,end_y_mm,thickness_mm,height_mm,"
-              "created_at,updated_at) VALUES (?,1,?,?,?,?,?,?,?,?,?,?);");
+              "material_id,created_at,updated_at) "
+              "VALUES (?,1,?,?,?,?,?,?,?,?,?,?,?);");
     for (const auto& wall : building.walls) {
         sqlite3_bind_int(stmt.get(), 1, static_cast<int>(wall.id));
         sqlite3_bind_int(stmt.get(), 2, static_cast<int>(wall.storey_id));
@@ -480,8 +568,9 @@ void insertWalls(Db& db, const hexagon::model::Building& building) {
         sqlite3_bind_double(stmt.get(), 7, wall.end.y_mm);
         sqlite3_bind_double(stmt.get(), 8, wall.thickness_mm);
         sqlite3_bind_double(stmt.get(), 9, wall.height_mm);
-        sqlite3_bind_text(stmt.get(), 10, kSentinelTs, -1, SQLITE_STATIC);
+        bindOptionalMaterial(stmt, 10, wall.material_id);
         sqlite3_bind_text(stmt.get(), 11, kSentinelTs, -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt.get(), 12, kSentinelTs, -1, SQLITE_STATIC);
         stmt.step();
         stmt.reset();
     }
@@ -531,12 +620,13 @@ void insertOpenings(Db& db, const hexagon::model::Building& building) {
 }
 
 // Dächer (LH-FA-ROF-*, ADR-0011/0006): NACH `insertStoreys` (FK
-// `roofs.storey_id → storeys.id`). `height_mm` (abgeleitete Firsthöhe)
-// und `material_id` bleiben `NULL` — welle-2-Scope.
+// `roofs.storey_id → storeys.id`) UND `insertMaterials` (FK `material_id →
+// materials.id`). `height_mm` (abgeleitete Firsthöhe) bleibt `NULL`;
+// `material_id` wird seit slice-017e round-getrippt (NULL bei keinem Material).
 void insertRoofs(Db& db, const hexagon::model::Building& building) {
     Stmt stmt(db,
               "INSERT INTO roofs (id,project_id,storey_id,roof_type,pitch_deg,"
-              "overhang_mm,footprint_json) VALUES (?,1,?,?,?,?,?);");
+              "overhang_mm,footprint_json,material_id) VALUES (?,1,?,?,?,?,?,?);");
     for (const auto& roof : building.roofs) {
         const std::string footprint = footprintToJson(roof);
         sqlite3_bind_int(stmt.get(), 1, static_cast<int>(roof.id));
@@ -547,20 +637,21 @@ void insertRoofs(Db& db, const hexagon::model::Building& building) {
         sqlite3_bind_double(stmt.get(), 5, roof.overhang_mm);
         sqlite3_bind_text(stmt.get(), 6, footprint.c_str(), -1,
                           SQLITE_TRANSIENT);
+        bindOptionalMaterial(stmt, 7, roof.material_id);
         stmt.step();
         stmt.reset();
     }
 }
 
 // Platten (LH-FA-SLB-*/FND-*, ADR-0011/0006): NACH `insertStoreys` (FK
-// `slabs.storey_id → storeys.id`). `material_id` bleibt `NULL` (welle-2-Scope,
-// kein Material im Domänenmodell); `base_z` wird **nicht** gespeichert
-// (abgeleitet aus Typ/Geschoss, `slab_geometry`). Grundriss + Aussparungen
-// als `polygon_json`.
+// `slabs.storey_id → storeys.id`) UND `insertMaterials` (FK `material_id →
+// materials.id`). `material_id` wird seit slice-017e round-getrippt (NULL bei
+// keinem Material); `base_z` wird **nicht** gespeichert (abgeleitet aus
+// Typ/Geschoss, `slab_geometry`). Grundriss + Aussparungen als `polygon_json`.
 void insertSlabs(Db& db, const hexagon::model::Building& building) {
     Stmt stmt(db,
               "INSERT INTO slabs (id,project_id,storey_id,slab_type,"
-              "thickness_mm,polygon_json) VALUES (?,1,?,?,?,?);");
+              "thickness_mm,polygon_json,material_id) VALUES (?,1,?,?,?,?,?);");
     for (const auto& slab : building.slabs) {
         const std::string polygon = polygonToJson(slab);
         sqlite3_bind_int(stmt.get(), 1, static_cast<int>(slab.id));
@@ -569,6 +660,7 @@ void insertSlabs(Db& db, const hexagon::model::Building& building) {
                           SQLITE_STATIC);
         sqlite3_bind_double(stmt.get(), 4, slab.thickness_mm);
         sqlite3_bind_text(stmt.get(), 5, polygon.c_str(), -1, SQLITE_TRANSIENT);
+        bindOptionalMaterial(stmt, 6, slab.material_id);
         stmt.step();
         stmt.reset();
     }
@@ -616,6 +708,33 @@ void insertStairs(Db& db, const hexagon::model::Building& building) {
     }
 }
 
+// Materialien laden (LH-FA-MAT-*): die Bibliothek. Optionale Kennwerte/Texte
+// NULL-sicher (`columnOptional*` — kein „NULL → 0"); `density` nicht gelesen
+// (kein Domänenfeld). FK-frei beim Laden; ID-Erhalt für die `material_id`-
+// Auflösung der Bauteile.
+void loadMaterials(Db& db, hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "SELECT id,name,category,color_hex,texture_path,u_value,"
+              "cost_per_m2,cost_per_m3 FROM materials ORDER BY id;");
+    while (stmt.step()) {
+        hexagon::model::Material material;
+        material.id = static_cast<hexagon::model::MaterialId>(
+            sqlite3_column_int(stmt.get(), 0));
+        const auto* name = sqlite3_column_text(stmt.get(), 1);
+        material.name =
+            (name != nullptr) ? reinterpret_cast<const char*>(name) : "";
+        const auto* category = sqlite3_column_text(stmt.get(), 2);
+        material.category =
+            (category != nullptr) ? reinterpret_cast<const char*>(category) : "";
+        material.color_hex = columnOptionalText(stmt, 3);
+        material.texture_path = columnOptionalText(stmt, 4);
+        material.u_value = columnOptionalDouble(stmt, 5);
+        material.cost_per_m2 = columnOptionalDouble(stmt, 6);
+        material.cost_per_m3 = columnOptionalDouble(stmt, 7);
+        building.materials.push_back(material);
+    }
+}
+
 void loadStoreys(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db, "SELECT id,height_mm FROM storeys ORDER BY level_index;");
     while (stmt.step()) {
@@ -630,7 +749,8 @@ void loadStoreys(Db& db, hexagon::model::Building& building) {
 void loadWalls(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db,
               "SELECT id,storey_id,start_x_mm,start_y_mm,end_x_mm,end_y_mm,"
-              "thickness_mm,height_mm,classification FROM walls ORDER BY id;");
+              "thickness_mm,height_mm,classification,material_id "
+              "FROM walls ORDER BY id;");
     while (stmt.step()) {
         hexagon::model::Wall wall;
         wall.id =
@@ -647,6 +767,7 @@ void loadWalls(Db& db, hexagon::model::Building& building) {
         wall.type = textToClass(cls != nullptr
                                     ? reinterpret_cast<const char*>(cls)
                                     : "");
+        wall.material_id = columnOptionalMaterial(stmt, 9);
         building.walls.push_back(wall);
     }
 }
@@ -681,7 +802,7 @@ void loadOpenings(Db& db, hexagon::model::Building& building) {
 void loadRoofs(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db,
               "SELECT id,storey_id,roof_type,pitch_deg,overhang_mm,"
-              "footprint_json FROM roofs ORDER BY id;");
+              "footprint_json,material_id FROM roofs ORDER BY id;");
     while (stmt.step()) {
         hexagon::model::Roof roof;
         roof.id =
@@ -697,14 +818,15 @@ void loadRoofs(Db& db, hexagon::model::Building& building) {
         parseFootprintJson(
             footprint != nullptr ? reinterpret_cast<const char*>(footprint) : "",
             roof);
+        roof.material_id = columnOptionalMaterial(stmt, 6);
         building.roofs.push_back(roof);
     }
 }
 
 void loadSlabs(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db,
-              "SELECT id,storey_id,slab_type,thickness_mm,polygon_json "
-              "FROM slabs ORDER BY id;");
+              "SELECT id,storey_id,slab_type,thickness_mm,polygon_json,"
+              "material_id FROM slabs ORDER BY id;");
     while (stmt.step()) {
         hexagon::model::Slab slab;
         slab.id =
@@ -718,6 +840,7 @@ void loadSlabs(Db& db, hexagon::model::Building& building) {
         const auto* polygon = sqlite3_column_text(stmt.get(), 4);
         parseSlabPolygonJson(
             polygon != nullptr ? reinterpret_cast<const char*>(polygon) : "", slab);
+        slab.material_id = columnOptionalMaterial(stmt, 5);
         building.slabs.push_back(slab);
     }
 }
@@ -786,6 +909,7 @@ void SqliteProjectRepository::save(const hexagon::model::Building& building,
             db->exec("BEGIN;");
             insertProject(*db);
             insertStoreys(*db, building);
+            insertMaterials(*db, building);  // vor walls/roofs/slabs (FK material_id)
             insertWalls(*db, building);
             insertOpenings(*db, building);  // nach Wänden (FK wall_id)
             insertRoofs(*db, building);      // nach Geschossen (FK storey_id)
@@ -832,6 +956,7 @@ hexagon::model::Building SqliteProjectRepository::load(
         hexagon::model::Building building;
         Db db(path);
         loadStoreys(db, building);
+        loadMaterials(db, building);
         loadWalls(db, building);
         loadOpenings(db, building);
         loadRoofs(db, building);

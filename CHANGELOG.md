@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-017e — **Material-Persistenz** (`LH-FA-MAT-001/003`, `LH-FA-BLD-002`, welle-3):
+  die `materials`-Bibliothek + die `material_id`-Zuweisung an Wand/Dach/Decke
+  round-trippen im `SqliteProjectRepository` (`insertMaterials`/`loadMaterials` +
+  `material_id` in insert/load von walls/roofs/slabs), in der bestehenden atomaren
+  Speicher-Transaktion (materials **vor** den Bauteilen — FK). **NULL-sicher**
+  über zentrale `bind/columnOptional*`-Helfer (`sqlite3_column_type == SQLITE_NULL`
+  → `std::nullopt`; kein „NULL → 0"). ID-Erhalt → `material_id` zeigt nach Reload
+  aufs richtige Material. **Kein Schema-Wechsel** (`materials` + `material_id`-FKs
+  lagen vor, `make schema-check` grün); `materials.density` ohne Domänenfeld →
+  nicht round-getrippt (benannte Lücke, löst 017d-LOW-1). Unabhängiges
+  `MR-006`-Plan-Review (0 HIGH) + **unabhängiges Code-Review** (höhere Latte:
+  Parsing/Schema-Drift/stille Verfälschung).
 - slice-017d — **Material-System** (`LH-FA-MAT-001/002/003/005/006`, welle-3,
   in-memory): `model::Material` (pure Werte, Kennwerte U-Wert/Kosten) + projekt-
   eigene Material-Verwaltung/-Zuweisung über `EditStructurePort`

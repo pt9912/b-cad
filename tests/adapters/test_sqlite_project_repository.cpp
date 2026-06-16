@@ -4,7 +4,9 @@
 
 #include "adapters/persistence/sqlite_project_repository.h"
 
+#include <algorithm>
 #include <filesystem>
+#include <optional>
 #include <stdexcept>
 #include <string>
 
@@ -34,6 +36,8 @@ using bcad::hexagon::model::Stair;
 using bcad::hexagon::model::StairId;
 using bcad::hexagon::model::StairType;
 using bcad::hexagon::model::SwingDirection;
+using bcad::hexagon::model::Material;
+using bcad::hexagon::model::MaterialId;
 using bcad::hexagon::model::Wall;
 using bcad::hexagon::model::WallId;
 using bcad::hexagon::model::WallType;
@@ -52,6 +56,62 @@ Building sampleBuilding() {
         {WallId{3}, StoreyId{2}, {0.0, 0.0}, {3000.0, 0.0}, 300.0, 3000.0,
          WallType::Trag});
     return building;
+}
+
+// Gebäude mit Material-Bibliothek + Zuweisung (slice-017e): ein „volles"
+// Material (Kennwerte gesetzt) + ein „leeres" (alle optionalen Felder NULL —
+// der NULL-vs-0.0-Sentinel); zugewiesen an Wand/Dach/Decke, eine Wand bleibt
+// unzugewiesen.
+Building materialBuilding() {
+    Building b;
+    b.storeys.push_back({StoreyId{1}, 2500.0});
+
+    Material full;
+    full.id = MaterialId{1};
+    full.name = "Stahlbeton";
+    full.category = "Tragwerk";
+    full.u_value = 2.3;
+    full.cost_per_m2 = 45.5;
+    full.cost_per_m3 = 130.0;
+    full.color_hex = "#888888";
+    b.materials.push_back(full);
+
+    Material bare;  // keine Kennwerte/Texte → alle optionalen Felder nullopt
+    bare.id = MaterialId{2};
+    bare.name = "Putz";
+    bare.category = "Ausbau";
+    b.materials.push_back(bare);
+
+    Wall w1{WallId{1}, StoreyId{1}, {0.0, 0.0}, {5000.0, 0.0}, 240.0, 2500.0,
+            WallType::Aussen};
+    w1.material_id = MaterialId{1};
+    b.walls.push_back(w1);
+    b.walls.push_back({WallId{2}, StoreyId{1}, {0.0, 0.0}, {4000.0, 0.0}, 115.0,
+                       2500.0, WallType::Innen});  // material_id nullopt
+
+    Roof roof;
+    roof.id = RoofId{1};
+    roof.storey_id = StoreyId{1};
+    roof.type = RoofType::Sattel;
+    roof.origin = {0.0, 0.0};
+    roof.width_mm = 5000.0;
+    roof.depth_mm = 4000.0;
+    roof.base_z_mm = 2500.0;
+    roof.pitch_deg = 30.0;
+    roof.overhang_mm = 500.0;
+    roof.material_id = MaterialId{2};
+    b.roofs.push_back(roof);
+
+    Slab slab;
+    slab.id = SlabId{1};
+    slab.storey_id = StoreyId{1};
+    slab.type = SlabType::Decke;
+    slab.footprint.points = {{0.0, 0.0}, {5000.0, 0.0}, {5000.0, 4000.0},
+                             {0.0, 4000.0}};
+    slab.thickness_mm = 200.0;
+    slab.material_id = MaterialId{1};
+    b.slabs.push_back(slab);
+    return b;
 }
 
 fs::path tempPath(const char* name) { return fs::temp_directory_path() / name; }
@@ -121,6 +181,84 @@ TEST(SqliteProjectRepository_LH_FA_BLD_002_003, SaveErsetztSauberOhneTempRest) {
     EXPECT_EQ(static_cast<int>(loaded.storeys[0].id), 7);
     EXPECT_TRUE(loaded.walls.empty());
     EXPECT_FALSE(fs::exists(fs::path(path.string() + ".tmp")));
+    fs::remove(path);
+}
+
+// LH-FA-MAT-001/003 (ADR-0006, slice-017e): Material-Bibliothek + Zuweisung
+// überleben den Round-Trip; NULL-Korrektheit (kein Wert ≠ 0.0).
+TEST(SqliteProjectRepository_LH_FA_MAT, RoundTripErhaeltBibliothekUndZuweisung) {
+    const SqliteProjectRepository repo;
+    const Building original = materialBuilding();
+    const fs::path path = tempPath("bcad_material.bcad");
+    fs::remove(path);
+
+    repo.save(original, path);
+    const Building loaded = repo.load(path);
+
+    // (a) Bibliothek feldgleich (volles Material).
+    ASSERT_EQ(loaded.materials.size(), 2U);
+    const Material& m1 = loaded.materials[0];
+    EXPECT_EQ(static_cast<int>(m1.id), 1);
+    EXPECT_EQ(m1.name, "Stahlbeton");
+    EXPECT_EQ(m1.category, "Tragwerk");
+    ASSERT_TRUE(m1.u_value.has_value());
+    EXPECT_DOUBLE_EQ(*m1.u_value, 2.3);
+    ASSERT_TRUE(m1.cost_per_m2.has_value());
+    EXPECT_DOUBLE_EQ(*m1.cost_per_m2, 45.5);
+    ASSERT_TRUE(m1.cost_per_m3.has_value());
+    EXPECT_DOUBLE_EQ(*m1.cost_per_m3, 130.0);
+    ASSERT_TRUE(m1.color_hex.has_value());
+    EXPECT_EQ(*m1.color_hex, "#888888");
+
+    // (b) NULL-Korrektheit (Code-Review-Sentinel): Material ohne Kennwerte →
+    // nullopt, NICHT 0.0 (sqlite3_column_double gäbe für NULL still 0.0).
+    const Material& m2 = loaded.materials[1];
+    EXPECT_EQ(m2.name, "Putz");
+    EXPECT_FALSE(m2.u_value.has_value());
+    EXPECT_FALSE(m2.cost_per_m2.has_value());
+    EXPECT_FALSE(m2.cost_per_m3.has_value());
+    EXPECT_FALSE(m2.color_hex.has_value());
+    EXPECT_FALSE(m2.texture_path.has_value());
+
+    // (a) Zuweisung erhalten + manuelle Auflösung gegen loaded.materials (F1:
+    // effectiveMaterial ist eine Service-Methode, nicht auf dem Building).
+    ASSERT_EQ(loaded.walls.size(), 2U);
+    ASSERT_TRUE(loaded.walls[0].material_id.has_value());
+    EXPECT_EQ(static_cast<int>(*loaded.walls[0].material_id), 1);
+    const auto resolved = std::find_if(
+        loaded.materials.begin(), loaded.materials.end(),
+        [&](const Material& m) { return m.id == *loaded.walls[0].material_id; });
+    ASSERT_NE(resolved, loaded.materials.end());
+    EXPECT_EQ(resolved->name, "Stahlbeton");
+
+    // (c) Bauteil ohne Material → nullopt (nicht MaterialId{0}).
+    EXPECT_FALSE(loaded.walls[1].material_id.has_value());
+
+    // (d) Dach + Decke: material_id erhalten.
+    ASSERT_EQ(loaded.roofs.size(), 1U);
+    ASSERT_TRUE(loaded.roofs[0].material_id.has_value());
+    EXPECT_EQ(static_cast<int>(*loaded.roofs[0].material_id), 2);
+    ASSERT_EQ(loaded.slabs.size(), 1U);
+    ASSERT_TRUE(loaded.slabs[0].material_id.has_value());
+    EXPECT_EQ(static_cast<int>(*loaded.slabs[0].material_id), 1);
+
+    fs::remove(path);
+}
+
+// (e) Leere Bibliothek + unzugewiesene Bauteile round-trippen sauber.
+TEST(SqliteProjectRepository_LH_FA_MAT, LeereBibliothekUndUnzugewiesen) {
+    const SqliteProjectRepository repo;
+    const fs::path path = tempPath("bcad_material_empty.bcad");
+    fs::remove(path);
+
+    repo.save(sampleBuilding(), path);  // Wände, keine Materialien
+    const Building loaded = repo.load(path);
+
+    EXPECT_TRUE(loaded.materials.empty());
+    ASSERT_FALSE(loaded.walls.empty());
+    for (const Wall& wall : loaded.walls) {
+        EXPECT_FALSE(wall.material_id.has_value());  // unzugewiesen → nullopt
+    }
     fs::remove(path);
 }
 
