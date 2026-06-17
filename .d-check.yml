@@ -4,8 +4,8 @@
 # Alt-Tool. codepaths-Wurzeln an b-cad angepasst — die vendorte
 # Kurs-Kopie prüfte nur lab/, kurs/, tools/ (zwei davon existieren
 # hier nicht); ./ und ../ werden immer erkannt.
-# matrix/ids/spans/hostpaths: slice-018a (Referenz-Integritäts-Gate,
-# MR-011) — setzt die Regelwerk-Referenz-Richtung Spec→ADR durch.
+# matrix/ids/spans/hostpaths: Referenz-Integritäts-Gate — normativ sind das
+# Kurs-Regelwerk + harness/conventions.md (MR-011), nicht dieser Kommentar.
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 scan:
   roots: ["."]
@@ -16,7 +16,7 @@ codepaths:
 # Referenz-Richtung: Spec-Straten verweisen nie abwärts auf ADRs/Planning-Slices
 # (Markdown-Link-Form). Maßgeblich — NICHT dieser Kommentar — sind das gepinnte
 # Kurs-Regelwerk (§Referenz-Richtung / SDP) und harness/conventions.md (MR-011
-# Referenz-Integritäts-Gate); eingeführt slice-018a. exclude-sections = die
+# Referenz-Integritäts-Gate). exclude-sections = die
 # Provenance-Abschnitte (Historie/Geschichte); die Spec-Historie liegt zudem
 # in spec/<name>-historie.md ausgelagert (außerhalb der matrix-Straten).
 matrix:
