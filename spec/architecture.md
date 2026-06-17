@@ -261,3 +261,4 @@ Tabelle trägt keine eigene Anforderung und keine zeitliche Schicht
 | Material als Bauteil-Eigenschaft (Verwaltung/Zuweisung driving, read-only-Auflösung) | [ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md) + [ADR-0012](../docs/plan/adr/0012-evaluations-architektur.md) |
 | Austauschformate: IFC Import+Export über `ExchangeModelPort`/`ModelImporterPort`/`ModelExporterPort` (SPF-Subset-Codec im IO-Adapter) | [ADR-0013](../docs/plan/adr/0013-ifc-bibliothek.md) |
 | Austauschformate: STEP/STL-Export über `ModelExporterPort` (OCC-DataExchange, **geometrie-resident** — OCC nur im Geometrie-Adapter, Regel C) | [ADR-0014](../docs/plan/adr/0014-step-stl-export-backend.md) |
+| Austauschformate: DXF Import+Export über `ModelImporterPort`/`ModelExporterPort` (selbst getragener 2D-Subset-Codec **io-resident**, kein OCC — wie IFC) | [ADR-0015](../docs/plan/adr/0015-dxf-backend.md) |

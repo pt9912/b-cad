@@ -48,8 +48,8 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   (slice-020b: STL alle 3D-Bauteile, STEP B-Rep Wände+Decken)**; **offen:** STEP-B-Rep
   für Dächer/Treppen (Mesh→Shape-Vernähung, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)).
 - ✓ **DXF-Backend-ADR** ([ADR-0015](../../adr/0015-dxf-backend.md), Accepted 2026-06-17 —
-  selbst getragener DXF-Subset-Codec Option D io-resident, 2D-Grundriss); **offen:**
-  DXF-AK-Schärfung ([LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/004) + Import/Export-Impl.
+  selbst getragener DXF-Subset-Codec Option D io-resident, 2D-Grundriss) **+
+  AK-Schärfung (slice-021a)**; **offen:** DXF-Import/Export-Impl.
 - **PDF/PNG-Export** (maßstäblicher Plan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
   [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) (IFC-Export) + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (PDF) erfüllt → **Meilenstein M4**.
@@ -101,7 +101,13 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   kein DXF), **io-resident**, 2D-Grundriss (gerade Wand-Achsen je Geschoss-`LAYER`);
   Import → Default-Höhe/-Dicke (benannte Lücke). Text-Review **0 HIGH** (MED-1
   Import-Dispatch-Kern-Erweiterung + MED-2 + LOW eingearbeitet).
-- ⏳ offen: STEP-B-Rep Dächer/Treppen · **DXF-AK-Schärfung + Impl** · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
+- ✓ **slice-021a** — **DXF-AK-Schärfung + Spec-Mapping**: [LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/004 von
+  Outline auf AK (bidirektional, 2D-Grundriss, Lastenheft 0.1.10); spez. §1
+  [`LH-FA-IO-003.a`](../../../../spec/lastenheft.md#lh-fa-io-003) (ASCII-DXF-Subset-Codec io-resident, gerade Wand-Achsen je
+  Geschoss-`LAYER`, Import-Defaults, atomar) + §6/§7/§4-Nachzug (§4 [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um
+  STEP/STL/DXF-Export, latente ADR-0014-Lücke mitgeschlossen). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**
+  (MED-1/2 + LOW-1); reine Doku, gates grün.
+- ⏳ offen: **DXF-Impl** · STEP-B-Rep Dächer/Treppen · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
   Welle-4-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen

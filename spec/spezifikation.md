@@ -587,6 +587,45 @@ den Adapter.
 Die Reihenfolge der geschriebenen Bauteile ist aus der Modell-Reihenfolge deterministisch
 abgeleitet.
 
+### LH-FA-IO-003.a — DXF-Import/-Export (Mapping, Teilumfang)
+
+Bezug: [`LH-FA-IO-003`](lastenheft.md#lh-fa-io-003) (Import),
+[`LH-FA-IO-004`](lastenheft.md#lh-fa-io-004) (Export) — **Sammelblock** (deckt beide).
+DXF ist ein **2D**-Austauschformat; b-cad bildet darauf die **Grundriss-Sicht** ab.
+Backend-Provenance: § Historie.
+
+**Encoding & Schicht.** DXF-**ASCII** (Gruppencode-Paare; `ENTITIES`-Sektion) über
+einen **selbst getragenen Subset-Codec** in `adapters/io/` (**kein** OCC, reiner Text —
+io-resident, `arch-check` Regel A/B; symmetrischer Reader+Writer, Muster IFC-SPF). Der
+`ModelImporterPort`/`ModelExporterPort` ist die Naht; der Composition Root verdrahtet je
+Format. **Ziel-DXF-Profil:** `LINE` für gerade Achsen ist versions-robust (`LWPOLYLINE`
+erst R14+); die exakte ASCII-Profilversion fixiert der Impl-Slice nach Lesbarkeit.
+
+**Repräsentation (2D-Grundriss-Subset).** Exportiert/importiert werden **gerade
+Wand-Achsen** als 2D-`LINE`/`LWPOLYLINE`, **je Geschoss auf eine DXF-`LAYER`** getrennt.
+Längeneinheit mm.
+
+**Import-Defaults (benannte Lücke).** DXF trägt **keine** Höhe/Dicke → importierte Wände
+erhalten **Default-Höhe/-Dicke** (Konstanten `kDefault*`, Muster der IFC-Import-
+Geschoss-Höhe). Der **Roundtrip** (Export → Re-Import) erhält die **Wand-Achsen-Anzahl je
+Geschoss** und die Achs-Lage, **nicht** Höhe/Dicke (benannte Subset-Grenze).
+
+**Subset-Grenze (benannte Lücke).** Räume, Bemaßung (`DIMENSION`), Schraffur (`HATCH`),
+Blöcke (`BLOCK`/`INSERT`), Text (`TEXT`/`MTEXT`), Bögen/Kreise (`ARC`/`CIRCLE`),
+3D-Entitäten, beliebige Geometrie — beim **Import übersprungen**, beim **Export nicht
+geschrieben**. Ausbau = späterer Re-Eval (echte DXF-Bibliothek, Provenance § Historie).
+
+**Atomarität & Fehler.** **Import** baut ein **vollständiges In-Memory-Modell zuerst** und
+übergibt es erst nach fehlerfreiem Parse; nicht-DXF/kaputt → [`E-IO-003`](#4-fehler-codes-und-logging-felder)
+(`event=import_rejected`, **bestehende generische** Zeile — kein DXF-spezifischer Code),
+**kein** Teil-Import. **Export** schreibt **atomar** (Temp + Rename); nicht beschreibbarer
+Zielpfad → [`E-IO-001`](#4-fehler-codes-und-logging-felder) (`event=io_no_permission`), **kein**
+Teil-Export.
+
+**Totalität.** Eine leere/strukturlose DXF → leeres Modell **ohne Wurf**; ein leeres Modell
+→ eine gültige, (annähernd) leere DXF. Reihenfolge deterministisch aus der Quell-/
+Modell-Reihenfolge.
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -716,7 +755,7 @@ fordert eine Default-Stärke, §3 nannte keinen Wert).
 
 | Code | Bedingung | Aktion |
 |---|---|---|
-| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern, IFC-Export) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
+| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern, IFC-/STEP-/STL-/DXF-Export) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
 | `E-IO-002` | Zielmedium voll / Schreibfehler | vorheriger Stand intakt (atomar), Log `event=persist_error` |
 | `E-IO-003` | Import-Format nicht erkannt / invalide | kein Teil-Import, Log `event=import_rejected` |
 | `E-VAL-001` | Parameter außerhalb des Wertebereichs | auf Grenzwert geklemmt, Hinweis, Log `event=validation_rejected` |
@@ -755,6 +794,7 @@ nicht im Bootstrap.
 | SQLite | im Adapter gepinnt | `ProjectRepositoryPort`, atomar |
 | IFC | **IFC4** (Export) / **IFC2x3 + IFC4** (Import-Subset) | `ModelImporterPort`/`ModelExporterPort` (IFC-SPF-Subset-Codec, §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import)) |
 | STEP / STL | OCC-DataExchange (nativ; STEP AP214/242, STL binär) | `ModelExporterPort` **geometrie-resident** (Export-only; STEP B-Rep / STL Netz der 3D-Bauteile), §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005) |
+| DXF | ASCII-DXF, **2D-Subset** (selbst getragener Codec) | `ModelImporterPort`/`ModelExporterPort` **io-resident** (Import+Export; gerade Wand-Achsen je Geschoss-`LAYER`, Import → Default-Höhe/-Dicke), §1 [`LH-FA-IO-003.a`](lastenheft.md#lh-fa-io-003) |
 
 ## 7. Offene Punkte
 
@@ -765,8 +805,9 @@ nicht im Bootstrap.
 - ~~IFC-Schema-Version und -Bibliothek (ADR in welle-4-austausch)~~ → entschieden
   (IFC-SPF-Subset-Codec; IFC4-Export / IFC2x3+4-Import; §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import),
   Provenance § Historie); **STEP/STL-Backend ebenfalls entschieden** (OCC-DataExchange
-  nativ, geometrie-resident, §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005)) —
-  **DXF-/PDF-/PNG-Backends bleiben offen** (welle-4).
+  nativ, geometrie-resident, §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005));
+  **DXF-Backend entschieden** (selbst getragener 2D-Subset-Codec io-resident, §1
+  [`LH-FA-IO-003.a`](lastenheft.md#lh-fa-io-003)) — **PDF-/PNG-Backends bleiben offen** (welle-4).
 - Zielplattformen (siehe `releasing.md`).
 
 ## 8. Historie

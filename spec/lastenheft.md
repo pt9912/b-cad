@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.9
+**Version:** 0.1.10
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -768,8 +768,45 @@ bleiben ausgespart.
   Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder),
   **kein Teil-Export**; der Zielpfad bleibt unverändert.
 
-- <a id="lh-fa-io-003"></a>**LH-FA-IO-003 — DXF-Import.**
-- <a id="lh-fa-io-004"></a>**LH-FA-IO-004 — DXF-Export.**
+#### <a id="lh-fa-io-003"></a>LH-FA-IO-003 — DXF-Import
+
+**Beschreibung:** Import einer DXF-Datei (2D-Grundriss) als gerade Wände.
+
+**Teilumfang (welle-4):** gerade Wände als **2D-Achsen je Geschoss**; weitere
+DXF-Inhalte (Räume, Bemaßung, Schraffuren, Blöcke, Text, Bögen/Kreise, 3D) werden
+**übersprungen**. Importierte Wände erhalten **Standard-Höhe/-Dicke** — ausdrücklich
+offen, da eine DXF keine Höhe/Dicke trägt (benannte Lücke).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine valide DXF mit 2D-Linien/Polylinien, when importiert,
+  then entstehen **entsprechende gerade Wände**, deren **Anzahl mit der Quelle
+  übereinstimmt** (Standard-Höhe/-Dicke).
+- **Boundary:** Given eine leere/strukturlose DXF, when importiert, then entsteht ein
+  **leeres Modell ohne Absturz**.
+- **Negative:** Given eine nicht-DXF-/kaputte Datei, when importiert, then Fehler-Code
+  [`E-IO-003`](spezifikation.md#4-fehler-codes-und-logging-felder), **kein Teil-Import**.
+
+#### <a id="lh-fa-io-004"></a>LH-FA-IO-004 — DXF-Export
+
+**Beschreibung:** Export des b-cad-Modells als DXF-Datei (2D-Grundriss).
+
+**Teilumfang (welle-4):** wie Import — gerade Wände als **2D-Achsen je Geschoss**;
+weitere Inhalte werden **nicht geschrieben**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein b-cad-Modell mit Geschossen + geraden Wänden, when nach
+  DXF exportiert, then entsteht eine **valide DXF-Datei**, die ein Standard-CAD-/
+  DXF-Leser als **2D-Grundriss** zurückliest (die Wand-Achsen je Geschoss); **Roundtrip:**
+  re-importiert ergibt dieselbe **Wand-Achsen-Anzahl je Geschoss** (Treue = Anzahl +
+  Achs-Lage, **nicht** Höhe/Dicke).
+- **Boundary:** Given ein leeres Modell, when exportiert, then entsteht eine **gültige,
+  leere** DXF-Datei **ohne Absturz**.
+- **Negative:** Given ein nicht beschreibbarer Zielpfad, when exportiert, then Fehler-Code
+  [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder), **kein Teil-Export**;
+  der Zielpfad bleibt unverändert.
+
 - <a id="lh-fa-io-007"></a>**LH-FA-IO-007 — PDF-Export** (maßstäblicher Plan, vgl. ACC-004).
 - <a id="lh-fa-io-008"></a>**LH-FA-IO-008 — PNG-Export.**
 
