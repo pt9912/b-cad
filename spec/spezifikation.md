@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-16.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-17.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -547,6 +547,43 @@ Geschoss/keine Wand) → leeres/teil-leeres Modell **ohne Wurf**; eine leere Dat
 ebenso. Die Reihenfolge der erzeugten Bauteile ist aus der Quell-Reihenfolge
 deterministisch abgeleitet.
 
+### LH-FA-IO-005.a — STEP-/STL-Export (Mapping, Teilumfang)
+
+Bezug: [`LH-FA-IO-005`](lastenheft.md#lh-fa-io-005) (STEP),
+[`LH-FA-IO-006`](lastenheft.md#lh-fa-io-006) (STL) — **Sammelblock** (deckt beide).
+STEP/STL werden über die **DataExchange-Module des Geometrie-Kerns (OpenCascade)**
+geschrieben — OCC liefert beide Formate nativ (kein eigener Codec, anders als IFC).
+Backend-Provenance: § Historie.
+
+**Schicht (geometrie-resident).** Der STEP/STL-Exporter lebt **im Geometrie-Adapter**
+(`adapters/geometry/`, wo OCC gekapselt ist — `arch-check` Regel C) und erfüllt den
+Driven-Port `ModelExporterPort`; der Composition Root verdrahtet je Format die
+passende Implementierung (IFC io-resident, STEP/STL geometrie-resident). Der Kern
+bleibt format-frei; kein Adapter ruft einen anderen (Regel B).
+
+**Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile
+(extrudierte/boolesch geschnittene Solids, wie der Geometrie-Adapter sie baut;
+Ziel-Schema AP214 oder AP242). **STL** schreibt das **tessellierte Dreiecksnetz**
+(binär als Default). Längeneinheit mm.
+
+**Bauteil-Subset (welle-4).** Exportiert werden die **3D-fähigen Bauteile** — Wände
+(inkl. Wandöffnungen/Cutouts), Dächer, Decken/Fundament, Treppen. **Nicht
+geschrieben** (benannte Lücke): Material/Farbe, Property-Sets, PMI, Assembly-Struktur,
+beliebige Nicht-Solid-Aspekte. Ausbau = späterer Re-Eval (XDE/AP242, Provenance
+§ Historie).
+
+**Atomarität (kein Teil-Export).** Der Export schreibt in eine Temp-Datei und ersetzt
+den Zielpfad erst nach Erfolg (Rename); ein nicht beschreibbarer Zielpfad →
+[`E-IO-001`](#4-fehler-codes-und-logging-felder) (`event=io_no_permission`), **kein**
+Teil-Export, Zielpfad unverändert (Muster Projekt-Persistenz
+[`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern)). Ein OCC-Schreib-/
+Konvertierungsfehler (degeneriertes Shape) → neutraler Wurf; kein Backend-Typ verlässt
+den Adapter.
+
+**Totalität.** Ein Modell ohne 3D-Bauteile → eine **gültige, leere** Datei (kein Wurf).
+Die Reihenfolge der geschriebenen Bauteile ist aus der Modell-Reihenfolge deterministisch
+abgeleitet.
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -714,6 +751,7 @@ nicht im Bootstrap.
 | Qt | 6.x (REQ-TEC-002) | GUI-Adapter, keine Kern-Bindung |
 | SQLite | im Adapter gepinnt | `ProjectRepositoryPort`, atomar |
 | IFC | **IFC4** (Export) / **IFC2x3 + IFC4** (Import-Subset) | `ModelImporterPort`/`ModelExporterPort` (IFC-SPF-Subset-Codec, §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import)) |
+| STEP / STL | OCC-DataExchange (nativ; STEP AP214/242, STL binär) | `ModelExporterPort` **geometrie-resident** (Export-only; STEP B-Rep / STL Netz der 3D-Bauteile), §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005) |
 
 ## 7. Offene Punkte
 
@@ -723,7 +761,9 @@ nicht im Bootstrap.
 - Performance-Zielkomplexität der Raumerkennung (M3).
 - ~~IFC-Schema-Version und -Bibliothek (ADR in welle-4-austausch)~~ → entschieden
   (IFC-SPF-Subset-Codec; IFC4-Export / IFC2x3+4-Import; §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import),
-  Provenance § Historie); DXF-/STEP-/STL-/PDF-/PNG-Backends bleiben offen (welle-4).
+  Provenance § Historie); **STEP/STL-Backend ebenfalls entschieden** (OCC-DataExchange
+  nativ, geometrie-resident, §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005)) —
+  **DXF-/PDF-/PNG-Backends bleiben offen** (welle-4).
 - Zielplattformen (siehe `releasing.md`).
 
 ## 8. Historie

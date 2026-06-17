@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.8
+**Version:** 0.1.9
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -727,10 +727,49 @@ Bauteile werden **nicht geschrieben** (siehe LH-FA-IO-001).
 - **Negative:** Given ein nicht beschreibbarer Zielpfad (fehlendes Schreibrecht),
   when exportiert, then Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder),
   **kein Teil-Export**; der Zielpfad bleibt unverändert.
+
+#### <a id="lh-fa-io-005"></a>LH-FA-IO-005 — STEP-Export
+
+**Beschreibung:** Export des b-cad-Gebäudemodells als STEP-Datei (CAD-Volumenmodell).
+
+**Teilumfang (welle-4):** Export deckt die **3D-Bauteile** (Wände inkl.
+Wandöffnungen, Dächer, Decken/Fundament, Treppen) als Volumenkörper;
+Material/Farbe/Property-Sets werden **nicht** geschrieben — ausdrücklich offen,
+kein stiller Vollumfang.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein b-cad-Modell mit 3D-Bauteilen, when nach STEP
+  exportiert, then entsteht eine **valide STEP-Datei**, die ein Standard-CAD-/
+  STEP-Leser zurückliest, wobei die exportierten Bauteile als **Volumenkörper**
+  enthalten sind.
+- **Boundary:** Given ein Modell ohne 3D-Bauteile (leer), when exportiert, then
+  entsteht eine **gültige, leere** STEP-Datei **ohne Absturz**.
+- **Negative:** Given ein nicht beschreibbarer Zielpfad (fehlendes Schreibrecht),
+  when exportiert, then Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder),
+  **kein Teil-Export**; der Zielpfad bleibt unverändert.
+
+#### <a id="lh-fa-io-006"></a>LH-FA-IO-006 — STL-Export
+
+**Beschreibung:** Export des b-cad-Gebäudemodells als STL-Datei (Dreiecksnetz für
+3D-Druck/Visualisierung).
+
+**Teilumfang (welle-4):** wie STEP — die **3D-Bauteile** als Netz; Material/Farbe
+bleiben ausgespart.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein b-cad-Modell mit 3D-Bauteilen, when nach STL
+  exportiert, then entsteht eine **valide STL-Datei** mit dem **Dreiecksnetz** der
+  Bauteile (nicht leer; entspricht der 3D-Darstellung).
+- **Boundary:** Given ein Modell ohne 3D-Bauteile, when exportiert, then entsteht
+  eine **gültige, (annähernd) leere** STL-Datei **ohne Absturz**.
+- **Negative:** Given ein nicht beschreibbarer Zielpfad, when exportiert, then
+  Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder),
+  **kein Teil-Export**; der Zielpfad bleibt unverändert.
+
 - <a id="lh-fa-io-003"></a>**LH-FA-IO-003 — DXF-Import.**
 - <a id="lh-fa-io-004"></a>**LH-FA-IO-004 — DXF-Export.**
-- <a id="lh-fa-io-005"></a>**LH-FA-IO-005 — STEP-Export.**
-- <a id="lh-fa-io-006"></a>**LH-FA-IO-006 — STL-Export.**
 - <a id="lh-fa-io-007"></a>**LH-FA-IO-007 — PDF-Export** (maßstäblicher Plan, vgl. ACC-004).
 - <a id="lh-fa-io-008"></a>**LH-FA-IO-008 — PNG-Export.**
 
