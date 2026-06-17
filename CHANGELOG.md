@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-020b — **STEP-/STL-Export lauffähig** (`LH-FA-IO-005`/`006`, welle-4, `ADR-0014`):
+  ein `model::Building` wird als **valide STL** (binär, Dreiecksnetz **aller** 3D-Bauteile)
+  und **STEP** (B-Rep-Volumenkörper der OCC-Solid-Bauteile = Wände + Decken/Fundament,
+  AP214) geschrieben — über **geometrie-residente** `ModelExporterPort`-Adapter
+  (`adapters/geometry/stl_export_adapter`, `step_export_adapter`; OCC-DataExchange nativ,
+  **keine** neue Dependency), **atomar** (Temp+`fsync`+Rename → `E-IO-001`, kein
+  Teil-Export). Geteilter OCC-Solid-Builder `occ_solids` (aus `occ_geometry_adapter`
+  ausgelagert, keine Duplikation). `ExchangeService` auf ein **Exporter-Registry**
+  (Format→Port) umgestellt; `ExchangeFormat::Step`/`Stl` (export-only → Import wirft
+  `E-IO-003`); Composition Root `--export-step`/`--export-stl`. **Benannte STEP-Lücke:**
+  Dächer/Treppen sind analytische Netze ohne OCC-Solid → STL-verlustfrei, STEP-B-Rep
+  via Mesh-Vernähung ist ein Folge-Inkrement (spez. §1 `LH-FA-IO-005.a`). MR-006-Plan-
+  Review + Code-Review/MR-009 je 0 HIGH; `make gates` grün (180/180, Coverage 90,0 %).
 - slice-019c — **IFC-Export lauffähig** (`LH-FA-IO-002`, `ACC-003`, welle-4, `ADR-0013`
   Option D): ein `model::Building` (Geschosse + gerade Wände) wird als valide IFC4-SPF-
   Datei geschrieben — **atomar** (Temp+`fsync`+Rename), so dass der 019b-Import dieselbe

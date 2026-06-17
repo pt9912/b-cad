@@ -43,10 +43,10 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)) +
   Spec-§6/§7-Nachzug; `ExchangeService` + Importer/Exporter + Subset-Codec;
   AK-Tests + **Adapter-Pfad-Integrationstest**; neue `arch-check`-io-Regel.
-- ✓ **STEP/STL-Export-Backend-ADR** ([ADR-0014](../../adr/0014-step-stl-export-backend.md), OCC-DataExchange nativ,
-  geometrie-residente `ModelExporterPort`-Naht) + **AK-Schärfung** (slice-020a);
-  **Impl offen** (geometrie-residenter Exporter + `ExchangeFormat`-Dispatch +
-  OCC-Toolkit-Linkage + AK-/Re-Read-Tests).
+- ✓ **STEP/STL-Export-Backend** ([ADR-0014](../../adr/0014-step-stl-export-backend.md), OCC-DataExchange nativ,
+  geometrie-residente `ModelExporterPort`-Naht) — AK-Schärfung (slice-020a) **+ Impl
+  (slice-020b: STL alle 3D-Bauteile, STEP B-Rep Wände+Decken)**; **offen:** STEP-B-Rep
+  für Dächer/Treppen (Mesh→Shape-Vernähung, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)).
 - **DXF-Backend-ADR** + Import/Export.
 - **PDF/PNG-Export** (maßstäblicher Plan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
@@ -87,7 +87,14 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   von Outline auf AK (export-only, lösungsfrei, Lastenheft 0.1.9); spez. §1
   [`LH-FA-IO-005.a`](../../../../spec/lastenheft.md#lh-fa-io-005) (OCC-DataExchange, geometrie-resident, STEP B-Rep / STL Netz,
   atomar) + §6/§7-Nachzug. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (MED-1/2 + LOW-3); reine Doku, gates grün.
-- ⏳ offen: **STEP/STL-Impl** · DXF-ADR · PDF/PNG · Welle-Verifikation →
+- ✓ **slice-020b** — **STEP-/STL-Export lauffähig** ([LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)/006): geometrie-
+  residente `ModelExporterPort`-Adapter — **STL** (binär, Dreiecksnetz aller 3D-Bauteile)
+  + **STEP** (B-Rep der OCC-Solid-Bauteile Wände+Decken, AP214), atomar → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder);
+  geteilter `occ_solids`-Builder; `ExchangeService`-Exporter-Registry; export-only-
+  Import → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder). **Benannte STEP-Lücke:** Dächer/Treppen (analytische Netze)
+  STL-only. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review/[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) je **0 HIGH**; Zwei-Commit-Split;
+  `make gates` grün (180/180, Coverage 90,0 %).
+- ⏳ offen: STEP-B-Rep Dächer/Treppen · DXF-ADR · PDF/PNG · Welle-Verifikation →
   `done/welle-4-results.md`.
 
 ## Nächste Wellen

@@ -5,6 +5,9 @@
 
 #include "adapters/geometry/step_export_adapter.h"
 
+#include <fcntl.h>
+#include <unistd.h>
+
 #include <stdexcept>
 #include <string>
 #include <system_error>
@@ -102,6 +105,14 @@ void StepExportAdapter::write(const model::Building& building,
             throw std::runtime_error(
                 "E-IO-001: STEP-Export fehlgeschlagen ('" + path.string() +
                 "'): Schreiben des Zielpfads fehlgeschlagen; event=io_no_permission");
+        }
+        // Durability: Temp vor dem Rename auf Platte zwingen (Muster STL-/
+        // IFC-Export; Code-Review MED-1) — sonst könnte ein Crash zwischen
+        // Write und Flush ein leeres/abgeschnittenes Ziel sichtbar machen.
+        const int fd = ::open(tmp.string().c_str(), O_RDONLY);
+        if (fd >= 0) {
+            ::fsync(fd);
+            ::close(fd);
         }
         std::error_code ec;
         fs::rename(tmp, path, ec);

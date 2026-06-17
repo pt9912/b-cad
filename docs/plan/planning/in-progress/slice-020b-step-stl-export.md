@@ -1,7 +1,7 @@
 ---
 id: slice-020b
 titel: STEP-/STL-Export — geometrie-residenter ModelExporterPort (OCC-DataExchange) + ExchangeFormat-Dispatch
-status: in-progress
+status: done
 welle: welle-4-austausch
 lastenheft_refs: [[LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005), [LH-FA-IO-006](../../../../spec/lastenheft.md#lh-fa-io-006)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md), [ADR-0014](../../adr/0014-step-stl-export-backend.md)]
@@ -9,8 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0002](../.
 
 # Slice 020b: STEP-/STL-Export (geometrie-residenter Exporter)
 
-**Status:** in-progress (2026-06-17). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen
-(**0 HIGH / 2 MED / 3 LOW / INFO**; implementierungs-bereit, Start nicht blockiert).
+**Status:** done (2026-06-17). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **+** unabhängiges
+Code-Review/[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) je **0 HIGH**; DoD vollständig, `make gates` grün (180/180,
+Coverage 90,0 %), Closure-Notiz §8. **Zwei-Commit-Split** (i STL, ii STEP).
+[Code-Review-Report](../../../reviews/2026-06-17-slice-020b-code-review.md).
+Plan-Review (**0 HIGH / 2 MED / 3 LOW / INFO**; Start nicht blockiert).
 [Report](../../../reviews/2026-06-17-slice-020b-plan.md). Eingearbeitet: **MED-1**
 (Decken/Fundament **sind** OCC-Solids — nur **Dächer + Treppen** analytisch → Vernähung;
 + §1-Präzisierungs-Folgepflicht), **MED-2** (`GeometryKernelPort` gibt kein `TopoDS_Shape`
@@ -48,7 +51,7 @@ Kern bleibt format-frei.
 
 ## 2. Definition of Done
 
-- [ ] **`ExchangeFormat`-Erweiterung + `ExchangeService`-Dispatch (Kern).**
+- [x] **`ExchangeFormat`-Erweiterung + `ExchangeService`-Dispatch (Kern).**
       `ExchangeFormat` um `Step`, `Stl` erweitert; `ExchangeService.exportModel`
       dispatcht je Format zum passenden `ModelExporterPort` — **IFC io-resident**
       (`IfcExportAdapter`, slice-019c), **STEP/STL geometrie-resident** (neuer
@@ -59,7 +62,7 @@ Kern bleibt format-frei.
       kein `ModelImporterPort`), damit der Switch erschöpfend bleibt. `src/main.cpp`
       verdrahtet den geometrie-residenten Exporter (Composition Root;
       `--export-step`/`--export-stl`-Spiegel).
-- [ ] **STEP/STL-Exporter in `src/adapters/geometry/` implementiert `ModelExporterPort`**
+- [x] **STEP/STL-Exporter in `src/adapters/geometry/` implementiert `ModelExporterPort`**
       (eigener Adapter/eigene Adapter je Format; OCC gekapselt — Regel C): **Building →
       OCC-`TopoDS_Shape`-Assemblierung** → STEP via `STEPControl_Writer` (AP214/242),
       STL via `StlAPI_Writer`/`RWStl` (binär). **Shape-Assemblierung (Kernpunkt, MED-1/2):**
@@ -76,7 +79,7 @@ Kern bleibt format-frei.
       Teil-Export); OCC-Fehler/degeneriertes Shape → **neutraler Wurf** (kein OCC-Typ-
       Leck, [ADR-0001](../../adr/0001-hexagonale-architektur.md)). OCC-DataExchange-Toolkits (`TKDESTEP`/`TKDESTL`/`TKRWMesh`)
       in `src/adapters/CMakeLists.txt` gelinkt (**keine** neue `find_package`-Dependency).
-- [ ] **AK-Tests [`LH-FA-IO-005`](../../../../spec/lastenheft.md#lh-fa-io-005)/`006` + Adapter-Pfad-Integration.** **STEP:**
+- [x] **AK-Tests [`LH-FA-IO-005`](../../../../spec/lastenheft.md#lh-fa-io-005)/`006` + Adapter-Pfad-Integration.** **STEP:**
       Modell → Datei → **Re-Read-Orakel** (`STEPControl_Reader` liest die Datei wieder,
       die exportierten Bauteile sind als Volumenkörper enthalten — nicht leer). Die
       STEP-Fixture enthält mindestens ein **OCC-Solid-Bauteil** (Wand/Decke); wird der
@@ -89,7 +92,7 @@ Kern bleibt format-frei.
       **Integration über den echten Pfad** `ExchangeService.exportModel` →
       `ModelExporterPort` → geometrie-residenter Adapter. `make gates` grün (arch-check
       inkl. geometry, Coverage ≥ 70 %).
-- [ ] **Schicht + Geometrie-Review.** `arch-check` **Regel C** deckt den Exporter
+- [x] **Schicht + Geometrie-Review.** `arch-check` **Regel C** deckt den Exporter
       (OCC in `geometry/`) — **keine** neue arch-check-Regel ([ADR-0014](../../adr/0014-step-stl-export-backend.md)). **Unabhängiges
       Code-Review** (Mapping/Serialisierung/[`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Korrektheit). **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
       anwendbar** (Geometrie-Assemblierung im Adapter — Mesh→Shape-Vernähung ist neue
@@ -171,5 +174,41 @@ Kern bleibt format-frei.
 
 ## 8. Closure-Notiz
 
-*(wird bei `done` ausgefüllt — Closure-Kriterien beobachtbar, Lerneintrag in einer
-der drei Formen: geschärfte Regel · neuer Sensor · benannte Spec-Lücke.)*
+**Closure-Kriterien (beobachtbar, 2026-06-17):**
+
+- **STL ([`LH-FA-IO-006`](../../../../spec/lastenheft.md#lh-fa-io-006)):** geometrie-residenter `StlExportAdapter` schreibt
+  binäres STL des Dreiecksnetzes **aller** 3D-Bauteile (Wände/Decken über den
+  `GeometryKernelPort`, Dächer/Treppen analytisch), atomar → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder); AK-Test
+  per Binär-STL-Re-Read (Dreiecke > 0 / exakte Dateigröße), Boundary leeres Modell,
+  [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder), Integration. **Commit i** (`439c9e5`).
+- **STEP ([`LH-FA-IO-005`](../../../../spec/lastenheft.md#lh-fa-io-005)):** geometrie-residenter `StepExportAdapter` schreibt
+  die **B-Rep-Solids** der OCC-Solid-Bauteile (Wände + Decken/Fundament; Decken auf
+  `base_z`) via `STEPControl_Writer` (AP214), atomar (Temp+`fsync`+Rename →
+  [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)). `makeNetSolid` in geteiltes `occ_solids` ausgelagert (keine
+  Duplikation, Regel C). AK-Test per STEP-Text-Orakel (ISO-10303-21 + B-Rep).
+  **Commit ii** (`31e7555`).
+- **Kern:** `ExchangeFormat::Step`/`Stl`; `ExchangeService` auf Exporter-Registry
+  (Format→Port); `importModel` wirft für export-only Step/Stl ([`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)).
+- **`arch-check` Regel C** deckt die OCC-Isolation (keine neue Regel); `make gates`
+  grün (180/180, Coverage 90,0 %). Code-Review/[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH** (MED-1 STEP-fsync
+  + LOW-2 eingearbeitet).
+
+**Lerneintrag (benannte Spec-Lücke + geschärfte Praxis):**
+
+- **Benannte Spec-Lücke (STEP-B-Rep-Abdeckung):** STEP schreibt B-Rep nur für die
+  **OCC-Solid-Bauteile** (Wände + Decken/Fundament). **Dächer und Treppen** sind
+  analytische Dreiecksnetze ohne OCC-Solid → STEP-**Lücke** (STL verlustfrei); die
+  B-Rep-**Vernähung** (Mesh→Shape) ist als Folge-Inkrement benannt. Das committete §1
+  [`LH-FA-IO-005.a`](../../../../spec/lastenheft.md#lh-fa-io-005) las B-Rep „wie der Geometrie-Adapter sie baut" für *alle* Bauteile —
+  der Impl-Befund (MED-1 des Plan-Reviews) hat §1 auf die echte Abdeckung geschärft.
+- **Reuse statt Duplikat (geschärfte Praxis):** der geometrie-residente Export brauchte
+  die OCC-Solid-Konstruktion, die als privater Helfer im `OccGeometryAdapter` lag — in
+  `occ_solids` ausgelagert (vom Adapter + Exporter genutzt) statt dupliziert; der
+  `GeometryKernelPort` gibt bewusst **kein** `TopoDS_Shape` zurück (MED-2), die Shapes
+  werden aus der geteilten Logik **neu** gebaut.
+- **Atomarik-Konsistenz (neuer Sensor-nah):** der Code-Review fing, dass der STEP-Pfad
+  (anders als STL/IFC) die Temp-Datei vor dem Rename nicht fsync'te — nachgezogen, damit
+  alle Export-Pfade dieselbe Durability-Garantie tragen.
+
+**Restrisiko / Nachfolge:** STEP-B-Rep für Dächer/Treppen (Mesh→Shape-Vernähung,
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-pflichtig); DXF-Backend-ADR; PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)); Welle-4-Verifikation → M4.
