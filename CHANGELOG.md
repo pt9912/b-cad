@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-021a — **DXF-Import/-Export AK-Schärfung + Spec-Mapping** (`LH-FA-IO-003`/`004`,
+  welle-4, `ADR-0015`): `LH-FA-IO-003`/`004` von Outline auf AK-Niveau (lösungsfrei,
+  **bidirektional, 2D-Grundriss** — Export → valide DXF, von einem Standard-Leser als
+  2D-Grundriss/Wand-Achsen je Geschoss lesbar; Import → gerade Wände, Anzahl-Treue,
+  **Standard-Höhe/-Dicke** [DXF trägt keine — benannte Lücke wie IFC-Geschoss-Höhe];
+  Roundtrip = Achsen-Anzahl, nicht Höhe/Dicke; `E-IO-003`/`E-IO-001` atomar; Teilumfang
+  gerade Wände als 2D-Achsen je Geschoss, Räume/Bemaßung/Schraffur/Blöcke/Text/Bögen/3D
+  übersprungen/nicht geschrieben), Lastenheft 0.1.10. spez. §1 `LH-FA-IO-003.a` (selbst
+  getragener ASCII-DXF-Subset-Codec **io-resident**, kein OCC — wie IFC; gerade
+  Wand-Achsen je Geschoss-`LAYER`, Import-Defaults, atomarer Import In-Memory-zuerst).
+  §6 neue DXF-Vertragszeile, §7 DXF chirurgisch aus der Offene-Backends-Klausel
+  (PDF/PNG bleiben offen), §4 `E-IO-001` um STEP/STL/DXF-Export erweitert (latente
+  `ADR-0014`-Lücke parallel geschlossen). **`ADR-0015` „DXF-Backend" accepted**
+  (selbst getragener DXF-Subset-Codec Option D, OCC kann kein DXF; Text-Review 0 HIGH).
+  `MR-006` 0 HIGH; reine Doku/Entscheidung.
 - slice-020b — **STEP-/STL-Export lauffähig** (`LH-FA-IO-005`/`006`, welle-4, `ADR-0014`):
   ein `model::Building` wird als **valide STL** (binär, Dreiecksnetz **aller** 3D-Bauteile)
   und **STEP** (B-Rep-Volumenkörper der OCC-Solid-Bauteile = Wände + Decken/Fundament,
@@ -21,6 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Dächer/Treppen sind analytische Netze ohne OCC-Solid → STL-verlustfrei, STEP-B-Rep
   via Mesh-Vernähung ist ein Folge-Inkrement (spez. §1 `LH-FA-IO-005.a`). MR-006-Plan-
   Review + Code-Review/MR-009 je 0 HIGH; `make gates` grün (180/180, Coverage 90,0 %).
+- slice-020a — **STEP-/STL-Export AK-Schärfung + Spec-Mapping** (`LH-FA-IO-005`/`006`,
+  welle-4, `ADR-0014`): `LH-FA-IO-005`/`006` von Outline auf AK-Niveau (lösungsfrei,
+  **export-only** — valide STEP-/STL-Datei, von einem Standard-Leser als Volumenkörper/
+  Dreiecksnetz lesbar; `E-IO-001`, kein Teil-Export; Boundary leer→gültig-leer; Teilumfang
+  3D-Bauteile, Material/Farbe ausgespart), Lastenheft 0.1.9. spez. §1 `LH-FA-IO-005.a`
+  (OCC-DataExchange nativ, **geometrie-residenter** `ModelExporterPort`, Regel C). §6
+  STEP/STL-Vertragszeile, §7 STEP/STL chirurgisch aus der Offene-Backends-Klausel
+  (DXF/PDF/PNG bleiben offen). **`ADR-0014` „STEP/STL-Export-Backend" accepted**
+  (OCC-DataExchange nativ, keine neue Dependency, geometrie-residente
+  `ModelExporterPort`-Naht; Text-Review 0 HIGH). `MR-006` 0 HIGH; reine Doku/Entscheidung.
 - slice-019c — **IFC-Export lauffähig** (`LH-FA-IO-002`, `ACC-003`, welle-4, `ADR-0013`
   Option D): ein `model::Building` (Geschosse + gerade Wände) wird als valide IFC4-SPF-
   Datei geschrieben — **atomar** (Temp+`fsync`+Rename), so dass der 019b-Import dieselbe

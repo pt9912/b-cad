@@ -1,12 +1,15 @@
 # b-cad
 
-> **Projekt-Status:** Welle `welle-3-auswertung` aktiv. **Meilenstein M2
+> **Projekt-Status:** Welle `welle-4-austausch` aktiv. **Meilenstein M3
 > erreicht** — Kern-MVP (Wände, Raumerkennung, OCC-Extrusion, SQLite-Persistenz
 > inkl. Crash-Recovery, Änderungs-Benachrichtigung; welle-1, M1), sichtbarer
-> Qt-6-3D-Viewer (welle-1v, [ACC-002](spec/lastenheft.md#7-abnahmekriterien)) und **alle parametrischen Bauteile** —
-> Türen/Fenster, Dach, Decken/Fundament, Treppen (welle-2) — sind implementiert.
-> Aktuell: **Auswertungen** (Flächen/Volumen/Wohnfläche, Material) über einen
-> read-only `EvaluatePort`. Einstieg: [`harness/README.md`](harness/README.md).
+> Qt-6-3D-Viewer (welle-1v, [ACC-002](spec/lastenheft.md#7-abnahmekriterien)), **alle parametrischen Bauteile**
+> (Türen/Fenster, Dach, Decken/Fundament, Treppen; welle-2, M2) und
+> **Auswertungen** (Flächen/Volumen/Wohnfläche, Material/Listen/Kosten über einen
+> read-only `EvaluatePort`; welle-3, M3) sind implementiert. Aktuell: **offener
+> Formataustausch** ([OBJ-005](spec/lastenheft.md#3-projektziele)) — IFC (Import+Export) und STEP/STL (Export)
+> geliefert; DXF entschieden + geschärft (Impl folgt), PDF/PNG offen. Einstieg:
+> [`harness/README.md`](harness/README.md).
 
 ## Was ist b-cad?
 
