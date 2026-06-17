@@ -222,7 +222,7 @@ TEST(IfcImportIntegration, ExchangeServiceImportsThroughRealAdapter) {
     const TempIfc fixture("svc_happy", sampleIfc());
     const IfcImportAdapter adapter;
     const bcad::adapters::io::IfcExportAdapter exporter;
-    const ExchangeService service(adapter, exporter);  // Driven-Port-Injektion (main-Muster)
+    const ExchangeService service(adapter, {{ExchangeFormat::Ifc, &exporter}});  // Driven-Port-Injektion (main-Muster)
 
     const model::Building building =
         service.importModel(fixture.path, ExchangeFormat::Ifc);
@@ -234,7 +234,7 @@ TEST(IfcImportIntegration, ExchangeServicePropagatesEIo003) {
     const TempIfc fixture("svc_reject", "<png-bytes-not-ifc>\n");
     const IfcImportAdapter adapter;
     const bcad::adapters::io::IfcExportAdapter exporter;
-    const ExchangeService service(adapter, exporter);
+    const ExchangeService service(adapter, {{ExchangeFormat::Ifc, &exporter}});
 
     try {
         service.importModel(fixture.path, ExchangeFormat::Ifc);

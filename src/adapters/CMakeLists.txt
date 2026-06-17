@@ -27,6 +27,10 @@ add_library(bcad_adapters
     ui/viewer_widget.cpp
     geometry/occ_probe.cpp
     geometry/occ_geometry_adapter.cpp
+    # slice-020b: STEP/STL-Export (ADR-0014) — geometrie-residenter
+    # ModelExporterPort. STL nutzt nur den GeometryKernelPort + Kern-Geometrie
+    # (kein direktes OCC); STEP-Adapter (OCC-DataExchange) folgt im selben Verz.
+    geometry/stl_export_adapter.cpp
     persistence/sqlite_probe.cpp
     persistence/sqlite_project_repository.cpp
     # slice-019b: IFC-Import (ADR-0013 Option D) — hand-gerollter IFC-SPF-

@@ -20,6 +20,7 @@
 #include <QMainWindow>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
+#include "adapters/geometry/stl_export_adapter.h"
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 #include "adapters/ui/viewer_widget.h"
@@ -78,7 +79,11 @@ int main(int argc, char** argv) {
     // mit der IO-Oberfläche.
     bcad::adapters::io::IfcImportAdapter ifc_importer;
     bcad::adapters::io::IfcExportAdapter ifc_exporter;
-    services::ExchangeService exchange(ifc_importer, ifc_exporter);
+    bcad::adapters::geometry::StlExportAdapter stl_exporter(geometry);  // geometrie-resident (ADR-0014)
+    services::ExchangeService exchange(
+        ifc_importer,
+        {{bcad::hexagon::ports::driving::ExchangeFormat::Ifc, &ifc_exporter},
+         {bcad::hexagon::ports::driving::ExchangeFormat::Stl, &stl_exporter}});
 
     const QStringList cli = QApplication::arguments();
     const int import_index =
@@ -111,6 +116,22 @@ int main(int argc, char** argv) {
             return 0;
         } catch (const std::exception& e) {
             std::cerr << "IFC-Export fehlgeschlagen: " << e.what() << '\n';
+            return 1;
+        }
+    }
+
+    const int stl_index =
+        static_cast<int>(cli.indexOf(QStringLiteral("--export-stl")));
+    if (stl_index >= 0 && stl_index + 1 < cli.size()) {
+        const std::string stl_path = cli.at(stl_index + 1).toStdString();
+        buildAcc001KernDemo(service);  // Demo-Modell als Export-Quelle
+        try {
+            exchange.exportModel(service.building(), stl_path,
+                                 bcad::hexagon::ports::driving::ExchangeFormat::Stl);
+            std::cout << "STL exportiert -> " << stl_path << '\n';
+            return 0;
+        } catch (const std::exception& e) {
+            std::cerr << "STL-Export fehlgeschlagen: " << e.what() << '\n';
             return 1;
         }
     }
