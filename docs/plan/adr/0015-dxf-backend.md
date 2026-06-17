@@ -1,6 +1,6 @@
 # ADR-0015: DXF-Import/-Export-Backend (selbst getragener DXF-Subset-Codec im IO-Adapter, Option D; 2D-Grundriss)
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Datum:** 2026-06-17
 
@@ -211,3 +211,4 @@ ADR-0013/0014):
 |---|---|---|
 | 2026-06-17 | Proposed (welle-4-austausch; DXF-Backend — selbst getragener DXF-Subset-Codec **Option D** io-resident, 2D-Grundriss; löst die [ADR-0014](0014-step-stl-export-backend.md)-Ausgliederung „DXF = eigenes ADR" ein) | welle-4 / DXF-Backend-ADR |
 | 2026-06-17 | **Unabhängiges Text-Review** (Reviewer ≠ Autor, vor Accept): **0 HIGH**, 2 MED + 4 LOW + 2 INFO eingearbeitet — **MED-1** (Import-Dispatch ist **kein** Registry: ein einzelner fest verdrahteter IFC-`ModelImporterPort` per `switch` → DXF-Import = Kern-Erweiterung des Import-Dispatch, Form legt der Impl-Slice fest); **MED-2** (Re-Eval-Trigger beobachtbar: reale-DXF-scheitert-am-AK / AK-Schärfung als Beleg-Artefakt + DXF-Lib-Adoption ADR-0004-beobachtbar belegen, Muster ADR-0013-MED-2/spike-001); **LOW-1** (»kann kein DXF« als eigene Feststellung, nicht ADR-0002 zugeschrieben); **LOW-2** (§4-[`E-IO-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Bedingung um DXF-Export erweitern, STEP/STL-Parität). Option-D-Entscheidung, „Regel F gegenstandslos"-Wiederverwendung (arch-check grün über header-freien io/-Codec belegt) und §6/§7-Chirurgie bestätigt. **Accept ausstehend (Projektinhaber)** | [`docs/reviews/2026-06-17-adr-0015-text-review.md`](../../reviews/2026-06-17-adr-0015-text-review.md) |
+| 2026-06-17 | **Accepted** (Projektinhaber) — Text-Review **0 HIGH**, alle MED/LOW eingearbeitet. DXF-Backend = **selbst getragener DXF-Subset-Codec (Option D)** io-resident, 2D-Grundriss (gerade Wand-Achsen je Geschoss-`LAYER`), Import → Default-Höhe/-Dicke (benannte Lücke). Löst die [ADR-0014](0014-step-stl-export-backend.md)-Ausgliederung „DXF = eigenes ADR" ein; Folgepflichten (AK-Schärfung [LH-FA-IO-003](../../../spec/lastenheft.md#lh-fa-io-003)/004 + Spec-§1/§6/§7/§4-Nachzug, Impl inkl. Import-Dispatch-Kern-Erweiterung) im ADR-Index | welle-4-Buchung |

@@ -47,7 +47,9 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   geometrie-residente `ModelExporterPort`-Naht) — AK-Schärfung (slice-020a) **+ Impl
   (slice-020b: STL alle 3D-Bauteile, STEP B-Rep Wände+Decken)**; **offen:** STEP-B-Rep
   für Dächer/Treppen (Mesh→Shape-Vernähung, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)).
-- **DXF-Backend-ADR** + Import/Export.
+- ✓ **DXF-Backend-ADR** ([ADR-0015](../../adr/0015-dxf-backend.md), Accepted 2026-06-17 —
+  selbst getragener DXF-Subset-Codec Option D io-resident, 2D-Grundriss); **offen:**
+  DXF-AK-Schärfung ([LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/004) + Import/Export-Impl.
 - **PDF/PNG-Export** (maßstäblicher Plan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
   [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) (IFC-Export) + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (PDF) erfüllt → **Meilenstein M4**.
@@ -94,8 +96,13 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   Import → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder). **Benannte STEP-Lücke:** Dächer/Treppen (analytische Netze)
   STL-only. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review/[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) je **0 HIGH**; Zwei-Commit-Split;
   `make gates` grün (180/180, Coverage 90,0 %).
-- ⏳ offen: STEP-B-Rep Dächer/Treppen · DXF-ADR · PDF/PNG · Welle-Verifikation →
-  `done/welle-4-results.md`.
+- ✓ **[ADR-0015](../../adr/0015-dxf-backend.md) „DXF-Backend" accepted** (2026-06-17) —
+  **selbst getragener DXF-Subset-Codec** (Option D, wie IFC; kein Lib-Zukauf, OCC kann
+  kein DXF), **io-resident**, 2D-Grundriss (gerade Wand-Achsen je Geschoss-`LAYER`);
+  Import → Default-Höhe/-Dicke (benannte Lücke). Text-Review **0 HIGH** (MED-1
+  Import-Dispatch-Kern-Erweiterung + MED-2 + LOW eingearbeitet).
+- ⏳ offen: STEP-B-Rep Dächer/Treppen · **DXF-AK-Schärfung + Impl** · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
+  Welle-4-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen
 
