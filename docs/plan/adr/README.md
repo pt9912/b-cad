@@ -15,6 +15,7 @@
 | [0011](0011-bauteil-hosting-wandoeffnung.md) | Bauteil-Hosting & Wandöffnungs-Modell (wand-gehostetes Element mit Wand-Referenz; Kern liefert Schnitt-Prismen, `GeometryKernelPort` subtrahiert; `WallGeometryChanged`-Wiederverwendung; Raumerkennung unberührt; Bauteil-Erweiterungs-Muster als welle-2-Leitplanke) | Accepted (2026-06-13) | [LH-FA-DOR-001](../../../spec/lastenheft.md#lh-fa-dor-001--tür-platzieren)..004, [LH-FA-WIN-001](../../../spec/lastenheft.md#lh-fa-win-001--fenster-platzieren)..005, ADR-0001/0002/0006/0007/0008 |
 | [0012](0012-evaluations-architektur.md) | Evaluations-Architektur (neuer `EvaluatePort` read-only Query; pure Ergebnis-Werttypen; pull, kein `op`; Fläche = Shoelace-Raum-Netto / Volumen analytisch im Kern — geklemmtes Öffnungsvolumen, **kein OCC-`GProp`**; Material nur konsumierte Eingabe; welle-3-Leitplanke) | Accepted (2026-06-14) | [LH-FA-EVL-001](../../../spec/lastenheft.md#lh-fa-evl-001--flächenberechnung)..006, ADR-0001/0006/0007/0011 |
 | [0013](0013-ifc-bibliothek.md) | IFC-Bibliothek und -Schema-Version (IFC-SPF-Subset-Codec im IO-Adapter, **Option D** — kein Bibliotheks-Zukauf jetzt; Export IFC4 `IfcWall`+`IfcMaterialLayerSetUsage` / Import IFC4+IFC2x3-Subset; atomar/[`E-IO-003`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder); Re-Eval auf IfcOpenShell/web-ifc; STEP/STL/DXF/PDF/PNG = Schwester-ADRs; welle-4-Leitplanke) | **Accepted** (2026-06-16) | [LH-FA-IO-001](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002, [ACC-003](../../../spec/lastenheft.md#7-abnahmekriterien), [OBJ-005](../../../spec/lastenheft.md#3-projektziele), ADR-0001/0002/0004/0005 |
+| [0014](0014-step-stl-export-backend.md) | STEP-/STL-Export-Backend (**OCC-DataExchange nativ** — keine neue Dependency, ADR-0004-konform; geometrie-residenter `ModelExporterPort`, von **Regel C** gedeckt; STEP B-Rep / STL Mesh; atomar/[`E-IO-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder); löst die ADR-0002-Ausgliederung „STEP-/Format-Export"; DXF/PDF/PNG = Schwester-ADRs) | **Accepted** (2026-06-17) | [LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-005)/006, [OBJ-005](../../../spec/lastenheft.md#3-projektziele), ADR-0001/0002/0004/0005/0013 |
 
 ## ADR-Folgepflichten (Status)
 
@@ -42,6 +43,9 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0013 | `arch-check`-**Regel** (Format-/IFC-Symbole nur in `src/adapters/io/`, analog Regel C/D/E) | **gegenstandslos für Option D** (slice-019b): C/D/E gaten **externe Bibliotheks-Header** (OCC/SQLite/Qt) — Option D hat **keine** externe IFC-Lib; die Isolation trägt **Regel A+B** (`arch-check` grün inkl. `io/`). **Umdatiert** auf den externen-Bibliotheks-Re-Eval (erst eine später adoptierte IFC-Lib braucht ein Header-Gate analog C/D/E) |
 | ADR-0013 | **Import:** IFC-SPF-Subset-Codec im IO-Adapter (`SpfReader`) + `ModelImporterPort` + `ExchangeService` (Driving `ExchangeModelPort`) + AK-Tests [`LH-FA-IO-001`](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) + **Adapter-Pfad-Integrationstest** (Datei→Domain, [`E-IO-003`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) durch echten Adapter) | **erfüllt** durch slice-019b (2026-06-17) |
 | ADR-0013 | **Export:** `ModelExporterPort` + IFC-SPF-Writer + Roundtrip-AK [`LH-FA-IO-002`](../../../spec/lastenheft.md#lh-fa-io-002) ([ACC-003](../../../spec/lastenheft.md#7-abnahmekriterien)) | **erfüllt** durch slice-019c (2026-06-17) |
+| ADR-0014 | **Toolchain-Beleg:** Impl-Slice belegt beobachtbar (`apt-get install -s` o. Ä., Muster spike-001), dass die OCC-DataExchange-Toolkits (`TKDESTEP`/`TKDESTL`/`TKRWMesh`) im gepinnten Snapshot **ohne** neuen Paketmanager auflösen; sonst neuer apt-Eintrag = ADR-0004-Berührung | **offen** (Impl-Slice) |
+| ADR-0014 | **Impl:** geometrie-residenter `ModelExporterPort`-Adapter (`Building`→OCC-`TopoDS_Shape`→STEP/STL via OCC-DataExchange, atomar [`E-IO-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)) + `ExchangeFormat`-Erweiterung/Dispatch + Composition-Root-Verdrahtung; AK-Tests [`LH-FA-IO-005`](../../../spec/lastenheft.md#lh-fa-io-005)/`006` + **Adapter-Pfad-Integrationstest** (Re-Read-Orakel, [`E-IO-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) durch echten Adapter). Zusätzliche OCC-Toolkits in `src/adapters/CMakeLists.txt` linken. Regel C deckt die Isolation (keine neue arch-check-Regel) | **offen** (Impl-Slice) |
+| ADR-0014 | **AK-Schärfung + Spec-Nachzug:** [`LH-FA-IO-005`](../../../spec/lastenheft.md#lh-fa-io-005)/006 von Outline auf AK (lösungsfrei, [MR-008](../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)) + Spec §1-Mapping; **§7** STEP/STL-Offene-Punkte streichen, **§6** auf entschiedenen Stand (OCC-DataExchange nativ) — Präzedenz [ADR-0013](0013-ifc-bibliothek.md) → slice-019a | **offen** (Schärfungs-Slice) |
 
 ## Konventionen
 
@@ -63,8 +67,11 @@ Noch nicht als ADR angelegt, in der Roadmap verortet:
 - ~~IFC-Bibliothek und -Schema-Version ([LH-FA-IO-001](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002)~~ → als
   **[ADR-0013](0013-ifc-bibliothek.md)** angelegt (**Proposed** 2026-06-16,
   Accept ausstehend) — welle-4.
-- STEP-/Format-Export-Backend hinter `ModelExporterPort` ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-005);
-  aus ADR-0002 ausgegliedert) inkl. Adapter-Grenzen Geometrie↔IO — welle-4.
+- ~~STEP-/Format-Export-Backend hinter `ModelExporterPort` ([LH-FA-IO-005](../../../spec/lastenheft.md#lh-fa-io-005);
+  aus ADR-0002 ausgegliedert) inkl. Adapter-Grenzen Geometrie↔IO~~ → als
+  **[ADR-0014](0014-step-stl-export-backend.md)** entschieden (**Accepted** 2026-06-17)
+  — OCC-DataExchange nativ, geometrie-residente `ModelExporterPort`-Naht (Regel C);
+  Folgepflichten unten; welle-4.
 - ~~Atomare Write-Strategie / Crash-Recovery-Detail ([LH-QA-005](../../../spec/lastenheft.md#lh-qa-005--crash-recovery))~~ →
   entschieden in [ADR-0003](0003-persistenz-sqlite.md) (Temp+Rename);
   Folgepflicht durch slice-008b erfüllt (Welle-1-Verifikation 2026-06-11).
