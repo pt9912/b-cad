@@ -20,9 +20,12 @@
 #include <QMainWindow>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
+#include "adapters/io/ifc_import_adapter.h"
 #include "adapters/ui/viewer_widget.h"
 #include "hexagon/model/segment.h"
+#include "hexagon/ports/driving/exchange_model_port.h"
 #include "hexagon/services/bootstrap_info.h"
+#include "hexagon/services/exchange_service.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
@@ -66,6 +69,30 @@ int main(int argc, char** argv) {
 
     bcad::adapters::geometry::OccGeometryAdapter geometry;
     services::StructureEditService service(geometry);
+
+    // IFC-Import-Use-Case verdrahten (ADR-0013, slice-019b): Driven-Adapter
+    // `IfcImportAdapter` -> Driving-Port-Service `ExchangeService` (Composition
+    // Root, ADR-0001). Headless nutzbar über `--import-ifc <pfad.ifc>`; die
+    // GUI-Anbindung des Imports folgt mit der IO-Oberfläche.
+    bcad::adapters::io::IfcImportAdapter ifc_importer;
+    services::ExchangeService exchange(ifc_importer);
+
+    const QStringList cli = QApplication::arguments();
+    const int import_index =
+        static_cast<int>(cli.indexOf(QStringLiteral("--import-ifc")));
+    if (import_index >= 0 && import_index + 1 < cli.size()) {
+        const std::string ifc_path = cli.at(import_index + 1).toStdString();
+        try {
+            const model::Building imported = exchange.importModel(
+                ifc_path, bcad::hexagon::ports::driving::ExchangeFormat::Ifc);
+            std::cout << "IFC importiert: " << imported.storeys.size()
+                      << " Geschosse, " << imported.walls.size() << " Wände\n";
+            return 0;
+        } catch (const std::exception& e) {
+            std::cerr << "IFC-Import fehlgeschlagen: " << e.what() << '\n';
+            return 1;
+        }
+    }
 
     // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz,
     // dann Beobachter-Lebenszyklus.

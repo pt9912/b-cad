@@ -29,6 +29,11 @@ add_library(bcad_adapters
     geometry/occ_geometry_adapter.cpp
     persistence/sqlite_probe.cpp
     persistence/sqlite_project_repository.cpp
+    # slice-019b: IFC-Import (ADR-0013 Option D) — hand-gerollter IFC-SPF-
+    # Subset-Codec + Domänen-Mapping. KEINE neue Dependency (kein vcpkg/Conan,
+    # kein OCC-Zwang); reines C++/STL, arch-check Regel A/B isolieren es.
+    io/ifc_spf_reader.cpp
+    io/ifc_import_adapter.cpp
 )
 
 target_include_directories(bcad_adapters

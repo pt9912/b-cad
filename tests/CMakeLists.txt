@@ -34,6 +34,8 @@ add_executable(bcad_adapter_tests
     adapters/test_sqlite_crash_recovery.cpp
     adapters/test_viewer_scene.cpp
     adapters/test_viewer_widget.cpp
+    adapters/test_ifc_spf_reader.cpp   # slice-019b Commit i: SPF-Codec (isoliert)
+    adapters/test_ifc_import.cpp       # slice-019b Commit ii: Mapping-AK + Integration
 )
 target_link_libraries(bcad_adapter_tests
     PRIVATE bcad_adapters bcad_hexagon GTest::gtest_main)

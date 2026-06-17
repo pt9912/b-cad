@@ -6,6 +6,7 @@
 
 add_library(bcad_hexagon
     services/bootstrap_info.cpp
+    services/exchange_service.cpp
     services/greeting_service.cpp
     services/opening_geometry.cpp
     services/roof_geometry.cpp

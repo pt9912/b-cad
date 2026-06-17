@@ -49,7 +49,7 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
   [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) (IFC-Export) + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (PDF) erfüllt → **Meilenstein M4**.
 
-**Fortschritt (Stand 2026-06-16):**
+**Fortschritt (Stand 2026-06-17):**
 - ✓ **[ADR-0013](../../adr/0013-ifc-bibliothek.md) „IFC-Bibliothek" accepted** —
   IFC-Backend = vendierter SPF-Subset-Codec (Option D); zwei unabhängige
   Review-Runden (0 HIGH, 5 MED + 4 LOW eingearbeitet). Welle-Trigger erfüllt,
@@ -58,10 +58,18 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   Outline auf AK (lösungsfrei, Lastenheft 0.1.8); spez. §1 [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)
   (IFC-SPF-Subset-Mapping, IFC4-Export `IfcWall`/Import IFC4+2x3, atomar) + §6/§7-
   Nachzug ([ADR-0013](../../adr/0013-ifc-bibliothek.md)-Folgepflicht). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**; reine Doku, gates grün (145).
-- ⏳ **slice-019b** (IFC-Impl: `ExchangeService` + Importer/Exporter +
-  SPF-Subset-Codec + Adapter-Pfad-Integrationstest) — **Plan + [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) (0 HIGH)
-  liegen vor** (`in-progress/slice-019b-ifc-import.md`), **Implementierung
-  ausstehend** (Zwei-Commit-Split).
+- ✓ **slice-019b** — **IFC-Import lauffähig** ([LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)):
+  hand-gerollter IFC-SPF-Subset-Codec (`SpfReader`) + Mapping-Adapter
+  (`IfcImportAdapter`) + Kern-Use-Case (`ExchangeService`, Driving
+  `ExchangeModelPort` / Driven `ModelImporterPort`), end-to-end über den echten
+  Pfad; nicht-IFC/kaputt → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)
+  atomar; spez. §1-Zusatz Geschoss-Höhe ([MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)).
+  `arch-check` A/B isolieren den Codec (Regel F gegenstandslos für Option D →
+  auf externen-Lib-Re-Eval umdatiert). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** + unabhängiges
+  Code-Review **0 HIGH** (1 MED + 2 LOW eingearbeitet); `make gates` grün
+  (165/165, Coverage 91,2 %). Zwei-Commit-Split.
+- ⏳ **slice-019c** (IFC-Export: `ModelExporterPort` + SPF-Writer + Roundtrip-AK
+  [LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002), [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)) — **startbar** (019b done).
 - ⏳ offen: STEP/STL-ADR · DXF-ADR · PDF/PNG · Welle-Verifikation →
   `done/welle-4-results.md`.
 

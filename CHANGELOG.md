@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-019b — **IFC-Import lauffähig** (`LH-FA-IO-001`, welle-4, `ADR-0013` Option D):
+  eine valide IFC-SPF-Datei im welle-4-Subset (Geschosse + gerade Wände) wird über den
+  IO-Adapter in ein `model::Building` gelesen — **anzahl-treu**, **atomar**, **total**
+  (spez. §1 `LH-FA-IO-001.a`). Neuer **hand-gerollter IFC-SPF-Codec**
+  (`adapters/io/ifc_spf_reader` — ISO-10303-21-Tokenizer + Entitäts-Graph, **keine**
+  externe IFC-Lib/Dependency) + **Domänen-Mapping** (`adapters/io/ifc_import_adapter`:
+  `IfcBuildingStorey`→`Storey`, `IfcWall`/`IfcWallStandardCase`→`Wall` über
+  Achs-Polyline/`IfcMaterialLayerSet`/Extrusions-Höhe/`IfcRelContainedInSpatialStructure`).
+  Neuer Kern-Use-Case: Driving-Port `ExchangeModelPort` + Driven-Port `ModelImporterPort`
+  + `ExchangeService` (pure Domäne, kein IFC-/SPF-Symbol im Kern — `arch-check` A/B);
+  Composition Root verdrahtet (`--import-ifc <pfad>`). Nicht-IFC/kaputt → `E-IO-003`
+  (`event=import_rejected`, **kein** Teil-Import); leer/strukturlos → leeres Modell;
+  Subset-fremde Entität (`IfcDoor`/…) übersprungen. **Geschoss-Höhe** = Elevation-Differenz
+  (MED-2/3, spez. §1-Zusatz, `MR-008`-zulässig; Elevation transient). **Benannte
+  Subset-Grenzen:** keine Placement-Komposition (Achse in Geschoss-/Identity-Koord.),
+  `IfcRelAggregates` nicht traversiert (Geschosse direkt enumeriert), `Wall.type`→`Innen`,
+  `material_id`→`nullopt`. `MR-009` n/a (kein Geometrie-Erzeugen). Unabhängiges
+  `MR-006`-Plan-Review (0 HIGH); Zwei-Commit-Split (Codec / Mapping+Service+Tests).
 - slice-019a — **IFC-Import/Export AK-Schärfung + Spec-Mapping** (`LH-FA-IO-001`/002,
   welle-4): `LH-FA-IO-001`/002 von Outline auf AK-Niveau (lösungsfrei — Import/Export
   von Geschossen + geraden Wänden, Anzahl-Treue, Roundtrip, `E-IO-003`/`E-IO-001`;

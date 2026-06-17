@@ -1,7 +1,7 @@
 ---
 id: slice-019b
 titel: IFC-Import — ModelImporterPort + ExchangeService + IfcImportAdapter (SPF-Subset-Codec)
-status: in-progress
+status: done
 welle: welle-4-austausch
 lastenheft_refs: [[LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0013](../../adr/0013-ifc-bibliothek.md)]
@@ -9,9 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0013](../.
 
 # Slice 019b: IFC-Import (Codec + Adapter + Use-Case)
 
-**Status:** in-progress (2026-06-16). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen
+**Status:** done (2026-06-17). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen
 (**0 HIGH / 3 MED / 3 LOW / 3 INFO**; implementierungs-bereit, Start nicht
-blockiert) — MED/LOW eingearbeitet.
+blockiert) — MED/LOW eingearbeitet. Implementiert + `make gates` grün (165/165,
+Coverage 91,2 %); unabhängiges Code-Review **0 HIGH** (1 MED + 2 LOW eingearbeitet).
+Lifecycle-Move nach `done-archive/` = reiner `git mv` ([AGENTS §2.8](../../../../AGENTS.md)).
 
 **Plan-Review ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)):**
 [Report](../../../reviews/2026-06-16-slice-019b-plan.md) — **keine HIGH**; die
@@ -61,7 +63,7 @@ IO-Adapter; der Kern bleibt format-frei ([ADR-0001](../../adr/0001-hexagonale-ar
 
 ## 2. Definition of Done
 
-- [ ] **Ports + `ExchangeService` (Import-Use-Case, Kern).** Neuer Driving-Port
+- [x] **Ports + `ExchangeService` (Import-Use-Case, Kern).** Neuer Driving-Port
       `ExchangeModelPort` (`importModel(path, format)` → `model::Building`) +
       Driven-Port `ModelImporterPort` (`read(path)` → `model::Building`; bei
       Parse-/Format-Fehler **neutrale `std::runtime_error`** — Muster
@@ -75,7 +77,7 @@ IO-Adapter; der Kern bleibt format-frei ([ADR-0001](../../adr/0001-hexagonale-ar
       `event=import_rejected` (kein Teil-Import). **Pure Domäne** — `make arch-check`
       Regel A gewahrt (kein IFC-/SPF-Symbol im Kern). `src/main.cpp` verdrahtet
       den Adapter (Composition Root).
-- [ ] **`IfcImportAdapter` (`src/adapters/io/`) implementiert `ModelImporterPort`**
+- [x] **`IfcImportAdapter` (`src/adapters/io/`) implementiert `ModelImporterPort`**
       gemäß §1 [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import): **SPF-Subset-Leser** (ISO-10303-21-Tokenizer +
       Entitäts-Graph nach `#id`) + **Domänen-Mapping** `IfcBuildingStorey`→
       `Storey`, `IfcWall`/`IfcWallStandardCase`→`Wall` (Achs-Repräsentation →
@@ -96,7 +98,7 @@ IO-Adapter; der Kern bleibt format-frei ([ADR-0001](../../adr/0001-hexagonale-ar
       strukturlos/leer → leeres `Building` (Totalität). **Hand-gerollt, keine
       externe IFC-Lib** → **keine** neue `find_package`-/CMake-Dependency; nur
       `src/adapters/CMakeLists.txt` um die io-Quelle(n) ergänzt.
-- [ ] **Schicht-Isolation belegt (arch-check) — ehrliche Sensor-Deckung.** Der
+- [x] **Schicht-Isolation belegt (arch-check) — ehrliche Sensor-Deckung.** Der
       hand-gerollte Codec lebt **nur** in `src/adapters/io/`, isoliert durch
       **Regel A** (Kern importiert keinen Adapter) **+ Regel B** (kein Adapter
       importiert einen anderen). Eine **dedizierte Regel F** (analog C/D/E) ist
@@ -105,7 +107,7 @@ IO-Adapter; der Kern bleibt format-frei ([ADR-0001](../../adr/0001-hexagonale-ar
       Folgepflicht wird damit **auf den externen-Bibliotheks-Re-Eval umdatiert**
       (erst eine adoptierte IFC-Lib braucht ein Header-Gate analog C/D/E) — in
       Closure + ADR-Index dokumentiert (kein Über-Versprechen, Modul 13).
-- [ ] **AK-Tests [`LH-FA-IO-001`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) (Happy/Boundary/Negative) + Adapter-Pfad-
+- [x] **AK-Tests [`LH-FA-IO-001`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) (Happy/Boundary/Negative) + Adapter-Pfad-
       Integrationstest.** Codec-Ebene: minimale `.ifc`-Fixture (Raw-String-Literal,
       kein Datei-Abhängigkeit) → `Building`, **Geschoss-/Wand-Anzahl == Quelle**;
       leere/strukturlose Datei → leeres Modell; Nicht-IFC → Wurf. **Integration
@@ -202,5 +204,42 @@ IO-Adapter; der Kern bleibt format-frei ([ADR-0001](../../adr/0001-hexagonale-ar
 
 ## 8. Closure-Notiz
 
-*(wird bei `done` ausgefüllt — Closure-Kriterien beobachtbar, Lerneintrag in
-einer der drei Formen: geschärfte Regel · neuer Sensor · benannte Spec-Lücke.)*
+**Geliefert (2026-06-17).** IFC-Import end-to-end ([LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)):
+eine valide IFC-SPF-Datei (welle-4-Subset) wird über `ExchangeService` →
+`ModelImporterPort` → `IfcImportAdapter` anzahl-treu/atomar/total auf
+`model::Building` abgebildet. Hand-gerollter ISO-10303-21-Codec (`ifc_spf_reader`,
+Tokenizer + Entitäts-Graph) + Domänen-Mapping (`ifc_import_adapter`) — **keine**
+externe IFC-Lib ([ADR-0013](../../adr/0013-ifc-bibliothek.md) Option D). Kern bleibt
+format-frei (`arch-check` A/B grün inkl. `io/`). Zwei-Commit-Split umgesetzt
+(i Codec, ii Mapping+Service+Tests). `make gates` grün (**165/165**, Coverage
+**91,2 %**); [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)
+(`event=import_rejected`) durch den echten Adapter geübt.
+
+**Code-Review (DoD-4, unabhängig, frischer Kontext — Reviewer ≠ Autor): 0 HIGH.**
+1 MED + 2 LOW eingearbeitet: **MED-1** — Garbage-Statement in der DATA-Sektion wurde
+still übersprungen (mögliche Unter-Zählung statt Reject) → Parser jetzt
+**DATA-Sektions-bewusst**, ungültiges Token in DATA wirft (atomarer Reject, kein
+stiller Teil-Import); **LOW-1** — `''`-String-Escape im Comment-Stripper korrekt
+(zwei-Zeichen-Escape, im String bleiben); **LOW-3/INFO-4** — Tests verschärft
+(Header-ok-aber-DATA-kaputt → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder);
+Happy-Oracle prüft Typ/Material/Koordinaten). LOW-2/INFO-1/2/3 als bewusste
+Subset-Grenzen begründet (kein Bug).
+
+**Lerneintrag — benannte Spec-/Subset-Grenzen** (Form: benannte Lücke, Muster
+welle-2/-3): der Import deckt den **entschiedenen** Subset, nicht „IFC allgemein":
+(a) **keine Placement-Komposition** — Achs-Polyline in Geschoss-/Identity-Koord.
+gelesen (Exporter 019c schreibt entsprechend); (b) **`IfcRelAggregates` nicht
+traversiert** — Geschosse direkt enumeriert (anzahl-treu), Wand→Geschoss über
+`IfcRelContainedInSpatialStructure`; (c) **`Wall.type`→`Innen`**, `material_id`→
+`nullopt` (keine IFC-Entsprechung im Subset); (d) **oberste Geschoss-Höhe = Default**
+(Roundtrip-Treue = Anzahl, nicht Höhe, [`LH-FA-IO-002`](../../../../spec/lastenheft.md#lh-fa-io-002)).
+Real-Datei-Robustheit bleibt hinter einem echten Toolkit zurück → Re-Eval-Trigger
+([ADR-0013](../../adr/0013-ifc-bibliothek.md)) unverändert gelegt.
+
+**Methodischer Befund (kein neuer MR — Werkzeug-Disziplin):** `make gates | tail`
+maskierte den echten `make`-Exit-Code (Pipe-Exit = `tail`); der erste „grüne" Lauf
+war in Wahrheit am **lint**-Gate rot (cognitive-complexity in `stripComments`). Lehre:
+Gate-Ausgabe **ohne** maskierende Pipe prüfen (echten Exit-Code festhalten) — der
+Stop-Hook (Working-Tree-Hash) fing die Diskrepanz korrekt ab.
+
+**Closure-Trigger erfüllt → slice-019c (IFC-Export) startbar.**

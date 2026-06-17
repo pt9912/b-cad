@@ -513,6 +513,15 @@ Quelle überein** ([`LH-FA-IO-001`](lastenheft.md#lh-fa-io-001--ifc-import) Happ
 Export → Import (Roundtrip, [`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002)) erhält
 Geschoss- und Wand-Anzahl.
 
+**Geschoss-Höhe (Import-Ableitung, slice-019b).** `IfcBuildingStorey.Elevation`
+wird beim Import **transient** gelesen und **nicht** gespeichert (das
+b-cad-Modell ist höhen-basiert; `model::Storey` trägt kein `elevation_mm`). Die
+b-cad-Geschoss-Höhe ist die **Differenz zur nächsthöheren Geschoss-Elevation**
+(Geschosse aufsteigend nach Elevation sortiert, Tiebreak Quell-Reihenfolge); das
+**oberste** Geschoss erhält die Default-Höhe (`kDefaultStoreyHeightMm`). Damit
+betrifft die Roundtrip-Treue ([`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002)) die
+**Anzahl**, nicht die Höhe des obersten Geschosses (benannte Subset-Grenze).
+
 **Atomarer Import (kein Teil-Import).** Der Import baut zuerst ein **vollständiges
 In-Memory-Domänenmodell** und übergibt es erst nach fehlerfreiem Parsen; jeder
 Parse-/Format-Fehler oder eine unbekannte Entität in **tragender** Rolle
