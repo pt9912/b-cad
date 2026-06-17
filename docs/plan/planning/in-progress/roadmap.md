@@ -105,7 +105,7 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   Outline auf AK (bidirektional, 2D-Grundriss, Lastenheft 0.1.10); spez. §1
   [`LH-FA-IO-003.a`](../../../../spec/lastenheft.md#lh-fa-io-003) (ASCII-DXF-Subset-Codec io-resident, gerade Wand-Achsen je
   Geschoss-`LAYER`, Import-Defaults, atomar) + §6/§7/§4-Nachzug (§4 [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um
-  STEP/STL/DXF-Export, latente ADR-0014-Lücke mitgeschlossen). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**
+  STEP/STL/DXF-Export, latente [ADR-0014](../../adr/0014-step-stl-export-backend.md)-Lücke mitgeschlossen). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**
   (MED-1/2 + LOW-1); reine Doku, gates grün.
 - ⏳ offen: **DXF-Impl** · STEP-B-Rep Dächer/Treppen · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
   Welle-4-Verifikation → `done/welle-4-results.md`.
