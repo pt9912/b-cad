@@ -128,11 +128,6 @@ b-cad/
         └── carveouts/        dokumentierte Gate-Ausnahmen (derzeit keine)
 ```
 
-> **Projekt-Status:** siehe Banner oben (Einzelquelle — kein zweiter Status-Text,
-> der driftet). Verzeichnis-/Build-Struktur:
-> [`spec/architecture.md` §2.1](spec/architecture.md#21-verzeichnis--und-build-struktur).
-> Aktueller Stand der Slices: [`docs/plan/planning/README.md`](docs/plan/planning/README.md).
-
 ## Quick start (für Agenten und Menschen)
 
 1. [`harness/README.md`](harness/README.md) lesen.
