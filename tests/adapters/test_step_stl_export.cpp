@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
+#include "adapters/geometry/step_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 #include "hexagon/model/building.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
@@ -31,6 +32,7 @@ namespace {
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;
 using bcad::adapters::geometry::OccGeometryAdapter;
+using bcad::adapters::geometry::StepExportAdapter;
 using bcad::adapters::geometry::StlExportAdapter;
 using bcad::adapters::io::IfcImportAdapter;
 using bcad::hexagon::ports::driving::ExchangeFormat;
@@ -50,8 +52,8 @@ model::Building sampleBuilding() {
 // Temp-Zielpfad mit RAII-Aufräumen (Datei + .tmp-Artefakt).
 struct TempPath {
     fs::path path;
-    explicit TempPath(const std::string& tag)
-        : path(fs::temp_directory_path() / ("bcad_stl_" + tag + ".stl")) {
+    explicit TempPath(const std::string& tag, const std::string& ext = ".stl")
+        : path(fs::temp_directory_path() / ("bcad_stl_" + tag + ext)) {
         clean();
     }
     ~TempPath() { clean(); }
@@ -168,6 +170,70 @@ TEST(StlExportIntegration, ImportOfStlRejectedAsExportOnly) {
         EXPECT_NE(what.find("E-IO-003"), std::string::npos) << what;
         EXPECT_NE(what.find("import_rejected"), std::string::npos) << what;
     }
+}
+
+// ====================== STEP (B-Rep, Wände + Decken) =========================
+// Re-Read-Orakel ohne OCC im Test (arch-check Regel C): die STEP-Datei wird als
+// ISO-10303-21-Text geprüft (gültige Hülle + B-Rep-Solid-Entitäten).
+
+std::string readText(const fs::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    return std::string((std::istreambuf_iterator<char>(in)),
+                       std::istreambuf_iterator<char>());
+}
+
+TEST(StepExport, BuildingWithWallsYieldsBRepSolids) {
+    const StepExportAdapter exporter;
+    const TempPath out("walls", ".step");
+    exporter.write(sampleBuilding(), out.path);
+
+    const std::string step = readText(out.path);
+    // Gültige ISO-10303-21-Hülle.
+    EXPECT_NE(step.find("ISO-10303-21"), std::string::npos);
+    EXPECT_NE(step.find("END-ISO-10303-21"), std::string::npos);
+    // Die exportierten Bauteile sind als B-Rep-Volumenkörper enthalten.
+    EXPECT_NE(step.find("BREP"), std::string::npos) << "kein B-Rep-Solid im STEP";
+}
+
+TEST(StepExport, EmptyBuildingYieldsValidStepEnvelope) {
+    const StepExportAdapter exporter;
+    const TempPath out("empty", ".step");
+    exporter.write(model::Building{}, out.path);  // 3D-leer -> kein Wurf
+
+    const std::string step = readText(out.path);
+    EXPECT_NE(step.find("ISO-10303-21"), std::string::npos);
+    EXPECT_NE(step.find("END-ISO-10303-21"), std::string::npos);
+}
+
+TEST(StepExport, NonWritablePathRejectedWithEIo001) {
+    const StepExportAdapter exporter;
+    const TempPath out("eio001", ".step");
+    const fs::path tmp(out.path.string() + ".tmp");
+    fs::create_directory(tmp);
+    { std::ofstream(tmp / "block.txt") << "x"; }
+
+    std::string what;
+    try {
+        exporter.write(sampleBuilding(), out.path);
+        FAIL() << "erwarteter E-IO-001-Wurf blieb aus";
+    } catch (const std::runtime_error& e) {
+        what = e.what();
+    }
+    EXPECT_NE(what.find("E-IO-001"), std::string::npos) << what;
+    EXPECT_NE(what.find("io_no_permission"), std::string::npos) << what;
+    EXPECT_FALSE(fs::exists(out.path));  // kein Teil-Export
+}
+
+TEST(StepExportIntegration, ExchangeServiceWritesStepThroughRealAdapter) {
+    const StepExportAdapter step;
+    const IfcImportAdapter importer;
+    const ExchangeService service(importer, {{ExchangeFormat::Step, &step}});
+
+    const TempPath out("svc", ".step");
+    service.exportModel(sampleBuilding(), out.path, ExchangeFormat::Step);
+    const std::string text = readText(out.path);
+    EXPECT_NE(text.find("ISO-10303-21"), std::string::npos);
+    EXPECT_NE(text.find("BREP"), std::string::npos);
 }
 
 }  // namespace

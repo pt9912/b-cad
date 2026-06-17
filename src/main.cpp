@@ -13,6 +13,7 @@
 // kein Gate (ADR-0009 (f)).
 
 #include <iostream>
+#include <optional>
 #include <string>
 
 #include <QApplication>
@@ -20,6 +21,7 @@
 #include <QMainWindow>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
+#include "adapters/geometry/step_export_adapter.h"
 #include "adapters/geometry/stl_export_adapter.h"
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
@@ -62,6 +64,30 @@ void buildAcc001KernDemo(services::StructureEditService& service) {
     }
 }
 
+// Headless-Export: bei gesetztem `flag <pfad>` das Demo-Modell exportieren und
+// einen Exit-Code liefern; sonst `nullopt` (GUI-Pfad). Faltet die je Format
+// identische CLI-Mechanik zusammen (hält `main` schlank).
+std::optional<int> runExportIfRequested(
+    const QStringList& cli, const char* flag,
+    bcad::hexagon::ports::driving::ExchangeModelPort& exchange,
+    services::StructureEditService& service,
+    bcad::hexagon::ports::driving::ExchangeFormat format, const char* label) {
+    const int index = static_cast<int>(cli.indexOf(QString::fromLatin1(flag)));
+    if (index < 0 || index + 1 >= cli.size()) {
+        return std::nullopt;
+    }
+    const std::string path = cli.at(index + 1).toStdString();
+    buildAcc001KernDemo(service);  // Demo-Modell als Export-Quelle
+    try {
+        exchange.exportModel(service.building(), path, format);
+        std::cout << label << " exportiert -> " << path << '\n';
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << label << "-Export fehlgeschlagen: " << e.what() << '\n';
+        return 1;
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -80,9 +106,11 @@ int main(int argc, char** argv) {
     bcad::adapters::io::IfcImportAdapter ifc_importer;
     bcad::adapters::io::IfcExportAdapter ifc_exporter;
     bcad::adapters::geometry::StlExportAdapter stl_exporter(geometry);  // geometrie-resident (ADR-0014)
+    bcad::adapters::geometry::StepExportAdapter step_exporter;          // geometrie-resident (ADR-0014)
     services::ExchangeService exchange(
         ifc_importer,
         {{bcad::hexagon::ports::driving::ExchangeFormat::Ifc, &ifc_exporter},
+         {bcad::hexagon::ports::driving::ExchangeFormat::Step, &step_exporter},
          {bcad::hexagon::ports::driving::ExchangeFormat::Stl, &stl_exporter}});
 
     const QStringList cli = QApplication::arguments();
@@ -102,38 +130,19 @@ int main(int argc, char** argv) {
         }
     }
 
-    const int export_index =
-        static_cast<int>(cli.indexOf(QStringLiteral("--export-ifc")));
-    if (export_index >= 0 && export_index + 1 < cli.size()) {
-        const std::string ifc_path = cli.at(export_index + 1).toStdString();
-        buildAcc001KernDemo(service);  // Demo-Modell als Export-Quelle
-        try {
-            exchange.exportModel(service.building(), ifc_path,
-                                 bcad::hexagon::ports::driving::ExchangeFormat::Ifc);
-            std::cout << "IFC exportiert: " << service.building().storeys.size()
-                      << " Geschosse, " << service.building().walls.size()
-                      << " Wände -> " << ifc_path << '\n';
-            return 0;
-        } catch (const std::exception& e) {
-            std::cerr << "IFC-Export fehlgeschlagen: " << e.what() << '\n';
-            return 1;
-        }
+    // Headless-Export je Format (IFC io-resident, STEP/STL geometrie-resident).
+    using bcad::hexagon::ports::driving::ExchangeFormat;
+    if (const auto rc = runExportIfRequested(cli, "--export-ifc", exchange,
+                                             service, ExchangeFormat::Ifc, "IFC")) {
+        return *rc;
     }
-
-    const int stl_index =
-        static_cast<int>(cli.indexOf(QStringLiteral("--export-stl")));
-    if (stl_index >= 0 && stl_index + 1 < cli.size()) {
-        const std::string stl_path = cli.at(stl_index + 1).toStdString();
-        buildAcc001KernDemo(service);  // Demo-Modell als Export-Quelle
-        try {
-            exchange.exportModel(service.building(), stl_path,
-                                 bcad::hexagon::ports::driving::ExchangeFormat::Stl);
-            std::cout << "STL exportiert -> " << stl_path << '\n';
-            return 0;
-        } catch (const std::exception& e) {
-            std::cerr << "STL-Export fehlgeschlagen: " << e.what() << '\n';
-            return 1;
-        }
+    if (const auto rc = runExportIfRequested(cli, "--export-stl", exchange,
+                                             service, ExchangeFormat::Stl, "STL")) {
+        return *rc;
+    }
+    if (const auto rc = runExportIfRequested(cli, "--export-step", exchange,
+                                             service, ExchangeFormat::Step, "STEP")) {
+        return *rc;
     }
 
     // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz,

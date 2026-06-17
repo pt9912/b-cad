@@ -26,11 +26,13 @@ add_library(bcad_adapters
     ui/viewer_scene.cpp
     ui/viewer_widget.cpp
     geometry/occ_probe.cpp
+    geometry/occ_solids.cpp          # geteilter OCC-Solid-Builder (slice-020b)
     geometry/occ_geometry_adapter.cpp
     # slice-020b: STEP/STL-Export (ADR-0014) — geometrie-residenter
     # ModelExporterPort. STL nutzt nur den GeometryKernelPort + Kern-Geometrie
-    # (kein direktes OCC); STEP-Adapter (OCC-DataExchange) folgt im selben Verz.
+    # (kein direktes OCC); STEP nutzt OCC-DataExchange (B-Rep der Solid-Bauteile).
     geometry/stl_export_adapter.cpp
+    geometry/step_export_adapter.cpp
     persistence/sqlite_probe.cpp
     persistence/sqlite_project_repository.cpp
     # slice-019b: IFC-Import (ADR-0013 Option D) — hand-gerollter IFC-SPF-
@@ -65,7 +67,10 @@ target_link_libraries(bcad_adapters
         # das auch nicht-installierte DRAW-/Viewer-Toolkits listet):
         # Footprint-Fläche + Prisma + Volumen-Properties + Tessellation
         # (TKMesh, ADR-0009 (b)) + boolesche Subtraktion der Wandöffnungen
-        # (TKBO: BRepAlgoAPI_Cut, LH-FA-DOR-004/WIN-005, slice-013b/ADR-0011).
+        # (TKBO: BRepAlgoAPI_Cut, LH-FA-DOR-004/WIN-005, slice-013b/ADR-0011)
+        # + STEP-DataExchange (TKDESTEP/TKDE/TKXSBase: STEPControl_Writer,
+        # slice-020b/ADR-0014 — libocct-data-exchange-dev, keine neue Dependency).
         TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKMesh TKBO
+        TKDESTEP TKDE TKXSBase
 )
 target_compile_features(bcad_adapters PUBLIC cxx_std_20)

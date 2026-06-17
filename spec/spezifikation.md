@@ -561,16 +561,19 @@ Driven-Port `ModelExporterPort`; der Composition Root verdrahtet je Format die
 passende Implementierung (IFC io-resident, STEP/STL geometrie-resident). Der Kern
 bleibt format-frei; kein Adapter ruft einen anderen (Regel B).
 
-**Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile
-(extrudierte/boolesch geschnittene Solids, wie der Geometrie-Adapter sie baut;
-Ziel-Schema AP214 oder AP242). **STL** schreibt das **tessellierte Dreiecksnetz**
-(binär als Default). Längeneinheit mm.
+**Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile, die
+ein echtes OCC-Solid tragen (extrudierte/boolesch geschnittene Solids — **Wände und
+Decken/Fundament**; Ziel-Schema AP214). **STL** schreibt das **tessellierte
+Dreiecksnetz** **aller** 3D-Bauteile (binär als Default). Längeneinheit mm.
 
-**Bauteil-Subset (welle-4).** Exportiert werden die **3D-fähigen Bauteile** — Wände
-(inkl. Wandöffnungen/Cutouts), Dächer, Decken/Fundament, Treppen. **Nicht
-geschrieben** (benannte Lücke): Material/Farbe, Property-Sets, PMI, Assembly-Struktur,
-beliebige Nicht-Solid-Aspekte. Ausbau = späterer Re-Eval (XDE/AP242, Provenance
-§ Historie).
+**Bauteil-Subset (welle-4).** **STL** deckt alle 3D-Bauteile — Wände (inkl.
+Wandöffnungen/Cutouts), Decken/Fundament, Dächer, Treppen. **STEP** deckt die
+**OCC-Solid-Bauteile** (Wände + Decken/Fundament); **Dächer und Treppen sind
+analytische Dreiecksnetze ohne OCC-Solid** und werden im STEP (noch) **nicht**
+geschrieben (**benannte Lücke** — für sie ist STL der verlustfreie Pfad; die
+B-Rep-Vernähung der Netze ist ein Folge-Inkrement). **Generell nicht geschrieben**
+(beide Formate): Material/Farbe, Property-Sets, PMI, Assembly-Struktur. Ausbau =
+späterer Re-Eval (XDE/AP242, Mesh→Shape-Vernähung; Provenance § Historie).
 
 **Atomarität (kein Teil-Export).** Der Export schreibt in eine Temp-Datei und ersetzt
 den Zielpfad erst nach Erfolg (Rename); ein nicht beschreibbarer Zielpfad →
