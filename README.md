@@ -123,19 +123,13 @@ b-cad/
     ├── glossar.md
     ├── user/releasing.md
     └── plan/
-        ├── adr/              ADR-Index + ADR-0001..0012
+        ├── adr/              ADR-Index + ADR-0001..0015
         ├── planning/         Slice-Lifecycle (open/next/in-progress/done) + Roadmap
         └── carveouts/        dokumentierte Gate-Ausnahmen (derzeit keine)
 ```
 
-> Stand: **welle-3-auswertung aktiv** (M3 offen). Umgesetzt: Domain-Kern,
-> Wände, Raumerkennung, OCC-Extrusion, SQLite-Persistenz inkl. Crash-Recovery
-> und Änderungs-Benachrichtigung (welle-1, M1); Qt-6-3D-Viewer (welle-1v,
-> [ACC-002](spec/lastenheft.md#7-abnahmekriterien)); **alle parametrischen Bauteile** — Türen/Fenster, Dach,
-> Decken/Fundament, Treppen, je inkl. Persistenz (welle-2, M2, [ADR-0011](docs/plan/adr/0011-bauteil-hosting-wandoeffnung.md));
-> erste Auswertungen — `EvaluatePort` + Flächen/Wohnfläche (slice-017a/b,
-> [ADR-0012](docs/plan/adr/0012-evaluations-architektur.md)). Offen: Volumen + Material-/Bauteil-Listen, slice-006 Attribution.
-> Struktur:
+> **Projekt-Status:** siehe Banner oben (Einzelquelle — kein zweiter Status-Text,
+> der driftet). Verzeichnis-/Build-Struktur:
 > [`spec/architecture.md` §2.1](spec/architecture.md#21-verzeichnis--und-build-struktur).
 > Aktueller Stand der Slices: [`docs/plan/planning/README.md`](docs/plan/planning/README.md).
 
