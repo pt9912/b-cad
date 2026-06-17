@@ -34,11 +34,13 @@ matrix:
     forbidden: [superseded, deprecated]
   exclude-sections: [Historie, Geschichte, Änderungshistorie]
 
-# Linkpflicht für Kennungen (slice-018b, MR-011): alle 7 ID-Familien über den
+# Linkpflicht für Kennungen (Adaption MR-011): alle 7 ID-Familien über den
 # Voll-Korpus, link-policy always (nackte UND Inline-Code-Vorkommen). done-archive
 # via scope.ignore raus (eingefroren). Logs (CHANGELOG/reviews/*-historie) via
-# exempt-paths — befreit aber NUR Inline-Code, daher dort IDs als Inline-Code
-# (backtick). Anker/Links generiert von tools/idlink.py, von diesem Gate validiert.
+# exempt-paths (je Pattern unten) von der ID-Linkpflicht befreit. Maßgeblich —
+# statt eines hier driftenden Verhaltens-Texts — sind die Adaption MR-011
+# (harness/conventions.md) und die in tools/Dockerfile gepinnte d-check-Version
+# (deren exempt-Semantik). Anker/Links generiert von tools/idlink.py, vom Gate validiert.
 # LH-FA-Regex D3-fest ([A-Z][A-Z0-9]*); Cross-Stratum: Ziel = kanonische
 # Definitionsdatei der Familie, unabhängig von der Fundstelle.
 ids:

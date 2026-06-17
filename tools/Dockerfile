@@ -8,8 +8,10 @@
 # (https://github.com/pt9912/d-check, Konfiguration: .d-check.yml);
 # Digest-Hebungen
 # sind Routine-Pins mit Begründung im Commit-Body.
+# Pin: d-check v0.10.0 (gehoben von v0.8.0; MR-007/MR-011 dokumentieren den
+# Adoptions-Stand, der Live-Pin lebt hier).
 
-FROM ghcr.io/pt9912/d-check@sha256:5bccf9fb3d1c54639dec3a541771d2ea43db9a0c1c58c28b3f12f20d38133d1b AS docs-check
+FROM ghcr.io/pt9912/d-check@sha256:ca49d33f22ecadfd08db03e4487b52b3f2a70dec01a41f2d0f472bfc2012797c AS docs-check
 WORKDIR /repo
 COPY . .
 
