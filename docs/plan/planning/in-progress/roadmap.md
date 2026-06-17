@@ -43,7 +43,10 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)) +
   Spec-§6/§7-Nachzug; `ExchangeService` + Importer/Exporter + Subset-Codec;
   AK-Tests + **Adapter-Pfad-Integrationstest**; neue `arch-check`-io-Regel.
-- **STEP/STL-Export-Backend-ADR** (OCC-nativ, `ModelExporterPort`-Naht) + Impl.
+- ✓ **STEP/STL-Export-Backend-ADR** ([ADR-0014](../../adr/0014-step-stl-export-backend.md), OCC-DataExchange nativ,
+  geometrie-residente `ModelExporterPort`-Naht) + **AK-Schärfung** (slice-020a);
+  **Impl offen** (geometrie-residenter Exporter + `ExchangeFormat`-Dispatch +
+  OCC-Toolkit-Linkage + AK-/Re-Read-Tests).
 - **DXF-Backend-ADR** + Import/Export.
 - **PDF/PNG-Export** (maßstäblicher Plan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
@@ -76,7 +79,15 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   Anzahl + Geometrie. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (zwei Pässe) + unabhängiges Code-Review
   **0 HIGH**; `make gates` grün (171/171, Coverage 91,5 %). **Damit ist der
   IFC-Strang (Import + Export, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)) abgeschlossen.**
-- ⏳ offen: STEP/STL-ADR · DXF-ADR · PDF/PNG · Welle-Verifikation →
+- ✓ **[ADR-0014](../../adr/0014-step-stl-export-backend.md) „STEP/STL-Export-Backend" accepted** (2026-06-17) —
+  OCC-DataExchange **nativ** (keine neue Dependency, [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)-konform),
+  geometrie-residenter `ModelExporterPort` (Regel C); unabhängiges Text-Review
+  0 HIGH. **Toolchain-Beleg erbracht** (OCC 7.9.2 DataExchange vorhanden).
+- ✓ **slice-020a** — **STEP/STL-AK-Schärfung + Spec-Mapping**: [LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)/006
+  von Outline auf AK (export-only, lösungsfrei, Lastenheft 0.1.9); spez. §1
+  [`LH-FA-IO-005.a`](../../../../spec/lastenheft.md#lh-fa-io-005) (OCC-DataExchange, geometrie-resident, STEP B-Rep / STL Netz,
+  atomar) + §6/§7-Nachzug. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (MED-1/2 + LOW-3); reine Doku, gates grün.
+- ⏳ offen: **STEP/STL-Impl** · DXF-ADR · PDF/PNG · Welle-Verifikation →
   `done/welle-4-results.md`.
 
 ## Nächste Wellen
