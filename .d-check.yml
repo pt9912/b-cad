@@ -13,12 +13,12 @@ modules: [links, anchors, codepaths, spans, hostpaths, matrix, ids]
 codepaths:
   roots: [docs, spec, harness, tools, src]
 
-# Referenzmatrix (Regelwerk §Referenz-Richtung / SDP, MR-006): die
-# Spec-Straten verweisen nie abwärts auf ADRs oder Planning-Slices.
-# Fängt die Markdown-Link-Form. Provenance lebt außerhalb der Straten:
-# die Historie-Tabellen sind nach spec/<name>-historie.md ausgelagert
-# (keine matrix-Klasse); exclude-sections deckt nur noch architecture.md
-# ## Geschichte (Wert wörtlich nach slice-018a-DoD).
+# Referenz-Richtung: Spec-Straten verweisen nie abwärts auf ADRs/Planning-Slices
+# (Markdown-Link-Form). Maßgeblich — NICHT dieser Kommentar — sind das gepinnte
+# Kurs-Regelwerk (§Referenz-Richtung / SDP) und harness/conventions.md (MR-011
+# Referenz-Integritäts-Gate); eingeführt slice-018a. exclude-sections = die
+# Provenance-Abschnitte (Historie/Geschichte); die Spec-Historie liegt zudem
+# in spec/<name>-historie.md ausgelagert (außerhalb der matrix-Straten).
 matrix:
   classes:
     - name: spec-straten
