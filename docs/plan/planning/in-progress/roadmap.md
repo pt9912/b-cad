@@ -68,8 +68,14 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   auf externen-Lib-Re-Eval umdatiert). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** + unabhängiges
   Code-Review **0 HIGH** (1 MED + 2 LOW eingearbeitet); `make gates` grün
   (165/165, Coverage 91,2 %). Zwei-Commit-Split.
-- ⏳ **slice-019c** (IFC-Export: `ModelExporterPort` + SPF-Writer + Roundtrip-AK
-  [LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002), [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)) — **startbar** (019b done).
+- ✓ **slice-019c** — **IFC-Export lauffähig** ([LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002),
+  [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)): hand-gerollter IFC-SPF-Writer (`IfcSpfWriter`, Spiegel des
+  Readers) + Domänen→IFC4-Mapping (`IfcExportAdapter`) + Kern-Erweiterung
+  (`ExchangeModelPort.exportModel` / Driven `ModelExporterPort`), atomar
+  (Temp+Rename → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)). **Roundtrip** (Export → 019b-Import) erhält
+  Anzahl + Geometrie. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (zwei Pässe) + unabhängiges Code-Review
+  **0 HIGH**; `make gates` grün (171/171, Coverage 91,5 %). **Damit ist der
+  IFC-Strang (Import + Export, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)) abgeschlossen.**
 - ⏳ offen: STEP/STL-ADR · DXF-ADR · PDF/PNG · Welle-Verifikation →
   `done/welle-4-results.md`.
 

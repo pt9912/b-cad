@@ -230,6 +230,7 @@ sequenceDiagram
 | Geometrie-Operation schlägt fehl | Geometrie-Adapter → Service [`E-GEO-002`](spezifikation.md#4-fehler-codes-und-logging-felder) | `event=geometry_error` |
 | Schreibfehler / Medium voll | Persistenz-Adapter → [`E-IO-002`](spezifikation.md#4-fehler-codes-und-logging-felder), vorheriger Stand intakt | `event=persist_error` |
 | Format nicht erkannt (Import) | IO-Adapter → [`E-IO-003`](spezifikation.md#4-fehler-codes-und-logging-felder), kein Teil-Import | `event=import_rejected` |
+| Zielpfad nicht beschreibbar (Export) | IO-Adapter → [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder), atomar, kein Teil-Export | `event=io_no_permission` |
 | Plugin-Fehlverhalten | Plugin-Host isoliert; Modell unverändert (Sandbox) | `event=plugin_error` |
 
 **Atomarität ([LH-QA-005](lastenheft.md#lh-qa-005--crash-recovery), [LH-FA-BLD-002](lastenheft.md#lh-fa-bld-002--projekt-speichern) Boundary).** Die Persistenz
@@ -258,3 +259,4 @@ Tabelle trägt keine eigene Anforderung und keine zeitliche Schicht
 | Bauteil-Erweiterungs-Muster (Wandöffnungen, Dach, Decken, Fundament, Treppen) | [ADR-0011](../docs/plan/adr/0011-bauteil-hosting-wandoeffnung.md) |
 | Auswertungs-Architektur `EvaluatePort` (read-only/pull) | [ADR-0012](../docs/plan/adr/0012-evaluations-architektur.md) |
 | Material als Bauteil-Eigenschaft (Verwaltung/Zuweisung driving, read-only-Auflösung) | [ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md) + [ADR-0012](../docs/plan/adr/0012-evaluations-architektur.md) |
+| Austauschformate: IFC Import+Export über `ExchangeModelPort`/`ModelImporterPort`/`ModelExporterPort` (SPF-Subset-Codec im IO-Adapter) | [ADR-0013](../docs/plan/adr/0013-ifc-bibliothek.md) |

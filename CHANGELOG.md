@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-019c — **IFC-Export lauffähig** (`LH-FA-IO-002`, `ACC-003`, welle-4, `ADR-0013`
+  Option D): ein `model::Building` (Geschosse + gerade Wände) wird als valide IFC4-SPF-
+  Datei geschrieben — **atomar** (Temp+`fsync`+Rename), so dass der 019b-Import dieselbe
+  **Geschoss-/Wand-Anzahl** zurückgibt (Roundtrip). Neuer hand-gerollter **IFC-SPF-Writer**
+  (`adapters/io/ifc_spf_writer`, Spiegel des Readers — symmetrisch Lesen+Schreiben,
+  **keine** externe IFC-Lib) + **Domänen→IFC4-Mapping** (`adapters/io/ifc_export_adapter`:
+  `Storey`→`IfcBuildingStorey` mit kumulierter Elevation, `Wall`→`IfcWall`+Achs-`IfcPolyline`
+  +`IfcExtrudedAreaSolid`+`IfcMaterialLayerSet`+`IfcRelContainedInSpatialStructure`,
+  Spatial-Komposition `IfcRelAggregates`, `IfcUnitAssignment` mm; `IfcWall` **nicht**
+  deprecated `IfcWallStandardCase`). Kern-Use-Case erweitert: `ExchangeModelPort.exportModel`
+  + neuer Driven-Port `ModelExporterPort` + `ExchangeService` (pure Domäne, `arch-check` A/B);
+  Composition Root verdrahtet (`--export-ifc <pfad>`). Nicht beschreibbarer Zielpfad →
+  `E-IO-001` (`event=io_no_permission`, **kein** Teil-Export, Zielpfad unverändert). **Benannte
+  Subset-Grenzen** (Spiegel 019b): nur Geschosse+Wände; oberste Geschoss-Höhe nicht
+  roundtrip-treu (Default); Body trägt nur die Extrusions-Höhe; `Wall.type`/`material_id`
+  ohne IFC-Subset-Entsprechung. Spec §1-Export-Zusatz (Elevation aus kumulierten Höhen) +
+  §4-`E-IO-001`-Klammer + architecture §5/`Geschichte`; `MR-009` n/a. Zwei unabhängige
+  `MR-006`-Plan-Reviews (Subagent + Projektinhaber, 0 HIGH) + unabh. Code-Review.
 - slice-019b — **IFC-Import lauffähig** (`LH-FA-IO-001`, welle-4, `ADR-0013` Option D):
   eine valide IFC-SPF-Datei im welle-4-Subset (Geschosse + gerade Wände) wird über den
   IO-Adapter in ein `model::Building` gelesen — **anzahl-treu**, **atomar**, **total**

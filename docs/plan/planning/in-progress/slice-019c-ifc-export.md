@@ -1,7 +1,7 @@
 ---
 id: slice-019c
 titel: IFC-Export — ModelExporterPort + ExchangeService.exportModel + IfcExportAdapter (SPF-Subset-Writer)
-status: in-progress
+status: done
 welle: welle-4-austausch
 lastenheft_refs: [[LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0013](../../adr/0013-ifc-bibliothek.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0013](../.
 
 # Slice 019c: IFC-Export (SPF-Writer + Adapter + Use-Case)
 
-**Status:** in-progress (2026-06-17). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen
+**Status:** done (2026-06-17). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review gelaufen
 (**0 HIGH / 1 MED / 3 LOW / 3 INFO**; implementierungs-bereit, Start nicht blockiert).
 Der zentrale Roundtrip-Anspruch (Export → 019b-Import erhält Anzahl) wurde gegen den
 **echten** 019b-Importer verifiziert: die zwei werfenden Pflicht-Referenzen (exakte
@@ -61,7 +61,7 @@ format-frei ([ADR-0001](../../adr/0001-hexagonale-architektur.md)).
 
 ## 2. Definition of Done
 
-- [ ] **Ports + `ExchangeService.exportModel` (Export-Use-Case, Kern).** `ExchangeModelPort`
+- [x] **Ports + `ExchangeService.exportModel` (Export-Use-Case, Kern).** `ExchangeModelPort`
       (driving) wird um `exportModel(building, path, format)` → `void` erweitert; neuer
       Driven-Port `ModelExporterPort` (`write(building, path)` → `void`; bei nicht
       beschreibbarem Zielpfad **neutrale `std::runtime_error`** — Muster
@@ -73,7 +73,7 @@ format-frei ([ADR-0001](../../adr/0001-hexagonale-architektur.md)).
       `make arch-check` Regel A gewahrt (kein IFC-/SPF-Symbol im Kern). `src/main.cpp`
       verdrahtet den Adapter (Composition Root; ggf. `--export-ifc <pfad>`-Spiegel zu
       `--import-ifc`).
-- [ ] **`IfcExportAdapter` (`src/adapters/io/`) implementiert `ModelExporterPort`**
+- [x] **`IfcExportAdapter` (`src/adapters/io/`) implementiert `ModelExporterPort`**
       gemäß §1 [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import): **SPF-Subset-Writer** (ISO-10303-21-Serializer:
       Kopf + HEADER `FILE_SCHEMA(('IFC4'))` + DATA + ENDSEC + END-ISO; `#id`-Vergabe) +
       **Domänen→IFC-Mapping**: räumliche Struktur `IfcProject` → `IfcBuilding` →
@@ -95,7 +95,7 @@ format-frei ([ADR-0001](../../adr/0001-hexagonale-architektur.md)).
       Quelle(n) ergänzt. **Benannte Subset-Lücke (Spiegel 019b):** nur Geschosse + gerade
       Wände werden geschrieben; Türen/Fenster/Dach/Decken/Treppen/Material-Bibliothek
       **nicht** (`Wall.type`/`material_id`-Override haben keine IFC-Subset-Entsprechung).
-- [ ] **Roundtrip-AK [`LH-FA-IO-002`](../../../../spec/lastenheft.md#lh-fa-io-002) + [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Negative + Adapter-Pfad-Integration.**
+- [x] **Roundtrip-AK [`LH-FA-IO-002`](../../../../spec/lastenheft.md#lh-fa-io-002) + [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Negative + Adapter-Pfad-Integration.**
       Writer-Ebene: `Building` (Geschosse + Wände) → SPF-Text, analytisch geprüft
       (well-formed Entitäten); **Roundtrip-Orakel:** export → **019b-Import** ergibt
       **Geschoss-/Wand-Anzahl == Quelle** ([ADR-0013](../../adr/0013-ifc-bibliothek.md) Fitness Function: Roundtrip ohne echten
@@ -106,7 +106,7 @@ format-frei ([ADR-0001](../../adr/0001-hexagonale-architektur.md)).
       slice-015b). `make gates` grün (arch-check inkl. io, Coverage ≥ 70 %); **unabhängiges
       Code-Review** (Serialisierung/Format/Mapping/[`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Korrektheit, höhere Latte).
       **[`MR-009`](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** (kein Geometrie-Erzeugen, nur Serialisierung).
-- [ ] **Schicht-Isolation belegt (arch-check) + [ADR-0013](../../adr/0013-ifc-bibliothek.md)-Export-Folgepflicht eingelöst +
+- [x] **Schicht-Isolation belegt (arch-check) + [ADR-0013](../../adr/0013-ifc-bibliothek.md)-Export-Folgepflicht eingelöst +
       [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien).** Writer/Exporter lebt **nur** in `src/adapters/io/`, isoliert durch
       **Regel A + B** (Regel F bleibt **gegenstandslos** für Option D — wie 019b
       festgestellt; keine externe IFC-Lib-Header). Ggf. **kleiner §1-Zusatz** (Export-
@@ -195,5 +195,35 @@ format-frei ([ADR-0001](../../adr/0001-hexagonale-architektur.md)).
 
 ## 8. Closure-Notiz
 
-*(wird bei `done` ausgefüllt — Closure-Kriterien beobachtbar, Lerneintrag in einer der drei
-Formen: geschärfte Regel · neuer Sensor · benannte Spec-Lücke.)*
+**Geliefert (2026-06-17).** IFC-Export end-to-end ([LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002),
+[ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)): ein `model::Building` (Geschosse + gerade Wände) wird über
+`ExchangeService.exportModel` → `ModelExporterPort` → `IfcExportAdapter` als IFC4-SPF-
+Datei geschrieben (hand-gerollter `ifc_spf_writer`, Spiegel des 019b-Readers — **keine**
+externe IFC-Lib, [ADR-0013](../../adr/0013-ifc-bibliothek.md) Option D), **atomar** (Temp+`fsync`+Rename → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder),
+kein Teil-Export). **Roundtrip** (Export → echter 019b-Import) erhält Geschoss-/Wand-
+Anzahl **und** Wand-Geometrie. Kern bleibt format-frei (`arch-check` A/B grün inkl. `io/`).
+`make gates` grün (**171/171**, Coverage **91,5 %**).
+
+**Code-Review (DoD-3, unabhängig, frischer Kontext): 0 HIGH.** Attribut-Index-Cross-Check
+erschöpfend verifiziert (jede emittierte Position trifft den Index, den der 019b-Importer
+liest); Roundtrip/SPF-Wohlgeformtheit/Atomarität/Schicht-Reinheit bestätigt. Eingearbeitet:
+**MED-1** (Roundtrip-Geometrie-Test identitäts-robust per Dicke statt positionsabhängig),
+**LOW-1** (Kommentar zur bewussten `ioCodeForErrno`-Asymmetrie: open-Phase EISDIR/ENOENT →
+E-IO-001). **Akzeptiert (kein Fix):** LOW-2 (Orphan-Wand-Skip — tritt bei editor-erzeugtem
+Building nicht auf, Import würde sonst werfen; defensiv, untested), LOW-3 (`fsync`/`close`-
+Return ungeprüft — house-style wie Persistenz; Inhalt vollständig vor `fsync` geschrieben).
+
+**Lerneintrag — benannte Subset-Grenzen** (Form: benannte Lücke, Spiegel 019b): der Export
+deckt den **entschiedenen** Subset: (a) **oberste Geschoss-Höhe nicht roundtrip-treu** —
+Export schreibt Elevation = kumulierte Höhe, Import leitet Höhe = Differenz ab, oberstes →
+Default; Roundtrip-Treue = **Anzahl**, nicht oberste Höhe; (b) **Body trägt nur die
+Extrusions-Höhe** (Profil/Placement der `IfcExtrudedAreaSolid` nicht ausgeführt — der Import
+liest nur die Tiefe); (c) **`Wall.type`/`material_id`-Override** ohne IFC-Subset-Entsprechung
+(ein einzelner Material-Layer mit `thickness_mm`); (d) nur Geschosse + gerade Wände
+geschrieben. **Methodisch (Werkzeug-Disziplin, kein neuer MR):** zwei fehlende Includes
+(main.cpp `ifc_export_adapter.h`, Test `constants.h`) wurden erst vom **lint-Compile** gefangen,
+nicht beim Schreiben — der enge Header-Disziplin-Reflex bleibt; der echte `make`-Exit-Code
+(ohne maskierende Pipe) zeigte sie sofort.
+
+**Closure-Trigger erfüllt → IFC-Strang (Import + Export, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)) abgeschlossen.** Offen
+für die welle-4-Closure (M4): STEP/STL · DXF · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).

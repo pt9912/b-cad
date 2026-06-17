@@ -41,7 +41,7 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 | ADR-0013 | `spec/spezifikation.md` §6 (Vertragstabelle »IFC Schema-Version offen«) + §7 Offene Punkte nachziehen — Schema-Version mit ADR entschieden (IFC4-Export / IFC2x3+4-Import-Subset) | **erfüllt** durch slice-019a (2026-06-16) |
 | ADR-0013 | `arch-check`-**Regel** (Format-/IFC-Symbole nur in `src/adapters/io/`, analog Regel C/D/E) | **gegenstandslos für Option D** (slice-019b): C/D/E gaten **externe Bibliotheks-Header** (OCC/SQLite/Qt) — Option D hat **keine** externe IFC-Lib; die Isolation trägt **Regel A+B** (`arch-check` grün inkl. `io/`). **Umdatiert** auf den externen-Bibliotheks-Re-Eval (erst eine später adoptierte IFC-Lib braucht ein Header-Gate analog C/D/E) |
 | ADR-0013 | **Import:** IFC-SPF-Subset-Codec im IO-Adapter (`SpfReader`) + `ModelImporterPort` + `ExchangeService` (Driving `ExchangeModelPort`) + AK-Tests [`LH-FA-IO-001`](../../../spec/lastenheft.md#lh-fa-io-001--ifc-import) + **Adapter-Pfad-Integrationstest** (Datei→Domain, [`E-IO-003`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) durch echten Adapter) | **erfüllt** durch slice-019b (2026-06-17) |
-| ADR-0013 | **Export:** `ModelExporterPort` + IFC-SPF-Writer + Roundtrip-AK [`LH-FA-IO-002`](../../../spec/lastenheft.md#lh-fa-io-002) ([ACC-003](../../../spec/lastenheft.md#7-abnahmekriterien)) | **offen** (slice-019c) |
+| ADR-0013 | **Export:** `ModelExporterPort` + IFC-SPF-Writer + Roundtrip-AK [`LH-FA-IO-002`](../../../spec/lastenheft.md#lh-fa-io-002) ([ACC-003](../../../spec/lastenheft.md#7-abnahmekriterien)) | **erfüllt** durch slice-019c (2026-06-17) |
 
 ## Konventionen
 

@@ -34,6 +34,10 @@ add_library(bcad_adapters
     # kein OCC-Zwang); reines C++/STL, arch-check Regel A/B isolieren es.
     io/ifc_spf_reader.cpp
     io/ifc_import_adapter.cpp
+    # slice-019c: IFC-Export (ADR-0013 Option D) — SPF-Writer (Spiegel des
+    # Readers) + Domänen→IFC4-Mapping, atomar (Temp+Rename). KEINE neue Dependency.
+    io/ifc_spf_writer.cpp
+    io/ifc_export_adapter.cpp
 )
 
 target_include_directories(bcad_adapters

@@ -20,6 +20,7 @@
 #include <QMainWindow>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
+#include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 #include "adapters/ui/viewer_widget.h"
 #include "hexagon/model/segment.h"
@@ -70,12 +71,14 @@ int main(int argc, char** argv) {
     bcad::adapters::geometry::OccGeometryAdapter geometry;
     services::StructureEditService service(geometry);
 
-    // IFC-Import-Use-Case verdrahten (ADR-0013, slice-019b): Driven-Adapter
-    // `IfcImportAdapter` -> Driving-Port-Service `ExchangeService` (Composition
-    // Root, ADR-0001). Headless nutzbar über `--import-ifc <pfad.ifc>`; die
-    // GUI-Anbindung des Imports folgt mit der IO-Oberfläche.
+    // IFC-Austausch-Use-Case verdrahten (ADR-0013, slice-019b/c): Driven-
+    // Adapter `IfcImportAdapter`/`IfcExportAdapter` -> Driving-Port-Service
+    // `ExchangeService` (Composition Root, ADR-0001). Headless nutzbar über
+    // `--import-ifc <pfad>` / `--export-ifc <pfad>`; die GUI-Anbindung folgt
+    // mit der IO-Oberfläche.
     bcad::adapters::io::IfcImportAdapter ifc_importer;
-    services::ExchangeService exchange(ifc_importer);
+    bcad::adapters::io::IfcExportAdapter ifc_exporter;
+    services::ExchangeService exchange(ifc_importer, ifc_exporter);
 
     const QStringList cli = QApplication::arguments();
     const int import_index =
@@ -90,6 +93,24 @@ int main(int argc, char** argv) {
             return 0;
         } catch (const std::exception& e) {
             std::cerr << "IFC-Import fehlgeschlagen: " << e.what() << '\n';
+            return 1;
+        }
+    }
+
+    const int export_index =
+        static_cast<int>(cli.indexOf(QStringLiteral("--export-ifc")));
+    if (export_index >= 0 && export_index + 1 < cli.size()) {
+        const std::string ifc_path = cli.at(export_index + 1).toStdString();
+        buildAcc001KernDemo(service);  // Demo-Modell als Export-Quelle
+        try {
+            exchange.exportModel(service.building(), ifc_path,
+                                 bcad::hexagon::ports::driving::ExchangeFormat::Ifc);
+            std::cout << "IFC exportiert: " << service.building().storeys.size()
+                      << " Geschosse, " << service.building().walls.size()
+                      << " Wände -> " << ifc_path << '\n';
+            return 0;
+        } catch (const std::exception& e) {
+            std::cerr << "IFC-Export fehlgeschlagen: " << e.what() << '\n';
             return 1;
         }
     }

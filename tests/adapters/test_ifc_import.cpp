@@ -5,6 +5,7 @@
 // Subset-Skip + tragende Pflicht-Referenz. Fixtures sind Raw-String-`.ifc`,
 // in eine Temp-Datei geschrieben (der Port liest einen Pfad).
 
+#include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 
 #include <filesystem>
@@ -220,7 +221,8 @@ TEST(IfcImport, ValidHeaderButCorruptDataRejected) {
 TEST(IfcImportIntegration, ExchangeServiceImportsThroughRealAdapter) {
     const TempIfc fixture("svc_happy", sampleIfc());
     const IfcImportAdapter adapter;
-    const ExchangeService service(adapter);  // Driven-Port-Injektion (main-Muster)
+    const bcad::adapters::io::IfcExportAdapter exporter;
+    const ExchangeService service(adapter, exporter);  // Driven-Port-Injektion (main-Muster)
 
     const model::Building building =
         service.importModel(fixture.path, ExchangeFormat::Ifc);
@@ -231,7 +233,8 @@ TEST(IfcImportIntegration, ExchangeServiceImportsThroughRealAdapter) {
 TEST(IfcImportIntegration, ExchangeServicePropagatesEIo003) {
     const TempIfc fixture("svc_reject", "<png-bytes-not-ifc>\n");
     const IfcImportAdapter adapter;
-    const ExchangeService service(adapter);
+    const bcad::adapters::io::IfcExportAdapter exporter;
+    const ExchangeService service(adapter, exporter);
 
     try {
         service.importModel(fixture.path, ExchangeFormat::Ifc);

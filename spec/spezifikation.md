@@ -518,9 +518,11 @@ wird beim Import **transient** gelesen und **nicht** gespeichert (das
 b-cad-Modell ist höhen-basiert; `model::Storey` trägt kein `elevation_mm`). Die
 b-cad-Geschoss-Höhe ist die **Differenz zur nächsthöheren Geschoss-Elevation**
 (Geschosse aufsteigend nach Elevation sortiert, Tiebreak Quell-Reihenfolge); das
-**oberste** Geschoss erhält die Default-Höhe (`kDefaultStoreyHeightMm`). Damit
-betrifft die Roundtrip-Treue ([`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002)) die
-**Anzahl**, nicht die Höhe des obersten Geschosses (benannte Subset-Grenze).
+**oberste** Geschoss erhält die Default-Höhe (`kDefaultStoreyHeightMm`). Beim
+**Export** (slice-019c) wird umgekehrt je `IfcBuildingStorey` die **Elevation aus
+den kumulierten Geschoss-Höhen** geschrieben (unterstes Geschoss Elevation 0).
+Damit betrifft die Roundtrip-Treue ([`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002))
+die **Anzahl**, nicht die Höhe des obersten Geschosses (benannte Subset-Grenze).
 
 **Atomarer Import (kein Teil-Import).** Der Import baut zuerst ein **vollständiges
 In-Memory-Domänenmodell** und übergibt es erst nach fehlerfreiem Parsen; jeder
@@ -674,7 +676,7 @@ fordert eine Default-Stärke, §3 nannte keinen Wert).
 
 | Code | Bedingung | Aktion |
 |---|---|---|
-| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
+| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern, IFC-Export) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
 | `E-IO-002` | Zielmedium voll / Schreibfehler | vorheriger Stand intakt (atomar), Log `event=persist_error` |
 | `E-IO-003` | Import-Format nicht erkannt / invalide | kein Teil-Import, Log `event=import_rejected` |
 | `E-VAL-001` | Parameter außerhalb des Wertebereichs | auf Grenzwert geklemmt, Hinweis, Log `event=validation_rejected` |

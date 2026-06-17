@@ -36,6 +36,7 @@ add_executable(bcad_adapter_tests
     adapters/test_viewer_widget.cpp
     adapters/test_ifc_spf_reader.cpp   # slice-019b Commit i: SPF-Codec (isoliert)
     adapters/test_ifc_import.cpp       # slice-019b Commit ii: Mapping-AK + Integration
+    adapters/test_ifc_export.cpp       # slice-019c: Export-Roundtrip-AK + E-IO-001
 )
 target_link_libraries(bcad_adapter_tests
     PRIVATE bcad_adapters bcad_hexagon GTest::gtest_main)

@@ -22,6 +22,13 @@ public:
     // an den Aufrufer (`LH-FA-IO-001` Negative).
     virtual model::Building importModel(const std::filesystem::path& path,
                                         ExchangeFormat format) const = 0;
+
+    // Exportiert `building` im angegebenen `format` nach `path` (atomar, kein
+    // Teil-Export). Propagiert den Adapter-Fehler (`E-IO-001`) unverändert
+    // (`LH-FA-IO-002` Negative; slice-019c).
+    virtual void exportModel(const model::Building& building,
+                             const std::filesystem::path& path,
+                             ExchangeFormat format) const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving
