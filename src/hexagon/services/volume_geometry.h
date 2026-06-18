@@ -4,6 +4,7 @@
 
 #include "hexagon/model/footprint.h"
 #include "hexagon/model/opening.h"
+#include "hexagon/model/roof.h"
 #include "hexagon/model/slab.h"
 #include "hexagon/model/stair.h"
 #include "hexagon/model/wall.h"
@@ -45,5 +46,11 @@ double slabNetVolumeMm3(const model::Slab& slab);
 // Material. Unsinnige Maße / `from_storey_height_mm` <= 0 -> 0 (Totalität).
 double stairNetVolumeMm3(const model::Stair& stair,
                          double from_storey_height_mm);
+
+// Dach-Netto-Volumen in mm³ (slice-023b, LH-FA-ROF-006): vertikaler Schräg-Slab
+// = projizierte Trauf-Grundfläche · Dicke (`bx·ty·d`, `bx = width+2·overhang`,
+// `ty = depth+2·overhang`) — NICHT die geneigte Oberseiten-Fläche · d. Analytisch
+// im Kern, kein `Solid.volume_mm3`. Degeneriert / Dicke <= 0 -> 0 (Totalität).
+double roofNetVolumeMm3(const model::Roof& roof);
 
 }  // namespace bcad::hexagon::services

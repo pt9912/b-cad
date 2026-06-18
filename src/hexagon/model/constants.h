@@ -40,6 +40,9 @@ inline constexpr double kRoofOverhangMinMm = 0.0;        // LH-FA-ROF-005
 inline constexpr double kRoofOverhangMaxMm = 1500.0;     // LH-FA-ROF-005
 inline constexpr double kDefaultRoofPitchDeg = 30.0;     // LH-FA-ROF-001 (= roofs-Schema)
 inline constexpr double kDefaultRoofOverhangMm = 500.0;  // LH-FA-ROF-005 (= roofs-Schema)
+inline constexpr double kRoofThicknessMinMm = 50.0;      // LH-FA-ROF-006 (slice-023a §3)
+inline constexpr double kRoofThicknessMaxMm = 500.0;     // LH-FA-ROF-006
+inline constexpr double kDefaultRoofThicknessMm = 200.0; // LH-FA-ROF-006
 
 // Platten — Decken (LH-FA-SLB-002) / Fundament-Tiefe (LH-FA-FND-002); spez. §3.
 inline constexpr double kSlabThicknessMinMm = 100.0;       // LH-FA-SLB-002

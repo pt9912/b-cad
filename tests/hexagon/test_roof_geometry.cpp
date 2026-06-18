@@ -4,9 +4,12 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <map>
+#include <utility>
 
 #include "hexagon/model/constants.h"
 #include "hexagon/model/roof.h"
@@ -58,7 +61,61 @@ model::Roof sampleRoof(model::RoofType type) {
     roof.base_z_mm = 0.0;
     roof.pitch_deg = 30.0;
     roof.overhang_mm = 500.0;
+    roof.thickness_mm = model::kDefaultRoofThicknessMm;  // slice-023b: Volumenkörper
     return roof;
+}
+
+// --- Slab-Invarianten (slice-023b, MR-009) ----------------------------------
+
+using VKey = std::array<long long, 3>;
+
+VKey vkey(const model::TriangleMesh& mesh, std::size_t vertex) {
+    const std::size_t v = vertex * 3;
+    return VKey{std::llround(mesh.positions[v] * 1000.0),
+               std::llround(mesh.positions[v + 1] * 1000.0),
+               std::llround(mesh.positions[v + 2] * 1000.0)};
+}
+
+// Geschlossene Mannigfaltigkeit: jede ungerichtete Kante (µm-kanonisch) wird von
+// **genau 2** Dreiecks-Flächen genutzt → wasserdicht (kein Loch, keine
+// Doppel-/non-manifold-Fläche).
+bool isWatertight(const model::TriangleMesh& mesh) {
+    std::map<std::pair<VKey, VKey>, int> edges;
+    for (std::size_t t = 0; t + 3 <= mesh.indices.size(); t += 3) {
+        const std::array<VKey, 3> k = {
+            vkey(mesh, static_cast<std::size_t>(mesh.indices[t])),
+            vkey(mesh, static_cast<std::size_t>(mesh.indices[t + 1])),
+            vkey(mesh, static_cast<std::size_t>(mesh.indices[t + 2]))};
+        for (int i = 0; i < 3; ++i) {
+            const VKey& a = k[i];
+            const VKey& b = k[(i + 1) % 3];
+            ++edges[(a < b) ? std::make_pair(a, b) : std::make_pair(b, a)];
+        }
+    }
+    for (const auto& entry : edges) {
+        if (entry.second != 2) {
+            return false;
+        }
+    }
+    return !edges.empty();
+}
+
+// Signiertes Volumen (Divergenzsatz, Σ ⅙·v0·(v1×v2)); > 0 ⟺ Außennormalen.
+double signedVolumeMm3(const model::TriangleMesh& mesh) {
+    double v6 = 0.0;
+    for (std::size_t t = 0; t + 3 <= mesh.indices.size(); t += 3) {
+        std::array<std::array<double, 3>, 3> p{};
+        for (int i = 0; i < 3; ++i) {
+            const std::size_t v = static_cast<std::size_t>(mesh.indices[t + i]) * 3;
+            p[static_cast<std::size_t>(i)] = {mesh.positions[v], mesh.positions[v + 1],
+                                              mesh.positions[v + 2]};
+        }
+        const double cx = (p[1][1] * p[2][2]) - (p[1][2] * p[2][1]);
+        const double cy = (p[1][2] * p[2][0]) - (p[1][0] * p[2][2]);
+        const double cz = (p[1][0] * p[2][1]) - (p[1][1] * p[2][0]);
+        v6 += (p[0][0] * cx) + (p[0][1] * cy) + (p[0][2] * cz);
+    }
+    return v6 / 6.0;
 }
 
 constexpr double kTan30 = 0.57735026918962576;  // tan(30°)
@@ -70,16 +127,16 @@ constexpr double kEavesLong = 9000.0;
 // LH-FA-ROF-003: Pultdach — eine geneigte Fläche, Hochkante (t+2o)·tan(p).
 TEST(RoofGeometry_LH_FA_ROF_003, PultEineFlaecheUndHochkante) {
     const auto mesh = roofMesh(sampleRoof(model::RoofType::Pult));
-    EXPECT_EQ(mesh.triangleCount(), 2);  // eine Fläche = 2 Dreiecke
-    EXPECT_NEAR(axisBounds(mesh, 2).span(), kEavesShort * kTan30, 1.0);
+    EXPECT_TRUE(isWatertight(mesh));  // geschlossener Slab
+    EXPECT_NEAR(axisBounds(mesh, 2).hi, kEavesShort * kTan30, 1.0);  // Firsthöhe (Oberseite)
 }
 
 // LH-FA-ROF-001: Satteldach — zwei Flächen, First mittig, Firsthöhe
 // (kürzere_eaves/2)·tan(p).
 TEST(RoofGeometry_LH_FA_ROF_001, SattelZweiFlaechenUndFirsthoehe) {
     const auto mesh = roofMesh(sampleRoof(model::RoofType::Sattel));
-    EXPECT_EQ(mesh.triangleCount(), 4);  // zwei Flächen = 4 Dreiecke
-    EXPECT_NEAR(axisBounds(mesh, 2).span(), (kEavesShort / 2.0) * kTan30, 1.0);
+    EXPECT_TRUE(isWatertight(mesh));
+    EXPECT_NEAR(axisBounds(mesh, 2).hi, (kEavesShort / 2.0) * kTan30, 1.0);
     // First mittig: First-Vertices reichen bis an beide Giebel (x0/x1).
     EXPECT_NEAR(maxXAtTopZ(mesh), kEavesLong - 500.0 /*=x1*/, 1.0);
 }
@@ -87,8 +144,8 @@ TEST(RoofGeometry_LH_FA_ROF_001, SattelZweiFlaechenUndFirsthoehe) {
 // LH-FA-ROF-002: Walmdach — vier Flächen, First kürzer als der Grundriss.
 TEST(RoofGeometry_LH_FA_ROF_002, WalmVierFlaechenUndKuerzererFirst) {
     const auto mesh = roofMesh(sampleRoof(model::RoofType::Walm));
-    EXPECT_EQ(mesh.triangleCount(), 6);  // 2 Trapeze (4) + 2 Walme (2)
-    EXPECT_NEAR(axisBounds(mesh, 2).span(), (kEavesShort / 2.0) * kTan30, 1.0);
+    EXPECT_TRUE(isWatertight(mesh));
+    EXPECT_NEAR(axisBounds(mesh, 2).hi, (kEavesShort / 2.0) * kTan30, 1.0);
     // First um die halbe kürzere Trauf-Seite (3500) eingerückt: max-x am
     // First ≈ x1 - 3500 = 8500 - 3500 = 5000, also klar < x1 (8500).
     EXPECT_NEAR(maxXAtTopZ(mesh), 5000.0, 1.0);
@@ -113,23 +170,46 @@ TEST(RoofGeometry_LH_FA_ROF_004, SteilereNeigungHoehererFirst) {
     flat.pitch_deg = 15.0;
     model::Roof steep = sampleRoof(model::RoofType::Sattel);
     steep.pitch_deg = 45.0;
-    EXPECT_GT(axisBounds(roofMesh(steep), 2).span(),
-              axisBounds(roofMesh(flat), 2).span());
+    EXPECT_GT(axisBounds(roofMesh(steep), 2).hi,
+              axisBounds(roofMesh(flat), 2).hi);
 }
 
-// Orientierung (LOW-3 Code-Review): alle Dachflächen zeigen nach oben
-// (Normale.z > 0) — kein versehentlich invertiertes Quad (Renderer würde
-// sonst Vorder-/Rückseite mischen).
-TEST(RoofGeometry_LH_FA_ROF_001, AlleFlaechenZeigenNachOben) {
+// Volumenkörper-Invarianten (slice-023b, MR-009): der Dach-Slab ist je Typ
+// **wasserdicht** (jede Kante genau 2 Flächen), **außen-orientiert** (signiertes
+// Volumen > 0) und trägt eine um die Dicke versetzte **Unterseite**. Ersetzt den
+// früheren „alle Flächen zeigen nach oben"-Test (gilt nur für die Oberseite).
+TEST(RoofGeometry_LH_FA_ROF_006, SlabIstWasserdichtUndAussenOrientiert) {
     for (const model::RoofType type :
          {model::RoofType::Pult, model::RoofType::Sattel,
           model::RoofType::Walm}) {
-        const auto mesh = roofMesh(sampleRoof(type));
+        const model::Roof roof = sampleRoof(type);
+        const auto mesh = roofMesh(roof);
         ASSERT_FALSE(mesh.empty());
-        for (std::size_t i = 2; i < mesh.normals.size(); i += 3) {
-            EXPECT_GT(mesh.normals[i], 0.0) << "Dachfläche zeigt nicht nach oben";
-        }
+        EXPECT_TRUE(isWatertight(mesh))
+            << "Slab nicht geschlossen (Typ " << static_cast<int>(type) << ")";
+        EXPECT_GT(signedVolumeMm3(mesh), 0.0) << "Slab invertiert (Innennormalen)";
+        // Stärkste Sonde (MR-009 LOW-1): das signierte Volumen des vertikalen
+        // Slab ist EXAKT bx·ty·d — eine einzelne invertierte Wand/Fläche oder
+        // ein Loch würde es verändern (fängt lokale Defekte, die Geschlossenheit
+        // + Gesamt-Vorzeichen überleben).
+        const double bx = roof.width_mm + (2.0 * roof.overhang_mm);
+        const double ty = roof.depth_mm + (2.0 * roof.overhang_mm);
+        EXPECT_NEAR(signedVolumeMm3(mesh), bx * ty * roof.thickness_mm, 1.0)
+            << "Slab-Volumen ≠ bx·ty·d (lokale Inversion / Loch)";
+        EXPECT_NEAR(axisBounds(mesh, 2).lo, -roof.thickness_mm, 1e-6);  // Unterseite
     }
+}
+
+// MED-1 (Walm-Zeltdach): quadratischer Grundriss → First kollabiert zum **Apex**
+// (Punkt); der Slab muss am Apex geschlossen bleiben (heikelster Fall).
+TEST(RoofGeometry_LH_FA_ROF_002, WalmZeltdachApexWasserdicht) {
+    model::Roof tent = sampleRoof(model::RoofType::Walm);
+    tent.width_mm = 6000.0;
+    tent.depth_mm = 6000.0;  // quadratisch → Zeltdach (First = Punkt)
+    const auto mesh = roofMesh(tent);
+    ASSERT_FALSE(mesh.empty());
+    EXPECT_TRUE(isWatertight(mesh)) << "Zeltdach-Apex nicht geschlossen";
+    EXPECT_GT(signedVolumeMm3(mesh), 0.0);
 }
 
 // Negative/Totalität: degenerierter (Null-Breite) oder nicht-positiv
@@ -143,6 +223,13 @@ TEST(RoofGeometry_LH_FA_ROF_001, DegenerierterGrundrissLeer) {
     model::Roof flat = sampleRoof(model::RoofType::Pult);
     flat.pitch_deg = 0.0;  // tan = 0 → kein Dach
     EXPECT_TRUE(roofMesh(flat).empty());
+}
+
+// LH-FA-ROF-006 Totalität: nicht-positive Dicke → kein Volumenkörper, leeres Netz.
+TEST(RoofGeometry_LH_FA_ROF_006, NichtPositiveDickeLeer) {
+    model::Roof r = sampleRoof(model::RoofType::Sattel);
+    r.thickness_mm = 0.0;
+    EXPECT_TRUE(roofMesh(r).empty());
 }
 
 }  // namespace

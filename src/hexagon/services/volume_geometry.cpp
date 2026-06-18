@@ -85,4 +85,20 @@ double stairNetVolumeMm3(const model::Stair& stair,
            ((static_cast<double>(steps) + 1.0) / 2.0);
 }
 
+double roofNetVolumeMm3(const model::Roof& roof) {
+    // Vertikaler Schräg-Slab (slice-023b, spez. §1 LH-FA-ROF-001.a): das
+    // Material-Volumen ist die **projizierte Trauf-Grundfläche · Dicke**
+    // (`bx·ty·d`) — nicht die geneigte Oberseiten-Fläche · d. Analytisch im
+    // Kern, kein `Solid.volume_mm3`.
+    const double bx = roof.width_mm + (2.0 * roof.overhang_mm);
+    const double ty = roof.depth_mm + (2.0 * roof.overhang_mm);
+    const double d = roof.thickness_mm;
+    if (!std::isfinite(bx) || !std::isfinite(ty) || !std::isfinite(d) ||
+        bx < model::kGeometryToleranceMm || ty < model::kGeometryToleranceMm ||
+        d <= 0.0) {
+        return 0.0;  // Totalität (Muster slab/stair)
+    }
+    return bx * ty * d;
+}
+
 }  // namespace bcad::hexagon::services

@@ -11,18 +11,19 @@ namespace bcad::hexagon::model {
 // meldet nichts (kein op); insbesondere wird NICHT das adapter-gemessene
 // Solid.volume_mm3 gelesen (das wäre eine driven-Volumenmessung).
 //
-// Dach bewusst NICHT enthalten (welle-3): das Dachmodell ist dicke-los (Shell
-// aus geneigten Flächen) → kein wohldefiniertes Bauteil-/Material-Solid; ein
-// umbauter Dachkörper-Raum gehört nicht in dieselbe Material-Volumen-Summe.
-// Re-Eval bei Dach-Dicke-/Material-Semantik (spez. §1 LH-FA-EVL-001.a).
+// Dach (slice-023b): seit `LH-FA-ROF-006` ist das Dach ein Volumenkörper der
+// Dicke d → das Dach-Material-Volumen (projizierte Trauf-Grundfläche · Dicke,
+// `bx·ty·d`) ist enthalten (`roofs_m3`); analytisch im Kern, kein
+// `Solid.volume_mm3` (spez. §1 LH-FA-ROF-001.a / LH-FA-EVL-001.a).
 struct VolumeReport {
-    // Σ Netto-Material-Volumen in m³ (Wand + Decke/Fundament + Treppe).
+    // Σ Netto-Material-Volumen in m³ (Wand + Decke/Fundament + Treppe + Dach).
     // Leeres/bauteilloses Modell -> 0.
     double total_m3{0.0};
 
     double walls_m3{0.0};   // Σ Wand-Netto-Volumen (Footprint·Höhe − Öffnungen)
     double slabs_m3{0.0};   // Σ Platten-Volumen (Decke/Fundament/Bodenplatte)
     double stairs_m3{0.0};  // Σ Treppen-Stufenkörper (geländer-frei)
+    double roofs_m3{0.0};   // Σ Dach-Volumen (Trauf-Grundfläche · Dicke, ROF-006)
 };
 
 }  // namespace bcad::hexagon::model

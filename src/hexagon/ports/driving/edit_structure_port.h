@@ -94,10 +94,11 @@ public:
     // Grundriss (Seite < Toleranz) wird abgelehnt (kein Wert).
     virtual std::optional<model::RoofId> addRoof(const model::Roof& prototype) = 0;
 
-    // Setzt Neigung/Überstand; klemmt auf §3 (`E-VAL-001`); meldet
-    // `RoofChanged` (LH-FA-ROF-004/005).
+    // Setzt Neigung/Überstand/Dicke; klemmt auf §3 (`E-VAL-001`); meldet
+    // `RoofChanged` (LH-FA-ROF-004/005/006).
     virtual ParamResult setRoofPitch(model::RoofId roof, double deg) = 0;
     virtual ParamResult setRoofOverhang(model::RoofId roof, double mm) = 0;
+    virtual ParamResult setRoofThickness(model::RoofId roof, double mm) = 0;
 
     // Wechselt die Dachform (LH-FA-ROF-001..003); meldet `RoofChanged`.
     virtual void setRoofType(model::RoofId roof, model::RoofType type) = 0;

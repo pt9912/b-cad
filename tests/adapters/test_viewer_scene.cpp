@@ -242,7 +242,7 @@ TEST_F(ViewerSceneAk, LH_FA_ROF_001_DachFolgtInDerSzeneUndIdempotent) {
     service_.unsubscribe(scene_);
 }
 
-// LH-FA-ROF-004/005: Neigung/Überstand werden geklemmt; ein
+// LH-FA-ROF-004/005/006: Neigung/Überstand/Dicke werden geklemmt; ein
 // degenerierter Grundriss wird abgelehnt.
 TEST_F(ViewerSceneAk, LH_FA_ROF_004_NeigungUeberstandGeklemmt) {
     const auto roof = service_.addRoof(sampleRoof(eg_));
@@ -254,6 +254,11 @@ TEST_F(ViewerSceneAk, LH_FA_ROF_004_NeigungUeberstandGeklemmt) {
     EXPECT_EQ(service_.setRoofOverhang(*roof, 9000.0).status,
               bcad::hexagon::ports::driving::ParamStatus::Clamped);
     EXPECT_NEAR(service_.roof(*roof).overhang_mm, model::kRoofOverhangMaxMm,
+                1e-9);
+    // LH-FA-ROF-006 (slice-023b): Dicke unter ROOF_THICKNESS_MIN → geklemmt + Hinweis.
+    EXPECT_EQ(service_.setRoofThickness(*roof, 9.0).status,
+              bcad::hexagon::ports::driving::ParamStatus::Clamped);
+    EXPECT_NEAR(service_.roof(*roof).thickness_mm, model::kRoofThicknessMinMm,
                 1e-9);
 
     model::Roof degenerate = sampleRoof(eg_);
@@ -268,10 +273,15 @@ TEST_F(ViewerSceneAk, LH_FA_ROF_002_FormwechselSattelZuWalmFolgt) {
     service_.subscribe(scene_);
     const auto roof = service_.addRoof(sampleRoof(eg_));  // Sattel
     ASSERT_TRUE(roof.has_value());
-    EXPECT_EQ(scene_.roofMeshes().at(*roof).triangleCount(), 4);  // Sattel
+    EXPECT_GT(scene_.roofMeshes().at(*roof).triangleCount(), 0);  // Slab nicht leer
 
+    // slice-023b: Sattel- und Walm-Slab haben dieselbe Dreiecks-Anzahl
+    // (geschlossener Volumenkörper) — der Formwechsel wird daher über die
+    // Szenen-Aktualisierung belegt, nicht über die Anzahl.
+    const int before = scene_.effectiveUpdates();
     service_.setRoofType(*roof, model::RoofType::Walm);
-    EXPECT_EQ(scene_.roofMeshes().at(*roof).triangleCount(), 6);  // Walm
+    EXPECT_GT(scene_.effectiveUpdates(), before);  // Formwechsel folgt
+    EXPECT_GT(scene_.roofMeshes().at(*roof).triangleCount(), 0);  // Walm-Slab nicht leer
 
     const int after = scene_.effectiveUpdates();
     service_.setRoofType(*roof, model::RoofType::Walm);  // No-op (gleicher Typ)

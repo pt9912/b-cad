@@ -2,6 +2,9 @@
 
 #include <array>
 #include <cmath>
+#include <cstdint>
+#include <map>
+#include <utility>
 
 #include "hexagon/model/constants.h"
 
@@ -51,9 +54,10 @@ void appendQuad(model::TriangleMesh& mesh, const V3& a, const V3& b,
     appendTriangle(mesh, a, c, d);
 }
 
-}  // namespace
-
-model::TriangleMesh roofMesh(const model::Roof& roof) {
+// --- Oberseiten-Schale je Typ (die geneigten Dachflächen, z = Höhe) ---------
+// Liefert ein **offenes** Netz der Oberseite (wie bis slice-023a); die
+// Schließung zum Volumenkörper-Slab erfolgt in closeSlabDownward.
+model::TriangleMesh buildTopShell(const model::Roof& roof) {
     model::TriangleMesh mesh;
 
     const double o = roof.overhang_mm;
@@ -84,8 +88,6 @@ model::TriangleMesh roofMesh(const model::Roof& roof) {
 
     switch (roof.type) {
         case model::RoofType::Pult: {
-            // Eine geneigte Fläche: Niedrigkante bei y0, Hochkante bei y1
-            // mit Höhe (t+2o)·tan(p).
             const double high = z0 + (ty * tan_p);
             const V3 high_d{x0, y1, high};
             const V3 high_c{x1, y1, high};
@@ -93,7 +95,6 @@ model::TriangleMesh roofMesh(const model::Roof& roof) {
             break;
         }
         case model::RoofType::Sattel: {
-            // First mittig entlang der längeren Trauf-Achse; zwei Flächen.
             if (bx >= ty) {
                 const double z_ridge = z0 + ((ty / 2.0) * tan_p);
                 const double y_mid = (y0 + y1) / 2.0;
@@ -112,8 +113,6 @@ model::TriangleMesh roofMesh(const model::Roof& roof) {
             break;
         }
         case model::RoofType::Walm: {
-            // Wie Sattel, zusätzlich an den Giebelseiten abgewalmt; First
-            // um den Einrückbetrag = halbe kürzere Trauf-Seite kürzer.
             if (bx >= ty) {
                 const double z_ridge = z0 + ((ty / 2.0) * tan_p);
                 const double y_mid = (y0 + y1) / 2.0;
@@ -151,6 +150,89 @@ model::TriangleMesh roofMesh(const model::Roof& roof) {
         }
     }
     return mesh;
+}
+
+// --- Volumenkörper-Schluss: vertikaler Schräg-Slab der Dicke d --------------
+// (slice-023b, spez. §1 LH-FA-ROF-001.a): Oberseite + um d **vertikal nach
+// unten** versetzte Unterseite (umgekehrte Wicklung) + Seitenwände entlang der
+// **Rand-Kanten** (Kante, die von genau EINER Oberseiten-Fläche genutzt wird).
+// Ergebnis: geschlossene, außen-orientierte Mannigfaltigkeit (jede Kante von
+// genau 2 Flächen). Grat/First/Hip sind innen (2 Flächen) → keine Wand.
+
+using EdgeKey = std::array<std::int64_t, 3>;
+
+// Koordinaten-Kanonisierung auf ein µm-Raster (Muster slice-016b): exakt
+// gleiche analytische Vertices (geteilte First-/Hip-Punkte) treffen sich.
+EdgeKey vertexKey(const V3& p) {
+    return EdgeKey{static_cast<std::int64_t>(std::llround(p.x * 1000.0)),
+                   static_cast<std::int64_t>(std::llround(p.y * 1000.0)),
+                   static_cast<std::int64_t>(std::llround(p.z * 1000.0))};
+}
+
+std::pair<EdgeKey, EdgeKey> undirectedEdge(const V3& a, const V3& b) {
+    const EdgeKey ka = vertexKey(a);
+    const EdgeKey kb = vertexKey(b);
+    return (ka < kb) ? std::make_pair(ka, kb) : std::make_pair(kb, ka);
+}
+
+V3 vertexAt(const model::TriangleMesh& top, int idx) {
+    const std::size_t i = static_cast<std::size_t>(idx) * 3;
+    return V3{top.positions[i], top.positions[i + 1], top.positions[i + 2]};
+}
+
+model::TriangleMesh closeSlabDownward(const model::TriangleMesh& top, double d) {
+    model::TriangleMesh mesh;
+    const auto down = [d](const V3& p) { return V3{p.x, p.y, p.z - d}; };
+
+    // 1. Oberseite (unverändert) + 2. Unterseite (versetzt, umgekehrte Wicklung).
+    for (std::size_t t = 0; t + 3 <= top.indices.size(); t += 3) {
+        const V3 a = vertexAt(top, top.indices[t]);
+        const V3 b = vertexAt(top, top.indices[t + 1]);
+        const V3 c = vertexAt(top, top.indices[t + 2]);
+        appendTriangle(mesh, a, b, c);                    // Oberseite (Normale oben)
+        appendTriangle(mesh, down(c), down(b), down(a));  // Unterseite (Normale unten)
+    }
+
+    // 3. Rand-Kanten zählen (jede Kante einer Oberseiten-Fläche).
+    std::map<std::pair<EdgeKey, EdgeKey>, int> edge_count;
+    for (std::size_t t = 0; t + 3 <= top.indices.size(); t += 3) {
+        const std::array<V3, 3> v = {vertexAt(top, top.indices[t]),
+                                     vertexAt(top, top.indices[t + 1]),
+                                     vertexAt(top, top.indices[t + 2])};
+        for (int i = 0; i < 3; ++i) {
+            ++edge_count[undirectedEdge(v[i], v[(i + 1) % 3])];
+        }
+    }
+
+    // 4. Seitenwand je Rand-Kante (Zählung == 1), außen-orientiert: für eine
+    // CCW-von-oben-Oberseiten-Fläche liegt das Innere links der gerichteten
+    // Kante p→q → Wand (p, p↓, q↓, q) zeigt nach außen (rechts).
+    for (std::size_t t = 0; t + 3 <= top.indices.size(); t += 3) {
+        const std::array<V3, 3> v = {vertexAt(top, top.indices[t]),
+                                     vertexAt(top, top.indices[t + 1]),
+                                     vertexAt(top, top.indices[t + 2])};
+        for (int i = 0; i < 3; ++i) {
+            const V3& p = v[i];
+            const V3& q = v[(i + 1) % 3];
+            if (edge_count[undirectedEdge(p, q)] == 1) {
+                appendQuad(mesh, p, down(p), down(q), q);
+            }
+        }
+    }
+    return mesh;
+}
+
+}  // namespace
+
+model::TriangleMesh roofMesh(const model::Roof& roof) {
+    const model::TriangleMesh top = buildTopShell(roof);
+    const double d = roof.thickness_mm;
+    // Totalität: degenerierte Oberseite oder nicht-positive Dicke → leeres Netz
+    // (kein Volumenkörper, kein Wurf — wie das bisherige Flächenmodell).
+    if (top.empty() || !std::isfinite(d) || d <= 0.0) {
+        return model::TriangleMesh{};
+    }
+    return closeSlabDownward(top, d);
 }
 
 }  // namespace bcad::hexagon::services

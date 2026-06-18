@@ -71,6 +71,8 @@ public:
                                              double deg) override;
     ports::driving::ParamResult setRoofOverhang(model::RoofId roof,
                                                 double mm) override;
+    ports::driving::ParamResult setRoofThickness(model::RoofId roof,
+                                                 double mm) override;
     void setRoofType(model::RoofId roof, model::RoofType type) override;
     bool removeRoof(model::RoofId roof) override;
 

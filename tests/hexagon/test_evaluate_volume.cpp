@@ -6,8 +6,8 @@
 //   (width · Wandstärke · clamped_height; Brüstung/Oberkante geklemmt).
 // - Decke/Fundament: (Fläche − gültige Ausschnitte) · Dicke.
 // - Treppe: Σ Stufenkörper = tread·width·h·(step_count+1)/2, GELÄNDER-FREI.
-// - Dach welle-3 ausgenommen (dicke-loses Modell) — ein Dach ändert total_m3
-//   NICHT.
+// - Dach (slice-023b, LH-FA-ROF-006): Volumenkörper der Dicke d → trägt das
+//   Material-Volumen `bx·ty·d` (projizierte Trauf-Grundfläche · Dicke) bei.
 // Die Orakel sind unabhängige, von Hand gerechnete Soll-Werte (konkrete
 // mm-Maße → glatte m³); analytisch im Kern, KEIN solids_[].volume_mm3
 // (das wäre die OCC-Adapter-Messung — ADR-0012 #4).
@@ -177,7 +177,7 @@ TEST(Evaluate_LH_FA_EVL_002, TreppeStufenkoerperGelaenderFrei) {
 
 // EVL-002 gemischtes Gebäude: total_m3 = Summe der Bauteiltyp-Subtotale; ein
 // Dach im Modell ändert das Material-Volumen NICHT (welle-3-Ausnahme).
-TEST(Evaluate_LH_FA_EVL_002, GemischtesGebaeudeSummeUndDachAusgenommen) {
+TEST(Evaluate_LH_FA_EVL_002, GemischtesGebaeudeSummeInklusiveDach) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
     addFreestandingWall(svc, {{0.0, 0.0}, {4000.0, 0.0}});  // 2,4 m³
@@ -203,7 +203,9 @@ TEST(Evaluate_LH_FA_EVL_002, GemischtesGebaeudeSummeUndDachAusgenommen) {
     EXPECT_NEAR(before.stairs_m3, 5.6, kVolumeToleranceM3);
     EXPECT_NEAR(before.total_m3, 12.0, kVolumeToleranceM3);
 
-    // Ein Dach ändert das Material-Volumen NICHT (dicke-loses Modell).
+    // Ein Dach trägt seit LH-FA-ROF-006 (slice-023b) sein Material-Volumen bei:
+    // projizierte Trauf-Grundfläche · Dicke = (5000+2·500)·(4000+2·500)·200
+    // = 6000·5000·200 mm³ = 6,0 m³.
     model::Roof roof;
     roof.storey_id = kGroundStorey;
     roof.type = model::RoofType::Sattel;
@@ -213,11 +215,38 @@ TEST(Evaluate_LH_FA_EVL_002, GemischtesGebaeudeSummeUndDachAusgenommen) {
     roof.base_z_mm = 2500.0;
     roof.pitch_deg = 30.0;
     roof.overhang_mm = 500.0;
+    roof.thickness_mm = 200.0;
     ASSERT_TRUE(svc.addRoof(roof).has_value());
 
     const model::VolumeReport after = svc.volume();
-    EXPECT_NEAR(after.total_m3, before.total_m3, kVolumeToleranceM3);
-    EXPECT_NEAR(after.total_m3, 12.0, kVolumeToleranceM3);
+    EXPECT_NEAR(after.roofs_m3, 6.0, kVolumeToleranceM3);
+    EXPECT_NEAR(after.total_m3, before.total_m3 + 6.0, kVolumeToleranceM3);
+    EXPECT_NEAR(after.total_m3, 18.0, kVolumeToleranceM3);
+}
+
+// LH-FA-ROF-006 / EVL-002: Dach-Volumen = projizierte Trauf-Grundfläche · Dicke
+// (`bx·ty·d`), typ-unabhängig; nicht-positive Dicke → 0 (Totalität).
+TEST(Evaluate_LH_FA_EVL_002, DachVolumenTraufGrundflaecheMalDicke) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    model::Roof roof;
+    roof.storey_id = kGroundStorey;
+    roof.type = model::RoofType::Walm;
+    roof.origin = {0.0, 0.0};
+    roof.width_mm = 4000.0;
+    roof.depth_mm = 4000.0;
+    roof.overhang_mm = 0.0;
+    roof.pitch_deg = 30.0;
+    roof.thickness_mm = 250.0;  // 4000·4000·250 mm³ = 4,0 m³
+    const auto id = svc.addRoof(roof);
+    ASSERT_TRUE(id.has_value());
+    EXPECT_NEAR(svc.volume().roofs_m3, 4.0, kVolumeToleranceM3);
+
+    // Dicke ≤ 0 → kein Volumen (Totalität). evaluateParam lehnt 0 nicht ab,
+    // aber roofNetVolumeMm3 ist total; hier direkt über die reine Funktion.
+    model::Roof zero = roof;
+    zero.thickness_mm = 0.0;
+    EXPECT_EQ(services::roofNetVolumeMm3(zero), 0.0);
 }
 
 // EVL-002 Boundary: leeres Modell → alle Felder 0, kein Wurf; und LOW-2:

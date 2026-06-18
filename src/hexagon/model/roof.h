@@ -32,6 +32,7 @@ struct Roof {
     double base_z_mm{};      // Traufhöhe / Aufstandshöhe
     double pitch_deg{};      // Dachneigung (LH-FA-ROF-004)
     double overhang_mm{};    // Dachüberstand (LH-FA-ROF-005)
+    double thickness_mm{};   // Dachdicke → Volumenkörper (LH-FA-ROF-006, slice-023b)
     std::optional<MaterialId> material_id{};  // eigenes Material (Override, MAT-003)
 };
 

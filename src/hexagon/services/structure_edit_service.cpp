@@ -308,7 +308,13 @@ model::VolumeReport StructureEditService::volume() const {
         report.stairs_m3 +=
             stairNetVolumeMm3(st, storeyHeight(st.from_storey_id)) / kMm3PerM3;
     }
-    report.total_m3 = report.walls_m3 + report.slabs_m3 + report.stairs_m3;
+    // Dach-Volumen (LH-FA-ROF-006/LH-FA-EVL-002, slice-023b): analytisch im Kern
+    // (Trauf-Grundfläche · Dicke), kein Solid.volume_mm3.
+    for (const model::Roof& r : building_.roofs) {
+        report.roofs_m3 += roofNetVolumeMm3(r) / kMm3PerM3;
+    }
+    report.total_m3 =
+        report.walls_m3 + report.slabs_m3 + report.stairs_m3 + report.roofs_m3;
     return report;
 }
 
@@ -693,6 +699,14 @@ std::optional<model::RoofId> StructureEditService::addRoof(
     roof.overhang_mm = std::clamp(prototype.overhang_mm,
                                   model::kRoofOverhangMinMm,
                                   model::kRoofOverhangMaxMm);
+    // Dachdicke (LH-FA-ROF-006, slice-023b): ohne Angabe (≤ 0 / nicht-endlich)
+    // gilt die Standard-Dicke; sonst in den Bereich geklemmt (Anlage-clamp wie
+    // pitch/overhang; editierbar über setRoofThickness mit ParamStatus).
+    roof.thickness_mm =
+        (std::isfinite(prototype.thickness_mm) && prototype.thickness_mm > 0.0)
+            ? std::clamp(prototype.thickness_mm, model::kRoofThicknessMinMm,
+                         model::kRoofThicknessMaxMm)
+            : model::kDefaultRoofThicknessMm;
     building_.roofs.push_back(roof);
     ++next_roof_id_;
     notifyRoofChanged(roof.storey_id);
@@ -720,6 +734,19 @@ ports::driving::ParamResult StructureEditService::setRoofOverhang(
         target.overhang_mm);
     if (result.status != ports::driving::ParamStatus::Rejected) {
         target.overhang_mm = result.applied_mm;
+        notifyRoofChanged(target.storey_id);
+    }
+    return result;
+}
+
+ports::driving::ParamResult StructureEditService::setRoofThickness(
+    model::RoofId id, double mm) {
+    model::Roof& target = mutableRoof(id);
+    const ports::driving::ParamResult result = evaluateParam(
+        mm, Range{model::kRoofThicknessMinMm, model::kRoofThicknessMaxMm},
+        target.thickness_mm);
+    if (result.status != ports::driving::ParamStatus::Rejected) {
+        target.thickness_mm = result.applied_mm;
         notifyRoofChanged(target.storey_id);
     }
     return result;
