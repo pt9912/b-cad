@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-17.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-18.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -154,7 +154,7 @@ bleiben textlich unverändert grün. Abgelehnte Mutationen melden nicht.
 
 ### LH-FA-ROF-001.a — Dach-Geometrie (Teilumfang Rechteck-Grundriss)
 
-Sammelblock, deckt **[LH-FA-ROF-001](lastenheft.md#lh-fa-rof-001--satteldach)..005** (Sattel/Walm/Pult, Neigung,
+Sammelblock, deckt **[LH-FA-ROF-001](lastenheft.md#lh-fa-rof-001--satteldach)..006** (Sattel/Walm/Pult, Neigung,
 Überstand); Reifephase-Teilumfang welle-2 (Lastenheft 0.1.4). Modell-
 Einordnung über das Bauteil-Erweiterungs-Muster (#6) — keine
 eigene Grundsatz-ADR; die Geometrie wird **hier** normativ festgelegt.
@@ -185,6 +185,20 @@ das Dach kragt also um `o` über den Grundriss hinaus.
 
 **Firsthöhe abgeleitet:** `roofs.height_mm` (nullable) ist
 **nicht** Eingabe, sondern die aus `p`/Überstand berechnete Firsthöhe.
+
+**Dachdicke (Volumenkörper, [LH-FA-ROF-006](lastenheft.md#lh-fa-rof-006)):** Das
+Dach ist ein **geschlossener Schräg-Slab** der Dicke `d`: die oben
+konstruierte(n) geneigte(n) Dachfläche(n) bilden die **Oberseite**; eine um `d`
+**vertikal nach unten** versetzte **parallele Unterseite** plus die
+**geschlossenen Trauf- und Giebel-Ränder** ergeben eine **wasserdichte,
+außen-orientierte** Hülle (alle drei Typen). Die Offset-Richtung ist **vertikal**
+(parametrisch tragbar; ein schräg-normaler Offset bleibt späterer Ausbau). `d`
+wird auf `[ROOF_THICKNESS_MIN_MM, ROOF_THICKNESS_MAX_MM]` geklemmt (`E-VAL-001`,
+§3), Default `DEFAULT_ROOF_THICKNESS_MM`. Damit ist das **Dach-Volumen
+analytisch im Kern** berechenbar (`volume_geometry`, **ohne**
+`Solid.volume_mm3`-Lesen) — die im EVL-Volumen-Block benannte „Dach-Volumen"-
+Lücke wird mit der Dicke-Semantik auflösbar (Impl-Folge); die geschlossene Hülle
+ist zugleich die Voraussetzung für den **STEP-B-Rep-Export** der Dächer.
 
 **Klemmung/Totalität:** Neigung `p` auf `[ROOF_PITCH_MIN_DEG,
 ROOF_PITCH_MAX_DEG]`, Überstand `o` auf `[ROOF_OVERHANG_MIN_MM,
@@ -721,6 +735,9 @@ im Schema (nur Undo) — eigener Slice.
 | `ROOF_OVERHANG_MAX_MM` | 1500 | Obergrenze Dachüberstand | [LH-FA-ROF-005](lastenheft.md#lh-fa-rof-005--dachüberstand-definieren) |
 | `DEFAULT_ROOF_PITCH_DEG` | 30 | Default-Dachneigung bei Anlage (= `roofs`-Schema-Default) | [LH-FA-ROF-001](lastenheft.md#lh-fa-rof-001--satteldach) |
 | `DEFAULT_ROOF_OVERHANG_MM` | 500 | Default-Dachüberstand bei Anlage (= `roofs`-Schema-Default) | [LH-FA-ROF-005](lastenheft.md#lh-fa-rof-005--dachüberstand-definieren) |
+| `ROOF_THICKNESS_MIN_MM` | 50 | Untergrenze Dachdicke | [LH-FA-ROF-006](lastenheft.md#lh-fa-rof-006) |
+| `ROOF_THICKNESS_MAX_MM` | 500 | Obergrenze Dachdicke | [LH-FA-ROF-006](lastenheft.md#lh-fa-rof-006) |
+| `DEFAULT_ROOF_THICKNESS_MM` | 200 | Default-Dachdicke bei Anlage | [LH-FA-ROF-006](lastenheft.md#lh-fa-rof-006) |
 | `SLAB_THICKNESS_MIN_MM` | 100 | Untergrenze Deckendicke | [LH-FA-SLB-002](lastenheft.md#lh-fa-slb-002--deckendicke-definieren) |
 | `SLAB_THICKNESS_MAX_MM` | 500 | Obergrenze Deckendicke | [LH-FA-SLB-002](lastenheft.md#lh-fa-slb-002--deckendicke-definieren) |
 | `DEFAULT_SLAB_THICKNESS_MM` | 200 | Default-Deckendicke bei Anlage | [LH-FA-SLB-001](lastenheft.md#lh-fa-slb-001--decke-erzeugen) |

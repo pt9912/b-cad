@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.10
+**Version:** 0.1.11
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -455,6 +455,22 @@ parametrisch im Bereich **0 mm bis 1500 mm**.
   kragt die Dachkante um diesen Betrag über den Grundriss hinaus.
 - **Boundary:** Given Überstand am Grenzwert, then akzeptiert; außerhalb
   → geklemmt + Hinweis.
+
+#### <a id="lh-fa-rof-006"></a>LH-FA-ROF-006 — Dachdicke (Dach als Volumenkörper)
+
+**Beschreibung:** Ein Dach hat eine **Dicke** und ist damit ein
+**Volumenkörper** (nicht eine dünne Fläche) — konsistent zum Export der
+3D-Bauteile als Volumenkörper ([LH-FA-IO-005](#lh-fa-io-005)).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Dach, when es erzeugt/dargestellt wird, then ist
+  es ein **Volumenkörper mit einer Dicke**; ohne Angabe gilt eine
+  **Standard-Dicke**.
+- **Boundary:** Given die Dicke am Grenzwert, then akzeptiert; außerhalb →
+  geklemmt + Hinweis.
+- **Negative/Total:** Given ein degenerierter Grundriss, then entsteht kein
+  Dach; eine **Null-/ungültige Dicke** wird geklemmt — kein Fehler/Absturz.
 
 ### Modul Decken (`SLB`)
 
