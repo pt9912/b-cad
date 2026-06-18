@@ -9,7 +9,7 @@ DOCKER ?= docker
 IMAGE ?= bcad
 DOCKERFILE ?= .devcontainer/Dockerfile
 
-# slice-008a/ADR-0006: d-migrate als externe Tool-Dependency per @sha256
+# ADR-0006: d-migrate als externe Tool-Dependency per @sha256
 # gepinnt (ADR-0004-Prinzip auf externe Tools angewandt; ein Floating-Tag
 # erzeugte sonst nicht reproduzierbare DDL).
 DMIGRATE ?= ghcr.io/pt9912/d-migrate:0.9.7@sha256:69afc2147754c23b2d34c6a5ad8fbaae3787a5c061efd32f45d1c953bbc52fd9
@@ -22,7 +22,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check acc-002-beleg run
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check acc-002-beleg run io-smoke
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -95,7 +95,18 @@ acc-002-beleg: ## ACC-002 — Beleg-Bild offscreen rendern (manueller Abnahme-Sc
 		$(IMAGE):build bash -c "timeout 120 xvfb-run -a ./build/src/b-cad --acc-002-beleg /out/acc-002-beleg.png"
 # timeout-Wrapper: xvfb-run haengt als Container-PID-1 nach App-Ende
 # (Cleanup-Race, 2x beobachtet); timeout als Prozessgruppen-Leader
-# vermeidet das und deckelt den Lauf (slice-011b Closure-Notiz).
+# vermeidet das und deckelt den Lauf.
+
+# Behaviour-Smoke des verdrahteten IO-Binaries: belegt die coverage-ausgenommene
+# main.cpp-CLI-/Composition-Root-Glue je Austauschformat (IFC/DXF Export+Re-Import,
+# STEP/STL Export; exit 0 + nicht-leere Datei, fail-closed je-Aufruf-Guard in
+# tools/io-smoke.sh). KEIN gates-Member (GUI-Binary unter xvfb, schwerer +
+# Cleanup-Race) -> CI-Befehlsliste, Muster acc-002-beleg. Bindung: LH-FA-IO-001..006
+# (LH-Bindung, harness/conventions.md).
+io-smoke: ## IO-Binary headless je Format (IFC/DXF Roundtrip, STEP/STL Export) — KEIN Gate, CI/LH-FA-IO-*
+	$(GATE) --target build -t $(IMAGE):build .
+	$(DOCKER) run --rm -e BCAD_SMOKE_SELFTEST $(IMAGE):build \
+		bash -c "timeout 180 xvfb-run -a bash tools/io-smoke.sh"
 
 # ADR-0006-Drift: die committete SQLite-DDL muss exakt das sein, was
 # d-migrate aus spec/data-model.yaml erzeugt. BEWUSST NICHT in `make gates`
