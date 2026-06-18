@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-021b — **DXF-Import/-Export lauffähig** (`LH-FA-IO-003`/`004`, welle-4, `ADR-0015`):
+  io-residenter, selbst getragener **ASCII-DXF-Subset-Codec** (R12/AC1009; `DxfReader`/
+  `DxfWriter`, `LINE`/`LWPOLYLINE`, format-agnostisch — **keine neue Dependency**) +
+  `DxfImportAdapter`/`DxfExportAdapter` hinter `ModelImporterPort`/`ModelExporterPort`
+  (`adapters/io/`); **2D-Grundriss** = gerade Wand-Achsen je Geschoss-`LAYER`, Import →
+  Default-Höhe/-Dicke (DXF trägt keine — benannte Lücke). Kern: `ExchangeFormat::Dxf` + der
+  **Import-Dispatch auf eine `ImporterMap`** umgestellt (symmetrisch zur bestehenden
+  `ExporterMap`; STEP/STL bleiben export-only via Lookup-Miss → `E-IO-003`/`import_rejected`).
+  Export atomar (Temp+fsync+Rename → `E-IO-001`), Import atomar/total (`E-IO-003`; leer/
+  strukturlos → leeres Modell). Composition Root + `--import-dxf`/`--export-dxf`. **Roundtrip**
+  = Wand-Achsen-Anzahl je Geschoss + Achs-Lage (nicht Höhe/Dicke). 14 neue Tests (Codec-
+  Roundtrip isoliert + AK/Integration über den echten `ExchangeService`-Pfad), 3 io-Tests auf
+  `ImporterMap` migriert. `MR-006` 0 HIGH + unabhängiges Code-Review 0 HIGH (2 MED Test-Orakel-
+  Lücken geschlossen); `make gates` grün (201/201, Coverage 89,9 %). **DXF-Strang abgeschlossen.**
 - slice-021a — **DXF-Import/-Export AK-Schärfung + Spec-Mapping** (`LH-FA-IO-003`/`004`,
   welle-4, `ADR-0015`): `LH-FA-IO-003`/`004` von Outline auf AK-Niveau (lösungsfrei,
   **bidirektional, 2D-Grundriss** — Export → valide DXF, von einem Standard-Leser als

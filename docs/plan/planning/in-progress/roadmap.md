@@ -49,7 +49,7 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   für Dächer/Treppen (Mesh→Shape-Vernähung, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)).
 - ✓ **DXF-Backend-ADR** ([ADR-0015](../../adr/0015-dxf-backend.md), Accepted 2026-06-17 —
   selbst getragener DXF-Subset-Codec Option D io-resident, 2D-Grundriss) **+
-  AK-Schärfung (slice-021a)**; **offen:** DXF-Import/Export-Impl.
+  AK-Schärfung (slice-021a) + Impl (slice-021b: Codec + Adapter + Kern-`ImporterMap`)**.
 - **PDF/PNG-Export** (maßstäblicher Plan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
   [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) (IFC-Export) + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (PDF) erfüllt → **Meilenstein M4**.
@@ -107,7 +107,18 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   Geschoss-`LAYER`, Import-Defaults, atomar) + §6/§7/§4-Nachzug (§4 [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um
   STEP/STL/DXF-Export, latente [ADR-0014](../../adr/0014-step-stl-export-backend.md)-Lücke mitgeschlossen). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**
   (MED-1/2 + LOW-1); reine Doku, gates grün.
-- ⏳ offen: **DXF-Impl** · STEP-B-Rep Dächer/Treppen · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
+- ✓ **slice-021b** — **DXF-Import/-Export lauffähig** ([LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/[LH-FA-IO-004](../../../../spec/lastenheft.md#lh-fa-io-004)):
+  io-residenter, selbst getragener ASCII-DXF-Subset-Codec (R12, `LINE`/`LWPOLYLINE`
+  Reader+Writer, **keine neue Dependency**) + `DxfImportAdapter`/`DxfExportAdapter` hinter
+  `ModelImporterPort`/`ModelExporterPort`; **Kern-Import-Dispatch auf `ImporterMap`** umgestellt
+  (symmetrisch zur `ExporterMap`, [ADR-0015](../../adr/0015-dxf-backend.md)-Review-MED-1; STEP/STL
+  bleiben export-only via Lookup-Miss); `ExchangeFormat::Dxf` + Composition Root
+  (`--import-dxf`/`--export-dxf`); 2D-Grundriss (gerade Wand-Achsen je Geschoss-`LAYER`, Import →
+  Default-Höhe/-Dicke). **Roundtrip** = Achsen-Anzahl je Geschoss + Achs-Lage (nicht Höhe/Dicke).
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** + unabhängiges Code-Review **0 HIGH** (2 MED Test-Orakel-Lücken
+  geschlossen); `make gates` grün (201/201, Coverage 89,9 %). **Damit ist der DXF-Strang
+  (Import + Export) abgeschlossen.**
+- ⏳ offen: STEP-B-Rep Dächer/Treppen · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
   Welle-4-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen
