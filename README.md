@@ -7,9 +7,12 @@
 > (Türen/Fenster, Dach, Decken/Fundament, Treppen; welle-2, M2) und
 > **Auswertungen** (Flächen/Volumen/Wohnfläche, Material/Listen/Kosten über einen
 > read-only `EvaluatePort`; welle-3, M3) sind implementiert. Aktuell: **offener
-> Formataustausch** ([OBJ-005](spec/lastenheft.md#3-projektziele)) — IFC (Import+Export) und STEP/STL (Export)
-> geliefert; DXF entschieden + geschärft (Impl folgt), PDF/PNG offen. Einstieg:
-> [`harness/README.md`](harness/README.md).
+> Formataustausch** ([OBJ-005](spec/lastenheft.md#3-projektziele)) — **IFC** (Import+Export), **STEP/STL**
+> (Export) und **DXF** (Import+Export, 2D-Grundriss) geliefert; ein headless
+> Binary-Smoke (`make io-smoke`) deckt die IO-Pfade ab. **Dach-Volumen** in
+> Arbeit (das Dach wird ein Volumenkörper — Voraussetzung für den STEP-Export
+> der Dächer); offen: Dach-Persistenz, STEP-B-Rep Dächer/Treppen, PDF/PNG.
+> Einstieg: [`harness/README.md`](harness/README.md).
 
 ## Was ist b-cad?
 

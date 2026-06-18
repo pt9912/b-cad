@@ -1,6 +1,6 @@
 # Roadmap — b-cad
 
-**Status:** Aktiv. **Letzte Änderung:** 2026-06-17.
+**Status:** Aktiv. **Letzte Änderung:** 2026-06-18.
 
 **Format-Regel:** Reihenfolge von **Wellen**, keine Reihenfolge von
 Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
@@ -54,7 +54,7 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
   [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) (IFC-Export) + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (PDF) erfüllt → **Meilenstein M4**.
 
-**Fortschritt (Stand 2026-06-17):**
+**Fortschritt (Stand 2026-06-18):**
 - ✓ **[ADR-0013](../../adr/0013-ifc-bibliothek.md) „IFC-Bibliothek" accepted** —
   IFC-Backend = vendierter SPF-Subset-Codec (Option D); zwei unabhängige
   Review-Runden (0 HIGH, 5 MED + 4 LOW eingearbeitet). Welle-Trigger erfüllt,
