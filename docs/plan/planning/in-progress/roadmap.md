@@ -125,9 +125,15 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   (50/500/200 mm). Löst die ROF↔[LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)-Inkonsistenz;
   **Voraussetzung für STEP-B-Rep der Dächer**. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
   **0 HIGH**; reine Doku, gates grün.
-- ⏳ offen: **Dach-Volumen-Initiative** (023a ✓ → **023b** Geometrie-Impl [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) ·
-  **023c** Persistenz `roofs.thickness_mm` · **024** Dächer+Treppen STEP-B-Rep) · PDF/PNG
-  ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) · Welle-4-Verifikation → `done/welle-4-results.md`.
+- ✓ **slice-023b** — **Dach-Volumen-Geometrie** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006), [LH-FA-EVL-002](../../../../spec/lastenheft.md#lh-fa-evl-002--volumenberechnung)):
+  `roofMesh` baut einen **geschlossenen, wasserdichten Schräg-Slab** der Dicke `d` (Oberseite + vertikal
+  versetzte Unterseite + Rand-Seitenwände; alle 3 Typen + Walm-Zeltdach-Apex); `Roof.thickness_mm` +
+  `setRoofThickness`; **EVL-Dach-Volumen** `bx·ty·d` analytisch (`roofs_m3`) — welle-3-Lücke geschlossen.
+  Invarianten-Tests (wasserdicht: jede Kante 2 Flächen, außen-orientiert, **Volumen == `bx·ty·d`**).
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) je **0 HIGH** (Geometrie repliziert, Volumen bit-exakt); `make gates` grün (204/204, 90,2 %).
+- ⏳ offen: **Dach-Volumen-Initiative** (023a ✓, **023b ✓** → **023c** Persistenz `roofs.thickness_mm` ·
+  **024** Dächer+Treppen STEP-B-Rep) · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
+  Welle-4-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen
 

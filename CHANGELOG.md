@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-023b — **Dach-Volumen: geschlossener Schräg-Slab + EVL-Dach-Volumen** (`LH-FA-ROF-006`/
+  `LH-FA-EVL-002`, welle-4, Dach-Volumen-Initiative): `roofMesh` baut statt der dicke-losen Fläche einen
+  **geschlossenen, wasserdichten Volumenkörper-Slab** der Dicke `d` (Oberseite + vertikal versetzte
+  Unterseite + Rand-Seitenwände; alle 3 Typen Sattel/Walm/Pult inkl. Zeltdach-Apex). `Roof.thickness_mm`
+  + `setRoofThickness`-Setter (Default/Klemmung mit `ParamStatus::Clamped`). **EVL-Netto-Volumen** =
+  `bx·ty·d` analytisch im Kern (`roofs_m3`, ohne `Solid.volume_mm3`) — schließt die welle-3-Dach-Lücke.
+  Geometrische Invarianten-Tests (wasserdicht: jede Kante 2 Flächen; außen-orientiert; **Volumen ==
+  `bx·ty·d`**). `MR-006` 0 HIGH + **`MR-009` 0 HIGH** (Geometrie über 15 Parametrierungen repliziert,
+  signiertes Volumen bit-exakt); `make gates` grün (204/204, Coverage 90,2 %). **Persistenz
+  (`roofs.thickness_mm`) = 023c, STEP-B-Rep = 024.**
 - slice-023a — **Dach-Volumen AK-Schärfung + Spec-Geometrie** (`LH-FA-ROF-006`, welle-4,
   Dach-Volumen-Initiative): **neue Lastenheft-Anforderung** — ein Dach hat eine **Dicke** und ist ein
   **Volumenkörper** (lösungsfrei, Standard-Dicke, Grenzwert-Klemmung, Totalität); löst die
