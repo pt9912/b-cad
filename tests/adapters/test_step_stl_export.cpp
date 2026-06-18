@@ -148,7 +148,7 @@ TEST(StlExportIntegration, ExchangeServiceWritesStlThroughRealAdapter) {
     const OccGeometryAdapter geometry;
     const StlExportAdapter stl(geometry);
     const IfcImportAdapter importer;  // export-only-Format, Importer ungenutzt
-    const ExchangeService service(importer, {{ExchangeFormat::Stl, &stl}});
+    const ExchangeService service({{ExchangeFormat::Ifc, &importer}}, {{ExchangeFormat::Stl, &stl}});
 
     const TempPath out("svc");
     service.exportModel(sampleBuilding(), out.path, ExchangeFormat::Stl);
@@ -161,7 +161,7 @@ TEST(StlExportIntegration, ImportOfStlRejectedAsExportOnly) {
     const OccGeometryAdapter geometry;
     const StlExportAdapter stl(geometry);
     const IfcImportAdapter importer;
-    const ExchangeService service(importer, {{ExchangeFormat::Stl, &stl}});
+    const ExchangeService service({{ExchangeFormat::Ifc, &importer}}, {{ExchangeFormat::Stl, &stl}});
     try {
         service.importModel("nicht-relevant.stl", ExchangeFormat::Stl);
         FAIL() << "STL-Import muss als export-only abgelehnt werden";
@@ -227,7 +227,7 @@ TEST(StepExport, NonWritablePathRejectedWithEIo001) {
 TEST(StepExportIntegration, ExchangeServiceWritesStepThroughRealAdapter) {
     const StepExportAdapter step;
     const IfcImportAdapter importer;
-    const ExchangeService service(importer, {{ExchangeFormat::Step, &step}});
+    const ExchangeService service({{ExchangeFormat::Ifc, &importer}}, {{ExchangeFormat::Step, &step}});
 
     const TempPath out("svc", ".step");
     service.exportModel(sampleBuilding(), out.path, ExchangeFormat::Step);

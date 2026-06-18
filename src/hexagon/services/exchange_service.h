@@ -12,27 +12,31 @@ namespace bcad::hexagon::services {
 
 // Import-Use-Case (Hexagon-Kern, framework-frei, ADR-0001/0013): implementiert
 // den Driving Port `ExchangeModelPort` und dispatcht je `ExchangeFormat` auf
-// den passenden Driven `ModelImporterPort`. **Pure Domäne** — kein IFC-/
+// den passenden Driven `ModelImporterPort`. **Pure Domäne** — kein IFC-/DXF-/
 // SPF-Symbol (arch-check Regel A); das Format-Backend lebt im IO-Adapter.
 //
 // Atomarität (`LH-FA-IO-001`/`002` Negative): Import baut ein vollständiges
 // `Building` oder wirft `E-IO-003`; Export schreibt die vollständige Datei oder
 // wirft `E-IO-001` — der Service propagiert den Fehler unverändert (kein
-// Teil-Import/-Export). Hält den Importer + ein **Exporter-Registry**
+// Teil-Import/-Export). Hält je ein **Importer-/Exporter-Registry**
 // (Format→Port) nicht-besitzend; der Composition Root verdrahtet je Format die
-// passende `ModelExporterPort`-Implementierung (IFC io-resident, STEP/STL
-// geometrie-resident — ADR-0014). STEP/STL sind **export-only**.
+// passende Implementierung (IFC/DXF io-resident, STEP/STL geometrie-resident —
+// ADR-0014). STEP/STL sind **export-only** (nicht in der ImporterMap).
 class ExchangeService final : public ports::driving::ExchangeModelPort {
 public:
-    // Format → Exporter-Implementierung (nicht-besitzende Zeiger; der
-    // Composition Root hält die Adapter). Fehlt ein Format hier, ist Export für
-    // dieses Format nicht verdrahtet (→ E-IO-001).
+    // Format → Importer-/Exporter-Implementierung (nicht-besitzende Zeiger; der
+    // Composition Root hält die Adapter). Fehlt ein Format in der ImporterMap,
+    // ist Import nicht verdrahtet (→ E-IO-003); fehlt es in der ExporterMap,
+    // ist Export nicht verdrahtet (→ E-IO-001). Symmetrische Registries
+    // (slice-021b: Import-Dispatch wie der Export, ADR-0015-Review-MED-1).
+    using ImporterMap =
+        std::map<ports::driving::ExchangeFormat,
+                 const ports::driven::ModelImporterPort*>;
     using ExporterMap =
         std::map<ports::driving::ExchangeFormat,
                  const ports::driven::ModelExporterPort*>;
 
-    ExchangeService(const ports::driven::ModelImporterPort& ifc_importer,
-                    ExporterMap exporters);
+    ExchangeService(ImporterMap importers, ExporterMap exporters);
 
     model::Building importModel(const std::filesystem::path& path,
                                 ports::driving::ExchangeFormat format) const override;
@@ -42,7 +46,7 @@ public:
                      ports::driving::ExchangeFormat format) const override;
 
 private:
-    const ports::driven::ModelImporterPort& ifc_importer_;
+    ImporterMap importers_;
     ExporterMap exporters_;
 };
 

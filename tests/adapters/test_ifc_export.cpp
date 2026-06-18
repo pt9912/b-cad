@@ -152,7 +152,7 @@ TEST(IfcExportIntegration, ExchangeServiceRoundtripThroughRealAdapters) {
     const TempPath out("svc");
     const IfcImportAdapter importer;
     const IfcExportAdapter exporter;
-    const ExchangeService service(importer, {{ExchangeFormat::Ifc, &exporter}});
+    const ExchangeService service({{ExchangeFormat::Ifc, &importer}}, {{ExchangeFormat::Ifc, &exporter}});
 
     service.exportModel(sampleBuilding(), out.path, ExchangeFormat::Ifc);
     const model::Building back =
@@ -169,7 +169,7 @@ TEST(IfcExportIntegration, ExchangeServicePropagatesEIo001) {
 
     const IfcImportAdapter importer;
     const IfcExportAdapter exporter;
-    const ExchangeService service(importer, {{ExchangeFormat::Ifc, &exporter}});
+    const ExchangeService service({{ExchangeFormat::Ifc, &importer}}, {{ExchangeFormat::Ifc, &exporter}});
     try {
         service.exportModel(sampleBuilding(), out.path, ExchangeFormat::Ifc);
         FAIL() << "erwarteter E-IO-001-Wurf blieb aus";

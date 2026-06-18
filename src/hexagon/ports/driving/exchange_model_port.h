@@ -6,10 +6,10 @@
 
 namespace bcad::hexagon::ports::driving {
 
-// Austauschformat-Diskriminator (Format-neutral, ADR-0013/ADR-0014). welle-4:
-// IFC (Import+Export), STEP/STL (Export-only, geometrie-resident, ADR-0014).
-// DXF/PDF/PNG sind eigene Schwester-ADRs/Slices.
-enum class ExchangeFormat { Ifc, Step, Stl };
+// Austauschformat-Diskriminator (Format-neutral, ADR-0013/0014/0015). welle-4:
+// IFC (Import+Export, io-resident), STEP/STL (Export-only, geometrie-resident,
+// ADR-0014), DXF (Import+Export, io-resident, ADR-0015). PDF/PNG folgen.
+enum class ExchangeFormat { Ifc, Step, Stl, Dxf };
 
 // Driving Port (ADR-0001, architecture §1.1): stößt Import/Export an, ohne das
 // konkrete Format zu kennen. welle-4 (slice-019b) implementiert den Import;

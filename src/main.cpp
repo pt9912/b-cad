@@ -23,6 +23,8 @@
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "adapters/geometry/step_export_adapter.h"
 #include "adapters/geometry/stl_export_adapter.h"
+#include "adapters/io/dxf_export_adapter.h"
+#include "adapters/io/dxf_import_adapter.h"
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 #include "adapters/ui/viewer_widget.h"
@@ -105,13 +107,19 @@ int main(int argc, char** argv) {
     // mit der IO-Oberfläche.
     bcad::adapters::io::IfcImportAdapter ifc_importer;
     bcad::adapters::io::IfcExportAdapter ifc_exporter;
+    bcad::adapters::io::DxfImportAdapter dxf_importer;  // io-resident (ADR-0015)
+    bcad::adapters::io::DxfExportAdapter dxf_exporter;  // io-resident (ADR-0015)
     bcad::adapters::geometry::StlExportAdapter stl_exporter(geometry);  // geometrie-resident (ADR-0014)
     bcad::adapters::geometry::StepExportAdapter step_exporter;          // geometrie-resident (ADR-0014)
+    // Symmetrische Importer-/Exporter-Registries (slice-021b): IFC + DXF
+    // bidirektional (io-resident), STEP/STL export-only (geometrie-resident).
     services::ExchangeService exchange(
-        ifc_importer,
+        {{bcad::hexagon::ports::driving::ExchangeFormat::Ifc, &ifc_importer},
+         {bcad::hexagon::ports::driving::ExchangeFormat::Dxf, &dxf_importer}},
         {{bcad::hexagon::ports::driving::ExchangeFormat::Ifc, &ifc_exporter},
          {bcad::hexagon::ports::driving::ExchangeFormat::Step, &step_exporter},
-         {bcad::hexagon::ports::driving::ExchangeFormat::Stl, &stl_exporter}});
+         {bcad::hexagon::ports::driving::ExchangeFormat::Stl, &stl_exporter},
+         {bcad::hexagon::ports::driving::ExchangeFormat::Dxf, &dxf_exporter}});
 
     const QStringList cli = QApplication::arguments();
     const int import_index =
@@ -130,6 +138,23 @@ int main(int argc, char** argv) {
         }
     }
 
+    // Headless-Import DXF (Parität zu --import-ifc, ADR-0015 — io-resident).
+    const int dxf_import_index =
+        static_cast<int>(cli.indexOf(QStringLiteral("--import-dxf")));
+    if (dxf_import_index >= 0 && dxf_import_index + 1 < cli.size()) {
+        const std::string dxf_path = cli.at(dxf_import_index + 1).toStdString();
+        try {
+            const model::Building imported = exchange.importModel(
+                dxf_path, bcad::hexagon::ports::driving::ExchangeFormat::Dxf);
+            std::cout << "DXF importiert: " << imported.storeys.size()
+                      << " Geschosse, " << imported.walls.size() << " Wände\n";
+            return 0;
+        } catch (const std::exception& e) {
+            std::cerr << "DXF-Import fehlgeschlagen: " << e.what() << '\n';
+            return 1;
+        }
+    }
+
     // Headless-Export je Format (IFC io-resident, STEP/STL geometrie-resident).
     using bcad::hexagon::ports::driving::ExchangeFormat;
     if (const auto rc = runExportIfRequested(cli, "--export-ifc", exchange,
@@ -142,6 +167,10 @@ int main(int argc, char** argv) {
     }
     if (const auto rc = runExportIfRequested(cli, "--export-step", exchange,
                                              service, ExchangeFormat::Step, "STEP")) {
+        return *rc;
+    }
+    if (const auto rc = runExportIfRequested(cli, "--export-dxf", exchange,
+                                             service, ExchangeFormat::Dxf, "DXF")) {
         return *rc;
     }
 

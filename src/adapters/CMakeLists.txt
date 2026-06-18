@@ -44,6 +44,16 @@ add_library(bcad_adapters
     # Readers) + Domänen→IFC4-Mapping, atomar (Temp+Rename). KEINE neue Dependency.
     io/ifc_spf_writer.cpp
     io/ifc_export_adapter.cpp
+    # slice-021b Commit i: DXF-Codec (ADR-0015 Option D) — hand-gerollter ASCII-
+    # DXF-Subset (R12) Reader+Writer, io-resident, format-agnostisch. KEINE neue
+    # Dependency (reines C++/STL); arch-check Regel A/B isolieren ihn.
+    io/dxf_reader.cpp
+    io/dxf_writer.cpp
+    # slice-021b Commit ii: DXF-Import/-Export-Adapter (ADR-0015 Option D) —
+    # ModelImporterPort/ModelExporterPort hinter dem DXF-Codec, io-resident,
+    # atomar (Temp+Rename). KEINE neue Dependency.
+    io/dxf_import_adapter.cpp
+    io/dxf_export_adapter.cpp
 )
 
 target_include_directories(bcad_adapters

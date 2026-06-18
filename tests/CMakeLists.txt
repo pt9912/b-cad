@@ -38,6 +38,9 @@ add_executable(bcad_adapter_tests
     adapters/test_ifc_import.cpp       # slice-019b Commit ii: Mapping-AK + Integration
     adapters/test_ifc_export.cpp       # slice-019c: Export-Roundtrip-AK + E-IO-001
     adapters/test_step_stl_export.cpp  # slice-020b: STEP (B-Rep) + STL (binär) Export-AK + E-IO-001 + Integration
+    adapters/test_dxf_codec.cpp        # slice-021b Commit i: DXF-Codec-Roundtrip (isoliert)
+    adapters/test_dxf_import.cpp       # slice-021b Commit ii: Import-AK + Integration
+    adapters/test_dxf_export.cpp       # slice-021b Commit ii: Export-AK + Roundtrip + E-IO-001
 )
 target_link_libraries(bcad_adapter_tests
     PRIVATE bcad_adapters bcad_hexagon GTest::gtest_main)
