@@ -127,7 +127,7 @@ b-cad/
     ├── user/releasing.md
     └── plan/
         ├── adr/              ADR-Index + ADR-0001..0015
-        ├── planning/         Slice-Lifecycle (open/next/in-progress/done) + Roadmap
+        ├── planning/         Slice-Lifecycle (open/next/in-progress/done/done-archive) + Roadmap
         └── carveouts/        dokumentierte Gate-Ausnahmen (derzeit keine)
 ```
 
