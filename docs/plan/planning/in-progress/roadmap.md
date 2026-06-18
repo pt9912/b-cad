@@ -118,8 +118,16 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** + unabhängiges Code-Review **0 HIGH** (2 MED Test-Orakel-Lücken
   geschlossen); `make gates` grün (201/201, Coverage 89,9 %). **Damit ist der DXF-Strang
   (Import + Export) abgeschlossen.**
-- ⏳ offen: STEP-B-Rep Dächer/Treppen · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
-  Welle-4-Verifikation → `done/welle-4-results.md`.
+- ✓ **slice-023a** — **Dach-Volumen AK-Schärfung + Spec-Geometrie** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006)):
+  neue Lastenheft-Anforderung — das Dach bekommt eine **Dicke** und wird ein **Volumenkörper**
+  (Lastenheft 0.1.11, lösungsfrei); §1 [`LH-FA-ROF-001.a`](../../../../spec/lastenheft.md#lh-fa-rof-001--satteldach) geschlossener Schräg-Slab (**vertikaler**
+  Offset, Dach-Volumen **analytisch im Kern** ohne `Solid.volume_mm3`), §3 `ROOF_THICKNESS_*`
+  (50/500/200 mm). Löst die ROF↔[LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)-Inkonsistenz;
+  **Voraussetzung für STEP-B-Rep der Dächer**. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  **0 HIGH**; reine Doku, gates grün.
+- ⏳ offen: **Dach-Volumen-Initiative** (023a ✓ → **023b** Geometrie-Impl [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) ·
+  **023c** Persistenz `roofs.thickness_mm` · **024** Dächer+Treppen STEP-B-Rep) · PDF/PNG
+  ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) · Welle-4-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen
 
@@ -172,3 +180,4 @@ flowchart LR
 | 2026-06-14 | `welle-3-auswertung` gestartet; Scope auf **MAT + EVL** (Auswertungs-Kern, M3) gesetzt, **`DRW` (Bemaßung/Layer/Fangpunkte/Raster/Hilfslinien/Gruppen) nach welle-5 zurückgestellt** | Welle-Name + M3-Trigger („Flächen/Volumen/Materiallisten korrekt") zielen auf Auswertung; `DRW` ist 2D-Zeichen-Interaktion (UX) ohne M3-Bezug und passt zu den UI-Werkzeugen von welle-5 — die Trennung hält welle-3 kohärent (Modul-5-Sizing, Auswertung ≠ 2D-Editor). |
 | 2026-06-15 | **Quergewerk slice-018a/b/c** eingeschoben (Doku-Referenz-Gate, `harness-steering`): `done-archive/`-Mechanik + Regelwerk-Referenz-Richtung Spec→ADR computational (d-check `matrix`/`ids`, [MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)); **018b** weitet `ids` auf den Voll-Korpus (alle 7 ID-Familien, Linker `tools/idlink.py`), **018c** hebt Bullet-Sub-IDs per Inline-HTML-Anker (d-check v0.9.0) auf präzise Per-ID-Anker. **M3-Scope (MAT+EVL) unberührt.** | d-check-v0.8.0-Hebung stellt `matrix`/`ids`/`spans`/`hostpaths` bereit; die Referenz-Richtung war bis dahin nur inferential ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review). Quergewerk, kein welle-3-Feature — die Roadmap-Sequenz bleibt unverändert. |
 | 2026-06-18 | **Quergewerk io-smoke** (slice-022) eingeschoben: `make io-smoke` — headless Binary-Smoke aller IO-Formate (CI-only, LH-Bindung [LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)…[LH-FA-IO-006](../../../../spec/lastenheft.md#lh-fa-io-006)), belegt die coverage-ausgenommene `main.cpp`-CLI-/Composition-Root-Glue. **welle-4-Scope unberührt.** | Aufkommende Frage „Binary-/CLI-E2E?": die port-tiefe Integration (slice-019–021) deckt die Use-Cases, aber die CLI-/Verdrahtungs-Glue war ungetestet (`main.cpp` coverage-ausgenommen); minimal-additiver Sensor, Muster `acc-002-beleg` — kein welle-Feature, Sequenz unverändert. |
+| 2026-06-18 | **„STEP-B-Rep Dächer/Treppen" → Dach-Volumen-Initiative re-skopiert** (023a–c, dann 024): der Roadmap-Einzeiler „Mesh→Vernähung" war nicht tragfähig. Erst **Dach-Volumen** (neue [LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006), Lastenheft 0.1.11), dann STEP für Dächer+Treppen. **welle-4-Sequenz unberührt** (M4-Pfad bleibt [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)/[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)). | [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review zum (verworfenen) STEP-Slice fand **HIGH-1**: die Display-Netze sind **nicht wasserdicht** — `roofMesh` ist eine offene Fläche, `Roof` trägt **kein** Dicke-Feld (dicke-loses Modell) → Vernähung ergäbe ungültige Solids. Projektinhaber wählte „Dach-Volumen zuerst, Regelwerk-konform". |

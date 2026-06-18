@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-023a — **Dach-Volumen AK-Schärfung + Spec-Geometrie** (`LH-FA-ROF-006`, welle-4,
+  Dach-Volumen-Initiative): **neue Lastenheft-Anforderung** — ein Dach hat eine **Dicke** und ist ein
+  **Volumenkörper** (lösungsfrei, Standard-Dicke, Grenzwert-Klemmung, Totalität); löst die
+  ROF↔`LH-FA-IO-005`-Inkonsistenz (Export als Volumenkörper) auf. Lastenheft **0.1.11**. spez. §1
+  `LH-FA-ROF-001.a`: geschlossener **Schräg-Slab** der Dicke `d` (Oberseite + vertikal versetzte
+  Unterseite + geschlossene Trauf-/Giebel-Ränder, wasserdicht/außen-orientiert, alle 3 Typen);
+  Dach-Volumen **analytisch im Kern** (ohne `Solid.volume_mm3`); §3 `ROOF_THICKNESS_*` (50/500/200 mm).
+  **Vertragserweiterung** (Projektinhaber-autorisiert). `MR-006` 0 HIGH; reine Doku. Voraussetzung für
+  EVL-Dach-Volumen + STEP-B-Rep der Dächer (Folge-Slices 023b/c, 024).
 - slice-022 — **io-smoke: headless Binary-Smoke aller IO-Formate** (`make io-smoke`,
   welle-4-Quergewerk, CI-only, `LH-FA-IO-001`…`006`): startet das gebaute `b-cad`-Binary
   headless (xvfb) je Format — **IFC/DXF** Export+Re-Import, **STEP/STL** Export — und prüft
