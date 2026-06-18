@@ -12,7 +12,7 @@
   `--import-dxf`/`--export-dxf`), Tests (`test_dxf_codec.cpp`, `test_dxf_import.cpp`,
   `test_dxf_export.cpp`) + Ctor-Migration in `test_ifc_import.cpp`/`test_ifc_export.cpp`/`test_step_stl_export.cpp`.
 - **Datum:** 2026-06-18.
-- **Quellen:** [slice-021b-dxf-impl.md](../plan/planning/in-progress/slice-021b-dxf-impl.md) (Plan/DoD),
+- **Quellen:** [slice-021b-dxf-impl.md](../plan/planning/done-archive/slice-021b-dxf-impl.md) (Plan/DoD),
   [ADR-0015](../plan/adr/0015-dxf-backend.md) (Backend Option D, io-resident, 2D-Grundriss),
   [LH-FA-IO-003](../../spec/lastenheft.md#lh-fa-io-003)/[LH-FA-IO-004](../../spec/lastenheft.md#lh-fa-io-004) (AK),
   spez. §1 [`LH-FA-IO-003.a`](../../spec/lastenheft.md#lh-fa-io-003) (Mapping) + §4 (Fehler-Codes),
