@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-022 — **io-smoke: headless Binary-Smoke aller IO-Formate** (`make io-smoke`,
+  welle-4-Quergewerk, CI-only, `LH-FA-IO-001`…`006`): startet das gebaute `b-cad`-Binary
+  headless (xvfb) je Format — **IFC/DXF** Export+Re-Import, **STEP/STL** Export — und prüft
+  exit 0 + nicht-leere Datei (fail-closed je-Aufruf-Guard in `tools/io-smoke.sh` + Negativ-
+  Selbsttest `BCAD_SMOKE_SELFTEST=1`). Belegt die sonst coverage-ausgenommene `main.cpp`-CLI-/
+  Composition-Root-Glue der IO-Pfade. **Kein `gates`-Member** (GUI-Binary unter xvfb →
+  CI-Befehlsliste, Muster `acc-002-beleg`/`schema-check`); **erste reale LH-Bindung** der
+  Sensors-Zusatzklasse. `MR-006` 0 HIGH; **kein Produktions-Code** (die `--import-*`/
+  `--export-*`-Flags existieren seit slice-019c/020b/021b). Doku: `harness/README.md` §Sensors +
+  `AGENTS.md` §3 + `harness/conventions.md`.
 - slice-021b — **DXF-Import/-Export lauffähig** (`LH-FA-IO-003`/`004`, welle-4, `ADR-0015`):
   io-residenter, selbst getragener **ASCII-DXF-Subset-Codec** (R12/AC1009; `DxfReader`/
   `DxfWriter`, `LINE`/`LWPOLYLINE`, format-agnostisch — **keine neue Dependency**) +

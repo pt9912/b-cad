@@ -437,14 +437,17 @@ Schwelle · Reproduzierbarkeit) **eine** Zusatzklasse:
 
 | Klasse | Form | Bedeutung | Beispiel (geplant) |
 |---|---|---|---|
-| LH-Bindung | `LH-FA-<…>` · `LH-QA-<…>` | Gate prüft direkt eine Anforderung aus `spec/lastenheft.md` | [`LH-QA-003`](../spec/lastenheft.md#lh-qa-003--undoredo) als Bindung eines künftigen Undo/Redo-Tiefen-Tests; [`LH-FA-WAL-002`](../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) als Bindung eines Wandstärken-Grenzwert-Tests |
+| LH-Bindung | `LH-FA-<…>` · `LH-QA-<…>` | **Sensor (Gate *oder* CI-only)** prüft direkt eine Anforderung aus `spec/lastenheft.md` | [`make io-smoke`](README.md#sensors-feedback-gates) (real, CI-only) auf [`LH-FA-IO-001`](../spec/lastenheft.md#lh-fa-io-001--ifc-import)…[`006`](../spec/lastenheft.md#lh-fa-io-006); [`LH-FA-WAL-002`](../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) als Bindung eines künftigen Wandstärken-Grenzwert-Tests |
 
-Die Klasse ist *deklariert*, aber noch *ungebunden* — keines der realen
-Gates trägt bislang eine LH-Bindung. Erster Kandidat ist das geplante
-`make coverage-gate-critical` ([LH-QA-005](../spec/lastenheft.md#lh-qa-005--crash-recovery)); mit seiner Promotion aus dem
+Die Klasse ist **erstmals real gebunden** durch den **CI-only-Sensor**
+[`make io-smoke`](README.md#sensors-feedback-gates) ([LH-FA-IO-001](../spec/lastenheft.md#lh-fa-io-001--ifc-import) …
+[LH-FA-IO-006](../spec/lastenheft.md#lh-fa-io-006) — headless Binary-Smoke der IO-Austauschpfade).
+**Geltung:** die LH-Bindung gilt für **Sensoren — Gate *oder* CI-only**; `make io-smoke`
+ist **nicht** in `make gates` (CI-Befehlsliste, Muster `make schema-check`). Erster
+*Gate*-Kandidat dieser Klasse bleibt das geplante `make coverage-gate-critical`
+([LH-QA-005](../spec/lastenheft.md#lh-qa-005--crash-recovery)); mit seiner Promotion aus dem
 "Nicht behauptet"-Block der Sensors-Tabelle in
-[`README.md`](README.md#sensors-feedback-gates) wird die Klasse erstmals
-real gebunden (Promotion-Trigger, Kurs-Modul 2).
+[`README.md`](README.md#sensors-feedback-gates) trägt erstmals ein **Gate** diese Bindung.
 
 ## Modus-Deklaration pro Sub-Area
 

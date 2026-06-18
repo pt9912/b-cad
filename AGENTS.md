@@ -150,6 +150,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 | `make schema-check` | [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md)-Drift: `schema.sql` == d-migrate(`data-model.yaml`); **nicht** in `gates` (d-migrate aus dem Gate-Pfad) → CI-Befehlsliste | [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md) |
 | `make acc-002-beleg` | [ACC-002](spec/lastenheft.md#7-abnahmekriterien)-Beleg-Bild headless rendern — **kein Gate**, manueller Abnahme-Schritt, nicht in `gates` | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) (f)/0010 |
 | `make run` | App im Container am lokalen Display starten — **kein Gate** (GPU via `/dev/dri`, sonst llvmpipe) | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) |
+| `make io-smoke` | IO-Binary headless je Format (IFC/DXF Export+Re-Import, STEP/STL Export; exit 0 + nicht-leere Datei, fail-closed) — belegt die coverage-ausgenommene `main.cpp`-CLI-/Composition-Root-Glue; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `schema-check`) | LH-Bindung [LH-FA-IO-001](spec/lastenheft.md#lh-fa-io-001--ifc-import) … [LH-FA-IO-006](spec/lastenheft.md#lh-fa-io-006) |
 
 **Geplant (noch NICHT behauptet):**
 
