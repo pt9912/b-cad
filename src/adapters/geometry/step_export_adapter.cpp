@@ -26,6 +26,7 @@
 #include "adapters/geometry/occ_solids.h"
 #include "hexagon/model/constants.h"
 #include "hexagon/services/opening_geometry.h"  // wallCutPrisms
+#include "hexagon/services/roof_geometry.h"     // roofMesh (slice-024a)
 #include "hexagon/services/slab_geometry.h"     // slabBaseZ/slabCutPrisms
 #include "hexagon/services/wall_footprint.h"    // wallFootprint
 
@@ -45,9 +46,11 @@ double storeyHeight(const model::Building& building, model::StoreyId id) {
     return model::kDefaultStoreyHeightMm;
 }
 
-// B-Rep-Solids der OCC-Solid-Bauteile (Wände + Decken) als ein Compound.
-// Degenerierte Bauteile werden übersprungen (Totalität); Dächer/Treppen sind
-// die benannte STEP-Lücke (analytische Netze, kein OCC-Solid).
+// B-Rep-Solids der OCC-Solid-Bauteile (Wände + Decken) sowie der Dächer (seit
+// slice-024a: das wasserdichte Dach-Netz wird zu einem Solid vernäht) als ein
+// Compound. Degenerierte/nicht-wasserdichte Bauteile werden übersprungen
+// (Totalität, fail-closed). **Treppen** bleiben die benannte STEP-Lücke
+// (analytische Box-Union, kein OCC-Solid) bis slice-024b.
 TopoDS_Compound buildSolidCompound(const model::Building& building) {
     TopoDS_Compound compound;
     BRep_Builder builder;
@@ -78,6 +81,23 @@ TopoDS_Compound buildSolidCompound(const model::Building& building) {
         lift.SetTranslation(
             gp_Vec(0.0, 0.0, services::slabBaseZ(s, storeyHeight(building, s.storey_id))));
         builder.Add(compound, BRepBuilderAPI_Transform(solid, lift, true).Shape());
+    }
+
+    // Dächer (slice-024a): das seit 023b wasserdichte `roofMesh` wird zu einem
+    // B-Rep-Solid vernäht. `meshToSolid` ist fail-closed → ein leeres Shape
+    // (degeneriert / nicht geschlossen) wird übersprungen (Totalität). Der
+    // try/catch spiegelt die Wand-/Decken-Schleifen (MR-009 MED-2): ein einzelnes
+    // problematisches Dach wird übersprungen, nicht der ganze Export abgebrochen.
+    for (const model::Roof& r : building.roofs) {
+        TopoDS_Shape solid;
+        try {
+            solid = meshToSolid(services::roofMesh(r));
+        } catch (const std::exception&) {
+            continue;  // degeneriertes/fehlschlagendes Dach überspringen (Totalität)
+        }
+        if (!solid.IsNull()) {
+            builder.Add(compound, solid);
+        }
     }
     return compound;
 }

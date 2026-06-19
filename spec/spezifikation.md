@@ -575,19 +575,23 @@ Driven-Port `ModelExporterPort`; der Composition Root verdrahtet je Format die
 passende Implementierung (IFC io-resident, STEP/STL geometrie-resident). Der Kern
 bleibt format-frei; kein Adapter ruft einen anderen (Regel B).
 
-**Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile, die
-ein echtes OCC-Solid tragen (extrudierte/boolesch geschnittene Solids — **Wände und
-Decken/Fundament**; Ziel-Schema AP214). **STL** schreibt das **tessellierte
-Dreiecksnetz** **aller** 3D-Bauteile (binär als Default). Längeneinheit mm.
+**Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile:
+**Wände und Decken/Fundament** als extrudierte/boolesch geschnittene OCC-Solids,
+**Dächer** als das zu einem Solid **vernähte** wasserdichte Dach-Netz
+([`LH-FA-ROF-006`](lastenheft.md#lh-fa-rof-006), slice-024a; Ziel-Schema AP214). **STL** schreibt das
+**tessellierte Dreiecksnetz** **aller** 3D-Bauteile (binär als Default). Längeneinheit mm.
 
 **Bauteil-Subset (welle-4).** **STL** deckt alle 3D-Bauteile — Wände (inkl.
 Wandöffnungen/Cutouts), Decken/Fundament, Dächer, Treppen. **STEP** deckt die
-**OCC-Solid-Bauteile** (Wände + Decken/Fundament); **Dächer und Treppen sind
-analytische Dreiecksnetze ohne OCC-Solid** und werden im STEP (noch) **nicht**
-geschrieben (**benannte Lücke** — für sie ist STL der verlustfreie Pfad; die
-B-Rep-Vernähung der Netze ist ein Folge-Inkrement). **Generell nicht geschrieben**
-(beide Formate): Material/Farbe, Property-Sets, PMI, Assembly-Struktur. Ausbau =
-späterer Re-Eval (XDE/AP242, Mesh→Shape-Vernähung; Provenance § Historie).
+OCC-Solid-Bauteile (Wände + Decken/Fundament) **und die Dächer** (das wasserdichte
+Dach-Netz wird zu einem B-Rep-Solid vernäht — slice-024a; ein nicht geschlossen
+vernähbares Dach wird **fail-closed übersprungen** — es bleibt dann im STL, fehlt
+aber im STEP, STL/STEP können hier also divergieren). **Treppen** sind eine
+**analytische, nicht-manifolde Box-Union** und werden im STEP (noch) **nicht**
+geschrieben (**benannte Lücke** — für sie ist STL der verlustfreie Pfad; ihre
+B-Rep-Schreibung als analytische Box-Solids ist slice-024b). **Generell nicht
+geschrieben** (beide Formate): Material/Farbe, Property-Sets, PMI, Assembly-Struktur.
+Ausbau = späterer Re-Eval (XDE/AP242; Provenance § Historie).
 
 **Atomarität (kein Teil-Export).** Der Export schreibt in eine Temp-Datei und ersetzt
 den Zielpfad erst nach Erfolg (Rename); ein nicht beschreibbarer Zielpfad →

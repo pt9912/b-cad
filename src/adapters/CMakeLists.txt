@@ -79,8 +79,10 @@ target_link_libraries(bcad_adapters
         # (TKMesh, ADR-0009 (b)) + boolesche Subtraktion der Wandöffnungen
         # (TKBO: BRepAlgoAPI_Cut, LH-FA-DOR-004/WIN-005, slice-013b/ADR-0011)
         # + STEP-DataExchange (TKDESTEP/TKDE/TKXSBase: STEPControl_Writer,
-        # slice-020b/ADR-0014 — libocct-data-exchange-dev, keine neue Dependency).
+        # slice-020b/ADR-0014 — libocct-data-exchange-dev, keine neue Dependency)
+        # + Mesh→Shape-Vernähung der Dächer (TKShHealing: BRepBuilderAPI_Sewing,
+        # slice-024a/ADR-0014 — dieselbe OCC-Distribution, keine neue Dependency).
         TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKMesh TKBO
-        TKDESTEP TKDE TKXSBase
+        TKDESTEP TKDE TKXSBase TKShHealing
 )
 target_compile_features(bcad_adapters PUBLIC cxx_std_20)

@@ -11,9 +11,15 @@
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <BRepBuilderAPI_MakePolygon.hxx>
+#include <BRepBuilderAPI_MakeSolid.hxx>
+#include <BRepBuilderAPI_Sewing.hxx>
+#include <BRepCheck_Analyzer.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListOfShape.hxx>
+#include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_Shell.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Vec.hxx>
 
@@ -113,6 +119,64 @@ TopoDS_Shape makeNetSolid(const model::Footprint& footprint, double height_mm,
                 "OccSolids: Wandöffnungs-Subtraktion fehlgeschlagen (E-GEO-002)");
         }
         solid = op.Shape();
+    }
+    return solid;
+}
+
+TopoDS_Shape meshToSolid(const model::TriangleMesh& mesh) {
+    if (mesh.empty()) {
+        return TopoDS_Shape{};  // leeres Netz → leeres Shape (Aufrufer überspringt)
+    }
+
+    // Je Dreieck eine Face; koinzidente Kanten (Flat-Shading ohne geteilte
+    // Vertices) verschmilzt Sewing auf das µm-kanonische Raster (023b) bei
+    // Toleranz `kGeometryToleranceMm`.
+    BRepBuilderAPI_Sewing sewing(model::kGeometryToleranceMm);
+    const std::vector<double>& p = mesh.positions;
+    const std::vector<int>& idx = mesh.indices;
+    for (std::size_t t = 0; t + 3 <= idx.size(); t += 3) {
+        const std::size_t i0 = static_cast<std::size_t>(idx[t]) * 3;
+        const std::size_t i1 = static_cast<std::size_t>(idx[t + 1]) * 3;
+        const std::size_t i2 = static_cast<std::size_t>(idx[t + 2]) * 3;
+        BRepBuilderAPI_MakePolygon poly(gp_Pnt(p[i0], p[i0 + 1], p[i0 + 2]),
+                                        gp_Pnt(p[i1], p[i1 + 1], p[i1 + 2]),
+                                        gp_Pnt(p[i2], p[i2 + 1], p[i2 + 2]),
+                                        Standard_True);  // geschlossenes Tri-Wire
+        if (!poly.IsDone()) {
+            continue;  // degeneriertes Dreieck überspringen
+        }
+        BRepBuilderAPI_MakeFace face(poly.Wire());
+        if (face.IsDone()) {
+            sewing.Add(face.Face());
+        }
+    }
+    sewing.Perform();
+    const TopoDS_Shape sewn = sewing.SewedShape();
+    if (sewn.IsNull()) {
+        return TopoDS_Shape{};
+    }
+
+    // Genau **eine** Shell erwartet (ein zusammenhängender wasserdichter Körper).
+    TopExp_Explorer exp(sewn, TopAbs_SHELL);
+    if (!exp.More()) {
+        return TopoDS_Shape{};  // keine Shell → offen → fail-closed
+    }
+    const TopoDS_Shell shell = TopoDS::Shell(exp.Current());
+    exp.Next();
+    if (exp.More()) {
+        return TopoDS_Shape{};  // mehrere Shells → keine eine Solid → fail-closed
+    }
+
+    BRepBuilderAPI_MakeSolid mkSolid(shell);
+    if (!mkSolid.IsDone()) {
+        return TopoDS_Shape{};
+    }
+    const TopoDS_Shape solid = mkSolid.Solid();
+
+    // fail-closed (HIGH-1): nur eine **gültige, geschlossene** Solid passiert —
+    // eine offene/ungültige Vernähung wird verworfen (kein Schrott-Solid im STEP).
+    if (!BRepCheck_Analyzer(solid).IsValid()) {
+        return TopoDS_Shape{};
     }
     return solid;
 }

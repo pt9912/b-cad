@@ -49,6 +49,28 @@ model::Building sampleBuilding() {
     return b;
 }
 
+// sampleBuilding + ein Dach gegebenen Typs/Grundrisses (seit 023b ein
+// wasserdichter Volumenkörper der Dicke 200 mm) — slice-024a: das Dach wird zu
+// einem B-Rep-Solid vernäht. Parametriert, damit der STEP-Test alle Typen +
+// den Walm-Zeltdach-Apex deckt (MR-009 LOW-2, nicht nur Sattel).
+model::Building buildingWithRoof(model::RoofType type, double width_mm,
+                                 double depth_mm) {
+    model::Building b = sampleBuilding();
+    model::Roof roof;
+    roof.id = model::RoofId{1};
+    roof.storey_id = model::StoreyId{1};
+    roof.type = type;
+    roof.origin = {0.0, 0.0};
+    roof.width_mm = width_mm;
+    roof.depth_mm = depth_mm;
+    roof.base_z_mm = 2500.0;
+    roof.pitch_deg = 30.0;
+    roof.overhang_mm = 500.0;
+    roof.thickness_mm = 200.0;
+    b.roofs.push_back(roof);
+    return b;
+}
+
 // Temp-Zielpfad mit RAII-Aufräumen (Datei + .tmp-Artefakt).
 struct TempPath {
     fs::path path;
@@ -182,6 +204,16 @@ std::string readText(const fs::path& path) {
                        std::istreambuf_iterator<char>());
 }
 
+// Vorkommen einer STEP-Entität zählen (topologisch, kein bloßes „vorhanden").
+std::size_t countSubstr(const std::string& hay, const std::string& needle) {
+    std::size_t n = 0;
+    for (std::size_t pos = hay.find(needle); pos != std::string::npos;
+         pos = hay.find(needle, pos + needle.size())) {
+        ++n;
+    }
+    return n;
+}
+
 TEST(StepExport, BuildingWithWallsYieldsBRepSolids) {
     const StepExportAdapter exporter;
     const TempPath out("walls", ".step");
@@ -193,6 +225,47 @@ TEST(StepExport, BuildingWithWallsYieldsBRepSolids) {
     EXPECT_NE(step.find("END-ISO-10303-21"), std::string::npos);
     // Die exportierten Bauteile sind als B-Rep-Volumenkörper enthalten.
     EXPECT_NE(step.find("BREP"), std::string::npos) << "kein B-Rep-Solid im STEP";
+}
+
+// slice-024a (LH-FA-IO-005, LH-FA-ROF-006): das Dach ist ein **geschlossenes**
+// B-Rep-Solid (Mesh→Shape-Vernähung des wasserdichten 023b-Netzes). Sensor OHNE
+// OCC im Test (Regel C): die topologische Wasserdichtheit zeigt sich als genau
+// **eine zusätzliche** CLOSED_SHELL ggü. dem Wand-only-Modell — kein bloßes
+// „nicht-leer". Wäre die Vernähung offen, würde `meshToSolid` sie fail-closed
+// (BRepCheck) überspringen → kein Zuwachs → Test schlägt fehl. Über alle Typen
+// + den Walm-Zeltdach-Apex (MR-009 LOW-2); zugleich Kein-Zuwachs-Regression.
+TEST(StepExport, RoofYieldsClosedShellBRepSolid) {
+    const StepExportAdapter exporter;
+
+    const TempPath wallsOut("walls_baseline", ".step");
+    exporter.write(sampleBuilding(), wallsOut.path);
+    const std::size_t wallShells =
+        countSubstr(readText(wallsOut.path), "CLOSED_SHELL");
+    ASSERT_GT(wallShells, 0U) << "Basis-Erwartung: Wände sind geschlossene Solids";
+
+    struct RoofCase {
+        const char* tag;
+        model::RoofType type;
+        double width_mm;
+        double depth_mm;
+    };
+    const RoofCase cases[] = {
+        {"sattel", model::RoofType::Sattel, 5000.0, 4000.0},
+        {"walm", model::RoofType::Walm, 5000.0, 4000.0},
+        {"pult", model::RoofType::Pult, 5000.0, 4000.0},
+        {"walm_zeltdach", model::RoofType::Walm, 5000.0, 5000.0},  // First=Punkt (Apex)
+    };
+    for (const RoofCase& c : cases) {
+        const TempPath roofOut(std::string("roof_") + c.tag, ".step");
+        exporter.write(buildingWithRoof(c.type, c.width_mm, c.depth_mm),
+                       roofOut.path);
+        const std::string step = readText(roofOut.path);
+
+        EXPECT_NE(step.find("MANIFOLD_SOLID_BREP"), std::string::npos)
+            << c.tag << ": Dach nicht als Manifold-Solid-B-Rep geschrieben";
+        EXPECT_EQ(countSubstr(step, "CLOSED_SHELL"), wallShells + 1)
+            << c.tag << ": Dach trägt nicht genau ein geschlossenes Solid bei";
+    }
 }
 
 TEST(StepExport, EmptyBuildingYieldsValidStepEnvelope) {

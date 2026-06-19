@@ -6,6 +6,7 @@
 
 #include "hexagon/model/cut_prism.h"
 #include "hexagon/model/footprint.h"
+#include "hexagon/model/triangle_mesh.h"
 
 // Geteilte OCC-Solid-Konstruktion (geometrie-intern, Regel C — diese Datei
 // trägt OCC-`.hxx` und darf NUR von `src/adapters/geometry/` inkludiert werden).
@@ -20,5 +21,18 @@ namespace bcad::adapters::geometry {
 TopoDS_Shape makeNetSolid(const hexagon::model::Footprint& footprint,
                           double height_mm,
                           const std::vector<hexagon::model::CutPrism>& cutouts);
+
+// Ein **wasserdichtes, außen-orientiertes** Dreiecksnetz (Flat-Shading, je Dreieck
+// eigene Vertices) zu einem B-Rep-Solid vernähen (slice-024a, STEP-Export der
+// Dächer): je Dreieck eine Face → `BRepBuilderAPI_Sewing` → geschlossene Shell →
+// Solid. **fail-closed:** liefert ein **leeres** `TopoDS_Shape`, wenn das Ergebnis
+// keine *eine* gültige, **geschlossene** Solid ist (`BRepCheck_Analyzer`) — eine
+// offene/nicht-manifolde Vernähung verlässt diese Funktion nie. **Grenze (MR-009
+// MED-1):** `BRepCheck_Analyzer.IsValid()` prüft Geschlossenheit, **nicht**
+// Orientierung — die Außennormalen-Korrektheit ist vom Eingabe-Netz **geerbt**
+// (Aufrufer-Vertrag: außen-orientiert, für Dächer die 023b-Invariante signiertes
+// Volumen > 0), hier nicht erzwungen. Leeres Netz → leeres Shape. Kein Wurf
+// (Totalität; der Aufrufer überspringt ein leeres Shape).
+TopoDS_Shape meshToSolid(const hexagon::model::TriangleMesh& mesh);
 
 }  // namespace bcad::adapters::geometry

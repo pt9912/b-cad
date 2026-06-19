@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-024a — **Dächer STEP-B-Rep: wasserdichtes Netz → vernähtes Solid** (`LH-FA-IO-005`/
+  `LH-FA-ROF-006`, welle-4): schließt die **Dach-Hälfte** der in slice-020b benannten STEP-Lücke
+  (Dächer/Treppen waren STL-only). Der seit 023b wasserdichte `roofMesh` wird im geometrie-residenten
+  STEP-Export zu **einem** OCC-B-Rep-Solid **vernäht** (neuer `meshToSolid` in `occ_solids`:
+  `BRepBuilderAPI_Sewing` → geschlossene Shell → `MakeSolid`), **fail-closed** geprüft
+  (`BRepCheck_Analyzer`; eine nicht geschlossen vernähbare Shell wird übersprungen — kein Schrott-Solid
+  im STEP). `buildSolidCompound` ergänzt die Dach-Solids; `TKShHealing` gelinkt (gleiche OCC-Distribution,
+  **keine** neue Dependency, `ADR-0014`). §1 `LH-FA-IO-005.a` geschärft (Dächer B-Rep; Treppen-Lücke
+  bleibt benannt bis 024b). AK-Test **OCC-frei** (Re-Read-Text-Orakel: Dach trägt genau eine zusätzliche
+  `CLOSED_SHELL`/`MANIFOLD_SOLID_BREP` bei — topologische Wasserdichtheit, kein „nicht-leer"). `MR-006`
+  (gemeinsam) HIGH-1 vor Start behoben; `MR-009`-Geometrie-Code-Review vor Welle-Closure offen. `make gates`
+  grün (206/206, arch-check Regel C, docs-check 0). **Treppen-Hälfte = 024b.**
 - slice-023c — **Dach-Thickness-Persistenz: `roofs.thickness_mm` Round-Trip** (`LH-FA-ROF-006`/
   `LH-FA-BLD-002`/`003`, welle-4, Dach-Volumen-Initiative): schließt die in 023b benannte Persistenz-Lücke
   — die in 023b eingeführte `Roof.thickness_mm` (Dach-Volumenkörper) überlebt jetzt Speichern/Laden.
