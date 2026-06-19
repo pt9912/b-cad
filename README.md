@@ -9,9 +9,11 @@
 > read-only `EvaluatePort`; welle-3, M3) sind implementiert. Aktuell: **offener
 > Formataustausch** ([OBJ-005](spec/lastenheft.md#3-projektziele)) — **IFC** (Import+Export), **STEP/STL**
 > (Export) und **DXF** (Import+Export, 2D-Grundriss) geliefert; ein headless
-> Binary-Smoke (`make io-smoke`) deckt die IO-Pfade ab. **Dach-Volumen** in
-> Arbeit (das Dach wird ein Volumenkörper — Voraussetzung für den STEP-Export
-> der Dächer); offen: Dach-Persistenz, STEP-B-Rep Dächer/Treppen, PDF/PNG.
+> Binary-Smoke (`make io-smoke`) deckt die IO-Pfade ab. Das **Dach** ist ein
+> wasserdichter **Volumenkörper** mit persistenter Dicke (welle-4), und der
+> **STEP-Export schreibt alle 3D-Bauteile als B-Rep** (Wände/Decken, Dächer
+> vernäht, Treppen-Stufen analytisch). **Offen** bis Meilenstein M4: PDF/PNG-Export
+> und die Welle-4-Verifikation.
 > Einstieg: [`harness/README.md`](harness/README.md).
 
 ## Was ist b-cad?
