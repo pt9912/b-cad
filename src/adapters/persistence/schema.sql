@@ -169,6 +169,8 @@ CREATE TABLE "wall_types" (
 -- Hint: Store as TEXT if exact decimal precision is required.
 -- [W200] Decimal(12,3) mapped to REAL in SQLite. Precision may be lost.
 -- Hint: Store as TEXT if exact decimal precision is required.
+-- [W200] Decimal(12,3) mapped to REAL in SQLite. Precision may be lost.
+-- Hint: Store as TEXT if exact decimal precision is required.
 CREATE TABLE "roofs" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "project_id" INTEGER NOT NULL REFERENCES "projects"("id") ON DELETE CASCADE,
@@ -177,6 +179,7 @@ CREATE TABLE "roofs" (
     "pitch_deg" REAL DEFAULT 30,
     "overhang_mm" REAL DEFAULT 500,
     "height_mm" REAL,
+    "thickness_mm" REAL DEFAULT 200,
     "footprint_json" TEXT NOT NULL,
     "material_id" INTEGER REFERENCES "materials"("id") ON DELETE RESTRICT
 );

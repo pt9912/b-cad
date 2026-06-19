@@ -14,6 +14,7 @@
 #include <sqlite3.h>
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/constants.h"
 
 namespace {
 
@@ -314,7 +315,12 @@ TEST(SqliteProjectRepository_LH_FA_DOR_WIN, RoundTripErhaeltOeffnungen) {
 
 // LH-FA-ROF-001 (ADR-0011/0006, slice-014c): Dächer überleben den
 // Round-Trip feldgleich (roofs + footprint_json). Der nicht-glatte
-// `origin.x` belegt die `%.17g`-Präzision diskriminierend (MED-1).
+// `origin.x` belegt die `%.17g`-Präzision diskriminierend (MED-1). Seit
+// slice-023c (LH-FA-ROF-006): `thickness_mm` (Dach-Volumenkörper) trägt einen
+// nicht-glatten, vom Default (200) verschiedenen Wert — `bind_double` ist
+// bit-exakt, der Wert diskriminiert daher gegen (a) ein Test, der nur auf dem
+// geteilten 0.0-Default beider Seiten „besteht", und (b) eine Spalten-/
+// Index-Vertauschung in SELECT/INSERT (LOW-2).
 TEST(SqliteProjectRepository_LH_FA_ROF_001, RoundTripErhaeltDaecher) {
     const SqliteProjectRepository repo;
     Building original;
@@ -329,6 +335,7 @@ TEST(SqliteProjectRepository_LH_FA_ROF_001, RoundTripErhaeltDaecher) {
     sattel.base_z_mm = 2500.0;
     sattel.pitch_deg = 30.0;
     sattel.overhang_mm = 500.0;
+    sattel.thickness_mm = 223.456789012345;  // nicht-glatt, ≠ Default (slice-023c)
     Roof walm{};
     walm.id = RoofId{2};
     walm.storey_id = StoreyId{1};
@@ -339,6 +346,7 @@ TEST(SqliteProjectRepository_LH_FA_ROF_001, RoundTripErhaeltDaecher) {
     walm.base_z_mm = 3000.0;
     walm.pitch_deg = 45.0;
     walm.overhang_mm = 300.0;
+    walm.thickness_mm = 321.0;  // ≠ Default 200 (slice-023c)
     original.roofs = {sattel, walm};
 
     const fs::path path = tempPath("bcad_roofs.bcad");
@@ -361,6 +369,7 @@ TEST(SqliteProjectRepository_LH_FA_ROF_001, RoundTripErhaeltDaecher) {
         EXPECT_DOUBLE_EQ(got.base_z_mm, want.base_z_mm);
         EXPECT_DOUBLE_EQ(got.pitch_deg, want.pitch_deg);
         EXPECT_DOUBLE_EQ(got.overhang_mm, want.overhang_mm);
+        EXPECT_DOUBLE_EQ(got.thickness_mm, want.thickness_mm);  // slice-023c
     }
     fs::remove(path);
 }
@@ -495,6 +504,48 @@ TEST(SqliteProjectRepository_LH_FA_SLB_FND, MalformedSpaltenWerfenNeutral) {
     corruptColumn(path, "UPDATE slabs SET slab_type='xyz';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
+    fs::remove(path);
+}
+
+// LH-FA-ROF-006 (slice-023c, Plan-Review MED-1): Default-Pfad-Sonde. Eine
+// `roofs`-Zeile, die OHNE `thickness_mm` eingefügt wird (simuliert eine
+// Alt-Datei vor 023c), trägt beim Laden den SQL-`DEFAULT 200` == die
+// Domänen-Konstante `kDefaultRoofThicknessMm`. Geprüft gegen die KONSTANTE
+// (nicht bare 200.0), um YAML-Default ↔ Domänen-Default im Test zu pinnen.
+TEST(SqliteProjectRepository_LH_FA_ROF_006, FehlendeDickeLaedtAlsDefault) {
+    const SqliteProjectRepository repo;
+    Building original;
+    original.storeys.push_back({StoreyId{1}, 2500.0});
+    // Ein „normales" Dach, damit projects/storeys-Zeilen + FK-Ziele existieren.
+    Roof seed{};
+    seed.id = RoofId{1};
+    seed.storey_id = StoreyId{1};
+    seed.type = RoofType::Pult;
+    seed.origin = {0.0, 0.0};
+    seed.width_mm = 4000.0;
+    seed.depth_mm = 3000.0;
+    seed.base_z_mm = 2500.0;
+    seed.pitch_deg = 20.0;
+    seed.overhang_mm = 400.0;
+    seed.thickness_mm = 350.0;
+    original.roofs = {seed};
+
+    const fs::path path = tempPath("bcad_roof_thickness_default.bcad");
+    fs::remove(path);
+    repo.save(original, path);
+    // Zeile ohne thickness_mm einfügen → SQL-DEFAULT 200 feuert (FK: storey 1).
+    corruptColumn(path,
+                  "INSERT INTO roofs (id,project_id,storey_id,roof_type,"
+                  "footprint_json) VALUES (2,1,1,'pult','[0,0,1000,1000,0]');");
+    const Building loaded = repo.load(path);
+
+    ASSERT_EQ(loaded.roofs.size(), 2U);
+    const Roof& defaulted = loaded.roofs[1];  // id 2, ORDER BY id
+    EXPECT_EQ(static_cast<int>(defaulted.id), 2);
+    EXPECT_DOUBLE_EQ(defaulted.thickness_mm,
+                     bcad::hexagon::model::kDefaultRoofThicknessMm);
+    // Die explizit geschriebene Zeile behält ihren Wert (Regression).
+    EXPECT_DOUBLE_EQ(loaded.roofs[0].thickness_mm, 350.0);
     fs::remove(path);
 }
 

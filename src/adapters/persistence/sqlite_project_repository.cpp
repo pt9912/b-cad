@@ -623,10 +623,14 @@ void insertOpenings(Db& db, const hexagon::model::Building& building) {
 // `roofs.storey_id → storeys.id`) UND `insertMaterials` (FK `material_id →
 // materials.id`). `height_mm` (abgeleitete Firsthöhe) bleibt `NULL`;
 // `material_id` wird seit slice-017e round-getrippt (NULL bei keinem Material).
+// `thickness_mm` (Dach-Volumenkörper, LH-FA-ROF-006) wird seit slice-023c
+// round-getrippt — explizite Spalte (`bind_double`), Default 200 nur für Zeilen
+// ohne expliziten Schreiber (Alt-Datei vor 023c → kDefaultRoofThicknessMm).
 void insertRoofs(Db& db, const hexagon::model::Building& building) {
     Stmt stmt(db,
               "INSERT INTO roofs (id,project_id,storey_id,roof_type,pitch_deg,"
-              "overhang_mm,footprint_json,material_id) VALUES (?,1,?,?,?,?,?,?);");
+              "overhang_mm,thickness_mm,footprint_json,material_id) "
+              "VALUES (?,1,?,?,?,?,?,?,?);");
     for (const auto& roof : building.roofs) {
         const std::string footprint = footprintToJson(roof);
         sqlite3_bind_int(stmt.get(), 1, static_cast<int>(roof.id));
@@ -635,9 +639,10 @@ void insertRoofs(Db& db, const hexagon::model::Building& building) {
                           SQLITE_STATIC);
         sqlite3_bind_double(stmt.get(), 4, roof.pitch_deg);
         sqlite3_bind_double(stmt.get(), 5, roof.overhang_mm);
-        sqlite3_bind_text(stmt.get(), 6, footprint.c_str(), -1,
+        sqlite3_bind_double(stmt.get(), 6, roof.thickness_mm);
+        sqlite3_bind_text(stmt.get(), 7, footprint.c_str(), -1,
                           SQLITE_TRANSIENT);
-        bindOptionalMaterial(stmt, 7, roof.material_id);
+        bindOptionalMaterial(stmt, 8, roof.material_id);
         stmt.step();
         stmt.reset();
     }
@@ -801,7 +806,7 @@ void loadOpenings(Db& db, hexagon::model::Building& building) {
 
 void loadRoofs(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db,
-              "SELECT id,storey_id,roof_type,pitch_deg,overhang_mm,"
+              "SELECT id,storey_id,roof_type,pitch_deg,overhang_mm,thickness_mm,"
               "footprint_json,material_id FROM roofs ORDER BY id;");
     while (stmt.step()) {
         hexagon::model::Roof roof;
@@ -814,11 +819,12 @@ void loadRoofs(Db& db, hexagon::model::Building& building) {
             type != nullptr ? reinterpret_cast<const char*>(type) : "");
         roof.pitch_deg = sqlite3_column_double(stmt.get(), 3);
         roof.overhang_mm = sqlite3_column_double(stmt.get(), 4);
-        const auto* footprint = sqlite3_column_text(stmt.get(), 5);
+        roof.thickness_mm = sqlite3_column_double(stmt.get(), 5);
+        const auto* footprint = sqlite3_column_text(stmt.get(), 6);
         parseFootprintJson(
             footprint != nullptr ? reinterpret_cast<const char*>(footprint) : "",
             roof);
-        roof.material_id = columnOptionalMaterial(stmt, 6);
+        roof.material_id = columnOptionalMaterial(stmt, 7);
         building.roofs.push_back(roof);
     }
 }

@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-023c — **Dach-Thickness-Persistenz: `roofs.thickness_mm` Round-Trip** (`LH-FA-ROF-006`/
+  `LH-FA-BLD-002`/`003`, welle-4, Dach-Volumen-Initiative): schließt die in 023b benannte Persistenz-Lücke
+  — die in 023b eingeführte `Roof.thickness_mm` (Dach-Volumenkörper) überlebt jetzt Speichern/Laden.
+  **Erste Schema-Änderung im Repo:** `spec/data-model.yaml` bekommt `roofs.thickness_mm` (decimal 12,3,
+  `default: 200` == `DEFAULT_ROOF_THICKNESS_MM`), `schema.sql` via **gepinntem d-migrate** neu erzeugt
+  (`"thickness_mm" REAL DEFAULT 200`); `insertRoofs`/`loadRoofs` binden/lesen die Spalte in der atomaren
+  Transaktion. Round-Trip-AK um nicht-glatte Dicke erweitert + Default-Pfad-Sonde (Zeile ohne Dicke lädt
+  als `kDefaultRoofThicknessMm`). **No-Version-Bump** regelwerk-konform (`releasing.md` §27
+  Abwärtskompat-Zweig via SQL-Default; `ADR-0006`-Schema). `MR-006` 2 HIGH (falscher Präzedenz/ungegründete
+  Versions-Entscheidung) **behoben** vor Start, `MR-009` n/a; `make schema-check` + `make gates` grün
+  (205/205, Coverage 90,3 %). **Nachfolge: STEP-B-Rep Dächer/Treppen = 024.**
 - slice-023b — **Dach-Volumen: geschlossener Schräg-Slab + EVL-Dach-Volumen** (`LH-FA-ROF-006`/
   `LH-FA-EVL-002`, welle-4, Dach-Volumen-Initiative): `roofMesh` baut statt der dicke-losen Fläche einen
   **geschlossenen, wasserdichten Volumenkörper-Slab** der Dicke `d` (Oberseite + vertikal versetzte

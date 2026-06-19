@@ -131,9 +131,18 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   `setRoofThickness`; **EVL-Dach-Volumen** `bx·ty·d` analytisch (`roofs_m3`) — welle-3-Lücke geschlossen.
   Invarianten-Tests (wasserdicht: jede Kante 2 Flächen, außen-orientiert, **Volumen == `bx·ty·d`**).
   [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) je **0 HIGH** (Geometrie repliziert, Volumen bit-exakt); `make gates` grün (204/204, 90,2 %).
-- ⏳ offen: **Dach-Volumen-Initiative** (023a ✓, **023b ✓** → **023c** Persistenz `roofs.thickness_mm` ·
-  **024** Dächer+Treppen STEP-B-Rep) · PDF/PNG ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) ·
-  Welle-4-Verifikation → `done/welle-4-results.md`.
+- ✓ **slice-023c** — **Dach-Thickness-Persistenz** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006),
+  [LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/003): schließt die in 023b benannte
+  Persistenz-Lücke — `roofs.thickness_mm` (Dach-Volumenkörper) ist round-trip-treu. **Erste Schema-Änderung
+  im Repo:** `data-model.yaml`-Spalte `thickness_mm` (decimal 12,3, default 200) + `schema.sql` via
+  gepinntem d-migrate neu erzeugt + `insertRoofs`/`loadRoofs`-Bind/Read; Round-Trip-AK (nicht-glatte Dicke)
+  + Default-Pfad-Sonde (`kDefaultRoofThicknessMm`). **No-Version-Bump** regelwerk-konform ([`releasing.md` §27](../../../user/releasing.md)
+  Abwärtskompat-Zweig, [ADR-0006](../../adr/0006-relationales-schema-design.md)). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  **2 HIGH** (falscher Präzedenz/ungegründete Versions-Entscheidung) **behoben**, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+  n/a; `make schema-check` + `make gates` grün (205/205, Coverage 90,3 %).
+- ⏳ offen: **Dach-Volumen-Initiative** (023a ✓, **023b ✓**, **023c ✓** → **024** Dächer+Treppen
+  STEP-B-Rep, jetzt sind Dächer geschlossene Solids mit persistenter Dicke) · PDF/PNG
+  ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) · Welle-4-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen
 

@@ -160,7 +160,7 @@ tables:
     primary_key: [opening_id]
 
   roofs:
-    description: "Dach (LH-FA-ROF-*). Footprint als JSON."
+    description: "Dach (LH-FA-ROF-*). Footprint als JSON; Dicke (thickness_mm, Volumenkörper, LH-FA-ROF-006)."
     columns:
       id: { type: identifier, auto_increment: true }
       project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
@@ -169,6 +169,7 @@ tables:
       pitch_deg: { type: decimal, precision: 7, scale: 3, default: 30 }
       overhang_mm: { type: decimal, precision: 12, scale: 3, default: 500 }
       height_mm: { type: decimal, precision: 12, scale: 3 }
+      thickness_mm: { type: decimal, precision: 12, scale: 3, default: 200 }
       footprint_json: { type: json, required: true }
       material_id: { type: integer, references: { table: materials, column: id, on_delete: restrict } }
     primary_key: [id]
