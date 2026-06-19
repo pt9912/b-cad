@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-024b — **Treppen STEP-B-Rep: analytische Box-Solids (Stufen), Geländer ausgelassen**
+  (`LH-FA-IO-005`/`LH-FA-STR-001`, welle-4): schließt die **zweite** Hälfte der STEP-Lücke —
+  **damit sind alle 3D-Bauteile B-Rep**. Die Treppen-**Stufen** werden als analytische OCC-Box-Solids
+  je Stufe exportiert (`makeBoxSolid`/`BRepPrimAPI_MakeBox`), **nicht** aus dem flachen `stairMesh`
+  vernäht (das ist eine nicht-manifolde Box-Union). Neue pure Kern-Query `stairStepBoxes` als **eine
+  Box-Wahrheit** für `stairMesh` (Display/STL) **und** den STEP-Export; `stairMesh` darauf refaktoriert
+  (verhaltens-identisch). Das **Geländer** (render-only) ist **ausgelassen** (bleibt im STL) — §1
+  geschärft. AK **OCC-frei**: Treppe trägt **genau `step_count`** zusätzliche `CLOSED_SHELL` bei (belegt
+  zugleich die Geländer-Auslassung); + direkter `stairStepBoxes`-Box-Truth-Test. `MR-006` (gemeinsam)
+  + **`MR-009` 0 HIGH** (Refaktor byte-identisch verifiziert; 2 LOW/1 INFO eingearbeitet). `make gates`
+  grün (208/208, arch-check Regel C, docs-check 0).
 - slice-024a — **Dächer STEP-B-Rep: wasserdichtes Netz → vernähtes Solid** (`LH-FA-IO-005`/
   `LH-FA-ROF-006`, welle-4): schließt die **Dach-Hälfte** der in slice-020b benannten STEP-Lücke
   (Dächer/Treppen waren STL-only). Der seit 023b wasserdichte `roofMesh` wird im geometrie-residenten

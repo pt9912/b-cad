@@ -22,6 +22,8 @@ namespace model = bcad::hexagon::model;
 using bcad::hexagon::services::stairMesh;
 using bcad::hexagon::services::stairRiseMm;
 using bcad::hexagon::services::stairRunLengthMm;
+using bcad::hexagon::services::stairStepBoxes;
+using bcad::hexagon::services::StepBox;
 
 struct Bounds {
     double lo{std::numeric_limits<double>::max()};
@@ -74,6 +76,32 @@ model::Stair sampleStair() {
     stair.step_count = 15;
     stair.tread_mm = 280.0;
     return stair;
+}
+
+// slice-024b (LH-FA-STR-001): `stairStepBoxes` ist die **eine Box-Wahrheit** für
+// `stairMesh` (Darstellung/STL) UND den STEP-Export. Direkt geprüft: Anzahl ==
+// step_count, Extents je Stufe == der dokumentierten Formel (ohne Geländer);
+// degeneriert → leer (Totalität).
+TEST(StairGeometry_LH_FA_STR_001, StepBoxesTragenDieStufenWahrheit) {
+    const model::Stair stair = sampleStair();
+    const std::vector<StepBox> boxes = stairStepBoxes(stair, kStoreyHeight);
+
+    ASSERT_EQ(boxes.size(), static_cast<std::size_t>(stair.step_count));
+    const double rise = kStoreyHeight / stair.step_count;
+    for (int i = 0; i < stair.step_count; ++i) {
+        const StepBox& b = boxes[static_cast<std::size_t>(i)];
+        EXPECT_DOUBLE_EQ(b.x0_mm, stair.start.x_mm + (i * stair.tread_mm)) << i;
+        EXPECT_DOUBLE_EQ(b.x1_mm, stair.start.x_mm + ((i + 1) * stair.tread_mm)) << i;
+        EXPECT_DOUBLE_EQ(b.y0_mm, stair.start.y_mm);
+        EXPECT_DOUBLE_EQ(b.y1_mm, stair.start.y_mm + stair.width_mm);
+        EXPECT_DOUBLE_EQ(b.z0_mm, 0.0);
+        EXPECT_DOUBLE_EQ(b.z1_mm, (i + 1) * rise);  // volle Höhe von 0 → top
+    }
+
+    // Degeneriert (step_count < 1) → leere Liste (kein Wurf), wie stairMesh.
+    model::Stair bad = stair;
+    bad.step_count = 0;
+    EXPECT_TRUE(stairStepBoxes(bad, kStoreyHeight).empty());
 }
 
 // LH-FA-STR-001: rise abgeleitet (Geschosshöhe/step_count) und die Treppe

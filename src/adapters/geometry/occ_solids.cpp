@@ -14,6 +14,7 @@
 #include <BRepBuilderAPI_MakeSolid.hxx>
 #include <BRepBuilderAPI_Sewing.hxx>
 #include <BRepCheck_Analyzer.hxx>
+#include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakePrism.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListOfShape.hxx>
@@ -179,6 +180,16 @@ TopoDS_Shape meshToSolid(const model::TriangleMesh& mesh) {
         return TopoDS_Shape{};
     }
     return solid;
+}
+
+TopoDS_Shape makeBoxSolid(double x0, double y0, double z0, double x1, double y1,
+                          double z1) {
+    if ((x1 - x0) < model::kGeometryToleranceMm ||
+        (y1 - y0) < model::kGeometryToleranceMm ||
+        (z1 - z0) < model::kGeometryToleranceMm) {
+        return TopoDS_Shape{};  // degenerierter Quader → leer (übersprungen)
+    }
+    return BRepPrimAPI_MakeBox(gp_Pnt(x0, y0, z0), gp_Pnt(x1, y1, z1)).Shape();
 }
 
 }  // namespace bcad::adapters::geometry

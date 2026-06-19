@@ -71,6 +71,23 @@ model::Building buildingWithRoof(model::RoofType type, double width_mm,
     return b;
 }
 
+// sampleBuilding + eine gerade Treppe mit `step_count` Stufen — slice-024b: die
+// Stufen werden als analytische OCC-Box-Solids exportiert (Geländer ausgelassen).
+model::Building buildingWithStair(int step_count) {
+    model::Building b = sampleBuilding();
+    model::Stair stair;
+    stair.id = model::StairId{1};
+    stair.from_storey_id = model::StoreyId{1};
+    stair.to_storey_id = model::StoreyId{2};
+    stair.type = model::StairType::Gerade;
+    stair.start = {0.0, 0.0};
+    stair.width_mm = 1000.0;
+    stair.step_count = step_count;
+    stair.tread_mm = 280.0;
+    b.stairs.push_back(stair);
+    return b;
+}
+
 // Temp-Zielpfad mit RAII-Aufräumen (Datei + .tmp-Artefakt).
 struct TempPath {
     fs::path path;
@@ -266,6 +283,33 @@ TEST(StepExport, RoofYieldsClosedShellBRepSolid) {
         EXPECT_EQ(countSubstr(step, "CLOSED_SHELL"), wallShells + 1)
             << c.tag << ": Dach trägt nicht genau ein geschlossenes Solid bei";
     }
+}
+
+// slice-024b (LH-FA-IO-005, LH-FA-STR-001): die Treppen-**Stufen** sind je ein
+// geschlossenes B-Rep-Box-Solid (analytisch, nicht aus dem nicht-manifolden
+// stairMesh vernäht). Sensor OHNE OCC (Regel C): **genau `step_count`** zusätzliche
+// CLOSED_SHELL ggü. dem Wand-only-Modell — die exakte Anzahl belegt zugleich, dass
+// das **Geländer ausgelassen** ist (DoD-3; mit Geländer wären es 3·step_count).
+TEST(StepExport, StairStepsYieldClosedShellBRepSolids) {
+    const StepExportAdapter exporter;
+
+    const TempPath wallsOut("walls_baseline_stair", ".step");
+    exporter.write(sampleBuilding(), wallsOut.path);
+    const std::size_t wallShells =
+        countSubstr(readText(wallsOut.path), "CLOSED_SHELL");
+    ASSERT_GT(wallShells, 0U) << "Basis-Erwartung: Wände sind geschlossene Solids";
+
+    const int steps = 12;
+    const TempPath stairOut("with_stair", ".step");
+    exporter.write(buildingWithStair(steps), stairOut.path);
+    const std::string step = readText(stairOut.path);
+
+    EXPECT_NE(step.find("MANIFOLD_SOLID_BREP"), std::string::npos)
+        << "Treppe nicht als Manifold-Solid-B-Rep geschrieben";
+    EXPECT_EQ(countSubstr(step, "CLOSED_SHELL"),
+              wallShells + static_cast<std::size_t>(steps))
+        << "Treppe trägt nicht genau step_count Stufen-Solids bei "
+           "(Geländer müsste ausgelassen sein)";
 }
 
 TEST(StepExport, EmptyBuildingYieldsValidStepEnvelope) {

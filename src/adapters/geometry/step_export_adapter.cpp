@@ -28,6 +28,7 @@
 #include "hexagon/services/opening_geometry.h"  // wallCutPrisms
 #include "hexagon/services/roof_geometry.h"     // roofMesh (slice-024a)
 #include "hexagon/services/slab_geometry.h"     // slabBaseZ/slabCutPrisms
+#include "hexagon/services/stair_geometry.h"    // stairStepBoxes (slice-024b)
 #include "hexagon/services/wall_footprint.h"    // wallFootprint
 
 namespace fs = std::filesystem;
@@ -97,6 +98,28 @@ TopoDS_Compound buildSolidCompound(const model::Building& building) {
         }
         if (!solid.IsNull()) {
             builder.Add(compound, solid);
+        }
+    }
+
+    // Treppen (slice-024b): die Stufen als **analytische** OCC-Box-Solids — das
+    // flache `stairMesh` ist eine **nicht-manifolde** Box-Union (x-benachbarte
+    // Stufen-Quader, die sich an gemeinsamen x-Ebenen mit **partiell koinzidenten
+    // Flächen** berühren → nicht zu *einem* gültigen Solid vernähbar).
+    // `stairStepBoxes` ist die geteilte Box-Wahrheit; das **Geländer** (render-only)
+    // bleibt **ausgelassen** (nur im STL). Per-Bauteil-try/catch wie oben (Totalität).
+    // Die berührenden Box-Solids bleiben **getrennte** Compound-Member (kein Fuse).
+    for (const model::Stair& s : building.stairs) {
+        try {
+            for (const services::StepBox& box : services::stairStepBoxes(
+                     s, storeyHeight(building, s.from_storey_id))) {
+                const TopoDS_Shape solid = makeBoxSolid(
+                    box.x0_mm, box.y0_mm, box.z0_mm, box.x1_mm, box.y1_mm, box.z1_mm);
+                if (!solid.IsNull()) {
+                    builder.Add(compound, solid);
+                }
+            }
+        } catch (const std::exception&) {
+            continue;  // problematische Treppe überspringen (Totalität)
         }
     }
     return compound;

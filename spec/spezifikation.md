@@ -578,19 +578,22 @@ bleibt format-frei; kein Adapter ruft einen anderen (Regel B).
 **Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile:
 **Wände und Decken/Fundament** als extrudierte/boolesch geschnittene OCC-Solids,
 **Dächer** als das zu einem Solid **vernähte** wasserdichte Dach-Netz
-([`LH-FA-ROF-006`](lastenheft.md#lh-fa-rof-006), slice-024a; Ziel-Schema AP214). **STL** schreibt das
-**tessellierte Dreiecksnetz** **aller** 3D-Bauteile (binär als Default). Längeneinheit mm.
+([`LH-FA-ROF-006`](lastenheft.md#lh-fa-rof-006), slice-024a), **Treppen** als die
+**analytisch rekonstruierten** Stufen-Box-Solids ([`LH-FA-STR-001`](lastenheft.md#lh-fa-str-001--treppe-erzeugen),
+slice-024b); Ziel-Schema AP214. **STL** schreibt das **tessellierte Dreiecksnetz**
+**aller** 3D-Bauteile (binär als Default). Längeneinheit mm.
 
 **Bauteil-Subset (welle-4).** **STL** deckt alle 3D-Bauteile — Wände (inkl.
-Wandöffnungen/Cutouts), Decken/Fundament, Dächer, Treppen. **STEP** deckt die
-OCC-Solid-Bauteile (Wände + Decken/Fundament) **und die Dächer** (das wasserdichte
-Dach-Netz wird zu einem B-Rep-Solid vernäht — slice-024a; ein nicht geschlossen
-vernähbares Dach wird **fail-closed übersprungen** — es bleibt dann im STL, fehlt
-aber im STEP, STL/STEP können hier also divergieren). **Treppen** sind eine
-**analytische, nicht-manifolde Box-Union** und werden im STEP (noch) **nicht**
-geschrieben (**benannte Lücke** — für sie ist STL der verlustfreie Pfad; ihre
-B-Rep-Schreibung als analytische Box-Solids ist slice-024b). **Generell nicht
-geschrieben** (beide Formate): Material/Farbe, Property-Sets, PMI, Assembly-Struktur.
+Wandöffnungen/Cutouts), Decken/Fundament, Dächer, Treppen (inkl. Geländer). **STEP**
+deckt **alle 3D-Bauteile als B-Rep**: Wände + Decken/Fundament (OCC-Solids), Dächer
+(das wasserdichte Dach-Netz wird zu einem B-Rep-Solid **vernäht** — slice-024a; ein
+nicht geschlossen vernähbares Dach wird **fail-closed übersprungen**, bleibt dann im
+STL, fehlt aber im STEP) und **Treppen-Stufen** (analytische OCC-Box-Solids je Stufe
+— das flache Treppen-Netz ist eine nicht-manifolde Box-Union, daher rekonstruiert
+statt vernäht; slice-024b). **Nicht im STEP-B-Rep:** das **Treppen-Geländer** ist
+render-only (Heuristik-Dicke) und bleibt dem **STL** vorbehalten (kein stiller
+Teilumfang). **Generell nicht geschrieben** (beide Formate): Material/Farbe,
+Property-Sets, PMI, Assembly-Struktur.
 Ausbau = späterer Re-Eval (XDE/AP242; Provenance § Historie).
 
 **Atomarität (kein Teil-Export).** Der Export schreibt in eine Temp-Datei und ersetzt

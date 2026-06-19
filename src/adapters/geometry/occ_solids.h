@@ -35,4 +35,14 @@ TopoDS_Shape makeNetSolid(const hexagon::model::Footprint& footprint,
 // (Totalität; der Aufrufer überspringt ein leeres Shape).
 TopoDS_Shape meshToSolid(const hexagon::model::TriangleMesh& mesh);
 
+// Achsen-parallelen Quader `[x0,x1]×[y0,y1]×[z0,z1]` (mm) als B-Rep-Solid
+// (slice-024b, STEP-Export der Treppen-Stufen): `BRepPrimAPI_MakeBox` liefert ein
+// geschlossenes, außen-orientiertes Solid. Der Degenerations-Guard (eine
+// Kantenlänge < `kGeometryToleranceMm` → **leeres** `TopoDS_Shape`, übersprungen,
+// kein Wurf) ist **defense-in-depth**: er stellt sicher, dass `MakeBox` nie mit
+// gleichen/umgekehrten Ecken aufgerufen wird; die Aufrufer filtern degeneriertes
+// Eingang ohnehin upstream (`stairStepBoxes` liefert nur positive Quader).
+TopoDS_Shape makeBoxSolid(double x0_mm, double y0_mm, double z0_mm, double x1_mm,
+                          double y1_mm, double z1_mm);
+
 }  // namespace bcad::adapters::geometry

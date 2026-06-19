@@ -88,9 +88,9 @@ double stairRunLengthMm(const model::Stair& stair) {
     return stair.step_count * stair.tread_mm;
 }
 
-model::TriangleMesh stairMesh(const model::Stair& stair,
-                              double from_storey_height_mm) {
-    model::TriangleMesh mesh;
+std::vector<StepBox> stairStepBoxes(const model::Stair& stair,
+                                    double from_storey_height_mm) {
+    std::vector<StepBox> boxes;
 
     const double width = stair.width_mm;
     const double tread = stair.tread_mm;
@@ -100,26 +100,41 @@ model::TriangleMesh stairMesh(const model::Stair& stair,
         !std::isfinite(stair.start.y_mm) || width < model::kGeometryToleranceMm ||
         tread < model::kGeometryToleranceMm ||
         from_storey_height_mm < model::kGeometryToleranceMm) {
-        return mesh;  // degeneriert → leeres Netz (total)
+        return boxes;  // degeneriert → leere Liste (total)
     }
 
     const double rise = from_storey_height_mm / steps;
     const double x_start = stair.start.x_mm;
     const double y0 = stair.start.y_mm;
     const double y1 = y0 + width;
-    const double rail_t = std::min(kRailThicknessMm, width / 4.0);
+    boxes.reserve(static_cast<std::size_t>(steps));
+    for (int i = 0; i < steps; ++i) {
+        // Solide Stufe vom Boden bis zur Stufenoberkante (+x-Aufstieg).
+        boxes.push_back({x_start + (i * tread), x_start + ((i + 1) * tread), y0, y1,
+                         0.0, (i + 1) * rise});
+    }
+    return boxes;
+}
+
+model::TriangleMesh stairMesh(const model::Stair& stair,
+                              double from_storey_height_mm) {
+    model::TriangleMesh mesh;
+
+    // Eine Box-Wahrheit: die Stufen-Quader aus `stairStepBoxes` (slice-024b);
+    // leere Liste (degeneriert) → leeres Netz (Totalität unverändert).
+    const std::vector<StepBox> boxes = stairStepBoxes(stair, from_storey_height_mm);
+    const double rail_t = std::min(kRailThicknessMm, stair.width_mm / 4.0);
     const double rail_h = model::kStairRailingHeightMm;
 
-    for (int i = 0; i < steps; ++i) {
-        const double sx0 = x_start + (i * tread);
-        const double sx1 = x_start + ((i + 1) * tread);
-        const double top = (i + 1) * rise;
-        // Solide Stufe vom Boden bis zur Stufenoberkante (+x-Aufstieg).
-        appendBox(mesh, sx0, sx1, y0, y1, 0.0, top);
+    for (const StepBox& b : boxes) {
+        // Solide Stufe.
+        appendBox(mesh, b.x0_mm, b.x1_mm, b.y0_mm, b.y1_mm, b.z0_mm, b.z1_mm);
         // Geländer beidseitig: folgt der Stufenfolge bis rail_h über die Stufe
-        // (STR-004; an kleinem x vorhanden → kein Top-Spike).
-        appendBox(mesh, sx0, sx1, y0, y0 + rail_t, top, top + rail_h);
-        appendBox(mesh, sx0, sx1, y1 - rail_t, y1, top, top + rail_h);
+        // (STR-004; render-only, **nicht** im STEP-B-Rep — slice-024b).
+        appendBox(mesh, b.x0_mm, b.x1_mm, b.y0_mm, b.y0_mm + rail_t, b.z1_mm,
+                  b.z1_mm + rail_h);
+        appendBox(mesh, b.x0_mm, b.x1_mm, b.y1_mm - rail_t, b.y1_mm, b.z1_mm,
+                  b.z1_mm + rail_h);
     }
 
     return mesh;

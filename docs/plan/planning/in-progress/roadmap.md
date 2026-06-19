@@ -147,10 +147,17 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   gelinkt, keine neue Dependency). §1 [`LH-FA-IO-005.a`](../../../../spec/lastenheft.md#lh-fa-io-005) geschärft (Dächer B-Rep;
   Treppen-Lücke benannt bis 024b). AK **OCC-frei** (`CLOSED_SHELL`/`MANIFOLD_SOLID_BREP`-Text-Orakel: Dach
   trägt genau ein geschlossenes Solid bei). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-  HIGH-1 behoben; [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) vor Welle-Closure offen; `make gates` grün (206/206).
-- ⏳ offen: **Dach-Volumen-Initiative** (023a ✓, **023b ✓**, **023c ✓**, **024a ✓** → **024b** Treppen
-  STEP-B-Rep [analytische Box-Solids, Geländer ausgelassen]) · PDF/PNG
-  ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) · Welle-4-Verifikation → `done/welle-4-results.md`.
+  HIGH-1 behoben + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH**; `make gates` grün (206/206).
+- ✓ **slice-024b** — **Treppen STEP-B-Rep** ([LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005),
+  [LH-FA-STR-001](../../../../spec/lastenheft.md#lh-fa-str-001--treppe-erzeugen)): schließt die **Treppen-Hälfte** —
+  **damit sind alle 3D-Bauteile B-Rep**. Die Stufen als **analytische** OCC-Box-Solids
+  (`makeBoxSolid`/`BRepPrimAPI_MakeBox`, **nicht** vernäht — `stairMesh` ist nicht-manifold); neue
+  Kern-Query `stairStepBoxes` als **eine** Box-Wahrheit (`stairMesh` darauf refaktoriert, byte-identisch);
+  **Geländer ausgelassen** (render-only, nur STL). §1 geschärft. AK OCC-frei (Treppe trägt genau
+  `step_count` `CLOSED_SHELL` bei → Geländer-Auslassung belegt). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH**; `make gates` grün (208/208).
+- ⏳ offen: **STEP-B-Rep-Lücke geschlossen** (alle 3D-Bauteile B-Rep: 024a Dächer ✓, 024b Treppen ✓) →
+  **PDF/PNG** ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) · Welle-4-Verifikation → `done/welle-4-results.md`.
 
 ## Nächste Wellen
 
