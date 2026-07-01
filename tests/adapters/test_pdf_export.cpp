@@ -219,6 +219,9 @@ TEST(PdfExport, StructureObjectGraphAndPerStoreyContent) {
     EXPECT_NE(pdf.find("%%EOF"), std::string::npos);
     const int objects = verifyXrefOffsets(pdf);
     EXPECT_EQ(objects, 7);  // Katalog+Seitenbaum+Font + 2 Seiten * 2
+    const std::size_t size_pos = pdf.find("/Size ");  // trailer /Size == Objektzahl+1
+    ASSERT_NE(size_pos, std::string::npos);
+    EXPECT_EQ(std::stoi(pdf.substr(size_pos + 6)), objects + 1);
 
     // (b) Objektgraph / Reader-Öffenbarkeit.
     EXPECT_NE(objectBody(pdf, 1).find("/Type /Catalog"), std::string::npos);
@@ -313,6 +316,43 @@ TEST(PdfExportIntegration, ImportRejectedExportOnly) {
         const std::string what = e.what();
         EXPECT_NE(what.find("E-IO-003"), std::string::npos) << what;
         EXPECT_NE(what.find("import_rejected"), std::string::npos) << what;
+    }
+}
+
+// --- Orientierung: Modell +Y bildet auf Seiten +Y ab (kein Y-Flip) ----------
+// Sonde gegen einen hypothetischen Spiegel-Regress (Code-Review-LOW-3): die
+// Maßstabs-Sonde per hypot wäre flip-invariant.
+
+TEST(PdfExport, PreservesAxisOrientationNoYFlip) {
+    const TempPath out("orient");
+    model::Building b;
+    b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
+    b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {0.0, 3000.0}));
+
+    PdfExportAdapter().write(b, out.path);
+    const Seg s = firstSegment(streamOfObject(readFile(out.path), 5));
+    EXPECT_GT(s.y2, s.y1);           // +Y Modell -> +Y Seite (kein Flip)
+    EXPECT_NEAR(s.x2, s.x1, 0.01);   // rein vertikal
+    EXPECT_NEAR(std::hypot(s.x2 - s.x1, s.y2 - s.y1), 3000.0 * kMmToPt, 0.5);
+}
+
+// --- Totalität: Geschosse ohne Wände -> gerahmte Seiten ohne Achsen ---------
+
+TEST(PdfExport, StoreysWithoutWallsProduceFramedPages) {
+    const TempPath out("nowalls");
+    model::Building b;
+    b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
+    b.storeys.push_back(model::Storey{model::StoreyId{2}, model::kDefaultStoreyHeightMm});
+
+    PdfExportAdapter().write(b, out.path);
+    const std::string pdf = readFile(out.path);
+    EXPECT_EQ(verifyXrefOffsets(pdf), 7);  // 2 Geschoss-Seiten
+    ASSERT_EQ(pageObjects(pdf).size(), 2U);
+    for (const int obj : {5, 7}) {
+        const std::string page = streamOfObject(pdf, obj);
+        EXPECT_EQ(countOccurrences(page, " l\n"), 0);   // keine Achsen
+        EXPECT_EQ(countOccurrences(page, " re\n"), 1);  // aber gültiger Rahmen
+        EXPECT_EQ(countOccurrences(page, " Tj\n"), 1);  // + Label
     }
 }
 
