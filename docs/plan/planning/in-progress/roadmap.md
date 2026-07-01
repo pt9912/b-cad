@@ -175,9 +175,18 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   Öffenbarkeit + je Geschoss) + Maßstabs-/Orientierungs-Sonde. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
   + unabh. **Code-Review je 0 HIGH** (reale Reader-Öffenbarkeit **empirisch** belegt — poppler/gs).
   `make gates` grün (215/215, 90,4 %) + `make io-smoke` grün. **Damit ist [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt.**
-- ⏳ offen: **PDF-Export DONE** ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt) → **PNG-Export (slice-025c)**
-  (Raster-`PngWriter` stored-DEFLATE/Adler-32/CRC-32, `plan_geometry`-Reuse) · **Welle-4-Verifikation +
-  Carveout-Audit** → `done/welle-4-results.md` → **M4** ([ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)+[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) beide erfüllt).
+- ✓ **slice-025c** — **PNG-Export lauffähig** ([LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)):
+  self-rolled Raster-`PngWriter` io-resident (Option D, kein Qt/OCC/zlib, **keine neue Dependency**;
+  Bitmap + Bresenham + Chunks/CRC-32/stored-DEFLATE/Adler-32) + `PngExportAdapter` — kombiniertes
+  Rasterbild des Grundrisses (feste Leinwand 800×600, Fit-to-Canvas geguardet, je Geschoss eine Farbe);
+  `ExchangeFormat::Png` additiv, `--export-png` + `ExporterMap` (export-only); **Reuse** `plan_geometry`/
+  `io_atomic_write` (025b). **Voll-Decode-Orakel** mit **eigenständigen** CRC/Adler/Inflate + degenerierte-
+  BBox-Guard. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  + **Code-Review je 0 HIGH** (libpng-Öffenbarkeit + binascii/zlib **empirisch** belegt). `make gates`
+  grün (220/220, 90,7 %) + `make io-smoke` grün. **Damit ist der PDF/PNG-Strang komplett + alle
+  welle-4-Format-Backends geliefert.**
+- ⏳ offen: **Alle Austauschformate DONE** (IFC/DXF/STEP/STL + PDF/PNG); [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)+[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)
+  erfüllt → **Welle-4-Verifikation + Carveout-Audit** → `done/welle-4-results.md` → **Meilenstein M4-Closure**.
 
 ## Nächste Wellen
 

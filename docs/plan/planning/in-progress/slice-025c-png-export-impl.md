@@ -1,7 +1,7 @@
 ---
 id: slice-025c
 titel: PNG-Export — Implementierung (self-rolled Raster-PNG-Encoder, io-resident, [ADR-0016](../../adr/0016-pdf-png-backend.md))
-status: in-progress
+status: done
 welle: welle-4-austausch
 lastenheft_refs: [[LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0016](../../adr/0016-pdf-png-backend.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0016](../.
 
 # Slice 025c: PNG-Export — Implementierung
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH / 3 MED / 2 LOW**; Start **nicht blockiert**. MED-1 (Orakel-Prüfsummen im Test eigenständig, keine Encoder-Tautologie), MED-2 (degenerierte-BBox-Boundary-Test), MED-3 (zlib-Header-Check im Orakel), LOW-1 (≥2-Farben-Assert), LOW-2 (Lint-Rationale präzisiert) eingearbeitet. [Report](../../../reviews/2026-07-01-slice-025c-plan.md).
+**Status:** done (2026-07-01). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH** (3 MED + 2 LOW eingearbeitet; [Plan-Report](../../../reviews/2026-07-01-slice-025c-plan.md)) + unabhängiges **Code-Review 0 HIGH** ([Code-Report](../../../reviews/2026-07-01-slice-025c-code-review.md); reale libpng-Öffenbarkeit + binascii/zlib empirisch belegt; LOW-1/INFO-1 als benannte Grenzen). DoD vollständig, `make gates` (220/220) + `make io-smoke` grün, Closure-Notiz §8.
 
 **Welle:** welle-4-austausch (PDF/PNG-Strang, PNG-Hälfte; schließt die 025b-Sizing-Split-Folge).
 
@@ -52,9 +52,9 @@ Standard-Bildbetrachter öffnet die Ausgabe als Rasterbild des 2D-Grundrisses (W
 
 ## 2. Definition of Done
 
-- [ ] **`ExchangeFormat::Png` additiv ergänzt** (`src/hexagon/ports/driving/exchange_model_port.h`)
+- [x] **`ExchangeFormat::Png` additiv ergänzt** (`src/hexagon/ports/driving/exchange_model_port.h`)
       — **nur** der Enum-Wert (Kern-Touch, keine Service-/Registry-Architektur-Änderung).
-- [ ] **`src/adapters/io/png_writer.{h,cpp}`** — generischer, **format-agnostischer**
+- [x] **`src/adapters/io/png_writer.{h,cpp}`** — generischer, **format-agnostischer**
       Raster-PNG-Encoder (kennt PNG-**Syntax**: 8-Byte-Signatur, Chunks mit Länge+Typ+
       **CRC-32**, `IHDR`/`IDAT`/`IEND`, `IDAT` = zlib-Header + **stored-DEFLATE**-Blöcke +
       **Adler-32**; **keine** b-cad-Domäne). Enthält eine kleine `Bitmap` (RGB-Puffer,
@@ -62,17 +62,17 @@ Standard-Bildbetrachter öffnet die Ausgabe als Rasterbild des 2D-Grundrisses (W
       Alle Byte-Ordnungen (Chunk-Länge/CRC big-endian, DEFLATE-`LEN`/`NLEN` little-endian,
       Adler big-endian) korrekt. **Reines C++/STL** (arch-check Regel A/B; kein zlib-Link,
       kein Qt/OCC).
-- [ ] **`src/adapters/io/png_export_adapter.{h,cpp}`** — `PngExportAdapter :
+- [x] **`src/adapters/io/png_export_adapter.{h,cpp}`** — `PngExportAdapter :
       ModelExporterPort`; projiziert via **`plan_geometry`** (Reuse), rechnet die
       **Fit-to-Canvas**-Transformation (Modell-mm → Pixel, geguardet), zeichnet je Geschoss
       die Wand-Achsen in der Geschoss-Farbe, encodiert via `png_writer`, schreibt via
       **`io_atomic_write`** (Reuse, [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)). **Export-only** (kein Import-Adapter).
-- [ ] **Composition Root** (`src/main.cpp`): `PngExportAdapter`-Instanz + `ExporterMap`-
+- [x] **Composition Root** (`src/main.cpp`): `PngExportAdapter`-Instanz + `ExporterMap`-
       Eintrag `{ExchangeFormat::Png, &png_exporter}` + `--export-png`-CLI (via `runExportIfRequested`).
       **Nur** ExporterMap (export-only).
-- [ ] **`src/adapters/CMakeLists.txt`**: `png_writer.cpp` + `png_export_adapter.cpp` in
+- [x] **`src/adapters/CMakeLists.txt`**: `png_writer.cpp` + `png_export_adapter.cpp` in
       `bcad_adapters`. **Keine** neue `find_package`/apt-Zeile.
-- [ ] **`tests/adapters/test_png_export.cpp`** (+ `tests/CMakeLists.txt`): AK
+- [x] **`tests/adapters/test_png_export.cpp`** (+ `tests/CMakeLists.txt`): AK
       [`LH-FA-IO-008`](../../../../spec/lastenheft.md#lh-fa-io-008) über den **echten** `ExchangeService`-Pfad —
       - **Happy + voll-Decode-Orakel:** ein **im Test eingebauter PNG-Decoder** (kein
         externer Reader) prüft: 8-Byte-Signatur; `IHDR` (Breite/Höhe == Leinwand, bit depth 8,
@@ -99,8 +99,8 @@ Standard-Bildbetrachter öffnet die Ausgabe als Rasterbild des 2D-Grundrisses (W
         **echten** Adapter, **kein** Teil-Export (Muster `test_pdf_export`).
       - **Export-only:** `importModel(path, ExchangeFormat::Png)` → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)
         (export-only-Lookup-Miss).
-- [ ] **`tools/io-smoke.sh`**: `expect_export --export-png "$OUT/s.png"`.
-- [ ] **`make gates` grün** (arch-check inkl. `io/`, lint 0, test inkl. neuer AK-Tests,
+- [x] **`tools/io-smoke.sh`**: `expect_export --export-png "$OUT/s.png"`.
+- [x] **`make gates` grün** (arch-check inkl. `io/`, lint 0, test inkl. neuer AK-Tests,
       coverage ≥ Schwelle) + **`make io-smoke`** grün; `make schema-check` unberührt.
       **Unabhängiges Code-Review vor Welle-Closure** (Muster 025b; **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** — keine
       neue Solid-Geometrie; die Encoder-Byte-Korrektheit trägt das voll-Decode-Orakel + ein
@@ -183,4 +183,44 @@ Standard-Bildbetrachter öffnet die Ausgabe als Rasterbild des 2D-Grundrisses (W
 
 ## 8. Closure-Notiz
 
-*(wird bei Closure gefüllt — DoD-Nachweis, `make gates`/`make io-smoke`, Code-Review, Lerneintrag)*
+**Closure-Kriterien (beobachtbar, 2026-07-01):**
+
+- **PNG-Export lauffähig** ([LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)): self-rolled Raster-
+  `png_writer` (Bitmap + Bresenham + `encodePng`: Signatur/`IHDR`/`IDAT`/`IEND`, CRC-32 je
+  Chunk, `IDAT` = zlib-Header + **stored-DEFLATE** + Adler-32) + `PngExportAdapter` (kombiniertes
+  Rasterbild, feste Leinwand 800×600, **Fit-to-Canvas geguardet**, je Geschoss eine Farbe) —
+  **Reuse** `plan_geometry` + `io_atomic_write` ([`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)). `ExchangeFormat::Png`
+  additiv; Composition Root `--export-png` + `ExporterMap` (export-only). **Keine neue
+  Dependency, kein Qt/OCC/zlib** (arch-check Regel A/B grün).
+- **Voll-Decode-Orakel mit EIGENSTÄNDIGEN Prüfsummen** (Review-MED-1): `test_png_export.cpp`
+  implementiert CRC-32/Adler-32/Inflate im Test selbst (kein `png_writer`-Aufruf) und prüft
+  Signatur, `IHDR`, CRC je Chunk, **zlib-Header** (MED-3), stored-Inflate (Multi-Block),
+  jede Scanline-Filterbyte, Adler-32, Tinte + **≥2 Geschoss-Farben** (LOW-1); + **degenerierte-
+  BBox**-Test (Div-durch-0-Guard, MED-2) + Boundary + [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) + export-only. `make gates` grün
+  (220/220, Coverage 90,7 %), `make io-smoke` grün (`--export-png`, 1,44 MB = unkomprimiert).
+- **Unabhängiges Code-Review 0 HIGH** ([Report](../../../reviews/2026-07-01-slice-025c-code-review.md)):
+  reale **libpng-Öffenbarkeit empirisch** belegt (PIL) + alle Prüfsummen/Endianness/22-Block-
+  DEFLATE gegen `binascii`/`zlib` verifiziert; LOW-1 (kein zlib-Test-Dep — [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)) + INFO-1
+  (Effizienz) als benannte Grenzen.
+- **main.cpp-Export-Dispatch als Tabelle+Schleife refaktoriert** (cognitive-complexity ≤ 20 nach
+  Aufnahme von `--export-png`) — alle 6 Exporte + 2 Importe erhalten (Code-Review Schwerpunkt 8).
+
+**Lerneintrag:**
+
+- **Sizing-Split abgeschlossen:** der 025b/025c-Split (PDF vs. Raster-Encoder-Risiko) trug — der
+  geteilte `plan_geometry`/`io_atomic_write` (025b) wurde in 025c **unverändert wiederverwendet**;
+  nur der Raster-Encoder + Fit-to-Canvas kamen hinzu. **PDF/PNG-Strang komplett.**
+- **Reales-Reader-Cross-Check außerhalb des Gates (wie 025b):** kein PNG-Reader im gepinnten Image
+  → **kein** zlib-/libpng-Test-Dependency ([ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)); Sensor = eigenständiges voll-Decode-
+  Orakel, einmalig empirisch durch den Code-Reviewer (PIL/binascii/zlib) bestätigt.
+- **Lint-Lehre (aus 025b bestätigt):** `bugprone-easily-swappable-parameters` feuert bei
+  separat gespeicherten Params → `RasterSize` für den `Bitmap`-Konstruktor war nötig;
+  `cognitive-complexity` (≤20) traf diesmal `main()` (Export-if-Blöcke) → Tabelle+Schleife.
+- **Benannte Grenzen:** PNG unkomprimiert (feste Leinwand hält die Größe beschränkt);
+  kombiniertes Bild (nicht per-Geschoss-Datei, PNG kennt keine Mehrseitigkeit) mit Geschoss-
+  Farben; Fit-to-Canvas (keine Maßstäblichkeit — PNG hat kein ACC); `emitChunk`-Kopien
+  (Effizienz-Cleanup-Kandidat).
+
+**Restrisiko / Nachfolge:** **PDF/PNG-Strang komplett** ([ADR-0016](../../adr/0016-pdf-png-backend.md) + 025a/b/c). Offen für die
+welle-4-Closure: **Welle-4-Verifikation + Carveout-Audit** → `done/welle-4-results.md` →
+**Meilenstein M4** ([ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) IFC + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) PDF beide erfüllt).

@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-025c — **PNG-Export lauffähig: self-rolled Raster-Grundriss** (`LH-FA-IO-008`,
+  welle-4, ADR-0016): schließt den PDF/PNG-Strang. Ein **self-rolled Raster-PNG-Encoder**
+  (`png_writer`, io-resident, kein Qt/OCC/**zlib** — reines C++/STL, arch-check Regel A/B)
+  erzeugt ein kombiniertes Rasterbild des 2D-Grundrisses: feste Leinwand 800×600,
+  **Fit-to-Canvas** (geguardet gegen degenerierte Bounding-Box), **je Geschoss eine Farbe**.
+  `IDAT` = zlib-Header + **stored-DEFLATE**-Blöcke + Adler-32, CRC-32 je Chunk, Bresenham-
+  Rasterizer. `PngExportAdapter` nutzt `plan_geometry` + `io_atomic_write` (025b) wieder;
+  `ExchangeFormat::Png` additiv; `--export-png` + `ExporterMap` (export-only). **Voll-Decode-
+  Orakel** mit **eigenständigen** CRC-32/Adler-32/Inflate (keine Encoder-Tautologie) +
+  degenerierte-BBox-Guard + Boundary + `E-IO-001` + export-only; `make gates` grün (220/220,
+  90,7 %) + `make io-smoke` (`--export-png`). `MR-006` + unabhängiges **Code-Review je 0 HIGH**
+  (reale libpng-Öffenbarkeit + binascii/zlib **empirisch** belegt). `main.cpp`-Export-Dispatch
+  auf Tabelle+Schleife refaktoriert (cognitive-complexity ≤ 20). **Damit sind alle
+  welle-4-Format-Backends (IFC/DXF/STEP/STL/PDF/PNG) geliefert.**
 - slice-025b — **PDF-Export lauffähig: self-rolled Vektor-Maßstabsplan** (`LH-FA-IO-007`,
   `ACC-004`, welle-4, ADR-0016): erster echter Code des PDF/PNG-Strangs. Ein **self-rolled
   Vektor-PDF-Writer** (`pdf_writer`, io-resident, kein Qt/OCC, **keine neue Dependency** —
