@@ -1,6 +1,6 @@
 # Roadmap — b-cad
 
-**Status:** Aktiv. **Letzte Änderung:** 2026-06-19.
+**Status:** Aktiv. **Letzte Änderung:** 2026-07-01.
 
 **Format-Regel:** Reihenfolge von **Wellen**, keine Reihenfolge von
 Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
@@ -11,12 +11,15 @@ Feature-Sequenz, kein Reconciliation-Plan.
 
 ## Aktuelle Welle
 
-**Welle-ID:** welle-4-austausch
-**Start:** 2026-06-16 (bewusste Planungs-Entscheidung nach welle-3-Closure
-[`../done/welle-3-results.md`](../done/welle-3-results.md) + Accept von
-[ADR-0013](../../adr/0013-ifc-bibliothek.md) — Trigger „welle-3 done + ADR zu
-IFC-Bibliothek accepted" erfüllt)
-**Geplantes Ende:** offen (Aufwands-Schätzung L)
+> **welle-4-austausch ABGESCHLOSSEN (2026-07-01) — Meilenstein M4 erreicht.**
+> Kanonische Closure: [`../done/welle-4-results.md`](../done/welle-4-results.md)
+> + §Abgeschlossene Wellen. **Keine aktive Welle;** die nächste
+> (`welle-5-erweiterung`) ist eine **Planungs-Entscheidung** (kein Automatismus,
+> Trigger: welle-4 done + Plugin-API-/ABI-ADR) — siehe §Nächste Wellen. Der
+> folgende welle-4-Verlauf ist **historischer Record**.
+
+**Welle-ID:** welle-4-austausch (abgeschlossen)
+**Zeitraum:** 2026-06-16 – 2026-07-01 (M4 „Offen austauschbar")
 
 **Welle-Ziel:** b-cad wird **offen austauschbar** ([OBJ-005](../../../../spec/lastenheft.md#3-projektziele)): Import/Export der
 offenen Formate — **IFC** ([LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002), **DXF** ([LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/004),
@@ -185,8 +188,10 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   + **Code-Review je 0 HIGH** (libpng-Öffenbarkeit + binascii/zlib **empirisch** belegt). `make gates`
   grün (220/220, 90,7 %) + `make io-smoke` grün. **Damit ist der PDF/PNG-Strang komplett + alle
   welle-4-Format-Backends geliefert.**
-- ⏳ offen: **Alle Austauschformate DONE** (IFC/DXF/STEP/STL + PDF/PNG); [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)+[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)
-  erfüllt → **Welle-4-Verifikation + Carveout-Audit** → `done/welle-4-results.md` → **Meilenstein M4-Closure**.
+- ✓ **Welle-4-Verifikation + Carveout-Audit DONE** (2026-07-01): unabhängiger Verifier (Reviewer ≠ Autor)
+  reproduzierte `make gates` (220/220, 90,7 %) + `schema-check` (kein Drift) + `io-smoke` (alle 6 Formate)
+  selbst, **0 HIGH**; keine aktiven Carveouts; [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)+[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) sachlich erreicht → [`done/welle-4-results.md`](../done/welle-4-results.md).
+  **Meilenstein M4 „Offen austauschbar" erreicht.**
 
 ## Nächste Wellen
 
@@ -201,7 +206,7 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
 | M1 — Lauffähiges MVP | welle-1-mvp | [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)-Kern erstellbar, `make gates` grün | erreicht (2026-06-12; Viewer per Drift-Entscheidung 2026-06-11 nicht Teil des Triggers) |
 | M2 — Vollständige Bauteile | welle-2-bauteile | Haus mit Türen, Fenstern, Dach vollständig | **erreicht** (2026-06-14; vier Bauteil-Familien geliefert + Decken/Fundament/Treppen, welle-2-Closure) |
 | M3 — Auswertbar | welle-3-auswertung | Flächen/Volumen/Materiallisten korrekt | **erreicht** (2026-06-16; `EvaluatePort` Flächen/Volumen/Wohnfläche + Material-/Kosten-/Tür-/Fensterlisten analytisch im Kern, welle-3-Closure) |
-| M4 — Offen austauschbar | welle-4-austausch | [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien), [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt | offen |
+| M4 — Offen austauschbar | welle-4-austausch | [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien), [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt | **erreicht** (2026-07-01; alle sechs Austauschformate IFC/DXF/STEP/STL/PDF/PNG hinter Driven-Adaptern, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) IFC-Export-Roundtrip + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) maßstäblicher PDF-Plan, welle-4-Closure) |
 | M5 — Erweiterbar | welle-5-erweiterung | [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) (Plugins) erfüllt | offen |
 
 ## Abhängigkeitsgraph
@@ -212,8 +217,8 @@ flowchart LR
     W1V[welle-1v-viewer<br/>done 2026-06-13]
     W2[welle-2-bauteile<br/>done 2026-06-14]
     W3[welle-3-auswertung<br/>done 2026-06-16]
-    W4[welle-4-austausch<br/>aktiv]
-    W5[welle-5-erweiterung]
+    W4[welle-4-austausch<br/>done 2026-07-01]
+    W5[welle-5-erweiterung<br/>nächste Planungs-Entscheidung]
 
     W1 --> W1V
     W1 --> W2 --> W3 --> W4 --> W5
@@ -227,6 +232,7 @@ flowchart LR
 | welle-1v-viewer | 2026-06-12 – 2026-06-13 | Sichtbare Hälfte des Echtzeit-Vertrags: Qt-6-3D-Viewer (Driving Adapter) stellt das extrudierte Gebäudemodell dar und folgt committeten Änderungen — **[ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt** + sichtbare Hälfte [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung); slice-011a/011b + slice-012 (Eckenschluss WAL-006-Teilumfang) in `done/`. Unabhängige Verifikation gelaufen (keine HIGH/MEDIUM, 1 LOW); `make gates` grün am HEAD (63/63, Coverage 94,2 %). | [`../done/welle-1v-results.md`](../done/welle-1v-results.md) |
 | welle-2-bauteile | 2026-06-13 – 2026-06-14 | **Alle parametrischen Bauteile** über die Wände hinaus: Türen/Fenster (automatische Wandöffnung, OCC-Boolean), Dach (Sattel/Walm/Pult), Decken/Fundament (Platten + Ausschnitte), Treppen (gerade einläufig) — je Familie Lastenheft-AK-Schärfung + Implementierung (Domäne/Geometrie/Viewer/Edit-Ops) + Persistenz; **12 Slices** in `done/`, **[ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md) (#6)-Leitplanke** über vier Familien. **Meilenstein M2 erreicht** + [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)-Bauteil-Hälfte. Unabhängige Verifikation (keine HIGH, 1 MED/1 LOW behoben) + Carveout-Audit (keine aktiven); `make gates` grün am HEAD `d7073fb` (116/116, Coverage 92,3 %). Geometrielastige Code-Reviews je Familie (013b/014b/015b je 1 HIGH gefixt, 016b keine HIGH). | [`../done/welle-2-results.md`](../done/welle-2-results.md) |
 | welle-3-auswertung | 2026-06-14 – 2026-06-16 | **Gebäudemodell auswertbar** ([ADR-0012](../../adr/0012-evaluations-architektur.md) `EvaluatePort` read-only/pull, **kein** `GeometryKernelPort`/`Solid.volume_mm3`): Flächen EVL-001/003 (Shoelace-Raum-Netto + Wohnfläche), **Volumen EVL-002 analytisch im Kern** (Wand/Decke/Treppe; Dach dicke-los → benannte Lücke), **Material-System** MAT-001/002/003/005/006 (projekt-eigen über `EditStructurePort`, `restrict`-treu, NULL-sicher round-trippt über SQLite), **Listen** EVL-004/005/006 (Material-Menge=Σ Netto-Volumen, Tür-/Fensterlisten) + **Kosten MAT-006** (`Menge × cost_per_m3`); `wall_type`-Template-Fallback bewusst zurückgestellt (welle-4+). **7 Slices** (017a–017g) in `done-archive/`. **Meilenstein M3 erreicht**. Unabhängige Verifikation (0 HIGH, 1 LOW behoben) + Carveout-Audit (keine aktiven); `make gates` grün am HEAD (145/145, Coverage 92,7 %), `make schema-check` grün. | [`../done/welle-3-results.md`](../done/welle-3-results.md) |
+| welle-4-austausch | 2026-06-16 – 2026-07-01 | **b-cad offen austauschbar** ([OBJ-005](../../../../spec/lastenheft.md#3-projektziele)): **alle sechs Austauschformate** hinter Driven-Adaptern (Kern format-frei) — **IFC** Import+Export ([ADR-0013](../../adr/0013-ifc-bibliothek.md) SPF-Subset-Codec Option D, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)-Roundtrip), **STEP/STL** Export ([ADR-0014](../../adr/0014-step-stl-export-backend.md) OCC-DataExchange nativ, B-Rep **aller** 3D-Bauteile via 024a/b), **DXF** Import+Export ([ADR-0015](../../adr/0015-dxf-backend.md) 2D-Subset-Codec Option D + Kern-`ImporterMap`), **PDF** ([ADR-0016](../../adr/0016-pdf-png-backend.md) self-rolled Vektor-Maßstabsplan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) + **PNG** (self-rolled Raster-Grundriss). Nebenbei **Dach-Volumen** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006), erste Repo-Schema-Änderung) + **io-smoke** (CI-Sensor). **16 Slices** (019a–025c) in `done-archive/`, vier Backend-ADRs (0013–0016). **Meilenstein M4 erreicht.** Unabhängige Verifikation (0 HIGH, 1 LOW außerhalb Scope belassen) + Carveout-Audit (keine aktiven); `make gates` grün am HEAD (220/220, Coverage 90,7 %), `make schema-check` + `make io-smoke` grün. | [`../done/welle-4-results.md`](../done/welle-4-results.md) |
 
 ## Historische Trigger-Verschiebungen
 

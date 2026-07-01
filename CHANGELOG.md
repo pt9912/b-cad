@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **welle-4-austausch abgeschlossen — Meilenstein M4 „Offen austauschbar" erreicht**
+  (2026-07-01, `OBJ-005`): b-cad ist **offen austauschbar** — alle sechs Formate hinter
+  Driven-Adaptern (Kern format-frei): **IFC** Import+Export (`ADR-0013`, `ACC-003`-Roundtrip),
+  **STEP/STL** Export (`ADR-0014`, B-Rep aller 3D-Bauteile), **DXF** Import+Export (`ADR-0015`),
+  **PDF** (`ADR-0016`, maßstäblicher Plan, `ACC-004`) + **PNG**. 16 Slices (019a–025c), vier
+  Backend-ADRs. Unabhängige Welle-Verifikation **0 HIGH** (Gates selbst reproduziert: 220/220,
+  90,7 %; `schema-check`/`io-smoke` grün); keine aktiven Carveouts. Closure-Notiz:
+  `docs/plan/planning/done/welle-4-results.md`.
 - slice-025c — **PNG-Export lauffähig: self-rolled Raster-Grundriss** (`LH-FA-IO-008`,
   welle-4, ADR-0016): schließt den PDF/PNG-Strang. Ein **self-rolled Raster-PNG-Encoder**
   (`png_writer`, io-resident, kein Qt/OCC/**zlib** — reines C++/STL, arch-check Regel A/B)
