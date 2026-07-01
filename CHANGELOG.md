@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-025b — **PDF-Export lauffähig: self-rolled Vektor-Maßstabsplan** (`LH-FA-IO-007`,
+  `ACC-004`, welle-4, ADR-0016): erster echter Code des PDF/PNG-Strangs. Ein **self-rolled
+  Vektor-PDF-Writer** (`pdf_writer`, io-resident, kein Qt/OCC, **keine neue Dependency** —
+  reines C++/STL, arch-check Regel A/B) erzeugt je Geschoss eine A4-Seite mit **maßstäblichem
+  (fest 1:100)** 2D-Grundriss (gerade Wand-Achsen) + Rahmen + „M 1:100"-Label (Helvetica
+  Base-14, kein Embedding). `PdfExportAdapter` (Domänen→Plan-Mapping) + geteilte Helfer
+  `plan_geometry` (2D-Projektion) + `io_atomic_write` (atomarer binär-treuer Writer,
+  `E-IO-001`) — beide für 025c/PNG wiederverwendbar. `ExchangeFormat::Pdf` additiv (nur Enum,
+  keine Registry-Architektur-Änderung); Composition Root `--export-pdf` + `ExporterMap`
+  (export-only, Import → `E-IO-003`). **Voll-Decode-Orakel** im Test (Byte-Konsistenz +
+  Objektgraph/Reader-Öffenbarkeit + Linien je Geschoss-Seite) + Maßstabs-Sonde
+  (5000 mm → 141,73 pt) + Orientierungs-Sonde + Boundary + `E-IO-001` + export-only; 7 PDF-Tests,
+  `make gates` grün (215/215, 90,4 %) + `make io-smoke` (`--export-pdf`). `MR-006` +
+  unabhängiges **Code-Review je 0 HIGH** (reale Reader-Öffenbarkeit **empirisch** belegt:
+  poppler/pdftotext/ghostscript). **Damit ist `ACC-004` (maßstäblicher PDF-Plan) erfüllt.**
+  Sizing-Split: PNG = Folge-Slice 025c.
 - slice-025a — **PDF/PNG-Export AK-Schärfung + Spec-Mapping** (`LH-FA-IO-007`/`LH-FA-IO-008`,
   `ACC-004`, welle-4): schärft die letzten IO-Format-Anforderungen von Outline auf AK
   (**export-only, 2D-Achsen-Maßstabsplan**, Lastenheft 0.1.12) und löst die `ADR-0016`-Folgepflicht

@@ -167,9 +167,17 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007) (self-rolled Writer io-resident, maßstäblich, export-only) +
   §6 zwei PDF/PNG-Vertragszeilen + **§7 PDF/PNG chirurgisch → alle IO-Backends entschieden** + §4
   [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um PDF/PNG-Export. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (2 LOW eingearbeitet); reine Doku, gates grün.
-- ⏳ offen: **PDF/PNG-Backend + AK entschieden** ([ADR-0016](../../adr/0016-pdf-png-backend.md) ✓, slice-025a ✓) →
-  **PDF/PNG-Impl (025b)** · Welle-4-Verifikation + Carveout-Audit → `done/welle-4-results.md` →
-  **M4** ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
+- ✓ **slice-025b** — **PDF-Export lauffähig** ([LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007), [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)):
+  self-rolled Vektor-`PdfWriter` io-resident (Option D, kein Qt/OCC, **keine neue Dependency**) +
+  `PdfExportAdapter` — je Geschoss eine A4-Seite mit **maßstäblichem (1:100)** 2D-Grundriss (Wand-Achsen)
+  + Rahmen + „M 1:100"-Label; `ExchangeFormat::Pdf` additiv, `--export-pdf` + `ExporterMap` (export-only);
+  geteilte `plan_geometry`/`io_atomic_write` (für 025c). **Voll-Decode-Orakel** (Byte + Objektgraph/Reader-
+  Öffenbarkeit + je Geschoss) + Maßstabs-/Orientierungs-Sonde. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  + unabh. **Code-Review je 0 HIGH** (reale Reader-Öffenbarkeit **empirisch** belegt — poppler/gs).
+  `make gates` grün (215/215, 90,4 %) + `make io-smoke` grün. **Damit ist [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt.**
+- ⏳ offen: **PDF-Export DONE** ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt) → **PNG-Export (slice-025c)**
+  (Raster-`PngWriter` stored-DEFLATE/Adler-32/CRC-32, `plan_geometry`-Reuse) · **Welle-4-Verifikation +
+  Carveout-Audit** → `done/welle-4-results.md` → **M4** ([ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)+[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) beide erfüllt).
 
 ## Nächste Wellen
 

@@ -1,7 +1,7 @@
 ---
 id: slice-025b
 titel: PDF-Export — Implementierung (self-rolled Vektor-PDF-Writer, io-resident, [ADR-0016](../../adr/0016-pdf-png-backend.md))
-status: in-progress
+status: done
 welle: welle-4-austausch
 lastenheft_refs: [[LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0016](../../adr/0016-pdf-png-backend.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0016](../.
 
 # Slice 025b: PDF-Export — Implementierung
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH / 1 MED / 2 LOW / 2 INFO**; Start **nicht blockiert**. MED-1 (Orakel um Objektgraph/Reader-Öffenbarkeit verschärft + Externer-Reader-Entscheidung geschlossen), LOW-2 (`io_atomic_write` byte-gleich zum DXF-`errno`/`.tmp`-Muster), LOW-3 (Operator-Zählung je Geschoss-Seite) eingearbeitet. [Report](../../../reviews/2026-07-01-slice-025b-plan.md).
+**Status:** done (2026-07-01). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH** ([Plan-Report](../../../reviews/2026-07-01-slice-025b-plan.md)) + unabhängiges **Code-Review 0 HIGH** ([Code-Report](../../../reviews/2026-07-01-slice-025b-code-review.md); reale PDF-Reader-Öffenbarkeit empirisch belegt, LOW-3/INFO-3 als Test-Härtung eingearbeitet). DoD vollständig, `make gates` (215/215) + `make io-smoke` grün, Closure-Notiz §8.
 
 **Welle:** welle-4-austausch (PDF/PNG-Strang, Code-Hälfte; Muster slice-021b [DXF-Impl]).
 
@@ -52,23 +52,23 @@ Muster DXF-Profilversion 021b):
 
 ## 2. Definition of Done
 
-- [ ] **`ExchangeFormat::Pdf` additiv ergänzt** (`src/hexagon/ports/driving/exchange_model_port.h`)
+- [x] **`ExchangeFormat::Pdf` additiv ergänzt** (`src/hexagon/ports/driving/exchange_model_port.h`)
       — **nur** der Enum-Wert (Kern-Touch, keine Service-/Registry-Architektur-Änderung;
       [ADR-0016](../../adr/0016-pdf-png-backend.md)). **`Png` NICHT** (= 025c).
-- [ ] **`src/adapters/io/pdf_writer.{h,cpp}`** — generischer, **format-agnostischer**
+- [x] **`src/adapters/io/pdf_writer.{h,cpp}`** — generischer, **format-agnostischer**
       Vektor-PDF-Writer (kennt PDF-**Syntax**: Objekte, `xref`, `stream`/`Length`, Content-
       Operatoren `m`/`l`/`S`/`re`/`BT`..`ET`/`Tj`; **keine** b-cad-Domäne — Muster
       `dxf_writer`). Emittiert **valides PDF 1.7** (Header, Objekt-Katalog, Seitenbaum,
       je Seite ein Content-Stream mit korrektem `/Length`, Helvetica-Font-Ressource,
       `xref` mit korrekten Byte-Offsets, `trailer` `/Root`+`/Size`, `startxref`, `%%EOF`).
       **Locale-frei** (kein Komma; Muster `dxfReal`).
-- [ ] **`src/adapters/io/plan_geometry.{h,cpp}`** — **geteilter** Plan-Projektions-Helper
+- [x] **`src/adapters/io/plan_geometry.{h,cpp}`** — **geteilter** Plan-Projektions-Helper
       (format-agnostisch, io-resident, kein OCC/Qt): `Building` → je Geschoss die geraden
       **Wand-Achsen** als 2D-Segmente (Modell-mm) + Gesamt-Bounding-Box. Datenquelle
       `building.storeys` + `building.walls` (`start`/`end`/`storey_id`), Muster
       `dxf_export_adapter`. **Von 025c (PNG) wiederverwendbar.** *(Review-INFO-5: `model::Wall`
       ist ein Einzel-Segment — „gerade Wand-Achsen" = **alle** Wände, kein Filter.)*
-- [ ] **`src/adapters/io/io_atomic_write.{h,cpp}`** — **geteilter** atomarer,
+- [x] **`src/adapters/io/io_atomic_write.{h,cpp}`** — **geteilter** atomarer,
       **binär-sicherer** Datei-Writer (Temp + `fsync` + Rename; `errno` → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)
       `event=io_no_permission` / [`E-IO-002`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) `event=persist_error`), **kein** Teil-Export,
       Zielpfad intakt. Extrahiert das seit IFC/DXF duplizierte Muster als **eine** Wahrheit
@@ -78,19 +78,19 @@ Muster DXF-Profilversion 021b):
       `path + ".tmp"` **und** die `ioCodeForErrno`-Abbildung (**EISDIR/ENOTDIR/ENOENT/EACCES/
       EPERM/EROFS → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)** `event=io_no_permission`, sonst [`E-IO-002`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)) —
       sonst bricht die referenzierte Negative-Test-Technik (`.tmp`-Verzeichnis → `EISDIR`).
-- [ ] **`src/adapters/io/pdf_export_adapter.{h,cpp}`** — `PdfExportAdapter :
+- [x] **`src/adapters/io/pdf_export_adapter.{h,cpp}`** — `PdfExportAdapter :
       ModelExporterPort`; bildet je Geschoss eine A4-Seite: Rahmen + **maßstäblich
       (1:100)** transformierte Wand-Achsen (`plan_geometry`) + „M 1:100"-Label; serialisiert
       über `PdfWriter`; schreibt über `io_atomic_write` ([`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)). **Export-only**
       (kein Import-Adapter). Der PDF-Code lebt **ausschließlich** in `adapters/io/`
       (`arch-check` Regel A/B — kein externer Header, „Regel F gegenstandslos").
-- [ ] **Composition Root** (`src/main.cpp`): `PdfExportAdapter`-Instanz + `ExporterMap`-
+- [x] **Composition Root** (`src/main.cpp`): `PdfExportAdapter`-Instanz + `ExporterMap`-
       Eintrag `{ExchangeFormat::Pdf, &pdf_exporter}` + `--export-pdf`-CLI (via bestehendem
       `runExportIfRequested`). **Nur** ExporterMap (export-only; **nicht** in die ImporterMap).
-- [ ] **`src/adapters/CMakeLists.txt`**: die vier neuen `io/`-Quellen (`pdf_writer`,
+- [x] **`src/adapters/CMakeLists.txt`**: die vier neuen `io/`-Quellen (`pdf_writer`,
       `plan_geometry`, `io_atomic_write`, `pdf_export_adapter`) in `bcad_adapters`.
       **Keine** neue `find_package`/apt-Zeile (reines C++/STL — belegt „keine neue Dependency").
-- [ ] **`tests/adapters/test_pdf_export.cpp`** (+ `tests/CMakeLists.txt`): AK
+- [x] **`tests/adapters/test_pdf_export.cpp`** (+ `tests/CMakeLists.txt`): AK
       [`LH-FA-IO-007`](../../../../spec/lastenheft.md#lh-fa-io-007) über den **echten** `ExchangeService`-Pfad —
       - **Happy + voll-Decode-Orakel (Byte-Konsistenz UND Objektgraph):** Export erzeugt
         eine Datei; ein **im Test eingebauter PDF-Parser** (kein externer Reader — keiner im
@@ -113,9 +113,9 @@ Muster DXF-Profilversion 021b):
         `test_dxf_export` `NonWritablePathRejectedWithEIo001`).
       - **Export-only:** `importModel(path, ExchangeFormat::Pdf)` → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)
         (export-only-Lookup-Miss, identisch STEP/STL — belegt „kein Import-Adapter").
-- [ ] **`tools/io-smoke.sh`**: `expect_export --export-pdf "$OUT/s.pdf"` (Binary-Smoke der
+- [x] **`tools/io-smoke.sh`**: `expect_export --export-pdf "$OUT/s.pdf"` (Binary-Smoke der
       `main.cpp`-Glue; exit 0 + nicht-leere Datei). **PNG** folgt in 025c.
-- [ ] **`make gates` grün** (arch-check inkl. `io/`, lint 0, test inkl. neuer AK-Tests,
+- [x] **`make gates` grün** (arch-check inkl. `io/`, lint 0, test inkl. neuer AK-Tests,
       coverage ≥ Schwelle) + **`make io-smoke`** grün lokal; `make schema-check` unberührt
       (kein Schema). **Unabhängiges Code-Review vor Welle-Closure** (Muster 021b;
       **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a** — keine neue **Solid**-Geometrie, nur 2D-Projektion; die
@@ -202,4 +202,42 @@ Muster DXF-Profilversion 021b):
 
 ## 8. Closure-Notiz
 
-*(wird bei Closure gefüllt — DoD-Nachweis, `make gates`/`make io-smoke`, Code-Review, Lerneintrag)*
+**Closure-Kriterien (beobachtbar, 2026-07-01):**
+
+- **PDF-Export lauffähig** ([LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007), [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)):
+  self-rolled Vektor-`PdfWriter` (Objektgraph Katalog/Seitenbaum/Content-Stream, xref/
+  trailer/`%%EOF`, korrektes `/Length`) + `PdfExportAdapter` (je Geschoss eine A4-Seite,
+  **fester Maßstab 1:100** + „M 1:100"-Label via Helvetica Base-14, Rahmen, Wand-Achsen) +
+  geteilter `plan_geometry` (2D-Projektion) + geteilter `io_atomic_write` (atomar, binär-treu,
+  [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)). `ExchangeFormat::Pdf` additiv; Composition Root `--export-pdf` + `ExporterMap`
+  (export-only). **Keine neue Dependency, kein Qt/OCC** (arch-check Regel A/B grün).
+- **Voll-Decode-Orakel** (Review-MED-1): `test_pdf_export.cpp` prüft Byte-Konsistenz
+  (xref-Offsets → „N 0 obj", `/Length` == Stream-Länge, `trailer /Size`, `startxref`/`%%EOF`)
+  **und** Objektgraph/Reader-Öffenbarkeit (Catalog→Pages→Kids, `/MediaBox`==A4, `/Contents`→
+  Stream, `/Font`→Helvetica) **und** Inhalt je Geschoss-Seite (Linien == Wandzahl) + Maßstabs-
+  Sonde (5000 mm → 141,73 pt) + **Orientierungs-Sonde** (kein Y-Flip) + Boundary + [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) +
+  export-only. 7 PDF-Tests; `make gates` grün (215/215, Coverage 90,4 %), `make io-smoke` grün.
+- **Unabhängiges Code-Review 0 HIGH** ([Report](../../../reviews/2026-07-01-slice-025b-code-review.md)):
+  reale Reader-Öffenbarkeit **empirisch** belegt (poppler/pdftotext/ghostscript); LOW-3 +
+  INFO-3 als Test-Härtung eingearbeitet; LOW-1/-2 als benannte Grenzen.
+
+**Lerneintrag:**
+
+- **Reales-Reader-Cross-Check außerhalb des gepinnten Images (Sensor-Ehrlichkeit):** das
+  Image trägt keinen PDF-Validator → ein Reader-Test wäre eine [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)-Berührung
+  (nicht genommen); Sensor ist das **verschärfte Objektgraph-Selbst-Orakel**. Der Code-Reviewer
+  hat die reale Öffenbarkeit **einmalig empirisch** belegt (poppler/gs außerhalb des Gates) —
+  das de-riskt [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) direkt, ohne eine Laufzeit-Dependency einzuziehen.
+- **Benannte Grenzen (kein Über-Versprechen):** fester Maßstab 1:100 → Modelle > ~19,5 m
+  laufen aus A4 (Fit-to-Page = [ADR-0016](../../adr/0016-pdf-png-backend.md)-Re-Eval); `fsync`-Rückgabe ungeprüft (byte-gleich zum
+  dxf/ifc-Muster, Cross-Adapter-Cleanup-Kandidat); PNG + allgemeiner Textsatz + 3D-Screenshot
+  = spätere Slices/Re-Eval.
+- **Sizing-Split trägt:** PDF (025b, milestone-kritisch [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) getrennt vom Raster-Encoder-Risiko (PNG,
+  025c). Der geteilte `plan_geometry`/`io_atomic_write` steht für 025c bereit.
+
+**Restrisiko / Nachfolge:** **025c (PNG-Export)** wird startbar — Raster-`PngWriter`
+(stored-DEFLATE + Adler-32 + CRC-32) rastert denselben Plan (`plan_geometry`-Reuse),
+`PngExportAdapter` + `ExchangeFormat::Png` + `io_atomic_write`-Reuse + io-smoke;
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review davor. Danach Welle-4-Verifikation + Carveout-Audit →
+`done/welle-4-results.md` → **M4** ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) durch PDF erfüllt). ADR-Index-Impl-
+Folgepflicht bleibt bis 025c „offen" (PDF-Hälfte durch 025b, Präzedenz 024a/b).
