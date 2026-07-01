@@ -41,6 +41,7 @@ add_executable(bcad_adapter_tests
     adapters/test_dxf_codec.cpp        # slice-021b Commit i: DXF-Codec-Roundtrip (isoliert)
     adapters/test_dxf_import.cpp       # slice-021b Commit ii: Import-AK + Integration
     adapters/test_dxf_export.cpp       # slice-021b Commit ii: Export-AK + Roundtrip + E-IO-001
+    adapters/test_pdf_export.cpp       # slice-025b: PDF-Export-AK + voll-Decode-Orakel + Maßstabs-Sonde + E-IO-001 + export-only
 )
 target_link_libraries(bcad_adapter_tests
     PRIVATE bcad_adapters bcad_hexagon GTest::gtest_main)

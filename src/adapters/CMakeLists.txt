@@ -54,6 +54,15 @@ add_library(bcad_adapters
     # atomar (Temp+Rename). KEINE neue Dependency.
     io/dxf_import_adapter.cpp
     io/dxf_export_adapter.cpp
+    # slice-025b: PDF-Export (ADR-0016 Option D) — hand-gerollter Vektor-PDF-
+    # Writer + Domänen→Plan-Mapping (maßstäblicher 2D-Grundriss), export-only,
+    # io-resident. Geteilte Helfer plan_geometry (2D-Projektion) + io_atomic_write
+    # (atomarer binär-treuer Writer, von 025c/PNG wiederverwendbar). KEINE neue
+    # Dependency (reines C++/STL); arch-check Regel A/B isolieren sie.
+    io/io_atomic_write.cpp
+    io/plan_geometry.cpp
+    io/pdf_writer.cpp
+    io/pdf_export_adapter.cpp
 )
 
 target_include_directories(bcad_adapters
