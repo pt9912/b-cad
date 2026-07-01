@@ -1,7 +1,7 @@
 ---
 id: slice-025a
 titel: PDF-/PNG-Export — AK-Schärfung [LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007)/008 & Spec-Mapping (parametrisiert auf [ADR-0016](../../adr/0016-pdf-png-backend.md))
-status: in-progress
+status: done
 welle: welle-4-austausch
 lastenheft_refs: [[LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007), [LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0013](../../adr/0013-ifc-bibliothek.md), [ADR-0015](../../adr/0015-dxf-backend.md), [ADR-0016](../../adr/0016-pdf-png-backend.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0013](../.
 
 # Slice 025a: PDF-/PNG-Export — AK-Schärfung & Spec-Mapping
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH / 2 LOW / 3 INFO**; Start **nicht blockiert**, LOW-1 (§6 zwei Zeilen) + LOW-2 (§7-Chirurgie präzisiert + Parität) eingearbeitet. [Report](../../../reviews/2026-07-01-slice-025a-plan.md). **Reine Doku/Entscheidung, kein Code.**
+**Status:** done (2026-07-01). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH / 2 LOW / 3 INFO** (LOW-1 §6 zwei Zeilen + LOW-2 §7-Chirurgie/Parität eingearbeitet); DoD vollständig, `make gates` grün, Closure-Notiz §8. [Report](../../../reviews/2026-07-01-slice-025a-plan.md). **Reine Doku/Entscheidung, kein Code.**
 
 **Welle:** welle-4-austausch (PDF/PNG-Strang, Entscheidungs-/Spec-Hälfte;
 Muster slice-019a [IFC] / slice-020a [STEP/STL] / slice-021a [DXF]).
@@ -60,7 +60,7 @@ offen (benannte Lücke, nicht geschrieben); PNG **unkomprimiert**. **Wand-Footpr
 
 ## 2. Definition of Done
 
-- [ ] **Lastenheft [LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007) + [LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008) von Outline auf AK-Niveau**
+- [x] **Lastenheft [LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007) + [LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008) von Outline auf AK-Niveau**
       (**lösungsfrei, benutzer-beobachtbar** — **kein** PDF-Operator/PNG-Chunk-Name/
       DEFLATE-Mechanik im Lastenheft-Text, das gehört in §1; [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)):
       **IO-007 PDF** mindestens — **Happy:** Given ein b-cad-Modell mit Geschossen +
@@ -82,7 +82,7 @@ offen (benannte Lücke, nicht geschrieben); PNG **unkomprimiert**. **Wand-Footpr
       (kein Import — man liest kein Modell aus einem PDF/PNG zurück). + Header-Nachzug +
       `lastenheft-historie.md` **0.1.12** (**[MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/[MR-012](../../../../harness/conventions.md#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie)**: Header-`Version:` == oberste
       Historie-Zeile).
-- [ ] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007)** (Sammelblock —
+- [x] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007)** (Sammelblock —
       **deckt IO-007 + IO-008**, Muster [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/[`LH-FA-IO-005.a`](../../../../spec/lastenheft.md#lh-fa-io-005)/
       [`LH-FA-IO-003.a`](../../../../spec/lastenheft.md#lh-fa-io-003)): das PDF/PNG-Mapping innerhalb des **[ADR-0016](../../adr/0016-pdf-png-backend.md)-Subsets** —
       **Schicht** io-residente self-rolled Writer (`adapters/io/`, kein OCC, kein Qt —
@@ -101,7 +101,7 @@ offen (benannte Lücke, nicht geschrieben); PNG **unkomprimiert**. **Wand-Footpr
       Lookup-Miss, **identisch** STEP/STL, **kein** neuer Code); **Totalität** (leeres
       Modell → gültige leere Seite/Bild, kein Wurf). Mechanik, **kein** Lastenheft. +
       `spezifikation-historie.md` + `**Letzte Änderung:**`-Header.
-- [ ] **`spec/spezifikation.md` §6 + §7 + §4 nachgezogen ([ADR-0016](../../adr/0016-pdf-png-backend.md)-Folgepflicht):**
+- [x] **`spec/spezifikation.md` §6 + §7 + §4 nachgezogen ([ADR-0016](../../adr/0016-pdf-png-backend.md)-Folgepflicht):**
       **§7** ist ein **Sammel-Bullet**, das IFC/STEP-STL/DXF als **entschieden** aufzählt
       und mit „— **PDF-/PNG-Backends bleiben offen** (welle-4)" endet → **nur den
       offen-Schwanz** streichen (den decided-Enumerations-Bullet **erhalten**, er trägt
@@ -116,13 +116,13 @@ offen (benannte Lücke, nicht geschrieben); PNG **unkomprimiert**. **Wand-Footpr
       [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Bedingung um „PDF-/PNG-Export" erweitern (zählt heute „IFC-/STEP-/
       STL-/DXF-Export"). ADR-Index-Folgepflicht-Zeile ([ADR-0016](../../adr/0016-pdf-png-backend.md) „AK-Schärfung +
       Spec-Nachzug") abhaken (im Closure-Commit).
-- [ ] **`spec/architecture.md`:** voraussichtlich **unverändert** — `ExchangeModelPort`/
+- [x] **`spec/architecture.md`:** voraussichtlich **unverändert** — `ExchangeModelPort`/
       `ModelExporterPort`/`adapters/io/` sind deklariert; **optional** eine
       `## Geschichte`-Provenance-Zeile „PDF/PNG Export → [ADR-0016](../../adr/0016-pdf-png-backend.md)"
       (exclude-section, Link erlaubt) — sonst bewusst nicht geändert (Begründung in
       Closure). **`ExchangeFormat`-Enum-Erweiterung** (`Pdf`/`Png`) ist **Impl-Slice**,
       nicht hier.
-- [ ] **Reine Doku/Entscheidung — kein Code, keine Tests, kein ADR, kein Schema**
+- [x] **Reine Doku/Entscheidung — kein Code, keine Tests, kein ADR, kein Schema**
       ([ADR-0016](../../adr/0016-pdf-png-backend.md) deckt das Backend; Mapping ist Spec-Entscheidung). `make gates`
       grün; `make schema-check` unberührt; Closure-Notiz mit Lerneintrag. **Nicht Teil:**
       der **PDF/PNG-Impl-Slice** (self-rolled `PdfWriter`/`PngWriter` +
@@ -210,4 +210,51 @@ offen (benannte Lücke, nicht geschrieben); PNG **unkomprimiert**. **Wand-Footpr
 
 ## 8. Closure-Notiz
 
-*(wird bei Closure gefüllt — DoD-Nachweis, `make gates`, Lerneintrag)*
+**Closure-Kriterien (beobachtbar, 2026-07-01):**
+
+- **Lastenheft 0.1.12:** [`LH-FA-IO-007`](../../../../spec/lastenheft.md#lh-fa-io-007) (PDF) +
+  [`LH-FA-IO-008`](../../../../spec/lastenheft.md#lh-fa-io-008) (PNG) von Outline auf AK-Niveau
+  (**export-only, 2D-Achsen-Maßstabsplan**, lösungsfrei/benutzer-beobachtbar); **maßstäblich**
+  = gemessene Plan-Länge == Modell-Abmessung über dokumentierten Maßstab ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien));
+  **Teilumfang gerade Wand-Achsen je Geschoss** explizit; **export-only** (kein Import).
+  Header 0.1.12 == oberste (jüngste) `lastenheft-historie.md`-Zeile ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/012).
+- **`spezifikation.md` §1 [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007)** (Sammelblock IO-007+008):
+  self-rolled Vektor-PDF-/Raster-PNG-Writer **io-resident** (kein OCC, kein Qt), gerade
+  Wand-Achsen je Geschoss (Datenquelle wie DXF), PDF maßstäblich (Maßstab/Seitenformat/DPI =
+  Impl-Slice, dokumentiert), **export-only** (kein Import-Adapter; Import-Request → generische
+  [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)) / atomarer Export ([`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder),
+  binär-sicher), Subset-Lücke/Totalität. **§6** zwei neue PDF/PNG-Vertragszeilen (Review-LOW-1),
+  **§7** PDF/PNG chirurgisch aus dem decided-Bullet (nur offen-Schwanz gestrichen, symmetrische
+  „PDF/PNG entschieden (§1 [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007))"-Nennung ergänzt, Review-LOW-2) →
+  **alle IO-Backends entschieden**, **§4** [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Bedingung um PDF/PNG-Export.
+  `**Letzte Änderung:**` + `spezifikation-historie.md`.
+- **Spec-Straten ADR-frei ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)):** der `spezifikation.md`-Körper trägt **keinen**
+  ADR-Verweis (per `grep ADR-` selbst geprüft; Provenance nur in `*-historie.md`);
+  `architecture.md` `## Geschichte` um PDF/PNG→[ADR-0016](../../adr/0016-pdf-png-backend.md)-Provenance ergänzt (exclude-section,
+  Parität DXF/STEP-STL, Review-INFO-3).
+- **Kein Code/Test/ADR/Schema**; `make gates` grün; ADR-Index-Folgepflicht „AK-Schärfung +
+  Spec-Nachzug" ([ADR-0016](../../adr/0016-pdf-png-backend.md)) abgehakt.
+
+**Lerneintrag (benannte Spec-Lücke + geschärfte Praxis):**
+
+- **Benannte Spec-Lücke (Achsen-Plan vs. „maßstäblicher Plan"):** der PDF-Plan ist ein **Achsen-Plan-
+  Teilumfang** (gerade Wand-Achsen je Geschoss); [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) „maßstäblicher Plan" ist
+  über die **Maßstäblichkeit** (nicht den Wand-Umriss) erfüllt. **Wand-Footprint/-Dicke** =
+  out of scope + AK-abhängiger Re-Eval-Trigger ([ADR-0016](../../adr/0016-pdf-png-backend.md) §Trigger). PNG unkomprimiert,
+  3D-Screenshot benannte Lücke (viewer-resident).
+- **Schwester-Backend-Symmetrie (geschärfte Praxis):** PDF/PNG ist der **dritte Option-D-Fall**
+  (wie IFC/DXF: nicht-nativ, self-rolled io-resident), aber **export-only wie STEP/STL** — die
+  §1-Schärfung mischt beide Muster (io-resident Schicht wie DXF-021a, Export-only-AK wie
+  STEP/STL-020a). Die §7-Chirurgie schloss die **letzte** Backend-Offen-Klausel → **alle
+  IO-Backends entschieden** (M4-Format-Vollständigkeit dokumentiert).
+- **Was-vs-Wie beim Maßstab (Lösungsfreiheits-Grenzfall, [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)):** „maßstäblich + dokumentierter Maßstab" ist das
+  benutzer-beobachtbare **Was** (Lastenheft, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)-tragend); der **konkrete** Maßstab/
+  Seitenformat/DPI ist **Wie** (§1/Impl-Slice, analog DXF-Profilversion 021a) — hält die
+  milestone-kritische AK prüfbar **ohne** Mechanik ins Lastenheft zu ziehen.
+
+**Restrisiko / Nachfolge:** **PDF/PNG-Impl-Slice (025b)** wird startbar — self-rolled
+`PdfWriter`/`PngWriter` + `PdfExportAdapter`/`PngExportAdapter` + additive `ExchangeFormat::Pdf`/
+`Png`-Enum-Erweiterung + `ExporterMap`-Verdrahtung + AK-Tests mit **voll-Decode-Orakel**
+(PDF `xref`/`trailer`/Stream-`/Length`; PNG `IDAT`-Inflate + Adler-32 + CRC-32 + Scanline-
+Filterbytes) + Maßstabs-Sonde + Adapter-Pfad-Integration + `make io-smoke`-Erweiterung —
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review davor. Danach Welle-4-Verifikation + Carveout-Audit → `done/welle-4-results.md` → **M4**.

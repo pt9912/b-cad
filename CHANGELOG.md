@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-025a — **PDF/PNG-Export AK-Schärfung + Spec-Mapping** (`LH-FA-IO-007`/`LH-FA-IO-008`,
+  `ACC-004`, welle-4): schärft die letzten IO-Format-Anforderungen von Outline auf AK
+  (**export-only, 2D-Achsen-Maßstabsplan**, Lastenheft 0.1.12) und löst die `ADR-0016`-Folgepflicht
+  ein. Parametrisiert auf **`ADR-0016`** (PDF/PNG-Export-Backend **accepted** 2026-07-01: selbst
+  getragene Vektor-PDF-/Raster-PNG-Writer, **Option D**, io-resident, export-only, kein Qt, keine
+  neue Dependency; unabh. Text-Review 0 HIGH + Projektinhaber-Durchsicht). §1 `LH-FA-IO-007.a`
+  (Sammelblock: self-rolled Writer io-resident, maßstäblicher Achsen-Plan, export-only — Import-Request
+  → generisches `E-IO-003`; atomarer Export `E-IO-001`, binär-sicher); **§6** zwei neue
+  PDF/PNG-Vertragszeilen; **§7** PDF/PNG chirurgisch aus der Offene-Backends-Klausel → **alle
+  IO-Backends entschieden**; **§4** `E-IO-001` um PDF/PNG-Export; `architecture.md`-Provenance. Reine
+  Doku, kein Code (Impl = Folge-Slice 025b). `MR-006`-Plan-Review **0 HIGH** (2 LOW eingearbeitet).
+  `make gates` grün (docs-check 0).
 - slice-024b — **Treppen STEP-B-Rep: analytische Box-Solids (Stufen), Geländer ausgelassen**
   (`LH-FA-IO-005`/`LH-FA-STR-001`, welle-4): schließt die **zweite** Hälfte der STEP-Lücke —
   **damit sind alle 3D-Bauteile B-Rep**. Die Treppen-**Stufen** werden als analytische OCC-Box-Solids

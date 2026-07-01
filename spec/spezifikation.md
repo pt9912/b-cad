@@ -647,6 +647,50 @@ Teil-Export.
 → eine gültige, (annähernd) leere DXF. Reihenfolge deterministisch aus der Quell-/
 Modell-Reihenfolge.
 
+### LH-FA-IO-007.a — PDF-/PNG-Export (Mapping, Teilumfang)
+
+Bezug: [`LH-FA-IO-007`](lastenheft.md#lh-fa-io-007) (PDF),
+[`LH-FA-IO-008`](lastenheft.md#lh-fa-io-008) (PNG) — **Sammelblock** (deckt beide).
+PDF/PNG sind **Ausgabe-/Render-Formate** (kein Modell-Austausch): b-cad bildet darauf
+die **maßstäbliche 2D-Grundriss-Sicht** ab — PDF als Vektor-Plan, PNG als Rasterbild
+desselben Plans. **Export-only.** Backend-Provenance: § Historie.
+
+**Encoding & Schicht.** **Selbst getragene Writer** in `adapters/io/` (**kein** OCC,
+**kein** Qt — reine Byte-Serialisierung, io-resident, `arch-check` Regel A/B): ein
+**Vektor-PDF-Writer** (Seitenbaum + Content-Stream aus Linien-Operatoren) und ein
+**Raster-PNG-Writer** (Chunks; Bilddaten als unkomprimierte DEFLATE-Blöcke + Adler-32,
+je-Chunk-CRC-32). Der `ModelExporterPort` ist die Naht; der Composition Root verdrahtet
+je Format. Der einzige Kern-Touch ist die **additive** Erweiterung des Format-Aufzählers
+um PDF/PNG (Export-Registry; **kein** Import-Dispatch).
+
+**Repräsentation (maßstäblicher 2D-Grundriss).** Gezeichnet werden die **geraden
+Wand-Achsen je Geschoss** (Datenquelle wie DXF: Geschosse + gerade Wände). **PDF** ist ein
+**maßstäblicher** Plan — Modell-Längen (mm) werden über einen **definierten, dokumentierten
+Maßstab** in die Seiten-Einheit abgebildet, mit Rahmen. **PNG** rastert denselben Plan in
+ein Pixelbild. Der **konkrete** Maßstab, das Seitenformat, die Aufteilung (eine Seite/Bild
+je Geschoss vs. kombiniert) und die PNG-Auflösung/DPI fixiert der Impl-Slice **dokumentiert**
+(der Maßstab wird im Plan dokumentiert, damit [`ACC-004`](lastenheft.md#7-abnahmekriterien)
+beobachtbar bleibt). Längeneinheit mm.
+
+**Subset-Grenze (benannte Lücke).** Wand-Umrisse mit Footprint/Dicke, Räume, Bemaßung,
+Schraffur/Füllflächen, Text/Raumstempel, Möblierung, Schrift und die 3D-Ansicht werden
+**nicht gezeichnet**; PNG ist **unkomprimiert**. Wand-Footprint/-Dicke ist ein
+**AK-abhängiger Re-Eval**; ein 3D-Viewer-Screenshot wäre viewer-resident (eigener Pfad).
+Ausbau = späterer Re-Eval (Provenance § Historie).
+
+**Export-only (kein Import).** Es gibt **keinen** PDF/PNG-Import-Adapter; ein
+Import-Request für PDF/PNG trifft im Kern-Dispatch einen Lookup-Miss →
+[`E-IO-003`](#4-fehler-codes-und-logging-felder) (`event=import_rejected`, **bestehende
+generische** Zeile — identisch STEP/STL), **kein** neuer Code.
+
+**Atomarität & Fehler.** Der Export schreibt **atomar** (Temp + Rename, **binär-sicher** —
+PDF/PNG sind Byte-Ströme); ein nicht beschreibbarer Zielpfad →
+[`E-IO-001`](#4-fehler-codes-und-logging-felder) (`event=io_no_permission`), **kein**
+Teil-Export, Zielpfad unverändert.
+
+**Totalität.** Ein Modell ohne Geschosse/Wände → eine **gültige, (annähernd) leere**
+PDF-Seite / PNG-Bild (kein Wurf). Reihenfolge deterministisch aus der Modell-Reihenfolge.
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -779,7 +823,7 @@ fordert eine Default-Stärke, §3 nannte keinen Wert).
 
 | Code | Bedingung | Aktion |
 |---|---|---|
-| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern, IFC-/STEP-/STL-/DXF-Export) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
+| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern, IFC-/STEP-/STL-/DXF-/PDF-/PNG-Export) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
 | `E-IO-002` | Zielmedium voll / Schreibfehler | vorheriger Stand intakt (atomar), Log `event=persist_error` |
 | `E-IO-003` | Import-Format nicht erkannt / invalide | kein Teil-Import, Log `event=import_rejected` |
 | `E-VAL-001` | Parameter außerhalb des Wertebereichs | auf Grenzwert geklemmt, Hinweis, Log `event=validation_rejected` |
@@ -819,6 +863,8 @@ nicht im Bootstrap.
 | IFC | **IFC4** (Export) / **IFC2x3 + IFC4** (Import-Subset) | `ModelImporterPort`/`ModelExporterPort` (IFC-SPF-Subset-Codec, §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import)) |
 | STEP / STL | OCC-DataExchange (nativ; STEP AP214/242, STL binär) | `ModelExporterPort` **geometrie-resident** (Export-only; STEP B-Rep / STL Netz der 3D-Bauteile), §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005) |
 | DXF | ASCII-DXF, **2D-Subset** (selbst getragener Codec) | `ModelImporterPort`/`ModelExporterPort` **io-resident** (Import+Export; gerade Wand-Achsen je Geschoss-`LAYER`, Import → Default-Höhe/-Dicke), §1 [`LH-FA-IO-003.a`](lastenheft.md#lh-fa-io-003) |
+| PDF | Vektor-PDF, **2D-Maßstabsplan** (selbst getragener Writer) | `ModelExporterPort` **io-resident** (Export-only; maßstäblicher Achsen-Plan je Geschoss, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
+| PNG | Raster-PNG, **2D-Plan-Rasterbild** (selbst getragener Writer, unkomprimiert) | `ModelExporterPort` **io-resident** (Export-only; Rasterbild desselben Achsen-Plans, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
 
 ## 7. Offene Punkte
 
@@ -831,7 +877,9 @@ nicht im Bootstrap.
   Provenance § Historie); **STEP/STL-Backend ebenfalls entschieden** (OCC-DataExchange
   nativ, geometrie-resident, §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005));
   **DXF-Backend entschieden** (selbst getragener 2D-Subset-Codec io-resident, §1
-  [`LH-FA-IO-003.a`](lastenheft.md#lh-fa-io-003)) — **PDF-/PNG-Backends bleiben offen** (welle-4).
+  [`LH-FA-IO-003.a`](lastenheft.md#lh-fa-io-003)); **PDF-/PNG-Backend entschieden** (selbst
+  getragene Writer io-resident, export-only, 2D-Maßstabsplan, §1
+  [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007)) — **alle IO-Backends entschieden**.
 - Zielplattformen (siehe `releasing.md`).
 
 ## 8. Historie

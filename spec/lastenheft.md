@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.11
+**Version:** 0.1.12
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -823,8 +823,50 @@ weitere Inhalte werden **nicht geschrieben**.
   [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder), **kein Teil-Export**;
   der Zielpfad bleibt unverändert.
 
-- <a id="lh-fa-io-007"></a>**LH-FA-IO-007 — PDF-Export** (maßstäblicher Plan, vgl. ACC-004).
-- <a id="lh-fa-io-008"></a>**LH-FA-IO-008 — PNG-Export.**
+#### <a id="lh-fa-io-007"></a>LH-FA-IO-007 — PDF-Export
+
+**Beschreibung:** Export des b-cad-Gebäudemodells als **maßstäblicher 2D-Plan** im
+PDF-Format (Grundriss je Geschoss).
+
+**Teilumfang (welle-4):** der Plan zeigt **gerade Wand-Achsen je Geschoss**
+(Achsen-Plan); Wand-Umrisse mit Dicke/Footprint, Räume, Bemaßung, Schraffur, Text,
+Möblierung und die 3D-Ansicht werden **nicht gezeichnet** — ausdrücklich offen, kein
+stiller Vollumfang. **Export-only** (kein Import — aus einem PDF wird kein Modell
+zurückgelesen).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein b-cad-Modell mit Geschossen + geraden Wänden, when nach
+  PDF exportiert, then entsteht eine **valide PDF-Datei**, die ein Standard-PDF-Leser
+  als **maßstäblichen 2D-Grundriss** öffnet (die Wand-Achsen je Geschoss).
+  **Maßstäblich (beobachtbar):** eine auf dem Plan gemessene Länge entspricht der
+  zugehörigen Modell-Abmessung über einen **definierten, im Plan dokumentierten
+  Maßstab** (vgl. [ACC-004](#7-abnahmekriterien)).
+- **Boundary:** Given ein Modell ohne Geschosse/Wände (leer), when exportiert, then
+  entsteht eine **gültige, (annähernd) leere** PDF-Seite **ohne Absturz**.
+- **Negative:** Given ein nicht beschreibbarer Zielpfad, when exportiert, then
+  Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder),
+  **kein Teil-Export**; der Zielpfad bleibt unverändert.
+
+#### <a id="lh-fa-io-008"></a>LH-FA-IO-008 — PNG-Export
+
+**Beschreibung:** Export desselben 2D-Grundriss-Plans als **PNG-Rasterbild**.
+
+**Teilumfang (welle-4):** wie PDF — **gerade Wand-Achsen je Geschoss** als Rasterbild;
+weitere Plan-Inhalte (Footprint/Dicke, Räume, Bemaßung, Schraffur, Text, 3D-Ansicht)
+werden **nicht gezeichnet**. **Export-only.**
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein b-cad-Modell mit Geschossen + geraden Wänden, when nach
+  PNG exportiert, then entsteht eine **valide PNG-Datei** (Rasterbild des
+  2D-Grundrisses mit den Wand-Achsen je Geschoss), die ein Standard-Bildbetrachter
+  öffnet.
+- **Boundary:** Given ein leeres Modell, when exportiert, then entsteht ein **gültiges,
+  (annähernd) leeres** PNG-Bild **ohne Absturz**.
+- **Negative:** Given ein nicht beschreibbarer Zielpfad, when exportiert, then
+  Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder),
+  **kein Teil-Export**; der Zielpfad bleibt unverändert.
 
 ### Modul Benutzeroberfläche (`UI`)
 

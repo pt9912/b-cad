@@ -156,8 +156,20 @@ eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
   **Geländer ausgelassen** (render-only, nur STL). §1 geschärft. AK OCC-frei (Treppe trägt genau
   `step_count` `CLOSED_SHELL` bei → Geländer-Auslassung belegt). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
   + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH**; `make gates` grün (208/208).
-- ⏳ offen: **STEP-B-Rep-Lücke geschlossen** (alle 3D-Bauteile B-Rep: 024a Dächer ✓, 024b Treppen ✓) →
-  **PDF/PNG** ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) · Welle-4-Verifikation → `done/welle-4-results.md`.
+- ✓ **[ADR-0016](../../adr/0016-pdf-png-backend.md) „PDF/PNG-Export-Backend" accepted** (2026-07-01) —
+  **selbst getragener Vektor-PDF- + Raster-PNG-Writer** (Option D, wie IFC/DXF; **io-resident,
+  export-only, kein Qt, keine neue Dependency**), 2D-Achsen-Maßstabsplan; OCC/Qt kein io-residenter
+  Plot (Qt = Driving-/UI-Schicht, Regel E, Gegenfolie [ADR-0014](../../adr/0014-step-stl-export-backend.md)).
+  Unabhängiges Text-Review **0 HIGH** + Projektinhaber-Durchsicht (1 MED voll-Decode-Orakel + 2 LOW)
+  eingearbeitet. **Letzte Format-ADR der welle-4.**
+- ✓ **slice-025a** — **PDF/PNG-AK-Schärfung + Spec-Mapping** ([LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007)/[LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)):
+  Outline → AK (**export-only, 2D-Achsen-Maßstabsplan**, Lastenheft 0.1.12); spez. §1
+  [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007) (self-rolled Writer io-resident, maßstäblich, export-only) +
+  §6 zwei PDF/PNG-Vertragszeilen + **§7 PDF/PNG chirurgisch → alle IO-Backends entschieden** + §4
+  [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um PDF/PNG-Export. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (2 LOW eingearbeitet); reine Doku, gates grün.
+- ⏳ offen: **PDF/PNG-Backend + AK entschieden** ([ADR-0016](../../adr/0016-pdf-png-backend.md) ✓, slice-025a ✓) →
+  **PDF/PNG-Impl (025b)** · Welle-4-Verifikation + Carveout-Audit → `done/welle-4-results.md` →
+  **M4** ([ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
 
 ## Nächste Wellen
 
