@@ -12,6 +12,7 @@
 // Projekt und schreibt das Beleg-Bild — manueller Abnahme-Schritt,
 // kein Gate (ADR-0009 (f)).
 
+#include <array>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -26,6 +27,7 @@
 #include "adapters/io/dxf_export_adapter.h"
 #include "adapters/io/dxf_import_adapter.h"
 #include "adapters/io/pdf_export_adapter.h"
+#include "adapters/io/png_export_adapter.h"
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 #include "adapters/ui/viewer_widget.h"
@@ -113,9 +115,10 @@ int main(int argc, char** argv) {
     bcad::adapters::geometry::StlExportAdapter stl_exporter(geometry);  // geometrie-resident (ADR-0014)
     bcad::adapters::geometry::StepExportAdapter step_exporter;          // geometrie-resident (ADR-0014)
     bcad::adapters::io::PdfExportAdapter pdf_exporter;  // io-resident, export-only (ADR-0016)
+    bcad::adapters::io::PngExportAdapter png_exporter;  // io-resident, export-only (ADR-0016)
     // Symmetrische Importer-/Exporter-Registries (slice-021b): IFC + DXF
     // bidirektional (io-resident), STEP/STL export-only (geometrie-resident),
-    // PDF export-only (io-resident, ADR-0016 — nur in der ExporterMap).
+    // PDF/PNG export-only (io-resident, ADR-0016 — nur in der ExporterMap).
     services::ExchangeService exchange(
         {{bcad::hexagon::ports::driving::ExchangeFormat::Ifc, &ifc_importer},
          {bcad::hexagon::ports::driving::ExchangeFormat::Dxf, &dxf_importer}},
@@ -123,7 +126,8 @@ int main(int argc, char** argv) {
          {bcad::hexagon::ports::driving::ExchangeFormat::Step, &step_exporter},
          {bcad::hexagon::ports::driving::ExchangeFormat::Stl, &stl_exporter},
          {bcad::hexagon::ports::driving::ExchangeFormat::Dxf, &dxf_exporter},
-         {bcad::hexagon::ports::driving::ExchangeFormat::Pdf, &pdf_exporter}});
+         {bcad::hexagon::ports::driving::ExchangeFormat::Pdf, &pdf_exporter},
+         {bcad::hexagon::ports::driving::ExchangeFormat::Png, &png_exporter}});
 
     const QStringList cli = QApplication::arguments();
     const int import_index =
@@ -159,27 +163,27 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Headless-Export je Format (IFC io-resident, STEP/STL geometrie-resident).
+    // Headless-Export je Format (IFC io-resident, STEP/STL geometrie-resident,
+    // DXF/PDF/PNG io-resident) — Tabelle statt wiederholter if-Blöcke.
     using bcad::hexagon::ports::driving::ExchangeFormat;
-    if (const auto rc = runExportIfRequested(cli, "--export-ifc", exchange,
-                                             service, ExchangeFormat::Ifc, "IFC")) {
-        return *rc;
-    }
-    if (const auto rc = runExportIfRequested(cli, "--export-stl", exchange,
-                                             service, ExchangeFormat::Stl, "STL")) {
-        return *rc;
-    }
-    if (const auto rc = runExportIfRequested(cli, "--export-step", exchange,
-                                             service, ExchangeFormat::Step, "STEP")) {
-        return *rc;
-    }
-    if (const auto rc = runExportIfRequested(cli, "--export-dxf", exchange,
-                                             service, ExchangeFormat::Dxf, "DXF")) {
-        return *rc;
-    }
-    if (const auto rc = runExportIfRequested(cli, "--export-pdf", exchange,
-                                             service, ExchangeFormat::Pdf, "PDF")) {
-        return *rc;
+    struct ExportOption {
+        const char* flag;
+        ExchangeFormat format;
+        const char* label;
+    };
+    const std::array<ExportOption, 6> export_options = {{
+        {"--export-ifc", ExchangeFormat::Ifc, "IFC"},
+        {"--export-stl", ExchangeFormat::Stl, "STL"},
+        {"--export-step", ExchangeFormat::Step, "STEP"},
+        {"--export-dxf", ExchangeFormat::Dxf, "DXF"},
+        {"--export-pdf", ExchangeFormat::Pdf, "PDF"},
+        {"--export-png", ExchangeFormat::Png, "PNG"},
+    }};
+    for (const ExportOption& opt : export_options) {
+        if (const auto rc = runExportIfRequested(cli, opt.flag, exchange, service,
+                                                 opt.format, opt.label)) {
+            return *rc;
+        }
     }
 
     // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz,

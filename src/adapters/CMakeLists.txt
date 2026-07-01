@@ -63,6 +63,12 @@ add_library(bcad_adapters
     io/plan_geometry.cpp
     io/pdf_writer.cpp
     io/pdf_export_adapter.cpp
+    # slice-025c: PNG-Export (ADR-0016 Option D) — hand-gerollter Raster-PNG-
+    # Encoder (Bitmap + Chunks + CRC-32/Adler-32/stored-DEFLATE) + Domänen→Raster-
+    # Mapping (Fit-to-Canvas, Geschoss-Farben; Reuse plan_geometry/io_atomic_write),
+    # export-only. KEINE neue Dependency (kein zlib/libpng); arch-check Regel A/B.
+    io/png_writer.cpp
+    io/png_export_adapter.cpp
 )
 
 target_include_directories(bcad_adapters

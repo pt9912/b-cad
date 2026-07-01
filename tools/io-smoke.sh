@@ -4,7 +4,7 @@
 # Belegt die sonst coverage-ausgenommene main.cpp-Glue (CLI-Parsing +
 # Composition-Root-Verdrahtung der --import-*/--export-*-Pfade): startet das
 # gebaute Binary headless je Austauschformat und prueft exit 0 + nicht-leere
-# Datei. IFC/DXF round-trippen (Export + Re-Import); STEP/STL/PDF sind export-only.
+# Datei. IFC/DXF round-trippen (Export + Re-Import); STEP/STL/PDF/PNG sind export-only.
 #
 # Laeuft unter EINEM xvfb-Lauf (QApplication wird in main.cpp unbedingt gebaut);
 # der Makefile-Aufruf wickelt `timeout ... xvfb-run -a` darum (Cleanup-Race,
@@ -66,4 +66,7 @@ expect_export --export-stl "$OUT/s.stl"
 echo "io-smoke: PDF (Export-only, ADR-0016 — self-rolled Vektor-Maßstabsplan)"
 expect_export --export-pdf "$OUT/s.pdf"
 
-echo "io-smoke ok: IFC/DXF Export+Re-Import + STEP/STL/PDF Export — alle exit 0, Dateien nicht leer"
+echo "io-smoke: PNG (Export-only, ADR-0016 — self-rolled Raster-Grundriss)"
+expect_export --export-png "$OUT/s.png"
+
+echo "io-smoke ok: IFC/DXF Export+Re-Import + STEP/STL/PDF/PNG Export — alle exit 0, Dateien nicht leer"
