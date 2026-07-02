@@ -1,6 +1,6 @@
 # Roadmap — b-cad
 
-**Status:** Aktiv. **Letzte Änderung:** 2026-07-01.
+**Status:** Aktiv. **Letzte Änderung:** 2026-07-02.
 
 **Format-Regel:** Reihenfolge von **Wellen**, keine Reihenfolge von
 Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
@@ -11,193 +11,69 @@ Feature-Sequenz, kein Reconciliation-Plan.
 
 ## Aktuelle Welle
 
-> **welle-4-austausch ABGESCHLOSSEN (2026-07-01) — Meilenstein M4 erreicht.**
-> Kanonische Closure: [`../done/welle-4-results.md`](../done/welle-4-results.md)
-> + §Abgeschlossene Wellen. **Keine aktive Welle;** die nächste
-> (`welle-5-erweiterung`) ist eine **Planungs-Entscheidung** (kein Automatismus,
-> Trigger: welle-4 done + Plugin-API-/ABI-ADR) — siehe §Nächste Wellen. Der
-> folgende welle-4-Verlauf ist **historischer Record**.
+**Welle-ID:** welle-5-erweiterung
+**Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**Welle-ID:** welle-4-austausch (abgeschlossen)
-**Zeitraum:** 2026-06-16 – 2026-07-01 (M4 „Offen austauschbar")
+**Vorgänger-Trigger (beide erfüllt):** welle-4-austausch done (2026-07-01,
+[`../done/welle-4-results.md`](../done/welle-4-results.md)) + Plugin-API-/ABI-ADR accepted
+([ADR-0017](../../adr/0017-plugin-api-abi.md), 2026-07-02 — unabhängiges Text-Review
+1 HIGH/4 MED/2 LOW/3 INFO + Projektinhaber-Durchsicht 2 LOW/2 INFO, alle eingearbeitet).
 
-**Welle-Ziel:** b-cad wird **offen austauschbar** ([OBJ-005](../../../../spec/lastenheft.md#3-projektziele)): Import/Export der
-offenen Formate — **IFC** ([LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002), **DXF** ([LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/004),
-**STEP** ([LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)), **STL** ([LH-FA-IO-006](../../../../spec/lastenheft.md#lh-fa-io-006)) + **PDF/PNG-Export**
-([LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007)/008). Jedes Format liegt hinter einem **Driven-Adapter**
-(`ModelImporterPort`/`ModelExporterPort`, angestoßen über `ExchangeModelPort`/
-`ExchangeService`, `adapters/io/`) — der Kern bleibt **format-frei**
-([ADR-0001](../../adr/0001-hexagonale-architektur.md)). Erfüllt **Meilenstein M4**
-(„Offen austauschbar", [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)/[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
-
-**Scope-Entscheidung 2026-06-16:** das **IFC-Backend** fällt zuerst (Roadmap-
-Trigger) — [ADR-0013](../../adr/0013-ifc-bibliothek.md) **accepted**: ein selbst
-getragener IFC-SPF-**Subset**-Codec (Option D, [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)-konform — kein
-Bibliotheks-Zukauf jetzt; Re-Eval auf IfcOpenShell/web-ifc benannt). Die übrigen
-Backends sind **eigene** Entscheidungen: **STEP/STL** OCC-nativ (aus
-[ADR-0002](../../adr/0002-geometrie-kern-opencascade.md) ausgegliedert), **DXF**
-eigene Bibliothek, **PDF/PNG** Render-/Plot-Pfad — je ein Schwester-ADR.
+**Welle-Ziel:** b-cad wird **erweiterbar** ([OBJ-004](../../../../spec/lastenheft.md#3-projektziele), Meilenstein M5):
+ein **Plugin-System** (`PLG`, [LH-FA-PLG-001](../../../../spec/lastenheft.md#modul-plugin-system-plg)..004) hinter dem
+**Plugin-Host als Driving Adapter** ([ADR-0017](../../adr/0017-plugin-api-abi.md): `dlopen` +
+versionierter `extern "C"`-Handshake fail-closed + C++-Port-Facade, Plugins sehen nur
+model + Driving-Ports, Sandbox = Port-Vermittlung + Fehler-Barriere, arch-check-**Regel P**).
+Dazu die aus welle-3 zurückgestellten **2D-Zeichen-Werkzeuge `DRW`**
+([LH-FA-DRW-001](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)..007), **UI-Themes/Docking**
+([LH-FA-UI-001](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)..005-Teilumfang) und **Mehrsprachigkeit**
+([LH-QA-006](../../../../spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)). **M5-bindend ist allein der PLG-Strang**
+([OBJ-004](../../../../spec/lastenheft.md#3-projektziele) »Erweiterung durch Plugins«); DRW/UI/Mehrsprachigkeit sind
+Wellen-Inhalt ohne Meilenstein-Bindung — bei Umfangs-Druck entscheidet der Projektinhaber
+über Nachschnitt (Modul-5-Sizing), nicht der Kalender.
 
 **Closure-Trigger** (deliverable-granular; konkrete Slices emergieren mit
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review):
-- ✓ **IFC-Backend-ADR** ([ADR-0013](../../adr/0013-ifc-bibliothek.md)) accepted
-  (zwei unabhängige Review-Runden, 0 HIGH).
-- **IFC-Schärfung + Impl:** [LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002-AK (lösungsfrei,
-  [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)) +
-  Spec-§6/§7-Nachzug; `ExchangeService` + Importer/Exporter + Subset-Codec;
-  AK-Tests + **Adapter-Pfad-Integrationstest**; neue `arch-check`-io-Regel.
-- ✓ **STEP/STL-Export-Backend** ([ADR-0014](../../adr/0014-step-stl-export-backend.md), OCC-DataExchange nativ,
-  geometrie-residente `ModelExporterPort`-Naht) — AK-Schärfung (slice-020a) **+ Impl
-  (slice-020b: STL alle 3D-Bauteile, STEP B-Rep Wände+Decken)**; **offen:** STEP-B-Rep
-  für Dächer/Treppen (Mesh→Shape-Vernähung, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)).
-- ✓ **DXF-Backend-ADR** ([ADR-0015](../../adr/0015-dxf-backend.md), Accepted 2026-06-17 —
-  selbst getragener DXF-Subset-Codec Option D io-resident, 2D-Grundriss) **+
-  AK-Schärfung (slice-021a) + Impl (slice-021b: Codec + Adapter + Kern-`ImporterMap`)**.
-- **PDF/PNG-Export** (maßstäblicher Plan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)).
-- Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-4-results.md`;
-  [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) (IFC-Export) + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (PDF) erfüllt → **Meilenstein M4**.
+- ✓ **Plugin-API-/ABI-ADR** ([ADR-0017](../../adr/0017-plugin-api-abi.md)) accepted (zwei
+  unabhängige Review-Runden, keine offenen HIGH/MED) — der Wellen-Trigger.
+- **PLG-Schärfung + Impl** ([ADR-0017](../../adr/0017-plugin-api-abi.md)-Folgepflichten):
+  [LH-FA-PLG-001](../../../../spec/lastenheft.md#modul-plugin-system-plg)..004-AK (lösungsfrei,
+  [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei); Sandbox-AK auf beobachtbares
+  Fehlverhalten wohlgeformter Plugins bezogen) + Spec-§4/§5/§6-Nachzug; Plugin-Host +
+  Plugin-API + Beispiel-/Test-Plugin (`plugins/`-Baum) + AK-Tests (werfendes Plugin,
+  ABI-Mismatch, Load→Edit→Unload mit realer `.so`) + arch-check-**Regel P**; benannte
+  Impl-Entscheidungen mit Beleg (Symbol-Naht, Gate-Scope `plugins/`, Unload-Strategie)
+  → [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) erfüllt = **M5-Trigger**.
+- **DRW-Strang:** 2D-Zeichen-Werkzeuge ([LH-FA-DRW-001](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)..007,
+  aus welle-3 zurückgestellt) — Scope-Schnitt je [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start);
+  je gelieferter Familie Outline → AK.
+- **UI-Strang:** dunkles/helles Theme + Docking-Teilumfang
+  ([LH-FA-UI-001](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)..003).
+- **Mehrsprachigkeit:** [LH-QA-006](../../../../spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)
+  (Deutsch/Englisch, UI-Strings vollständig aus Ressourcen).
+- Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-5-results.md`;
+  [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) erfüllt → **Meilenstein M5**.
 
-**Fortschritt (Stand 2026-06-18):**
-- ✓ **[ADR-0013](../../adr/0013-ifc-bibliothek.md) „IFC-Bibliothek" accepted** —
-  IFC-Backend = vendierter SPF-Subset-Codec (Option D); zwei unabhängige
-  Review-Runden (0 HIGH, 5 MED + 4 LOW eingearbeitet). Welle-Trigger erfüllt,
-  Welle **gestartet**.
-- ✓ **slice-019a** — **IFC-AK-Schärfung + Spec-Mapping**: [LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/002 von
-  Outline auf AK (lösungsfrei, Lastenheft 0.1.8); spez. §1 [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)
-  (IFC-SPF-Subset-Mapping, IFC4-Export `IfcWall`/Import IFC4+2x3, atomar) + §6/§7-
-  Nachzug ([ADR-0013](../../adr/0013-ifc-bibliothek.md)-Folgepflicht). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**; reine Doku, gates grün (145).
-- ✓ **slice-019b** — **IFC-Import lauffähig** ([LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)):
-  hand-gerollter IFC-SPF-Subset-Codec (`SpfReader`) + Mapping-Adapter
-  (`IfcImportAdapter`) + Kern-Use-Case (`ExchangeService`, Driving
-  `ExchangeModelPort` / Driven `ModelImporterPort`), end-to-end über den echten
-  Pfad; nicht-IFC/kaputt → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)
-  atomar; spez. §1-Zusatz Geschoss-Höhe ([MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)).
-  `arch-check` A/B isolieren den Codec (Regel F gegenstandslos für Option D →
-  auf externen-Lib-Re-Eval umdatiert). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** + unabhängiges
-  Code-Review **0 HIGH** (1 MED + 2 LOW eingearbeitet); `make gates` grün
-  (165/165, Coverage 91,2 %). Zwei-Commit-Split.
-- ✓ **slice-019c** — **IFC-Export lauffähig** ([LH-FA-IO-002](../../../../spec/lastenheft.md#lh-fa-io-002),
-  [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)): hand-gerollter IFC-SPF-Writer (`IfcSpfWriter`, Spiegel des
-  Readers) + Domänen→IFC4-Mapping (`IfcExportAdapter`) + Kern-Erweiterung
-  (`ExchangeModelPort.exportModel` / Driven `ModelExporterPort`), atomar
-  (Temp+Rename → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)). **Roundtrip** (Export → 019b-Import) erhält
-  Anzahl + Geometrie. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (zwei Pässe) + unabhängiges Code-Review
-  **0 HIGH**; `make gates` grün (171/171, Coverage 91,5 %). **Damit ist der
-  IFC-Strang (Import + Export, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)) abgeschlossen.**
-- ✓ **[ADR-0014](../../adr/0014-step-stl-export-backend.md) „STEP/STL-Export-Backend" accepted** (2026-06-17) —
-  OCC-DataExchange **nativ** (keine neue Dependency, [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)-konform),
-  geometrie-residenter `ModelExporterPort` (Regel C); unabhängiges Text-Review
-  0 HIGH. **Toolchain-Beleg erbracht** (OCC 7.9.2 DataExchange vorhanden).
-- ✓ **slice-020a** — **STEP/STL-AK-Schärfung + Spec-Mapping**: [LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)/006
-  von Outline auf AK (export-only, lösungsfrei, Lastenheft 0.1.9); spez. §1
-  [`LH-FA-IO-005.a`](../../../../spec/lastenheft.md#lh-fa-io-005) (OCC-DataExchange, geometrie-resident, STEP B-Rep / STL Netz,
-  atomar) + §6/§7-Nachzug. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (MED-1/2 + LOW-3); reine Doku, gates grün.
-- ✓ **slice-020b** — **STEP-/STL-Export lauffähig** ([LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)/006): geometrie-
-  residente `ModelExporterPort`-Adapter — **STL** (binär, Dreiecksnetz aller 3D-Bauteile)
-  + **STEP** (B-Rep der OCC-Solid-Bauteile Wände+Decken, AP214), atomar → [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder);
-  geteilter `occ_solids`-Builder; `ExchangeService`-Exporter-Registry; export-only-
-  Import → [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder). **Benannte STEP-Lücke:** Dächer/Treppen (analytische Netze)
-  STL-only. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review/[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) je **0 HIGH**; Zwei-Commit-Split;
-  `make gates` grün (180/180, Coverage 90,0 %).
-- ✓ **[ADR-0015](../../adr/0015-dxf-backend.md) „DXF-Backend" accepted** (2026-06-17) —
-  **selbst getragener DXF-Subset-Codec** (Option D, wie IFC; kein Lib-Zukauf, OCC kann
-  kein DXF), **io-resident**, 2D-Grundriss (gerade Wand-Achsen je Geschoss-`LAYER`);
-  Import → Default-Höhe/-Dicke (benannte Lücke). Text-Review **0 HIGH** (MED-1
-  Import-Dispatch-Kern-Erweiterung + MED-2 + LOW eingearbeitet).
-- ✓ **slice-021a** — **DXF-AK-Schärfung + Spec-Mapping**: [LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/004 von
-  Outline auf AK (bidirektional, 2D-Grundriss, Lastenheft 0.1.10); spez. §1
-  [`LH-FA-IO-003.a`](../../../../spec/lastenheft.md#lh-fa-io-003) (ASCII-DXF-Subset-Codec io-resident, gerade Wand-Achsen je
-  Geschoss-`LAYER`, Import-Defaults, atomar) + §6/§7/§4-Nachzug (§4 [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um
-  STEP/STL/DXF-Export, latente [ADR-0014](../../adr/0014-step-stl-export-backend.md)-Lücke mitgeschlossen). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**
-  (MED-1/2 + LOW-1); reine Doku, gates grün.
-- ✓ **slice-021b** — **DXF-Import/-Export lauffähig** ([LH-FA-IO-003](../../../../spec/lastenheft.md#lh-fa-io-003)/[LH-FA-IO-004](../../../../spec/lastenheft.md#lh-fa-io-004)):
-  io-residenter, selbst getragener ASCII-DXF-Subset-Codec (R12, `LINE`/`LWPOLYLINE`
-  Reader+Writer, **keine neue Dependency**) + `DxfImportAdapter`/`DxfExportAdapter` hinter
-  `ModelImporterPort`/`ModelExporterPort`; **Kern-Import-Dispatch auf `ImporterMap`** umgestellt
-  (symmetrisch zur `ExporterMap`, [ADR-0015](../../adr/0015-dxf-backend.md)-Review-MED-1; STEP/STL
-  bleiben export-only via Lookup-Miss); `ExchangeFormat::Dxf` + Composition Root
-  (`--import-dxf`/`--export-dxf`); 2D-Grundriss (gerade Wand-Achsen je Geschoss-`LAYER`, Import →
-  Default-Höhe/-Dicke). **Roundtrip** = Achsen-Anzahl je Geschoss + Achs-Lage (nicht Höhe/Dicke).
-  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** + unabhängiges Code-Review **0 HIGH** (2 MED Test-Orakel-Lücken
-  geschlossen); `make gates` grün (201/201, Coverage 89,9 %). **Damit ist der DXF-Strang
-  (Import + Export) abgeschlossen.**
-- ✓ **slice-023a** — **Dach-Volumen AK-Schärfung + Spec-Geometrie** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006)):
-  neue Lastenheft-Anforderung — das Dach bekommt eine **Dicke** und wird ein **Volumenkörper**
-  (Lastenheft 0.1.11, lösungsfrei); §1 [`LH-FA-ROF-001.a`](../../../../spec/lastenheft.md#lh-fa-rof-001--satteldach) geschlossener Schräg-Slab (**vertikaler**
-  Offset, Dach-Volumen **analytisch im Kern** ohne `Solid.volume_mm3`), §3 `ROOF_THICKNESS_*`
-  (50/500/200 mm). Löst die ROF↔[LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005)-Inkonsistenz;
-  **Voraussetzung für STEP-B-Rep der Dächer**. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-  **0 HIGH**; reine Doku, gates grün.
-- ✓ **slice-023b** — **Dach-Volumen-Geometrie** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006), [LH-FA-EVL-002](../../../../spec/lastenheft.md#lh-fa-evl-002--volumenberechnung)):
-  `roofMesh` baut einen **geschlossenen, wasserdichten Schräg-Slab** der Dicke `d` (Oberseite + vertikal
-  versetzte Unterseite + Rand-Seitenwände; alle 3 Typen + Walm-Zeltdach-Apex); `Roof.thickness_mm` +
-  `setRoofThickness`; **EVL-Dach-Volumen** `bx·ty·d` analytisch (`roofs_m3`) — welle-3-Lücke geschlossen.
-  Invarianten-Tests (wasserdicht: jede Kante 2 Flächen, außen-orientiert, **Volumen == `bx·ty·d`**).
-  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) je **0 HIGH** (Geometrie repliziert, Volumen bit-exakt); `make gates` grün (204/204, 90,2 %).
-- ✓ **slice-023c** — **Dach-Thickness-Persistenz** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006),
-  [LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/003): schließt die in 023b benannte
-  Persistenz-Lücke — `roofs.thickness_mm` (Dach-Volumenkörper) ist round-trip-treu. **Erste Schema-Änderung
-  im Repo:** `data-model.yaml`-Spalte `thickness_mm` (decimal 12,3, default 200) + `schema.sql` via
-  gepinntem d-migrate neu erzeugt + `insertRoofs`/`loadRoofs`-Bind/Read; Round-Trip-AK (nicht-glatte Dicke)
-  + Default-Pfad-Sonde (`kDefaultRoofThicknessMm`). **No-Version-Bump** regelwerk-konform ([`releasing.md` §27](../../../user/releasing.md)
-  Abwärtskompat-Zweig, [ADR-0006](../../adr/0006-relationales-schema-design.md)). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-  **2 HIGH** (falscher Präzedenz/ungegründete Versions-Entscheidung) **behoben**, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
-  n/a; `make schema-check` + `make gates` grün (205/205, Coverage 90,3 %).
-- ✓ **slice-024a** — **Dächer STEP-B-Rep** ([LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005),
-  [LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006)): schließt die **Dach-Hälfte** der in 020b benannten
-  STEP-Lücke — der wasserdichte `roofMesh` (023b) wird via OCC `BRepBuilderAPI_Sewing` zu **einem** B-Rep-Solid
-  vernäht (neuer `meshToSolid` in `occ_solids`, **fail-closed** via `BRepCheck_Analyzer`; `TKShHealing`
-  gelinkt, keine neue Dependency). §1 [`LH-FA-IO-005.a`](../../../../spec/lastenheft.md#lh-fa-io-005) geschärft (Dächer B-Rep;
-  Treppen-Lücke benannt bis 024b). AK **OCC-frei** (`CLOSED_SHELL`/`MANIFOLD_SOLID_BREP`-Text-Orakel: Dach
-  trägt genau ein geschlossenes Solid bei). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-  HIGH-1 behoben + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH**; `make gates` grün (206/206).
-- ✓ **slice-024b** — **Treppen STEP-B-Rep** ([LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005),
-  [LH-FA-STR-001](../../../../spec/lastenheft.md#lh-fa-str-001--treppe-erzeugen)): schließt die **Treppen-Hälfte** —
-  **damit sind alle 3D-Bauteile B-Rep**. Die Stufen als **analytische** OCC-Box-Solids
-  (`makeBoxSolid`/`BRepPrimAPI_MakeBox`, **nicht** vernäht — `stairMesh` ist nicht-manifold); neue
-  Kern-Query `stairStepBoxes` als **eine** Box-Wahrheit (`stairMesh` darauf refaktoriert, byte-identisch);
-  **Geländer ausgelassen** (render-only, nur STL). §1 geschärft. AK OCC-frei (Treppe trägt genau
-  `step_count` `CLOSED_SHELL` bei → Geländer-Auslassung belegt). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-  + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH**; `make gates` grün (208/208).
-- ✓ **[ADR-0016](../../adr/0016-pdf-png-backend.md) „PDF/PNG-Export-Backend" accepted** (2026-07-01) —
-  **selbst getragener Vektor-PDF- + Raster-PNG-Writer** (Option D, wie IFC/DXF; **io-resident,
-  export-only, kein Qt, keine neue Dependency**), 2D-Achsen-Maßstabsplan; OCC/Qt kein io-residenter
-  Plot (Qt = Driving-/UI-Schicht, Regel E, Gegenfolie [ADR-0014](../../adr/0014-step-stl-export-backend.md)).
-  Unabhängiges Text-Review **0 HIGH** + Projektinhaber-Durchsicht (1 MED voll-Decode-Orakel + 2 LOW)
-  eingearbeitet. **Letzte Format-ADR der welle-4.**
-- ✓ **slice-025a** — **PDF/PNG-AK-Schärfung + Spec-Mapping** ([LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007)/[LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)):
-  Outline → AK (**export-only, 2D-Achsen-Maßstabsplan**, Lastenheft 0.1.12); spez. §1
-  [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007) (self-rolled Writer io-resident, maßstäblich, export-only) +
-  §6 zwei PDF/PNG-Vertragszeilen + **§7 PDF/PNG chirurgisch → alle IO-Backends entschieden** + §4
-  [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um PDF/PNG-Export. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH** (2 LOW eingearbeitet); reine Doku, gates grün.
-- ✓ **slice-025b** — **PDF-Export lauffähig** ([LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007), [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)):
-  self-rolled Vektor-`PdfWriter` io-resident (Option D, kein Qt/OCC, **keine neue Dependency**) +
-  `PdfExportAdapter` — je Geschoss eine A4-Seite mit **maßstäblichem (1:100)** 2D-Grundriss (Wand-Achsen)
-  + Rahmen + „M 1:100"-Label; `ExchangeFormat::Pdf` additiv, `--export-pdf` + `ExporterMap` (export-only);
-  geteilte `plan_geometry`/`io_atomic_write` (für 025c). **Voll-Decode-Orakel** (Byte + Objektgraph/Reader-
-  Öffenbarkeit + je Geschoss) + Maßstabs-/Orientierungs-Sonde. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-  + unabh. **Code-Review je 0 HIGH** (reale Reader-Öffenbarkeit **empirisch** belegt — poppler/gs).
-  `make gates` grün (215/215, 90,4 %) + `make io-smoke` grün. **Damit ist [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt.**
-- ✓ **slice-025c** — **PNG-Export lauffähig** ([LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)):
-  self-rolled Raster-`PngWriter` io-resident (Option D, kein Qt/OCC/zlib, **keine neue Dependency**;
-  Bitmap + Bresenham + Chunks/CRC-32/stored-DEFLATE/Adler-32) + `PngExportAdapter` — kombiniertes
-  Rasterbild des Grundrisses (feste Leinwand 800×600, Fit-to-Canvas geguardet, je Geschoss eine Farbe);
-  `ExchangeFormat::Png` additiv, `--export-png` + `ExporterMap` (export-only); **Reuse** `plan_geometry`/
-  `io_atomic_write` (025b). **Voll-Decode-Orakel** mit **eigenständigen** CRC/Adler/Inflate + degenerierte-
-  BBox-Guard. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-  + **Code-Review je 0 HIGH** (libpng-Öffenbarkeit + binascii/zlib **empirisch** belegt). `make gates`
-  grün (220/220, 90,7 %) + `make io-smoke` grün. **Damit ist der PDF/PNG-Strang komplett + alle
-  welle-4-Format-Backends geliefert.**
-- ✓ **Welle-4-Verifikation + Carveout-Audit DONE** (2026-07-01): unabhängiger Verifier (Reviewer ≠ Autor)
-  reproduzierte `make gates` (220/220, 90,7 %) + `schema-check` (kein Drift) + `io-smoke` (alle 6 Formate)
-  selbst, **0 HIGH**; keine aktiven Carveouts; [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)+[ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) sachlich erreicht → [`done/welle-4-results.md`](../done/welle-4-results.md).
-  **Meilenstein M4 „Offen austauschbar" erreicht.**
+**Fortschritt (Stand 2026-07-02):**
+- ✓ **[ADR-0017](../../adr/0017-plugin-api-abi.md) „Plugin-API-/ABI-Vertrag und Sandbox-Modell" accepted** —
+  `dlopen`/`dlsym`/`dlclose` (glibc, **keine neue Dependency**, kein `QPluginLoader` — Regel E)
+  + versionierter `extern "C"`-Handshake fail-closed + C++-Port-Facade **in-process** unter
+  gepinnter Toolchain; Plugins sehen nur model + Driving-Ports (kein Beobachter-Zugang v1);
+  Sandbox = Port-Vermittlung + Fehler-Barriere mit ehrlich benannten Grenzen (kein
+  Speicherschutz, Silent-Corruption-Pfad, Threading-Vertrag); Symbol-Naht = benannte
+  Impl-Entscheidung (statisches Kern-Dazulinken verboten). Unabhängiges Text-Review
+  (**1 HIGH** — nicht existierender Undo-Stack als Ist behauptet, behoben — + 4 MED + 2 LOW
+  + 3 INFO) + Projektinhaber-Durchsicht (2 LOW + 2 INFO), alle eingearbeitet; Folgepflichten
+  im [ADR-Index](../../adr/README.md). **Welle-Trigger erfüllt, Welle gestartet.**
 
 ## Nächste Wellen
 
-| Welle | Trigger | Wichtigste Slices (geplant) | Geschätzter Aufwand |
-|---|---|---|---|
-| welle-5-erweiterung | welle-4 done | Plugin-System (`PLG`), UI-Themes/Docking + **2D-Zeichen-Werkzeuge `DRW`** (Bemaßung/Layer/Fangpunkte/Gruppen, aus welle-3 zurückgestellt), Mehrsprachigkeit ([`LH-QA-006`](../../../../spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)) | M |
+Keine Folge-Welle benannt — die nächste Welle nach M5 ist eine
+**Planungs-Entscheidung** (kein Automatismus). Benannte Kandidaten-Themen aus
+den Re-Eval-Trägern der welle-3/-4-Closures: Format-Reichtum (IFC-/DXF-
+Bibliothek, PDF-Fit-to-Page/Bemaßung), Wandtyp-Bibliothek (`wall_type`-
+Template-Fallback), Observability (`TracingPort`-Anbindung), Drittanbieter-
+Attribution (slice-006 in `open/`).
 
 ## Meilensteine
 
@@ -218,7 +94,7 @@ flowchart LR
     W2[welle-2-bauteile<br/>done 2026-06-14]
     W3[welle-3-auswertung<br/>done 2026-06-16]
     W4[welle-4-austausch<br/>done 2026-07-01]
-    W5[welle-5-erweiterung<br/>nächste Planungs-Entscheidung]
+    W5[welle-5-erweiterung<br/>aktiv seit 2026-07-02]
 
     W1 --> W1V
     W1 --> W2 --> W3 --> W4 --> W5
