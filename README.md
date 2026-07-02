@@ -1,19 +1,23 @@
 # b-cad
 
-> **Projekt-Status:** Welle `welle-4-austausch` aktiv. **Meilenstein M3
-> erreicht** — Kern-MVP (Wände, Raumerkennung, OCC-Extrusion, SQLite-Persistenz
-> inkl. Crash-Recovery, Änderungs-Benachrichtigung; welle-1, M1), sichtbarer
-> Qt-6-3D-Viewer (welle-1v, [ACC-002](spec/lastenheft.md#7-abnahmekriterien)), **alle parametrischen Bauteile**
-> (Türen/Fenster, Dach, Decken/Fundament, Treppen; welle-2, M2) und
-> **Auswertungen** (Flächen/Volumen/Wohnfläche, Material/Listen/Kosten über einen
-> read-only `EvaluatePort`; welle-3, M3) sind implementiert. Aktuell: **offener
-> Formataustausch** ([OBJ-005](spec/lastenheft.md#3-projektziele)) — **IFC** (Import+Export), **STEP/STL**
-> (Export) und **DXF** (Import+Export, 2D-Grundriss) geliefert; ein headless
-> Binary-Smoke (`make io-smoke`) deckt die IO-Pfade ab. Das **Dach** ist ein
-> wasserdichter **Volumenkörper** mit persistenter Dicke (welle-4), und der
-> **STEP-Export schreibt alle 3D-Bauteile als B-Rep** (Wände/Decken, Dächer
-> vernäht, Treppen-Stufen analytisch). **Offen** bis Meilenstein M4: PDF/PNG-Export
-> und die Welle-4-Verifikation.
+> **Projekt-Status:** Welle `welle-5-erweiterung` aktiv (Ziel **Meilenstein M5
+> „Erweiterbar"**, [OBJ-004](spec/lastenheft.md#3-projektziele)). **Meilenstein M4 erreicht** — Kern-MVP (Wände,
+> Raumerkennung, OCC-Extrusion, SQLite-Persistenz inkl. Crash-Recovery,
+> Änderungs-Benachrichtigung; welle-1, M1), sichtbarer Qt-6-3D-Viewer (welle-1v,
+> [ACC-002](spec/lastenheft.md#7-abnahmekriterien)), **alle parametrischen Bauteile** (Türen/Fenster, Dach,
+> Decken/Fundament, Treppen; welle-2, M2), **Auswertungen** (Flächen/Volumen/
+> Wohnfläche, Material/Listen/Kosten über einen read-only `EvaluatePort`;
+> welle-3, M3) und **offener Formataustausch** ([OBJ-005](spec/lastenheft.md#3-projektziele); welle-4, M4):
+> alle sechs Formate — **IFC** (Import+Export, [ACC-003](spec/lastenheft.md#7-abnahmekriterien)), **DXF**
+> (Import+Export, 2D-Grundriss), **STEP/STL** (Export, B-Rep aller 3D-Bauteile),
+> **PDF** (maßstäblicher Plan, [ACC-004](spec/lastenheft.md#7-abnahmekriterien)) und **PNG** — liegen hinter
+> Driven-Adaptern, der Kern bleibt format-frei. Aktuell: **Plugin-System**
+> ([LH-FA-PLG-001](spec/lastenheft.md#modul-plugin-system-plg)..004) — der Plugin-API-/ABI-Vertrag ist entschieden
+> ([ADR-0017](docs/plan/adr/0017-plugin-api-abi.md), accepted: Plugin-Host als Driving Adapter, in-process,
+> Sandbox = Port-Vermittlung + Fehler-Barriere), die AK-Schärfung (slice-026a)
+> ist geplant ([MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH) und startbar; danach folgen in der Welle
+> 2D-Zeichen-Werkzeuge (`DRW`), UI-Themes/Docking und Mehrsprachigkeit
+> ([LH-QA-006](spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)).
 > Einstieg: [`harness/README.md`](harness/README.md).
 
 ## Was ist b-cad?
