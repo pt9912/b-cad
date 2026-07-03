@@ -69,7 +69,8 @@ Wellen-Inhalt ohne Meilenstein-Bindung — bei Umfangs-Druck entscheidet der Pro
   (Verschärfung). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
   **0 HIGH** + unabhängige read-only-Diff-Durchsicht **0 HIGH/MED/LOW**; `make gates` grün.
   Erste [ADR-0017](../../adr/0017-plugin-api-abi.md)-Folgepflicht erfüllt →
-  **slice-026b (PLG-Impl) startbar** (eigenes MR-006 davor).
+  **slice-026b (PLG-Impl) startbar** (eigenes
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) davor).
 - ✓ **[ADR-0017](../../adr/0017-plugin-api-abi.md) „Plugin-API-/ABI-Vertrag und Sandbox-Modell" accepted** —
   `dlopen`/`dlsym`/`dlclose` (glibc, **keine neue Dependency**, kein `QPluginLoader` — Regel E)
   + versionierter `extern "C"`-Handshake fail-closed + C++-Port-Facade **in-process** unter
