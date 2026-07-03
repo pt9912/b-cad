@@ -11,11 +11,18 @@
 > alle sechs Formate — **IFC** (Import+Export, [ACC-003](spec/lastenheft.md#7-abnahmekriterien)), **DXF**
 > (Import+Export, 2D-Grundriss), **STEP/STL** (Export, B-Rep aller 3D-Bauteile),
 > **PDF** (maßstäblicher Plan, [ACC-004](spec/lastenheft.md#7-abnahmekriterien)) und **PNG** — liegen hinter
-> Driven-Adaptern, der Kern bleibt format-frei. Aktuell: **Plugin-System**
-> ([LH-FA-PLG-001](spec/lastenheft.md#modul-plugin-system-plg)..004) — der Plugin-API-/ABI-Vertrag ist entschieden
-> ([ADR-0017](docs/plan/adr/0017-plugin-api-abi.md), accepted: Plugin-Host als Driving Adapter, in-process,
-> Sandbox = Port-Vermittlung + Fehler-Barriere), die AK-Schärfung (slice-026a)
-> ist geplant ([MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH) und startbar; danach folgen in der Welle
+> Driven-Adaptern, der Kern bleibt format-frei. **Plugin-System geliefert**
+> ([LH-FA-PLG-001](spec/lastenheft.md#lh-fa-plg-001)..004, [ADR-0017](docs/plan/adr/0017-plugin-api-abi.md) accepted + alle drei
+> Folgepflichten erfüllt): Plugin-Host als Driving Adapter (`dlopen`,
+> versionierter Handshake fail-closed, Fehler-Barriere), Plugin-API
+> (`src/plugin_api/`, Port-Subset v1) und Beispiel-/Test-Plugins im
+> `plugins/`-Baum, AK-getestet mit realen `.so` — der
+> [OBJ-004](spec/lastenheft.md#3-projektziele)/M5-Pfad ist frei (Buchung bei der Welle-Closure). Zusätzlich
+> ist die Architektur **richtungs-rein** für die geplante
+> arch-check-Ablösung durch a-check (Quergewerk slice-028/029:
+> Berechnungs-Kerne in `src/hexagon/services/geometry/`, ui verzeichnislich
+> in `view/` [driven] + `command/` [driving] getrennt). Geparkt startbar:
+> lint-Härtung (slice-027, [MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH); danach folgen in der Welle
 > 2D-Zeichen-Werkzeuge (`DRW`), UI-Themes/Docking und Mehrsprachigkeit
 > ([LH-QA-006](spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)).
 > Einstieg: [`harness/README.md`](harness/README.md).
@@ -123,16 +130,18 @@ b-cad/
 │   ├── spezifikation.md      Wertebereiche, Fehler-Codes, OTel-Spans
 │   └── architecture.md       hexagonale Zerlegung, Ports, CMake-Targets
 ├── src/
-│   ├── hexagon/              Kern (model/ ports/ services/) — framework-frei
-│   ├── adapters/             Qt/OCC/SQLite (ui/ geometry/ persistence/ io/ plugin/)
+│   ├── hexagon/              Kern (model/ ports/ services/ inkl. services/geometry/) — framework-frei
+│   ├── plugin_api/           Plugin-Vertragsschicht (header-only, ADR-0017)
+│   ├── adapters/             Qt/OCC/SQLite (ui/{view,command}/ geometry/ persistence/ io/ plugin/)
 │   └── main.cpp              Composition Root
+├── plugins/                  zur Laufzeit ladbare Plugins (Beispiel + Test-Fixtures)
 ├── tests/                    GoogleTest (hexagon/ adapters/ e2e/)
 ├── tools/                    Gate-Skripte (arch-check, gate-consistency, suppression-gate) + Dockerfile; docs-check via d-check (MR-007)
 └── docs/
     ├── glossar.md
     ├── user/releasing.md
     └── plan/
-        ├── adr/              ADR-Index + ADR-0001..0015
+        ├── adr/              ADR-Index + ADR-0001..0017
         ├── planning/         Slice-Lifecycle (open/next/in-progress/done/done-archive) + Roadmap
         └── carveouts/        dokumentierte Gate-Ausnahmen (derzeit keine)
 ```
