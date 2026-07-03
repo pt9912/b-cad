@@ -263,3 +263,4 @@ Tabelle trägt keine eigene Anforderung und keine zeitliche Schicht
 | Austauschformate: STEP/STL-Export über `ModelExporterPort` (OCC-DataExchange, **geometrie-resident** — OCC nur im Geometrie-Adapter, Regel C) | [ADR-0014](../docs/plan/adr/0014-step-stl-export-backend.md) |
 | Austauschformate: DXF Import+Export über `ModelImporterPort`/`ModelExporterPort` (selbst getragener 2D-Subset-Codec **io-resident**, kein OCC — wie IFC) | [ADR-0015](../docs/plan/adr/0015-dxf-backend.md) |
 | Austauschformate: PDF-/PNG-Export über `ModelExporterPort` (selbst getragene Vektor-PDF-/Raster-PNG-Writer **io-resident**, kein OCC, kein Qt — Export-only, 2D-Maßstabsplan) | [ADR-0016](../docs/plan/adr/0016-pdf-png-backend.md) |
+| Plugin-Host/Plugin-API als zweiter Driving Adapter (Plugins sehen model + Driving-Ports, versionierter Vertrag fail-closed; Sandbox = Port-Vermittlung + Fehler-Barriere, in-process) | [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md) |

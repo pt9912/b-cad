@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.12
+**Version:** 0.1.13
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -878,11 +878,80 @@ werden **nicht gezeichnet**. **Export-only.**
 
 ### Modul Plugin-System (`PLG`)
 
-- **LH-FA-PLG-001 — Dynamische Plugins** (Laden/Entladen zur Laufzeit).
-- **LH-FA-PLG-002 — Plugin-API** (stabiler Vertrag, vgl. ADR-Folge).
-- **LH-FA-PLG-003 — Plugin-Lifecycle.**
-- **LH-FA-PLG-004 — Plugin-Sandbox** (Plugin darf das Modell nicht
-  korruptieren).
+#### <a id="lh-fa-plg-001"></a>LH-FA-PLG-001 — Dynamische Plugins
+
+**Beschreibung:** Plugins erweitern b-cad um modell-bezogene Funktionen und
+werden **zur Laufzeit** geladen und entladen (ohne Neustart).
+
+**Teilumfang (welle-5):** Plugins wirken auf das **Gebäudemodell** (lesen und
+ändern über dieselben geprüften Wege wie die manuelle Bedienung) und werden
+tätig, wenn sie aufgerufen werden — sie reagieren in dieser Ausbaustufe
+**nicht selbsttätig** auf Modell-Änderungen (benannte Lücke). Eigene
+Oberflächen-Elemente aus Plugins (Panels, Werkzeuge), Skript-Plugins und ein
+Signier-/Vertrauensmodell sind **nicht** Teil dieser Ausbaustufe — ausdrücklich
+offen, kein stiller Vollumfang. Ein geladenes Plugin kann so weitreichend
+wirken wie die manuelle Bedienung; das Laden ist eine **bewusste
+Nutzer-Entscheidung**.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein laufendes b-cad und eine Plugin-Datei, when das
+  Plugin geladen wird, then steht seine Funktion **ohne Neustart** zur
+  Verfügung; when es entladen wird, then enden seine Wirkungen **ohne
+  Neustart**, die Anwendung läuft weiter.
+- **Boundary:** Given eine nicht ladbare Datei (kein Plugin / defekt), when
+  geladen, then **sichtbare Ablehnung ohne Absturz**; das Gebäudemodell
+  bleibt unverändert.
+
+#### <a id="lh-fa-plg-002"></a>LH-FA-PLG-002 — Plugin-API
+
+**Beschreibung:** Plugins nutzen einen **stabilen, versionierten Vertrag**
+zur Anwendung.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein zum laufenden b-cad **passendes** Plugin, when
+  geladen, then wird es angenommen.
+- **Negative:** Given ein Plugin mit **unpassendem Vertragsstand** (für eine
+  andere b-cad-Version gebaut), when geladen, then wird es **vor jeder
+  Wirkung abgelehnt** (sichtbare Meldung, **ohne jede (Teil-)Wirkung**; das
+  Gebäudemodell bleibt unverändert) — statt undefiniert zu laufen. Der
+  Vertragsstand ist **versioniert**, und die Ablehnung **nennt ihn**.
+
+#### <a id="lh-fa-plg-003"></a>LH-FA-PLG-003 — Plugin-Lifecycle
+
+**Beschreibung:** Der Lebenszyklus eines Plugins ist beobachtbar und endet
+kontrolliert.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Plugin, das geladen, benutzt und wieder entladen
+  wird, then ist die Zustandsfolge **Laden → Aktiv → Beenden → Entladen**
+  beobachtbar; **nach** dem Entladen hat das Plugin **keine** weitere Wirkung.
+- **Negative:** Given ein Fehler in einem **beliebigen** Schritt dieser
+  Folge, when er auftritt, then wirkt das Plugin nicht (weiter) und die
+  Anwendung läuft weiter.
+
+#### <a id="lh-fa-plg-004"></a>LH-FA-PLG-004 — Plugin-Sandbox
+
+**Beschreibung:** Ein Plugin darf das Gebäudemodell nicht korruptieren.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path (Isolierung):** Given ein Plugin, das beim Arbeiten einen
+  Fehler auslöst (**wohlgeformtes** Fehlverhalten, z. B. eine Ausnahme), when
+  der Fehler auftritt, then wird das Plugin **isoliert/entladen** (sichtbare
+  Meldung), das **Gebäudemodell bleibt unverändert**, die Anwendung läuft
+  weiter.
+- **Kein Nebeneingang:** Modell-Änderungen durch Plugins unterliegen
+  **denselben sichtbaren Prüf-/Klemm-Regeln wie manuelle Eingaben**.
+- **Ehrlichkeits-Klausel (Grenze dieser Ausbaustufe):** der Schutz gilt für
+  **wohlgeformte** Plugins. Ein Plugin mit beliebigem Maschinencode kann die
+  Anwendung **zum Absturz bringen** — dann gilt die Crash-Recovery-Zusage
+  ([LH-QA-005](#lh-qa-005--crash-recovery)): der letzte gespeicherte
+  konsistente Stand bleibt ladbar — **oder Daten unbemerkt verfälschen, die
+  ein nachfolgendes Speichern übernimmt; dagegen gibt es in dieser
+  Ausbaustufe keinen Schutz.**
 
 ## 5. Nichtfunktionale Anforderungen
 

@@ -1,7 +1,7 @@
 ---
 id: slice-026a
 titel: Plugin-System — AK-Schärfung [LH-FA-PLG-001](../../../../spec/lastenheft.md#modul-plugin-system-plg)..004 & Spec-Mapping (parametrisiert auf [ADR-0017](../../adr/0017-plugin-api-abi.md))
-status: in-progress
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-PLG-001](../../../../spec/lastenheft.md#modul-plugin-system-plg), [LH-FA-PLG-002](../../../../spec/lastenheft.md#modul-plugin-system-plg), [LH-FA-PLG-003](../../../../spec/lastenheft.md#modul-plugin-system-plg), [LH-FA-PLG-004](../../../../spec/lastenheft.md#modul-plugin-system-plg)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0017](../../adr/0017-plugin-api-abi.md)]
@@ -9,13 +9,13 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 026a: Plugin-System — AK-Schärfung & Spec-Mapping
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH / 1 MED / 3 LOW / 3 INFO**;
-Start **nicht blockiert**, MED-1 (Ehrlichkeits-Klausel um Silent-Corruption-
-Grenzfall vervollständigt) + LOW-1 (Wortlaut ohne „Initialisierung") + LOW-2
-(ids-Familie um PLG) + LOW-3/INFO-1..3 (Ausführungs-/Closure-Hinweise)
-eingearbeitet; beide benannten Entscheidungspunkte bestätigt (Sandbox-AK-
-Fassung = legitime Reifung, keine stille Schwächung; ein Code/zwei Events
-vorzugswürdig). [Report](../../../reviews/2026-07-02-slice-026a-plan.md).
+**Status:** done (2026-07-03). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review **0 HIGH / 1 MED / 3 LOW / 3 INFO**
+(MED-1 Ehrlichkeits-Klausel beide Grenzfälle + LOW-1 Wortlaut ohne
+„Initialisierung" + LOW-2 ids-Familie um PLG + LOW-3/INFO-1..3
+Ausführungs-/Closure-Hinweise, alle eingearbeitet; beide benannten
+Entscheidungspunkte bestätigt — Sandbox-AK-Fassung = legitime Reifung, ein
+Code/zwei Events vorzugswürdig). DoD vollständig, `make gates` grün,
+Closure-Notiz §8. [Report](../../../reviews/2026-07-02-slice-026a-plan.md).
 **Reine Doku/Entscheidung, kein Code.**
 
 **Welle:** welle-5-erweiterung (PLG-Strang, Entscheidungs-/Spec-Hälfte —
@@ -78,7 +78,7 @@ Vertrauensmodell — alle als benannte Lücken/Re-Eval-Trigger in
 
 ## 2. Definition of Done
 
-- [ ] **Lastenheft [LH-FA-PLG-001](../../../../spec/lastenheft.md#modul-plugin-system-plg)..004 von Outline auf AK-Niveau**
+- [x] **Lastenheft [LH-FA-PLG-001](../../../../spec/lastenheft.md#modul-plugin-system-plg)..004 von Outline auf AK-Niveau**
       (**lösungsfrei, benutzer-beobachtbar** — **kein** `dlopen`/ABI-/Handshake-/
       vtable-/Thread-Vokabular im Lastenheft-Text, das gehört in §1;
       [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)); je Anforderung ein eigenes `####`-Heading mit **Inline-HTML-
@@ -119,7 +119,7 @@ Vertrauensmodell — alle als benannte Lücken/Re-Eval-Trigger in
       Über-Versprechen des Recovery-Netzes). + Header-Nachzug +
       `lastenheft-historie.md` **0.1.13**
       ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/[MR-012](../../../../harness/conventions.md#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie): Header-`Version:` == oberste Historie-Zeile).
-- [ ] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-PLG-001.a`](../../../../spec/lastenheft.md#modul-plugin-system-plg)** (Sammelblock —
+- [x] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-PLG-001.a`](../../../../spec/lastenheft.md#modul-plugin-system-plg)** (Sammelblock —
       **deckt PLG-001..004**, Muster [`LH-FA-IO-001.a`](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import)/[`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007)):
       das Plugin-Mapping innerhalb des [ADR-0017](../../adr/0017-plugin-api-abi.md)-Rahmens, als Mechanik
       **ohne ADR-Verweis im Körper** ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)):
@@ -140,7 +140,7 @@ Vertrauensmodell — alle als benannte Lücken/Re-Eval-Trigger in
       die Unload-Strategie im Fehlerpfad (Entladen vs. Isolieren ohne Entladen)
       dokumentiert der Impl-Slice. + `spezifikation-historie.md` +
       `**Letzte Änderung:**`-Header.
-- [ ] **`spec/spezifikation.md` §4 + §5 + §6 nachgezogen ([ADR-0017](../../adr/0017-plugin-api-abi.md)-Folgepflicht):**
+- [x] **`spec/spezifikation.md` §4 + §5 + §6 nachgezogen ([ADR-0017](../../adr/0017-plugin-api-abi.md)-Folgepflicht):**
       **§4** [`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Zeile präzisieren — **Vorschlag: ein Code, zwei
       Log-Events** (Muster generische [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Wiederverwendung beim
       export-only-Lookup-Miss): Bedingung um **Load-/Handshake-Ablehnung**
@@ -160,18 +160,19 @@ Vertrauensmodell — alle als benannte Lücken/Re-Eval-Trigger in
       Ein-Code/zwei-Events-Wahl festhalten** (Review-INFO-3: der
       [ADR-0017](../../adr/0017-plugin-api-abi.md)-§Entscheidung-4-Wortlaut `event=plugin_error` wird durch die
       ausdrückliche Delegation an diesen Slice präzisiert, nicht widersprochen).
-- [ ] **`.d-check.yml` ids-Familie um PLG erweitert (Review-LOW-2):** der
-      Fehler-Code-Regex `E-(IO|VAL|GEO)-…` deckt `E-PLG-001` **nicht** — dieser
+- [x] **`.d-check.yml` ids-Familie um PLG erweitert (Review-LOW-2):** der
+      Fehler-Code-Regex `E-(IO|VAL|GEO)-…` deckt
+      [`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) **nicht** — dieser
       Slice macht den Code erstmals korpusweit prominent; die Familie wird um
       `PLG` erweitert, damit nackte Erwähnungen computational gefangen werden
       (**Verschärfung**, kein [AGENTS.md §2.6](../../../../AGENTS.md)-Lockerungsfall; Muster
       [MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)).
-- [ ] **`spec/architecture.md`:** voraussichtlich **unverändert** — Plugin-Host,
+- [x] **`spec/architecture.md`:** voraussichtlich **unverändert** — Plugin-Host,
       `plugins/`-Baum und §5-Fehlermodell sind seit dem Bootstrap deklariert;
       **optional** eine `## Geschichte`-Provenance-Zeile „Plugin-Host/API →
       [ADR-0017](../../adr/0017-plugin-api-abi.md)" (exclude-section, Link erlaubt — Parität 025a) — sonst
       bewusst nicht geändert (Begründung in Closure).
-- [ ] **Reine Doku/Entscheidung — kein Code, keine Tests, kein ADR, kein Schema**
+- [x] **Reine Doku/Entscheidung — kein Code, keine Tests, kein ADR, kein Schema**
       ([ADR-0017](../../adr/0017-plugin-api-abi.md) deckt das Backend; Mapping ist Spec-Entscheidung).
       `make gates` grün; `make schema-check` unberührt; Closure-Notiz mit
       Lerneintrag. **Nicht Teil:** der **PLG-Impl-Slice** (026b: Plugin-Host +
@@ -289,3 +290,82 @@ Vertrauensmodell — alle als benannte Lücken/Re-Eval-Trigger in
 - **Modus:** GF; **Dichte:** hoch ([ADR-0017](../../adr/0017-plugin-api-abi.md)-Leitplanke: kein neuer
   Grundsatz-ADR; Reifephase-Teilumfang wie die welle-4-Strang-Muster;
   [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) vor Impl). **Phase-Reife:** Phase 4. **Risiko:** niedrig.
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar, 2026-07-03):**
+
+- **Lastenheft 0.1.13:** [LH-FA-PLG-001](../../../../spec/lastenheft.md#lh-fa-plg-001)..004 von Outline auf
+  AK-Niveau — je Anforderung eigenes `####`-Heading mit Inline-HTML-Anker (Muster
+  [LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007)); Modul-Heading und alle bestehenden
+  `#modul-plugin-system-plg`-Links bleiben gültig. Lösungsfrei/benutzer-beobachtbar
+  ([MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei): kein Lade-/ABI-/Handshake-/Thread-Vokabular); Sandbox-AK auf
+  **wohlgeformtes** Fehlverhalten bezogen, **Ehrlichkeits-Klausel mit beiden
+  Grenzfällen** (Absturz → Crash-Recovery [LH-QA-005](../../../../spec/lastenheft.md#lh-qa-005--crash-recovery) **oder**
+  stille Verfälschung + Speichern → kein Schutz; Review-MED-1); Teilumfang benannt
+  (keine Beobachter-Reaktion, keine UI-Erweiterungspunkte/Skript-Plugins/Signierung).
+  Header `Version:` 0.1.13 == jüngste `lastenheft-historie.md`-Zeile
+  ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/[MR-012](../../../../harness/conventions.md#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie); Zeile per gelebter Praxis am Tabellen-Ende, Review-INFO-1).
+- **`spezifikation.md` §1 [`LH-FA-PLG-001.a`](../../../../spec/lastenheft.md#lh-fa-plg-001)-Sammelblock** (deckt
+  PLG-001..004, Muster [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007)): Plugin-Host als Driving
+  Adapter (`adapters/plugin/`), Shared Libraries ([REQ-TEC-008](../../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec)) über den
+  System-Lader; versionierter Vertrags-Handshake **exakt/fail-closed** (Ablehnung ohne
+  Initialisierung); 7-stufige Lifecycle-Zustandsfolge, jeder Fehlerpfad → Isolieren/
+  Entladen bei unverändertem Modell; Port-Vermittlung **nur Driving-Ports** (kein
+  Beobachter-Zugang, pull-only; Port-Subset v1 = Impl-Slice); Threading synchron im
+  Hauptthread; Fehler-Barriere (Unload-Strategie im Fehlerpfad = Impl-Slice);
+  Sandbox-Grenze ehrlich benannt. **§4** [`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) präzisiert:
+  **ein Code, zwei Log-Events** (`event=plugin_rejected` Load/Handshake vs.
+  `event=plugin_error` Laufzeit — die delegierte Wahl, festgehalten in der
+  ADR-Index-Zeile; präzisiert den ADR-§Entscheidung-4-Wortlaut, widerspricht ihm nicht,
+  Review-INFO-3). **§5** Span-Zeile `bcad.plugin.lifecycle` (`plugin_id`, `op`
+  load/unload/error, `result`) — §5-Vorspann „ADR-Folge" für PLG eingelöst. **§6**
+  Plugin-API-Vertragszeile. `**Letzte Änderung:**`-Header + `spezifikation-historie.md`.
+- **Spec-Straten ADR-frei ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)):** `grep ADR-` über den
+  `spezifikation.md`-Körper selbst geprüft (einziger Treffer: vorbestehender
+  §5-Vorspann-Wortlaut „ADR-Folge", kein ID-Muster/Link); Provenance nur in
+  `*-historie.md`. `architecture.md` `## Geschichte` um die Plugin-Host-Provenance-Zeile
+  ergänzt (exclude-section, Link erlaubt — Parität 025a); Körper unverändert (Plugin-Host/
+  `plugins/`-Baum seit Bootstrap deklariert).
+- **`.d-check.yml` ids-Familie um PLG erweitert** (Review-LOW-2, Verschärfung, kein
+  [AGENTS.md §2.6](../../../../AGENTS.md)-Fall) — fing beim ersten Lauf sofort eine nackte
+  [`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Erwähnung in **diesem Slice-Plan** (§2/LOW-2-Zeile, verlinkt) —
+  unmittelbarer Wirkungs-Beleg der Verschärfung.
+- **Kein Code/Test/ADR/Schema**; `make docs-check` grün (158 Dateien, 0 Befunde),
+  `make gates` grün; `make schema-check` unberührt. ADR-Index-Folgepflicht
+  „AK-Schärfung + Spec-Nachzug" ([ADR-0017](../../adr/0017-plugin-api-abi.md)) abgehakt (Impl- und
+  Regel-P-Zeilen bleiben offen). CHANGELOG-Eintrag unter `[Unreleased]`.
+
+**Lerneintrag:**
+
+- **Vorgefundene Header-Drift (Review-LOW-3, zweiter Beleg):** der
+  `**Letzte Änderung:**`-Header der `spezifikation.md` stand auf 2026-06-18, die letzte
+  inhaltliche Änderung war slice-025a (2026-07-01) — die dortige DoD-Zeile wurde faktisch
+  nicht ausgeführt. Der 026a-Nachzug heilt die Drift (→ 2026-07-03). **Steering-Kandidat:**
+  dieser Header hat — wie der [MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)-Fall — keinen computational Sensor
+  (d-check prüft keine Feld-Gleichheit); die
+  [MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)-Promotion sollte beide Header decken.
+- **Kein Plugin-ACC (Review-INFO-2, festgehalten):** es existiert **kein** Plugin-
+  Abnahmekriterium und dieser Slice erzeugt keines — §7 bleibt [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)..005;
+  der M5-Trigger hängt an [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) (»Erweiterung durch Plugins«),
+  nicht an einem ACC.
+- **Sandbox-AK-Reifung bestätigt (zentraler Entscheidungspunkt):** die AK-Fassung
+  (Isolierung + Modell unverändert + gleiche Prüf-/Klemm-Regeln + Ehrlichkeits-Klausel
+  mit [LH-QA-005](../../../../spec/lastenheft.md#lh-qa-005--crash-recovery)-Netz) **trägt** den Vertragskern des Outline-Wortlauts
+  („Plugin darf das Modell nicht korruptieren") — die stärkste Lesart (Speichersicherheit)
+  ist unter [REQ-TEC-008](../../../../spec/spezifikation.md#9-technische-rahmenbedingungen-req-tec) (Shared Libraries → in-process) prinzipiell nicht
+  einlösbar; eine AK, die sie verspräche, wäre ein untestbares Falschversprechen
+  ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review-Urteil 1).
+  Entscheidend: die Grenze steht als **benutzer-sichtbare**
+  Klausel im Lastenheft statt still vollzogen zu werden.
+- **Was-vs-Wie beim Vertragsstand ([MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)-Grenzfall):** *dass* der Vertrag
+  versioniert ist und die Ablehnung ihn nennt = **Was** (Lastenheft); exakte
+  Versions-Gleichheit, Eintrittspunkte, Lade-Mechanik = **Wie** (§1) — Parität zum
+  Maßstab-Grenzfall aus 025a.
+
+**Restrisiko / Nachfolge:** **PLG-Impl-Slice (026b)** wird startbar — Plugin-Host +
+Plugin-API-Header-Satz + Beispiel-/Test-Plugin im `plugins/`-Baum + Composition-Root +
+AK-Tests (werfendes Plugin, Vertrags-Mismatch, Load→Edit→Unload mit realer Bibliothek) +
+**arch-check-Regel P** + benannte Entscheidungen mit Beleg (Symbol-Naht, Gate-Scope
+`plugins/`, Unload-Strategie im Fehlerpfad) — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review davor.
+DRW-/UI-/Mehrsprachigkeits-Stränge der welle-5 unberührt.

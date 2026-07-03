@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-18.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-03.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -691,6 +691,68 @@ Teil-Export, Zielpfad unverändert.
 **Totalität.** Ein Modell ohne Geschosse/Wände → eine **gültige, (annähernd) leere**
 PDF-Seite / PNG-Bild (kein Wurf). Reihenfolge deterministisch aus der Modell-Reihenfolge.
 
+### LH-FA-PLG-001.a — Plugin-System (Host-Mapping, Teilumfang)
+
+Bezug: [`LH-FA-PLG-001`](lastenheft.md#lh-fa-plg-001) (Dynamische Plugins),
+[`LH-FA-PLG-002`](lastenheft.md#lh-fa-plg-002) (Plugin-API),
+[`LH-FA-PLG-003`](lastenheft.md#lh-fa-plg-003) (Lifecycle),
+[`LH-FA-PLG-004`](lastenheft.md#lh-fa-plg-004) (Sandbox) — **Sammelblock** (deckt
+alle vier). Plugins sind ein **zweiter Driving-Weg** in denselben Kern: sie steuern
+das Modell wie die GUI über die Driving-Ports — mit derselben Validierung/Klemmung
+([`E-VAL-001`](#4-fehler-codes-und-logging-felder)) und derselben atomaren
+Persistenz. Backend-Provenance: § Historie.
+
+**Schicht.** Der **Plugin-Host** ist ein Driving Adapter (`adapters/plugin/`). Er
+lädt Plugins als **Shared Libraries** (REQ-TEC-008) über den System-Lader; Plugins
+selbst laden nichts dynamisch nach. Der Kern bleibt plugin-frei (keine neue
+Port-Naht; die vermittelten Driving-Ports existieren).
+
+**Vertrags-Handshake.** Jedes Plugin exportiert **versionierte Eintrittspunkte**;
+der Host prüft den Vertragsstand **vor** jeder Wirkung auf **exakte
+Versions-Gleichheit** — **fail-closed**: Versions-Mismatch, fehlendes Symbol oder
+nicht ladbare Datei ⇒ Ablehnung **ohne Initialisierung**
+([`E-PLG-001`](#4-fehler-codes-und-logging-felder), `event=plugin_rejected`); die
+Ablehnungs-Meldung nennt den erwarteten und den vorgefundenen Vertragsstand.
+
+**Lifecycle-Zustandsfolge.** `Entdeckt → Geladen → Handshake → Initialisiert →
+Aktiv → Beendet → Entladen`. **Jeder** Fehlerpfad (Load-, Handshake-, Init-,
+Laufzeit- oder Shutdown-Fehler) endet identisch: Plugin **isolieren/entladen** bei
+unverändertem Modell ([`E-PLG-001`](#4-fehler-codes-und-logging-felder)); die
+Anwendung läuft weiter. Vor dem Entladen ruft der Host den Shutdown-Hook und
+**invalidiert den Plugin-Kontext** (das Plugin darf danach keine Port-Referenz
+mehr halten — Vertragspflicht, vom Test-Plugin der AK-Tests belegt).
+
+**Port-Vermittlung (Sandbox-Kern).** Der Plugin-Kontext reicht **ausschließlich
+Driving-Port-Referenzen** — **kein** Driven-Port, **kein** Beobachter-Zugang
+(Plugins sind **pull-only** und nur in ihren Lifecycle-Hooks aktiv), **kein**
+Durchgriff auf Adapter oder Modell-Interna (kein Nebeneingang). Welches
+**Port-Subset** der Kontext in v1 vermittelt, fixiert der Impl-Slice
+**dokumentiert**.
+
+**Threading.** Der Host ruft alle Plugin-Hooks **synchron im Hauptthread**;
+Port-Aufrufe sind **nur aus dem Hook-Kontext** zulässig. Plugin-eigene Threads
+rufen **keine** Ports — Vertragspflicht des Plugins, technisch nicht erzwingbar
+(benannte Grenze).
+
+**Fehler-Barriere.** Jeder Host→Plugin-Übergang ist **ausnahme-gesichert**: ein
+werfendes Plugin wird isoliert/entladen
+([`E-PLG-001`](#4-fehler-codes-und-logging-felder), `event=plugin_error`), das
+Modell bleibt unverändert, kein Plugin-Fehler propagiert als Absturz in den Host.
+Die Unload-Strategie im Fehlerpfad (Entladen vs. Isolieren **ohne** Entladen)
+dokumentiert der Impl-Slice.
+
+**Sandbox-Grenze (benannte Lücke, ehrlich).** In-process gibt es **keinen
+Speicherschutz**: nicht-wohlgeformter Maschinencode kann den Prozess crashen —
+das Daten-Netz darunter ist die atomare Persistenz + Crash-Recovery
+([`LH-QA-005`](lastenheft.md#lh-qa-005--crash-recovery)) — **oder** das
+In-Memory-Modell **still** verfälschen, sodass ein nachfolgendes
+Speichern/Autosave ([`LH-QA-004`](lastenheft.md#lh-qa-004--autosave)) den
+korrupten Stand übernimmt; dagegen gibt es in dieser Ausbaustufe **keinen**
+Schutz. Die Sandbox-Zusage gilt für **wohlgeformtes** Fehlverhalten
+(Port-Vermittlung + Fehler-Barriere + Isolierung/Entladung). Beobachter-Zugang,
+UI-Erweiterungspunkte, Skript-Plugins und ein Signier-/Vertrauensmodell sind
+**nicht** spezifiziert (benannte Lücken, Re-Eval).
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -829,7 +891,7 @@ fordert eine Default-Stärke, §3 nannte keinen Wert).
 | `E-VAL-001` | Parameter außerhalb des Wertebereichs | auf Grenzwert geklemmt, Hinweis, Log `event=validation_rejected` |
 | `E-GEO-001` | Eingabe außerhalb des Zeichenbereichs | abgelehnt, Log `event=geometry_out_of_range` |
 | `E-GEO-002` | Geometrie-Operation fehlgeschlagen / degeneriert | Operation rückgängig, Modell unverändert, Log `event=geometry_error` |
-| `E-PLG-001` | Plugin-Fehlverhalten | Plugin isoliert/entladen, Modell unverändert, Log `event=plugin_error` |
+| `E-PLG-001` | Plugin nicht ladbar / unpassender Vertragsstand (**Load-/Handshake-Ablehnung**) oder Plugin-Fehlverhalten zur **Laufzeit** | nicht geladen bzw. isoliert/entladen, Modell unverändert; Log `event=plugin_rejected` (Laden/Handshake) bzw. `event=plugin_error` (Laufzeit-Fehlverhalten) — **ein** Code, zwei Log-Events (§1 [`LH-FA-PLG-001.a`](lastenheft.md#lh-fa-plg-001)) |
 
 ## 5. Metriken und Tracing-Felder
 
@@ -842,6 +904,7 @@ OTel-Spans (Pflicht-Attribute werden pro Slice geschärft, ADR-Folge):
 | `bcad.geometry.rebuild` | `element_id`, `op`, `duration_ms` | [LH-FA-D3-002](lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung) |
 | `bcad.room.detect` | `wall_count`, `room_count`, `duration_ms` | [LH-FA-ROM-001](lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen) |
 | `bcad.io.exchange` | `format`, `direction`, `element_count`, `result` | LH-FA-IO-* |
+| `bcad.plugin.lifecycle` | `plugin_id`, `op` (`load`/`unload`/`error`), `result` | LH-FA-PLG-* |
 
 Jeder App-Span trägt zusätzlich `requirement.id` (die bediente `LH-*`-ID)
 für die Traceability-Kette Span → Slice → ADR → Anforderung.
@@ -865,6 +928,7 @@ nicht im Bootstrap.
 | DXF | ASCII-DXF, **2D-Subset** (selbst getragener Codec) | `ModelImporterPort`/`ModelExporterPort` **io-resident** (Import+Export; gerade Wand-Achsen je Geschoss-`LAYER`, Import → Default-Höhe/-Dicke), §1 [`LH-FA-IO-003.a`](lastenheft.md#lh-fa-io-003) |
 | PDF | Vektor-PDF, **2D-Maßstabsplan** (selbst getragener Writer) | `ModelExporterPort` **io-resident** (Export-only; maßstäblicher Achsen-Plan je Geschoss, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
 | PNG | Raster-PNG, **2D-Plan-Rasterbild** (selbst getragener Writer, unkomprimiert) | `ModelExporterPort` **io-resident** (Export-only; Rasterbild desselben Achsen-Plans, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
+| Plugin-API | **versionierter Vertrag**, exakte Versions-Gleichheit beim Laden (fail-closed) | Plugin-Host (Driving Adapter) vermittelt **Driving-Ports** an Plugins (kein Driven-Port, kein Qt/OCC/SQLite in der Plugin-API); Plugins = Shared Libraries (REQ-TEC-008), §1 [`LH-FA-PLG-001.a`](lastenheft.md#lh-fa-plg-001) |
 
 ## 7. Offene Punkte
 

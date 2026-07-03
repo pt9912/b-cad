@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-026a — **Plugin-System AK-geschärft + Spec-Mapping entschieden** (`LH-FA-PLG-001`..004,
+  welle-5-erweiterung, ADR-0017; reine Doku/Entscheidung, kein Code): Lastenheft **0.1.13** —
+  die vier Plugin-Anforderungen von Outline auf **lösungsfreie, benutzer-beobachtbare AK**
+  (Laden/Entladen zur Laufzeit ohne Neustart; unpassender versionierter Vertragsstand →
+  Ablehnung **vor jeder Wirkung**; Lifecycle beobachtbar, jeder Fehlerpfad → Plugin wirkt
+  nicht weiter; Sandbox: wohlgeformtes Fehlverhalten → isoliert/entladen bei unverändertem
+  Modell, gleiche Prüf-/Klemm-Regeln, **Ehrlichkeits-Klausel** Crash-Recovery `LH-QA-005`
+  **oder** Silent-Corruption ohne Schutz). Spezifikation: **§1** `LH-FA-PLG-001.a`-Sammelblock
+  (Plugin-Host als Driving Adapter, versionierter Handshake exakt/fail-closed, 7-stufiger
+  Lifecycle, Port-Vermittlung pull-only ohne Beobachter-Zugang, Threading synchron im
+  Hauptthread, Fehler-Barriere, Sandbox-Grenze ehrlich benannt), **§4** `E-PLG-001` = **ein
+  Code, zwei Log-Events** (`plugin_rejected` Load/Handshake vs. `plugin_error` Laufzeit),
+  **§5** Span `bcad.plugin.lifecycle`, **§6** Plugin-API-Vertragszeile. `.d-check.yml`
+  ids-Familie um `PLG` erweitert (Verschärfung). `MR-006`-Plan-Review **0 HIGH** (1 MED +
+  3 LOW + 3 INFO, alle eingearbeitet). ADR-0017-Folgepflicht „AK-Schärfung + Spec-Nachzug"
+  erfüllt → PLG-Impl-Slice (026b) startbar.
 - **welle-4-austausch abgeschlossen — Meilenstein M4 „Offen austauschbar" erreicht**
   (2026-07-01, `OBJ-005`): b-cad ist **offen austauschbar** — alle sechs Formate hinter
   Driven-Adaptern (Kern format-frei): **IFC** Import+Export (`ADR-0013`, `ACC-003`-Roundtrip),

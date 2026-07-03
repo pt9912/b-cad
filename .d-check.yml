@@ -72,7 +72,7 @@ ids:
       target: spec/spezifikation.md
       link-policy: always
       exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
-    - regex: 'E-(IO|VAL|GEO)-\d+'
+    - regex: 'E-(IO|VAL|GEO|PLG)-\d+'
       target: spec/spezifikation.md
       link-policy: always
       exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
