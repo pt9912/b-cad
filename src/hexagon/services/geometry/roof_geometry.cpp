@@ -1,4 +1,4 @@
-#include "hexagon/services/roof_geometry.h"
+#include "hexagon/services/geometry/roof_geometry.h"
 
 #include <array>
 #include <cmath>

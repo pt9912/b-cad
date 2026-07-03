@@ -9,7 +9,7 @@ per [MR-009](../../harness/conventions.md#mr-009--geometrielastiges-code-review-
 ## Verifikation
 
 - **Refaktor-Äquivalenz (`stairMesh` alt vs. neu) — IDENTISCH:** gegen
-  `git show HEAD:src/hexagon/services/stair_geometry.cpp` difft: die Stufen-Box-Extents
+  `git show HEAD:src/hexagon/services/stair_geometry.cpp` difft: die Stufen-Box-Extents <!-- d-check:ignore (historisch: Pfad vor slice-028-Move nach services/geometry/) -->
   (`x_start+i·tread`, `x_start+(i+1)·tread`, `y0`, `y0+width`, `0`, `(i+1)·rise`) und die
   Geländer-Boxen (`rail_t=min(50,width/4)`, `rail_h=kStairRailingHeightMm`, beidseitig,
   z `[top,top+rail_h]`) sind **byte-gleich**; Emissions-Reihenfolge (Stufe, −y-Geländer,

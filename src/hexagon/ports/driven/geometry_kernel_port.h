@@ -17,7 +17,7 @@ namespace bcad::hexagon::ports::driven {
 //
 // Seit slice-012 (LH-FA-WAL-006-Teilumfang) liefert der KERN den
 // Grundriss (`model::Footprint`, inkl. Eckenschluss aus Nachbar-Wissen,
-// `services/wall_footprint.h`) — der Adapter extrudiert/tesselliert nur
+// `services/geometry/wall_footprint.h`) — der Adapter extrudiert/tesselliert nur
 // noch das Polygon.
 //
 // Seit slice-013b (LH-FA-DOR-004/WIN-005, ADR-0011 (b)): der Kern liefert

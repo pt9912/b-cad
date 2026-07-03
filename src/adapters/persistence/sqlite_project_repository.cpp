@@ -28,7 +28,7 @@
 #include <sqlite3.h>
 
 #include "adapters/persistence/schema_sql.h"  // kSchemaSql (generiert)
-#include "hexagon/services/stair_geometry.h"  // stairRiseMm (rise write-derived)
+#include "hexagon/services/geometry/stair_geometry.h"  // stairRiseMm (rise write-derived)
 
 namespace fs = std::filesystem;
 

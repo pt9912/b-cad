@@ -1,4 +1,4 @@
-#include "hexagon/services/slab_geometry.h"
+#include "hexagon/services/geometry/slab_geometry.h"
 
 #include <cmath>
 #include <cstddef>

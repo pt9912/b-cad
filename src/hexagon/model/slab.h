@@ -20,7 +20,7 @@ enum class SlabType { Decke, Fundament, Bodenplatte };
 // spez. §1 `LH-FA-SLB-001.a`): ein Grundriss-Polygon, um die Dicke
 // vertikal extrudiert, mit optionalen Aussparungen (LH-FA-SLB-003). Die
 // Aufstandshöhe `base_z` ist **nicht** gespeichert, sondern aus
-// `type`/Geschoss abgeleitet (`services/slab_geometry.h`). Pure Werte,
+// `type`/Geschoss abgeleitet (`services/geometry/slab_geometry.h`). Pure Werte,
 // framework-frei (ADR-0001).
 struct Slab {
     SlabId id{};

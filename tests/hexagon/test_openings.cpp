@@ -15,7 +15,7 @@
 #include "hexagon/model/footprint.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driven/model_changed_port.h"
-#include "hexagon/services/opening_geometry.h"
+#include "hexagon/services/geometry/opening_geometry.h"
 #include "hexagon/services/structure_edit_service.h"
 #include "analytic_geometry_double.h"
 

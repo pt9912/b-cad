@@ -106,7 +106,7 @@ echter Volumenkörper — Voraussetzung für STEP-B-Rep (024).
 |---|---|---|
 | `src/hexagon/model/roof.h` | ändern | `thickness_mm`-Feld |
 | `src/hexagon/model/constants.h` | ändern | `kRoofThickness{Min,Max}Mm` + `kDefaultRoofThicknessMm` (== §3) |
-| `src/hexagon/services/roof_geometry.cpp` | ändern | geschlossener Slab: Oberseite + versetzte Unterseite + Rand-Seitenwände (koordinaten-kanonische Rand-Kanten) |
+| `src/hexagon/services/roof_geometry.cpp` | ändern | geschlossener Slab: Oberseite + versetzte Unterseite + Rand-Seitenwände (koordinaten-kanonische Rand-Kanten) | <!-- d-check:ignore (historisch: Pfad vor slice-028-Move nach services/geometry/) -->
 | `src/hexagon/services/structure_edit_service.cpp` | ändern | Dach-Anlage Default-Dicke + `setRoofThickness` via `evaluateParam` |
 | `src/hexagon/services/volume_geometry.cpp` (+ `VolumeReport.roofs_m3`) | ändern | Dach-Netto-Volumen `bx·ty·d` analytisch ([`LH-FA-EVL-002`](../../../../spec/lastenheft.md#lh-fa-evl-002--volumenberechnung)) |
 | `tests/hexagon/test_roof_geometry.cpp` | ändern | Slab-Umstellung + **Wasserdichtheits-/Orientierungs-/Volumen-Invarianten** je Typ |

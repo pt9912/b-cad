@@ -16,7 +16,7 @@
 #include "hexagon/model/wall.h"
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/services/structure_edit_service.h"
-#include "hexagon/services/wall_footprint.h"
+#include "hexagon/services/geometry/wall_footprint.h"
 
 namespace {
 

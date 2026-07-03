@@ -13,7 +13,7 @@
 #include "hexagon/model/constants.h"
 #include "hexagon/model/footprint.h"
 #include "hexagon/model/slab.h"
-#include "hexagon/services/slab_geometry.h"
+#include "hexagon/services/geometry/slab_geometry.h"
 #include "analytic_geometry_double.h"
 
 namespace {

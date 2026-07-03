@@ -99,9 +99,10 @@ nur dort werden Adapter-Instanzen injiziert.
 | Domain-Modell | `src/hexagon/model/` | parametrische Bauteil-Typen, pure Werte, keine I/O, keine Framework-Typen | — (nur Standardbibliothek) | alles andere |
 | Driven Ports | `src/hexagon/ports/driven/` | abstrakte Infrastruktur-Schnittstellen | model | services, adapters, Qt/OCC/SQLite |
 | Driving Ports | `src/hexagon/ports/driving/` | abstrakte Use-Case-Schnittstellen | model | services, adapters |
-| Services | `src/hexagon/services/` | Anwendungslogik; implementiert Driving Ports, nutzt Driven Ports | model, ports | adapters, Qt/OCC/SQLite |
-| Geometrie-Adapter | `src/adapters/geometry/` | erfüllt `GeometryKernelPort` via OpenCascade | model, ports/driven | andere Adapter, GUI |
-| Persistenz-Adapter | `src/adapters/persistence/` | erfüllt `ProjectRepositoryPort` via SQLite | model, ports/driven | andere Adapter, GUI |
+| Services | `src/hexagon/services/` | Anwendungslogik; implementiert Driving Ports, nutzt Driven Ports | model, ports, services/geometry | adapters, Qt/OCC/SQLite |
+| Berechnungs-Kerne | `src/hexagon/services/geometry/` | **eigene Sub-Schicht** (abweichend von der Eltern-`services/`-Zeile): reine, port-freie, totale Berechnungs-Funktionen über Modelltypen (Bauteil-Geometrie/Footprint) — kein Zustand, kein I/O, keine Ports | model (nur Standardbibliothek dazu) | ports, andere services, adapters, Qt/OCC/SQLite |
+| Geometrie-Adapter | `src/adapters/geometry/` | erfüllt `GeometryKernelPort` via OpenCascade | model, ports/driven, services/geometry | andere Adapter, sonstige services, GUI |
+| Persistenz-Adapter | `src/adapters/persistence/` | erfüllt `ProjectRepositoryPort` via SQLite | model, ports/driven, services/geometry | andere Adapter, sonstige services, GUI |
 | IO-Adapter | `src/adapters/io/` | erfüllt Importer/Exporter-Ports | model, ports/driven | andere Adapter, GUI |
 | GUI-Adapter | `src/adapters/ui/` | Qt; ruft Driving Ports auf | model, ports/driving, ports/driven (*nur* zur Implementierung von Beobachter-Schnittstellen, z. B. `ModelChangedPort`) | Driven Adapter direkt, OCC, SQLite |
 | Plugin-Host | `src/adapters/plugin/` | lädt Plugins, vermittelt Driving Ports (Sandbox) | model, ports/driving | Driven Adapter direkt |
@@ -135,7 +136,8 @@ b-cad/
 │   │   │   └── driven/              # GeometryKernelPort, ProjectRepositoryPort,
 │   │   │                            #   ModelImporterPort, ModelExporterPort, MaterialLibraryPort, TracingPort
 │   │   └── services/                # ProjectService, StructureEditService,
-│   │                                #   RoomDetectionService, ViewService, ExchangeService
+│   │       │                        #   RoomDetectionService, ViewService, ExchangeService
+│   │       └── geometry/            # reine Berechnungs-Kerne (port-frei, model-only)
 │   └── adapters/
 │       ├── ui/                      # Qt 6 (Driving Adapter)
 │       ├── plugin/                  # Plugin-Host (Driving Adapter)

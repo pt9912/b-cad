@@ -25,11 +25,11 @@
 
 #include "adapters/geometry/occ_solids.h"
 #include "hexagon/model/constants.h"
-#include "hexagon/services/opening_geometry.h"  // wallCutPrisms
-#include "hexagon/services/roof_geometry.h"     // roofMesh (slice-024a)
-#include "hexagon/services/slab_geometry.h"     // slabBaseZ/slabCutPrisms
-#include "hexagon/services/stair_geometry.h"    // stairStepBoxes (slice-024b)
-#include "hexagon/services/wall_footprint.h"    // wallFootprint
+#include "hexagon/services/geometry/opening_geometry.h"  // wallCutPrisms
+#include "hexagon/services/geometry/roof_geometry.h"     // roofMesh (slice-024a)
+#include "hexagon/services/geometry/slab_geometry.h"     // slabBaseZ/slabCutPrisms
+#include "hexagon/services/geometry/stair_geometry.h"    // stairStepBoxes (slice-024b)
+#include "hexagon/services/geometry/wall_footprint.h"    // wallFootprint
 
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;

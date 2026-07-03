@@ -8,13 +8,13 @@
 #include <string>
 
 #include "hexagon/model/constants.h"
-#include "hexagon/services/opening_geometry.h"
-#include "hexagon/services/roof_geometry.h"
+#include "hexagon/services/geometry/opening_geometry.h"
+#include "hexagon/services/geometry/roof_geometry.h"
 #include "hexagon/services/room_detection.h"
-#include "hexagon/services/slab_geometry.h"
-#include "hexagon/services/stair_geometry.h"
+#include "hexagon/services/geometry/slab_geometry.h"
+#include "hexagon/services/geometry/stair_geometry.h"
 #include "hexagon/services/volume_geometry.h"
-#include "hexagon/services/wall_footprint.h"
+#include "hexagon/services/geometry/wall_footprint.h"
 
 namespace bcad::hexagon::services {
 

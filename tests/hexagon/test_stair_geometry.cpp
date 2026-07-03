@@ -14,7 +14,7 @@
 #include "hexagon/model/constants.h"
 #include "hexagon/model/stair.h"
 #include "hexagon/model/triangle_mesh.h"
-#include "hexagon/services/stair_geometry.h"
+#include "hexagon/services/geometry/stair_geometry.h"
 
 namespace {
 

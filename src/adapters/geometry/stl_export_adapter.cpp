@@ -19,11 +19,11 @@
 #include <vector>
 
 #include "hexagon/model/constants.h"
-#include "hexagon/services/opening_geometry.h"   // wallCutPrisms
-#include "hexagon/services/roof_geometry.h"      // roofMesh
-#include "hexagon/services/slab_geometry.h"      // slabBaseZ/slabCutPrisms/translateMeshZ
-#include "hexagon/services/stair_geometry.h"     // stairMesh
-#include "hexagon/services/wall_footprint.h"     // wallFootprint
+#include "hexagon/services/geometry/opening_geometry.h"   // wallCutPrisms
+#include "hexagon/services/geometry/roof_geometry.h"      // roofMesh
+#include "hexagon/services/geometry/slab_geometry.h"      // slabBaseZ/slabCutPrisms/translateMeshZ
+#include "hexagon/services/geometry/stair_geometry.h"     // stairMesh
+#include "hexagon/services/geometry/wall_footprint.h"     // wallFootprint
 
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;

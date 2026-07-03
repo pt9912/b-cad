@@ -1,4 +1,4 @@
-#include "hexagon/services/opening_geometry.h"
+#include "hexagon/services/geometry/opening_geometry.h"
 
 #include <algorithm>
 #include <cmath>

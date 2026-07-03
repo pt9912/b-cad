@@ -14,7 +14,7 @@
 #include "hexagon/model/constants.h"
 #include "hexagon/model/roof.h"
 #include "hexagon/model/triangle_mesh.h"
-#include "hexagon/services/roof_geometry.h"
+#include "hexagon/services/geometry/roof_geometry.h"
 
 namespace {
 

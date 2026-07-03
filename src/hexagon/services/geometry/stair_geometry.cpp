@@ -1,4 +1,4 @@
-#include "hexagon/services/stair_geometry.h"
+#include "hexagon/services/geometry/stair_geometry.h"
 
 #include <algorithm>
 #include <cmath>

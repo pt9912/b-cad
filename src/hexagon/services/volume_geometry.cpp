@@ -5,8 +5,8 @@
 #include <cstddef>
 
 #include "hexagon/model/constants.h"
-#include "hexagon/services/slab_geometry.h"   // cutoutInsideSlab
-#include "hexagon/services/wall_footprint.h"  // wallFootprint
+#include "hexagon/services/geometry/slab_geometry.h"   // cutoutInsideSlab
+#include "hexagon/services/geometry/wall_footprint.h"  // wallFootprint
 
 namespace bcad::hexagon::services {
 

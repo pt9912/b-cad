@@ -1,4 +1,4 @@
-#include "hexagon/services/wall_footprint.h"
+#include "hexagon/services/geometry/wall_footprint.h"
 
 #include <cmath>
 #include <optional>

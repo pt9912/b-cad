@@ -156,8 +156,8 @@ im Folge-Slice); hier gilt sie als Review-/Text-Invariante.
       codepaths-Gate kennt — anders als das ids-Modul — **keine**
       done-archive-/reviews-Ausnahme; nach dem Move dangeln mindestens
       der gerootete Inline-Pfad in
-      `done-archive/slice-023b-dach-volumen-impl.md` (Zeile
-      `src/hexagon/services/roof_geometry.cpp`) und der
+      `done-archive/slice-023b-dach-volumen-impl.md` (Alt-Pfad
+      `…/services/roof_geometry.cpp` vor dem Move) und der
       `git show`-Pfad in `docs/reviews/2026-06-19-slice-024b-code-review.md`.
       Behandlung: **`d-check:ignore`-Marker** an den Fundstellen
       (Präzedenz slice-008a; bewahrt den historischen Text — benannte,

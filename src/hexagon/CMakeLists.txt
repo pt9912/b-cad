@@ -8,14 +8,14 @@ add_library(bcad_hexagon
     services/bootstrap_info.cpp
     services/exchange_service.cpp
     services/greeting_service.cpp
-    services/opening_geometry.cpp
-    services/roof_geometry.cpp
+    services/geometry/opening_geometry.cpp
+    services/geometry/roof_geometry.cpp
     services/room_detection.cpp
-    services/slab_geometry.cpp
-    services/stair_geometry.cpp
+    services/geometry/slab_geometry.cpp
+    services/geometry/stair_geometry.cpp
     services/structure_edit_service.cpp
     services/volume_geometry.cpp
-    services/wall_footprint.cpp
+    services/geometry/wall_footprint.cpp
 )
 
 target_include_directories(bcad_hexagon
