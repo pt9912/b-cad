@@ -11,7 +11,8 @@
 #include <vector>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
-#include "adapters/ui/viewer_scene.h"
+#include "adapters/ui/command/view_model_mesh_source.h"
+#include "adapters/ui/view/viewer_scene.h"
 #include "hexagon/model/constants.h"
 #include "hexagon/model/footprint.h"
 #include "hexagon/model/roof.h"
@@ -24,7 +25,8 @@
 namespace {
 
 using bcad::adapters::geometry::OccGeometryAdapter;
-using bcad::adapters::ui::ViewerScene;
+using bcad::adapters::ui::command::ViewModelMeshSource;
+using bcad::adapters::ui::view::ViewerScene;
 namespace model = bcad::hexagon::model;
 namespace services = bcad::hexagon::services;
 namespace driven = bcad::hexagon::ports::driven;
@@ -61,7 +63,8 @@ class ViewerSceneAk : public ::testing::Test {
 protected:
     OccGeometryAdapter geometry_;
     services::StructureEditService service_{geometry_};
-    ViewerScene scene_{service_};
+    ViewModelMeshSource mesh_source_{service_};  // MeshSource-Naht (slice-029)
+    ViewerScene scene_{mesh_source_};
     model::StoreyId eg_{service_.building().storeys.front().id};
 };
 

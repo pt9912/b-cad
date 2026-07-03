@@ -7,10 +7,10 @@
 #include "hexagon/model/stair.h"  // StairId
 #include "hexagon/model/triangle_mesh.h"
 #include "hexagon/model/wall.h"  // WallId
+#include "adapters/ui/view/mesh_source.h"
 #include "hexagon/ports/driven/model_changed_port.h"
-#include "hexagon/ports/driving/view_model_port.h"
 
-namespace bcad::adapters::ui {
+namespace bcad::adapters::ui::view {
 
 // Szenen-Zustand des Viewers — das headless beobachtbare
 // „dargestellt"-Surrogat (ADR-0009 (f)): die gehaltenen Netze je
@@ -18,12 +18,14 @@ namespace bcad::adapters::ui {
 // die AK-Tests (LH-FA-D3-001/002) prüfen diesen Zustand ohne Display;
 // das Qt-Widget rendert ihn nur noch.
 //
-// Implementiert den `ModelChangedPort` (ADR-0008): der Callback PULLT
-// ausschließlich über den `ViewModelPort` und mutiert nie das Modell —
-// das Re-Entranz-Verbot ist strukturell eingehalten (ADR-0009 (d)).
+// Implementiert den `ModelChangedPort` (ADR-0008, driven-Seite der ui —
+// slice-029): der Callback PULLT ausschließlich über die ui-interne,
+// port-freie `MeshSource`-Naht (der driving-Port-Pull liegt in
+// `ui/command/`) und mutiert nie das Modell — das Re-Entranz-Verbot
+// ist strukturell eingehalten (ADR-0009 (d)).
 class ViewerScene final : public hexagon::ports::driven::ModelChangedPort {
 public:
-    explicit ViewerScene(const hexagon::ports::driving::ViewModelPort& view_model);
+    explicit ViewerScene(const MeshSource& mesh_source);
 
     // Initialer Stand: Szene aus allen Wand-Netzen aufbauen (statische
     // Darstellung, LH-FA-D3-001 / Split-Hälfte i).
@@ -66,7 +68,7 @@ public:
     int effectiveUpdates() const { return effective_updates_; }
 
 private:
-    const hexagon::ports::driving::ViewModelPort& view_model_;
+    const MeshSource& mesh_source_;
     std::map<hexagon::model::WallId, hexagon::model::TriangleMesh> meshes_{};
     std::map<hexagon::model::RoofId, hexagon::model::TriangleMesh> roof_meshes_{};
     std::map<hexagon::model::SlabId, hexagon::model::TriangleMesh> slab_meshes_{};
@@ -74,4 +76,4 @@ private:
     int effective_updates_{0};
 };
 
-}  // namespace bcad::adapters::ui
+}  // namespace bcad::adapters::ui::view

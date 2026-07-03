@@ -155,7 +155,7 @@ vorhanden — dieselben Endpunkt-Knoten wie ADR-0007); der
 | `src/hexagon/ports/driven/model_changed_port.h` | ändern | `op`-Vokabular + `WallGeometryChanged` |
 | `src/hexagon/services/structure_edit_service.{h,cpp}` | ändern | Footprint-Berechnung (Miter an Grad-2-Knoten, total), Nachbar-Rebuild + -Meldung, Transaktions-Garantie |
 | `src/adapters/geometry/occ_geometry_adapter.{h,cpp}` | ändern | Polygon-Extrusion/-Tessellation (N-Eck statt Rechteck) |
-| `src/adapters/ui/viewer_scene.cpp` | ändern | `WallGeometryChanged` behandeln |
+| `src/adapters/ui/viewer_scene.cpp` | ändern | `WallGeometryChanged` behandeln | <!-- d-check:ignore (historisch: Pfad vor slice-029-Move nach ui/view/) -->
 | `spec/architecture.md` | ändern | `GeometryKernelPort`-Zeile (§1.2) + Geometrie-Adapter-Zeile auf Footprint-Vertrag — sichere Änderung, nicht „ggf." (W3-P5) |
 | `tests/hexagon/analytic_geometry_double.h`, `tests/hexagon/test_structure_edit_service.cpp` | ändern | Doubles auf Footprint-Signatur (Shoelace-Volumen) |
 | `tests/adapters/test_occ_geometry_adapter.cpp` | ändern | Portierung auf Footprint-Signatur, identische Orakel-Werte (W3-Q1) |

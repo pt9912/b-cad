@@ -146,7 +146,7 @@ Raumerkennung und Footprint/Eckenschluss (slice-012) bleiben unberührt.
 | `src/hexagon/services/structure_edit_service.{h,cpp}` | ändern | Öffnungs-Logik: Cutter-Prismen, Wand-Solid mit Cut, transaktional, `WallGeometryChanged` |
 | `src/hexagon/services/{opening_geometry}.{h,cpp}` | neu | Cutter-Prisma-Berechnung aus `Opening` + Wand (analog `wall_footprint`, pure Domäne) |
 | `src/adapters/geometry/occ_geometry_adapter.{h,cpp}` | ändern | `BRepAlgoAPI_Cut` der Prismen; Signatur-Migration |
-| `src/adapters/ui/viewer_scene.cpp` | ggf. ändern | `WallGeometryChanged` trägt schon — nur falls die Wirtswand-Eigen-Op (nicht Nachbar) einen Pfad braucht |
+| `src/adapters/ui/viewer_scene.cpp` | ggf. ändern | `WallGeometryChanged` trägt schon — nur falls die Wirtswand-Eigen-Op (nicht Nachbar) einen Pfad braucht | <!-- d-check:ignore (historisch: Pfad vor slice-029-Move nach ui/view/) -->
 | `tests/hexagon/analytic_geometry_double.h` | ändern | Cutout-Volumen-Subtraktion im Double (Orakel) |
 | `tests/hexagon/{test_openings}.cpp` | neu | Kern-AK-Tests DOR/WIN (Happy/Boundary/Negative/Folge/Fehlerfall) |
 | `tests/adapters/test_occ_geometry_adapter.cpp` | ändern | Cutout-Subtraktion gegen analytisches Volumen; leere Cutouts = altes Orakel |

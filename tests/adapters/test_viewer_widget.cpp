@@ -14,7 +14,8 @@
 #include <QWheelEvent>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
-#include "adapters/ui/viewer_widget.h"
+#include "adapters/ui/command/view_model_mesh_source.h"
+#include "adapters/ui/view/viewer_widget.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/services/structure_edit_service.h"
 
@@ -38,7 +39,8 @@ TEST(ViewerWidgetSmoke, LH_FA_D3_002_HeadlessRenderUndCallbackRepaint) {
     const auto eg = service.building().storeys.front().id;
     service.addWall(eg, seg(0, 0, 4000, 0));
 
-    bcad::adapters::ui::ViewerWidget viewer(service);
+    bcad::adapters::ui::command::ViewModelMeshSource mesh_source(service);
+    bcad::adapters::ui::view::ViewerWidget viewer(mesh_source);
     service.subscribe(viewer);
     viewer.resize(320, 240);
     viewer.show();

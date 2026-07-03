@@ -23,8 +23,12 @@ configure_file(
 
 add_library(bcad_adapters
     ui/qt_probe.cpp
-    ui/viewer_scene.cpp
-    ui/viewer_widget.cpp
+    # slice-029 (a-check-Vorbereitung): ui verzeichnislich nach Richtung
+    # getrennt — view/ = driven (ModelChangedPort-Implementierungen +
+    # Rendering), command/ = driving (MeshSource-Naht ueber ViewModelPort).
+    ui/view/viewer_scene.cpp
+    ui/view/viewer_widget.cpp
+    ui/command/view_model_mesh_source.cpp
     geometry/occ_probe.cpp
     geometry/occ_solids.cpp          # geteilter OCC-Solid-Builder (slice-020b)
     geometry/occ_geometry_adapter.cpp

@@ -31,7 +31,8 @@
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 #include "adapters/plugin/plugin_host.h"
-#include "adapters/ui/viewer_widget.h"
+#include "adapters/ui/command/view_model_mesh_source.h"
+#include "adapters/ui/view/viewer_widget.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
 #include "hexagon/services/bootstrap_info.h"
@@ -123,6 +124,11 @@ int main(int argc, char** argv) {
 
     bcad::adapters::geometry::OccGeometryAdapter geometry;
     services::StructureEditService service(geometry);
+    // MeshSource-Naht (slice-029): der driving-Pull der ui liegt in
+    // ui/command/; deklariert NACH service und VOR window/viewer — das
+    // Widget hält eine nicht-besitzende Referenz, die Quelle muss es
+    // überleben.
+    bcad::adapters::ui::command::ViewModelMeshSource mesh_source(service);
 
     // IFC-Austausch-Use-Case verdrahten (ADR-0013, slice-019b/c): Driven-
     // Adapter `IfcImportAdapter`/`IfcExportAdapter` -> Driving-Port-Service
@@ -218,7 +224,7 @@ int main(int argc, char** argv) {
     // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz,
     // dann Beobachter-Lebenszyklus.
     QMainWindow window;
-    auto* viewer = new bcad::adapters::ui::ViewerWidget(service);
+    auto* viewer = new bcad::adapters::ui::view::ViewerWidget(mesh_source);
     window.setCentralWidget(viewer);  // Qt übernimmt das Widget-Ownership
     window.resize(1280, 800);
     window.setWindowTitle(QStringLiteral("b-cad"));

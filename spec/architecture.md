@@ -104,7 +104,7 @@ nur dort werden Adapter-Instanzen injiziert.
 | Geometrie-Adapter | `src/adapters/geometry/` | erfüllt `GeometryKernelPort` via OpenCascade | model, ports/driven, services/geometry | andere Adapter, sonstige services, GUI |
 | Persistenz-Adapter | `src/adapters/persistence/` | erfüllt `ProjectRepositoryPort` via SQLite | model, ports/driven, services/geometry | andere Adapter, sonstige services, GUI |
 | IO-Adapter | `src/adapters/io/` | erfüllt Importer/Exporter-Ports | model, ports/driven | andere Adapter, GUI |
-| GUI-Adapter | `src/adapters/ui/` | Qt; ruft Driving Ports auf | model, ports/driving, ports/driven (*nur* zur Implementierung von Beobachter-Schnittstellen, z. B. `ModelChangedPort`) | Driven Adapter direkt, OCC, SQLite |
+| GUI-Adapter | `src/adapters/ui/` | Qt; verzeichnislich nach Port-Richtung getrennt: `view/` = driven (Beobachter-Implementierungen wie `ModelChangedPort` + Rendering), `command/` = driving (App-Aufrufe; heute die `MeshSource`-Naht, die den Pull-State port-frei an `view/` reicht) — kein Unterverzeichnis mischt beide Richtungen | model; `command/`: ports/driving; `view/`: ports/driven | Driven Adapter direkt, OCC, SQLite; `view/`: ports/driving; `command/`: ports/driven |
 | Plugin-Host | `src/adapters/plugin/` | lädt Plugins, vermittelt Driving Ports (Sandbox) | model, ports/driving | Driven Adapter direkt |
 | Composition Root | `src/main.cpp` | verdrahtet Adapter mit Kern | alles | — |
 
@@ -139,7 +139,9 @@ b-cad/
 │   │       │                        #   RoomDetectionService, ViewService, ExchangeService
 │   │       └── geometry/            # reine Berechnungs-Kerne (port-frei, model-only)
 │   └── adapters/
-│       ├── ui/                      # Qt 6 (Driving Adapter)
+│       ├── ui/                      # Qt 6 — je Unterverzeichnis EINE Port-Richtung:
+│       │   ├── view/                #   driven (Beobachter-Impl. + Rendering)
+│       │   └── command/             #   driving (App-Aufrufe, MeshSource-Naht)
 │       ├── plugin/                  # Plugin-Host (Driving Adapter)
 │       ├── geometry/                # OpenCascade  (Driven Adapter)
 │       ├── persistence/             # SQLite       (Driven Adapter)

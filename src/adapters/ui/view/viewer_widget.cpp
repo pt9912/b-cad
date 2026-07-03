@@ -1,4 +1,4 @@
-#include "adapters/ui/viewer_widget.h"
+#include "adapters/ui/view/viewer_widget.h"
 
 #include <algorithm>
 #include <cmath>
@@ -8,7 +8,7 @@
 #include <QVector3D>
 #include <QWheelEvent>
 
-namespace bcad::adapters::ui {
+namespace bcad::adapters::ui::view {
 
 namespace {
 
@@ -39,9 +39,8 @@ constexpr const char* kFragmentShader = R"(
 
 }  // namespace
 
-ViewerWidget::ViewerWidget(
-    const hexagon::ports::driving::ViewModelPort& view_model, QWidget* parent)
-    : QOpenGLWidget(parent), scene_(view_model) {
+ViewerWidget::ViewerWidget(const MeshSource& mesh_source, QWidget* parent)
+    : QOpenGLWidget(parent), scene_(mesh_source) {
     scene_.loadAll();  // statische Darstellung (LH-FA-D3-001)
     setWindowTitle(QStringLiteral("b-cad — 3D-Viewer (welle-1v)"));
 }
@@ -178,4 +177,4 @@ void ViewerWidget::wheelEvent(QWheelEvent* event) {
     update();
 }
 
-}  // namespace bcad::adapters::ui
+}  // namespace bcad::adapters::ui::view

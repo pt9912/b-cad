@@ -6,14 +6,14 @@
 #include <QOpenGLWidget>
 #include <QPoint>
 
-#include "adapters/ui/viewer_scene.h"
+#include "adapters/ui/view/viewer_scene.h"
 #include "hexagon/ports/driven/model_changed_port.h"
-#include "hexagon/ports/driving/view_model_port.h"
 
-namespace bcad::adapters::ui {
+namespace bcad::adapters::ui::view {
 
-// Driving Adapter (ADR-0009): sichtbares 3D-Fenster. Rendert den
-// `ViewerScene`-Stand (tessellierte Netze, ViewModelPort) per
+// driven-Seite der ui (ADR-0009, slice-029): sichtbares 3D-Fenster —
+// Beobachter-Implementierung + Renderer. Rendert den `ViewerScene`-Stand
+// (tessellierte Netze, gepullt über die ui-interne MeshSource-Naht) per
 // QOpenGLWidget — orbitierbare Perspektive, Flat-/Lambert-Shading,
 // bewusst minimal (Erweiterungen nur über ADR-0009
 // §Re-Evaluierungs-Trigger).
@@ -26,9 +26,8 @@ class ViewerWidget final : public QOpenGLWidget,
                            protected QOpenGLFunctions,
                            public hexagon::ports::driven::ModelChangedPort {
 public:
-    explicit ViewerWidget(
-        const hexagon::ports::driving::ViewModelPort& view_model,
-        QWidget* parent = nullptr);
+    explicit ViewerWidget(const MeshSource& mesh_source,
+                          QWidget* parent = nullptr);
 
     // ADR-0008-Callback: Szene nachziehen + Repaint einplanen.
     void onModelChanged(
@@ -58,4 +57,4 @@ private:
     double zoom_{1.0};
 };
 
-}  // namespace bcad::adapters::ui
+}  // namespace bcad::adapters::ui::view
