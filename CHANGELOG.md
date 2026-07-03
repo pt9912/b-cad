@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-028 + slice-029 — **a-check-Vorbereitung: Architektur-Struktur richtungs-rein**
+  (harness-steering-Quergewerk; Pilot-Befunde des a-check-Schwester-Tools v0.8.0,
+  Projektinhaber-Abnahme der Entwürfe vor Umsetzung): **028** reklassifiziert die fünf
+  reinen Berechnungs-Kerne (`opening/roof/slab/stair_geometry`, `wall_footprint`) per
+  `git mv` nach `src/hexagon/services/geometry/` (Option B: `model/` bleibt header-only
+  [ADR-0017-Symbol-Naht-Prämisse], §2.1-Konvention unberührt, Kante glob-deklarierbar;
+  `architecture.md`-Tabelle heilt die vorbestehende Verletzung durch die 11
+  Adapter-Includes). **029** trennt den ui-Misch-Adapter verzeichnislich:
+  `ui/view/` = driven (Beobachter-Implementierungen + Rendering), `ui/command/` =
+  driving — mit port-freier **`MeshSource`-Naht** durch das ADR-0008-Push-Notify/
+  Pull-State-Muster (Aggregate als `std::map<Id,TriangleMesh>`, Konversion in
+  `ViewModelMeshSource`); Regel E unangetastet. Beleg je Slice: kein
+  `src/adapters/**`-Include auf `hexagon/services/*` außerhalb `geometry/`; kein
+  Adapter-Verzeichnis mischt driving/driven. Je Zwei-Commit-Split (`MR-006`-Review-
+  Auflage: §2.8 gilt allgemein), je `MR-006` (028: 1 HIGH + 2 MED eingearbeitet;
+  029: 3 MED eingearbeitet) + unabhängiges **Code-Review 0 HIGH / 0 MED**;
+  `make gates` durchgehend grün (228/228, arch-check A–E/P1/P2). Verhaltens-neutral
+  (Orakel: unveränderte AK-/Invarianten-/Surrogat-Tests).
 - slice-026b — **Plugin-System lauffähig: Host, API, Beispiel-Plugin, Regel P**
   (`LH-FA-PLG-001`..004, welle-5-erweiterung, ADR-0017): b-cad lädt/entlädt Shared-Library-
   Plugins **zur Laufzeit** über den **Plugin-Host** (Driving Adapter `src/adapters/plugin/`,

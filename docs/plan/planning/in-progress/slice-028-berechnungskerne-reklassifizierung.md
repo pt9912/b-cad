@@ -1,7 +1,7 @@
 ---
 id: slice-028
 titel: Reine Berechnungs-Kerne verzeichnislich reklassifizieren — hexagon/services/geometry/ (a-check-Vorbereitung, Pilot-Befund 1)
-status: in-progress
+status: done
 welle: harness-steering
 lastenheft_refs: []
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md), [ADR-0017](../../adr/0017-plugin-api-abi.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0011](../.
 
 # Slice 028: Reine Berechnungs-Kerne → `src/hexagon/services/{geometry}/` (Pilot-Befund 1)
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
+**Status:** done (2026-07-03) — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
 **1 HIGH / 2 MED / 1 LOW / 4 INFO — alle vor Start eingearbeitet**
 (HIGH-1: die ursprüngliche Ein-Commit-Begründung war eine unzulässige
 §2.8-Regel-Verengung → **Zwei-Commit-Split**; MED-1: codepaths×Freeze-
@@ -20,8 +20,11 @@ Self-Include-Präzisierung; INFO-1/2 Sub-Schicht-Semantik +
 `volume_geometry`-Reinheits-Präzisierung). Options-Entscheidung B vom
 Review **bestätigt** („B ist richtig; A zu Recht verworfen").
 [Report](../../../reviews/2026-07-03-slice-028-plan.md).
-**Entwurf zur Abnahme an den Projektinhaber — Implementierung erst nach
-Abnahme.**
+**Abgenommen** (Projektinhaber, 2026-07-03: „Go") und umgesetzt —
+**Status: done** (Commits `b22632e` Move + `76cec48` Nachzug);
+unabhängiges **Code-Review 0 HIGH / 0 MED**
+([Report](../../../reviews/2026-07-03-slice-028-code-review.md));
+`make gates` grün (228/228); Closure-Notiz §8.
 
 **Welle:** harness-steering (Quergewerk „a-check-Vorbereitung"; die
 Gate-Umstellung selbst — a-check statt `tools/arch-check.sh`, eigener
@@ -108,7 +111,7 @@ im Folge-Slice); hier gilt sie als Review-/Text-Invariante.
 
 ## 2. Definition of Done
 
-- [ ] **Verschiebung:** die fünf Berechnungs-Kerne per `git mv` nach
+- [x] **Verschiebung:** die fünf Berechnungs-Kerne per `git mv` nach
       `src/hexagon/services/{geometry}/`; `src/hexagon/CMakeLists.txt`
       Quell-Liste nachgezogen. **Commit-Schnitt nach
       [AGENTS.md §2.8](../../../../AGENTS.md) (Review-HIGH-1): Commit i =
@@ -117,7 +120,7 @@ im Folge-Slice); hier gilt sie als Review-/Text-Invariante.
       Commits" (das Klammer-Beispiel „Slices/Carveouts" ist kein
       Geltungsbereichs-Filter; die ursprüngliche Ein-Commit-Lesart dieses
       Plans war eine unzulässige Regel-Verengung und ist korrigiert).
-- [ ] **Alle Konsumenten nachgezogen** (verifizierte Liste, 2026-07-03):
+- [x] **Alle Konsumenten nachgezogen** (verifizierte Liste, 2026-07-03):
       Services (`structure_edit_service.cpp`, `volume_geometry.cpp`, je
       der **eigene** Self-Include-Pfad der fünf Kern-`.cpp` —
       Review-LOW-1: die Kerne inkludieren einander **nicht**), Adapter
@@ -128,18 +131,18 @@ im Folge-Slice); hier gilt sie als Review-/Text-Invariante.
       sowie **Kommentar-Pfadverweise** in
       `src/hexagon/ports/driven/geometry_kernel_port.h`,
       `src/hexagon/model/cut_prism.h`, `src/hexagon/model/slab.h`.
-- [ ] **Abnahme-Kriterium erfüllt und belegt:**
+- [x] **Abnahme-Kriterium erfüllt und belegt:**
       `grep -rn "hexagon/services/" src/adapters` liefert **nur noch**
       `hexagon/services/geometry/`-Treffer (Beleg in der Closure-Notiz);
       Reinheits-Invariante der `geometry/`-Dateien per grep belegt (nur
       `hexagon/model/`-Includes).
-- [ ] **Verhaltens-Neutralität:** reine Verschiebung — **kein**
+- [x] **Verhaltens-Neutralität:** reine Verschiebung — **kein**
       Signatur-/Logik-Touch; `make test` unverändert grün (228/228; die
       Geometrie-AK-Tests inkl. Invarianten-Sonden sind das Orakel);
       [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
       **n/a** (keine neue/geänderte Geometrie), unabhängiges Code-Review
       vor Closure (Move-Vollständigkeit, keine Alt-Pfad-Reste).
-- [ ] **Spec-first / Doku (Review-MED-2 + INFO-1 präzisiert):**
+- [x] **Spec-first / Doku (Review-MED-2 + INFO-1 präzisiert):**
       `spec/architecture.md` — (a) `services/geometry/` als **eigene
       Sub-Schicht** deklariert (reine, port-freie Berechnungs-Funktionen
       über Modelltypen — abweichende Semantik zur Eltern-`services/`-Zeile
@@ -152,7 +155,7 @@ im Folge-Slice); hier gilt sie als Review-/Text-Invariante.
       ausweisen). Meilensteinfrei, ohne ADR-Verweis im Körper
       ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)).
       Kein Lastenheft-Touch, kein ADR, kein Schema.
-- [ ] **done-archive-/reviews-codepaths-Nachzug (Review-MED-1):** das
+- [x] **done-archive-/reviews-codepaths-Nachzug (Review-MED-1):** das
       codepaths-Gate kennt — anders als das ids-Modul — **keine**
       done-archive-/reviews-Ausnahme; nach dem Move dangeln mindestens
       der gerootete Inline-Pfad in
@@ -164,7 +167,7 @@ im Folge-Slice); hier gilt sie als Review-/Text-Invariante.
       minimale Ausnahme vom Freeze; **keine** `.d-check.yml`-Scope-
       Änderung, die wäre eine Gate-Verengung). Vollständiger Sweep beim
       Umsetzen (weitere Treffer gleich behandeln).
-- [ ] `tools/arch-check.sh` **durchgehend grün** (Regeln A–E, P1/P2 —
+- [x] `tools/arch-check.sh` **durchgehend grün** (Regeln A–E, P1/P2 —
       die Verschiebung bleibt innerhalb `src/hexagon/`, keine Regel
       berührt); `make gates` grün; **keine** `.a-check.yml`;
       CHANGELOG; Roadmap-Quergewerk-Eintrag; Closure-Notiz mit
@@ -241,3 +244,35 @@ im Folge-Slice); hier gilt sie als Review-/Text-Invariante.
 
 - **Modus:** GF; `architecture.md`-Deklaration ist die Spec-first-Hälfte
   (Komponenten-Sicht, meilensteinfrei, ADR-frei im Körper).
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar, 2026-07-03):** Zwei-Commit-Split
+(`b22632e` = 10× 100-%-Rename, 0 Inhalt; `76cec48` = nur Include-/CMake-/
+Kommentar-/Doku-Nachzug — vom Code-Review hunk-weise verifiziert).
+**Abnahme-Kriterium belegt:** `grep '#include "hexagon/services/'
+src/adapters/` → 11 Treffer, alle `services/geometry/` (deckungsgleich mit
+dem Pilot-Befund); Reinheits-Invariante belegt (alle 10 Dateien nur
+`hexagon/model/` + Std-Lib + Self-Include, kein Geschwister-Include).
+`tools/arch-check.sh` A–E/P1/P2 durchgehend grün, `make gates` grün
+(228/228 — Verhaltens-Orakel: unveränderte Geometrie-AK-/Invarianten-
+Tests), `make test` unverändert. `architecture.md`: Sub-Schicht +
+„Darf importieren"-Spalten — **heilt die vorbestehende Tabellen-
+Verletzung** durch die 11 Bestands-Includes (positiver Nebeneffekt).
+Zwei `d-check:ignore`-Marker (023b-Archiv, 024b-Review; Präzedenz
+slice-008a), keine `.d-check.yml`-Änderung. Keine `.a-check.yml`.
+Code-Review **0 HIGH / 0 MED / 2 INFO** (INFO-2 Roadmap-Zeilen-Ordnung im
+029-Commit behoben).
+
+**Lerneintrag:** (a) **§2.8 gilt allgemein** — die Ein-Commit-Lesart
+(„betrifft nur Planning-Moves") war eine unzulässige Regel-Verengung
+(Review-HIGH-1): die Überschrift ist die Regel, Klammer-Beispiele sind
+kein Scope-Filter. (b) **Gate-Asymmetrie codepaths vs. ids:** das
+ids-Modul nimmt done-archive/reviews aus, codepaths nicht — jeder
+src-Reclassify-Slice muss Archiv-Pfade sweepen (Marker-Muster).
+(c) `volume_geometry` bleibt benannter Kohärenz-Kandidat (port-frei,
+aber nicht model-only — bräuchte erweiterte Invariante).
+
+**Nachfolge:** zusammen mit slice-029 → Meldung an den Projektinhaber
+(a-check-Pilot-Schnitt mit Richtungs-Modellierung; a-check-seitig
+slice-024/adapterSeg-Root-Fix).

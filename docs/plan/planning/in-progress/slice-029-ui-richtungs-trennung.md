@@ -1,7 +1,7 @@
 ---
 id: slice-029
 titel: ui-Adapter driving/driven verzeichnislich trennen — ui/view (driven) + ui/command (driving) mit MeshSource-Naht (a-check-Vorbereitung, Pilot-Befund 2)
-status: in-progress
+status: done
 welle: harness-steering
 lastenheft_refs: [[LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 029: ui-Adapter driving/driven trennen — `ui/view/` + `ui/command/` (Pilot-Befund 2)
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
+**Status:** done (2026-07-03) — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
 **0 HIGH / 3 MED / 4 LOW / 2 INFO — alle vor Start eingearbeitet**
 (MED-1: Aggregat-Rückgabetypen der `MeshSource` **port-frei fixiert**
 [`std::map<Id,TriangleMesh>` statt Driving-Port-Structs — tragend fürs
@@ -19,8 +19,12 @@ Split deklariert; MED-3: fünf done-archive-codepaths-Referenzen →
 Presenter-Ablehnung). Unterordner-Variante + MeshSource-Naht vom Review
 **bestätigt**; Namenswahl `command/` vs. `driving/` als expliziter
 Abnahme-Punkt. [Report](../../../reviews/2026-07-03-slice-029-plan.md).
-**Entwurf zur Abnahme an den Projektinhaber — Implementierung erst nach
-Abnahme.**
+**Abgenommen** (Projektinhaber, 2026-07-03: „Go"; Namenswahl `command/`
+bestätigt — Plan-Empfehlung ohne Widerspruch) und umgesetzt —
+**Status: done** (Commits `dd01fc7` Move + `c0a12ae` Naht);
+unabhängiges **Code-Review 0 HIGH / 0 MED / 1 LOW**
+([Report](../../../reviews/2026-07-03-slice-029-code-review.md));
+`make gates` grün (228/228); Closure-Notiz §8.
 
 **Welle:** harness-steering (Quergewerk „a-check-Vorbereitung", Schwester
 von slice-028; Gate-Umstellung selbst **nicht Teil**, keine `.a-check.yml`).
@@ -128,7 +132,7 @@ port-frei); kein Verzeichnis mischt. Regel E unberührt (alles unter
 
 ## 2. Definition of Done
 
-- [ ] **Struktur:** `viewer_scene.{h,cpp}` + `viewer_widget.{h,cpp}` per
+- [x] **Struktur:** `viewer_scene.{h,cpp}` + `viewer_widget.{h,cpp}` per
       `git mv` nach `src/adapters/ui/{view}/`; neu
       `src/adapters/ui/view/{mesh_source}.h` (pure-virtual, port-frei,
       nur Modelltypen — Aggregat-Rückgaben `std::map<Id,TriangleMesh>`,
@@ -141,7 +145,7 @@ port-frei); kein Verzeichnis mischt. Regel E unberührt (alles unter
       Review-MED-2): Commit i = reiner `git mv` (nur Pfade), Commit ii =
       Include-/Signatur-/Naht-Änderungen** — sonst fällt die
       Rename-Detection unter die 50-%-Schwelle.
-- [ ] **done-archive-codepaths-Nachzug (Review-MED-3):** fünf
+- [x] **done-archive-codepaths-Nachzug (Review-MED-3):** fünf
       eingefrorene Archiv-Pläne referenzieren die alten Viewer-Pfade
       **gerootet** (slice-012/013b/014b/015b/016b →
       `src/adapters/ui/viewer_scene.*`) — nach dem Move würden sie das
@@ -149,7 +153,7 @@ port-frei); kein Verzeichnis mischt. Regel E unberührt (alles unter
       (Präzedenz slice-008a — bewahrt den historischen Text, statt
       eingefrorene Pläne inhaltlich umzuschreiben; die Marker-Ergänzung
       ist die benannte, minimale Ausnahme vom Freeze).
-- [ ] **Naht:** `ViewerScene`/`ViewerWidget` konsumieren `MeshSource&`
+- [x] **Naht:** `ViewerScene`/`ViewerWidget` konsumieren `MeshSource&`
       statt `ViewModelPort&`; **kein** `ports/driving/`-Include mehr
       unter `ui/view/**`, **kein** `ports/driven/`-Include unter
       `ui/command/**` — Grep-Beleg beider Richtungen in der
@@ -157,7 +161,7 @@ port-frei); kein Verzeichnis mischt. Regel E unberührt (alles unter
       nachgezogen (der `viewer_widget.h`-Kopf nennt das Widget heute
       pauschal „Driving Adapter" — nach der Trennung: view = driven
       Beobachter/Renderer, command = driving Aufruf-Sitz).
-- [ ] **Verhaltens-Neutralität:** [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)-**Verhaltensvertrag**
+- [x] **Verhaltens-Neutralität:** [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)-**Verhaltensvertrag**
       erhalten (Review-LOW-1: der Pull ist künftig adapter-intern durch
       die Naht vermittelt — der Kern↔Adapter-Vertrag [nur `element_id`+`op`
       gepusht, Pull im Callback, keine Mutation] bleibt unberührt;
@@ -169,7 +173,7 @@ port-frei); kein Verzeichnis mischt. Regel E unberührt (alles unter
       Include/Verdrahtung nach, das Orakel bleibt); GL-Smoke/`xvfb`
       unberührt; `make acc-002-beleg`-Pfad funktionsfähig (Viewer-API
       `viewer->scene()` bleibt).
-- [ ] **Spec-first / Doku:** `spec/architecture.md` — ui-Komponenten-
+- [x] **Spec-first / Doku:** `spec/architecture.md` — ui-Komponenten-
       Beschreibung um die Richtungs-Unterteilung ergänzt (view = driven
       Beobachter/Rendering, command = driving App-Aufrufe;
       meilensteinfrei, ADR-frei im Körper,
@@ -177,7 +181,7 @@ port-frei); kein Verzeichnis mischt. Regel E unberührt (alles unter
       Doku-Pfad-Sweep (codepaths-Gate fängt gerootete Alt-Pfade). Kein
       Lastenheft-Touch, kein ADR (Regel E bleibt — die Alternative hätte
       einen gebraucht), kein Schema.
-- [ ] `tools/arch-check.sh` **durchgehend grün** (A–E, P1/P2; Regel E
+- [x] `tools/arch-check.sh` **durchgehend grün** (A–E, P1/P2; Regel E
       prüft `src/adapters/ui/` als Präfix — Unterordner bleiben gedeckt);
       `make gates` grün; **keine** `.a-check.yml`; unabhängiges
       Code-Review vor Closure
@@ -278,3 +282,37 @@ port-frei); kein Verzeichnis mischt. Regel E unberührt (alles unter
 
 - **Modus:** je GF; Tests ziehen nur Verdrahtung nach (Orakel
   unverändert); `architecture.md`-Deklaration ist die Spec-first-Hälfte.
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar, 2026-07-03):** Zwei-Commit-Split
+(`dd01fc7` = 4× 100-%-Rename; `c0a12ae` = Naht + Nachzüge).
+**Abnahme-Kriterium belegt (grep je Adapter-Verzeichnis):**
+`io`/`geometry`/`persistence` nur driven, `plugin` nur driving,
+ui-Wurzel (`qt_probe`) port-frei, `ui/view/` nur driven, `ui/command/`
+nur driving — **kein Verzeichnis mischt**. `MeshSource` port-frei
+(Aggregate `std::map<Id,TriangleMesh>`, Review-MED-1); Dependency-
+Inversion richtungs-korrekt (`command/` → `view/mesh_source.h`, nie
+umgekehrt). **Verhaltens-Neutralität vom Code-Review semantisch
+verifiziert** (loadAll/reloadKeyed/Wall-Case äquivalent; der
+[ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)-Vertrag „genau EIN wirksames Update je Wand-Meldung" bleibt
+exakt; Callback→Repaint unverändert); `make gates` grün (228/228,
+Testanzahl unverändert), Regel E/B unberührt grün. conventions-
+GUI-Modus-Zeile korrigiert (Deklarations-Drift „nur Driving-Ports");
+architecture-ui-Zeile + Baum. Namenswahl `command/` vom Projektinhaber
+mit dem Go bestätigt. Code-Review **0 HIGH / 0 MED / 1 LOW / 2 INFO**.
+
+**Lerneintrag:** (a) **Marker-Reduktion 5→2 (Code-Review-LOW-1):** von
+den fünf im Plan genannten Archiv-Fundstellen brauchten nur die zwei
+**literalen** Pfade (012/013b) Marker — das Trio 014b/015b/016b trägt
+Brace-Formen, die das codepaths-Gate als Glob behandelt (gate-exempt);
+die Umsetzung ist freeze-schonender als der überspezifizierte Plantext.
+(b) Die MeshSource-Naht zeigt das Muster „Schnittstelle beim
+Konsumenten deklarieren" als Richtungs-Reiniger für
+Push-Notify/Pull-State-Beobachter — wiederverwendbar, falls weitere
+Misch-Kopplungen auftauchen. (c) Stale „MED-2"-Altkommentar in
+reloadKeyed als Gelegenheits-Pflege benannt (Code-Review-INFO-1).
+
+**Nachfolge:** zusammen mit slice-028 → Meldung an den Projektinhaber
+(a-check-Pilot-Schnitt); künftige GUI-Edit-Kommandos haben mit
+`ui/command/` ihren deklarierten Ort.
