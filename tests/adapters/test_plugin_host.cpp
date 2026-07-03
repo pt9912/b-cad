@@ -151,6 +151,32 @@ TEST_F(PluginHostTest, MissingEntryPointsRejected) {
               std::string::npos);
 }
 
+// LH-FA-PLG-003/004 (Code-Review-MED-1): Fehler im SHUTDOWN-Schritt —
+// der reguläre Entlade-Weg isoliert (Fehlerpfad ohne Entladen),
+// E-PLG-001/event=plugin_error, Modell unverändert, Host lebt weiter.
+// Sichert den Shutdown-Zweig der Fehler-Barriere ab (ohne ihn liefe die
+// Plugin-Exception im PluginHost-Destruktor in std::terminate).
+TEST_F(PluginHostTest, UnloadHookThrowIsolatesPlugin) {
+    const auto load =
+        host_.load(pluginPath("bcad_unload_throwing_plugin.so"));
+    ASSERT_TRUE(load.ok) << load.message;
+    const ModelProbe before = probeModel(service_);
+
+    const auto unload = host_.unload("bcad-unload-throwing");
+    ASSERT_FALSE(unload.ok);
+    EXPECT_NE(unload.message.find("E-PLG-001"), std::string::npos);
+    EXPECT_NE(unload.message.find("event=plugin_error"), std::string::npos);
+    EXPECT_NE(unload.message.find("Shutdown-Hook warf"), std::string::npos);
+    EXPECT_EQ(host_.activeCount(), 0U);
+    EXPECT_EQ(probeModel(service_).walls, before.walls);
+    EXPECT_EQ(probeModel(service_).storeys, before.storeys);
+
+    // Host lebt weiter: Folge-Operation funktioniert.
+    const auto follow_up = host_.load(pluginPath("bcad_example_plugin.so"));
+    ASSERT_TRUE(follow_up.ok) << follow_up.message;
+    EXPECT_TRUE(host_.unload("bcad-example").ok);
+}
+
 // Entladen eines unbekannten Namens: klare Meldung, kein Wurf.
 TEST_F(PluginHostTest, UnloadUnknownNameFails) {
     const auto result = host_.unload("gibt-es-nicht");

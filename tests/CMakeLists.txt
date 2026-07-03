@@ -54,7 +54,7 @@ set_target_properties(bcad_adapter_tests PROPERTIES ENABLE_EXPORTS ON)
 target_compile_definitions(bcad_adapter_tests
     PRIVATE BCAD_TEST_PLUGIN_DIR="${CMAKE_BINARY_DIR}/plugins")
 add_dependencies(bcad_adapter_tests
-    bcad_example_plugin bcad_throwing_plugin
+    bcad_example_plugin bcad_throwing_plugin bcad_unload_throwing_plugin
     bcad_abi_mismatch_plugin bcad_no_symbols_plugin)
 
 include(GoogleTest)

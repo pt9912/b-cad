@@ -118,8 +118,11 @@ PluginResult PluginHost::load(const std::string& path) {
     try {
         entry->instance = create_fn();
         if (entry->instance == nullptr) {
-            return {false, {},
-                    rejectedMessage(path, "Factory lieferte kein Plugin")};
+            // Post-Handshake-Fehler (Init-Schritt) => plugin_error, nicht
+            // plugin_rejected (Code-Review-MED-2; §4-Phasen-Zuordnung).
+            entry->context->invalidate();
+            return {false, name,
+                    errorMessage(name, "Factory lieferte kein Plugin")};
         }
         name = entry->instance->name();
         entry->name = name;

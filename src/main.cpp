@@ -100,9 +100,14 @@ std::optional<int> runExportIfRequested(
 // Modell nicht. Entladen übernimmt der Host beim Beenden (Destruktor).
 void loadPluginsFromCli(const QStringList& cli,
                         bcad::adapters::plugin::PluginHost& host) {
-    for (int i = 0; i + 1 < cli.size(); ++i) {
+    for (int i = 0; i < cli.size(); ++i) {
         if (cli.at(i) != QStringLiteral("--plugin")) {
             continue;
+        }
+        if (i + 1 >= cli.size()) {
+            // Fehlbedienung nicht schweigend schlucken (Review-LOW-2).
+            std::cerr << "--plugin ohne Pfad-Argument ignoriert\n";
+            break;
         }
         const auto result = host.load(cli.at(i + 1).toStdString());
         (result.ok ? std::cout : std::cerr) << result.message << '\n';

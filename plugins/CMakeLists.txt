@@ -25,5 +25,6 @@ bcad_add_plugin(bcad_example_plugin example/example_plugin.cpp)
 
 # Test-Fixtures der Plugin-Host-AK-Tests.
 bcad_add_plugin(bcad_throwing_plugin testing/throwing_plugin.cpp)
+bcad_add_plugin(bcad_unload_throwing_plugin testing/unload_throwing_plugin.cpp)
 bcad_add_plugin(bcad_abi_mismatch_plugin testing/abi_mismatch_plugin.cpp)
 bcad_add_plugin(bcad_no_symbols_plugin testing/no_symbols_plugin.cpp)

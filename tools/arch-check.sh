@@ -92,7 +92,7 @@ fi
 # Erfasst dlfcn.h-Includes und dlopen/dlsym/dlclose-Aufrufe in src/ und
 # plugins/ (das Monopol schließt den plugins/-Baum ein: ein Plugin, das
 # selbst dynamisch lädt, unterliefe Lifecycle und Fehler-Barriere).
-p1_hits="$(grep -rnE '#include[[:space:]]*[<"]dlfcn\.h[>"]|\bdl(open|sym|close)[[:space:]]*\(' src plugins \
+p1_hits="$(grep -rnE '#include[[:space:]]*[<"]dlfcn\.h[>"]|\bdl(m?open|sym|close)[[:space:]]*\(' src plugins \
     --include='*.cpp' --include='*.h' 2>/dev/null \
     | grep -vE '^src/adapters/plugin/' || true)"
 if [ -n "$p1_hits" ]; then
@@ -118,6 +118,16 @@ p2b_hits="$(grep -rnE '#include[[:space:]]*[<"](Q[A-Za-z]|sqlite3[A-Za-z0-9_]*\.
 if [ -n "$p2b_hits" ]; then
     echo "ARCH-CHECK FAIL (ADR-0017, Regel P2): Qt-/OCC-/SQLite-Header im plugins/-Baum:"
     echo "$p2b_hits"
+    status=1
+fi
+# Projekt-Header nur in Quote-Form: Angle-Includes von Projekt-Präfixen
+# umgingen sonst die P2-Allowlist (src/ liegt für Plugins auf dem
+# Include-Pfad — Code-Review-MED-3 slice-026b).
+p2c_hits="$(grep -rnE '#include[[:space:]]*<(adapters/|hexagon/|plugin_api/)' plugins src/plugin_api \
+    --include='*.cpp' --include='*.h' 2>/dev/null || true)"
+if [ -n "$p2c_hits" ]; then
+    echo "ARCH-CHECK FAIL (ADR-0017, Regel P2): Projekt-Header als Angle-Include in plugins/ bzw. src/plugin_api/ (Quote-Form + Allowlist umgangen):"
+    echo "$p2c_hits"
     status=1
 fi
 
