@@ -55,6 +55,21 @@ Wellen-Inhalt ohne Meilenstein-Bindung — bei Umfangs-Druck entscheidet der Pro
   [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) erfüllt → **Meilenstein M5**.
 
 **Fortschritt (Stand 2026-07-03):**
+- ✓ **slice-026b — Plugin-System lauffähig** (2026-07-03; Host/API/Beispiel-Plugin/Regel P):
+  Plugin-Host als Driving Adapter (`src/adapters/plugin/`, dlfcn-Monopol) mit
+  fail-closed-Handshake, 7-Stufen-Lifecycle und Fehler-Barriere
+  ([`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder),
+  `plugin_rejected`/`plugin_error`); Plugin-API `src/plugin_api/` (Port-Subset v1 =
+  `EditStructurePort`+`EvaluatePort`, invalidierbarer Kontext); `plugins/`-Baum
+  (Beispiel + 4 Fixtures, MODULE ohne Kern-Linkage); **Symbol-Naht = `ENABLE_EXPORTS`**
+  (Beleg: Exception aus realer `.so` im Host gefangen); `--plugin`-CLI;
+  **arch-check-Regel P** + lint-Scope `plugins/`. 8 AK-Tests mit realer `.so`;
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  0 HIGH + unabhängiges Code-Review **0 HIGH** (3 MED/2 LOW vor Closure behoben);
+  gates grün (228/228, 90,3 %). **Beide [ADR-0017](../../adr/0017-plugin-api-abi.md)-Folgepflichten
+  erfüllt — der [OBJ-004](../../../../spec/lastenheft.md#3-projektziele)/M5-Pfad ist frei**
+  (M5-Buchung = Projektinhaber-Entscheidung bei der Welle-Closure; benannte Lücke:
+  GUI-Plugin-Verwaltung → UI-Strang).
 - ✓ **slice-026a — PLG-AK-Schärfung + Spec-Mapping** (2026-07-03, reine Doku/Entscheidung):
   [LH-FA-PLG-001](../../../../spec/lastenheft.md#lh-fa-plg-001)..004 von Outline auf AK
   (Lastenheft **0.1.13**, lösungsfrei/benutzer-beobachtbar, per-ID-Inline-Anker; Sandbox-AK

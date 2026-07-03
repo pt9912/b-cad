@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-026b — **Plugin-System lauffähig: Host, API, Beispiel-Plugin, Regel P**
+  (`LH-FA-PLG-001`..004, welle-5-erweiterung, ADR-0017): b-cad lädt/entlädt Shared-Library-
+  Plugins **zur Laufzeit** über den **Plugin-Host** (Driving Adapter `src/adapters/plugin/`,
+  dlfcn-Monopol): versionierter `extern-"C"`-Handshake **exakt/fail-closed** vor jedem
+  C++-Kontakt (Ablehnung ohne Init nennt erwarteten+vorgefundenen Vertragsstand),
+  7-Stufen-Lifecycle, **Fehler-Barriere** je Host→Plugin-Übergang (`E-PLG-001`,
+  `plugin_rejected`/`plugin_error`), Fehlerpfad = **Isolieren ohne Entladen**.
+  **Plugin-API** `src/plugin_api/` (header-only; invalidierbarer `PluginContext` mit
+  Port-Subset v1 = `EditStructurePort`+`EvaluatePort` — dieselbe Klemmung/Validierung wie
+  manuelle Eingaben, kein Nebeneingang). `plugins/`-Baum: Beispiel-Plugin (Edit+Klemm-Beleg)
+  + 4 Test-Fixtures als CMake-`MODULE` **ohne Kern-Linkage**; **Symbol-Naht =
+  `ENABLE_EXPORTS`** (Kern bleibt statisch; Beleg: Exception aus realer `.so` im Host
+  gefangen). `--plugin`-CLI. **arch-check-Regel P** (P1 dlfcn-Monopol inkl. `plugins/`;
+  P2 Import-Grenze inkl. Angle-Include-Verbot) + lint-Scope um `plugins/` (Verschärfung);
+  Gate-Doku (AGENTS §3/harness-README) nachgezogen. 8 AK-Tests mit **realer `.so` durch den
+  echten Host**. `MR-006` 0 HIGH (1 MED + 3 LOW eingearbeitet) + unabhängiges
+  **Code-Review 0 HIGH** (3 MED + 2 LOW vor Closure behoben, u. a. Shutdown-Wurf-Test +
+  P2-Angle-Härtung). `make gates` grün (228/228, Coverage 90,3 %); **keine neue Dependency**
+  (dlopen = glibc). Beide ADR-0017-Folgepflichten (Impl, Regel P) erfüllt →
+  **OBJ-004-Pfad für M5 frei** (GUI-Plugin-Verwaltung = benannte Lücke, UI-Strang).
 - slice-026a — **Plugin-System AK-geschärft + Spec-Mapping entschieden** (`LH-FA-PLG-001`..004,
   welle-5-erweiterung, ADR-0017; reine Doku/Entscheidung, kein Code): Lastenheft **0.1.13** —
   die vier Plugin-Anforderungen von Outline auf **lösungsfreie, benutzer-beobachtbare AK**

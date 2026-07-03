@@ -1,7 +1,7 @@
 ---
 id: slice-026b
 titel: Plugin-System — Implementierung Plugin-Host/API/Beispiel-Plugin + Regel P (parametrisiert auf [ADR-0017](../../adr/0017-plugin-api-abi.md))
-status: in-progress
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-PLG-001](../../../../spec/lastenheft.md#lh-fa-plg-001), [LH-FA-PLG-002](../../../../spec/lastenheft.md#lh-fa-plg-002), [LH-FA-PLG-003](../../../../spec/lastenheft.md#lh-fa-plg-003), [LH-FA-PLG-004](../../../../spec/lastenheft.md#lh-fa-plg-004)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0017](../../adr/0017-plugin-api-abi.md)]
@@ -9,18 +9,14 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0004](../.
 
 # Slice 026b: Plugin-System — Implementierung (Host, API, Beispiel-Plugin, Regel P)
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
-**0 HIGH / 1 MED / 3 LOW / 2 INFO**; Start **nicht blockiert**, alle Findings
-vor Start eingearbeitet: MED-1 (Gate-Doku-Nachzug AGENTS §3 +
-harness/README §Sensors für lint-Scope + Regel P) + LOW-1 (benannte
-Sensor-Lücke `--plugin`-CLI-Glue) + LOW-2 (`tools/idlink.py` um PLG
-angleichen, [`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)
-von Hand verlinken) + LOW-3 (Coverage-/gcov-Randrisiken benannt) +
-INFO-1/2 (Formulierungs-Präzision). Alle vier benannten Entscheidungspunkte
-vom Review **bestätigt** (Symbol-Naht tragfähig+ADR-konform;
-Coverage-Ausnahme = echte Nicht-Lockerung, kein §2.6-Fall; API-Ort
-konsistent ohne Wach-Lücke; Ein-Slice-Schnitt vertretbar).
-[Report](../../../reviews/2026-07-03-slice-026b-plan.md).
+**Status:** done (2026-07-03). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
+**0 HIGH / 1 MED / 3 LOW / 2 INFO** (alle vor Start eingearbeitet; alle vier
+Entscheidungspunkte bestätigt) —
+[Report](../../../reviews/2026-07-03-slice-026b-plan.md). Unabhängiges
+**Code-Review 0 HIGH / 3 MED / 3 LOW** (MED-1..3 + LOW-1..2 vor Closure
+behoben) — [Report](../../../reviews/2026-07-03-slice-026b-code-review.md).
+DoD vollständig, `make gates` grün (228/228, Coverage 90,3 %),
+Closure-Notiz §8.
 
 **Welle:** welle-5-erweiterung (PLG-Strang, Implementierungs-Hälfte —
 **M5-bindender Strang**; Muster slice-019b/c [IFC] / slice-020b [STEP/STL] /
@@ -140,7 +136,7 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
 
 ## 2. Definition of Done
 
-- [ ] **Plugin-API-Header-Satz `src/{plugin_api}/`** (header-only): (a)
+- [x] **Plugin-API-Header-Satz `src/{plugin_api}/`** (header-only): (a)
       `plugin_abi.h` — `BCAD_PLUGIN_ABI_VERSION` (Start: 1) + die drei
       `extern "C"`-Eintrittspunkte als deklarierte Signaturen
       (ABI-Versions-Abfrage, Factory, Destroy) mit festen Symbolnamen; (b)
@@ -152,7 +148,7 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
       beobachtbare Vertragsverletzung statt UB). Includes nur
       `hexagon/model/` + `hexagon/ports/driving/`; **kein** Qt/OCC/SQLite/
       `dlfcn.h`, kein `adapters/`.
-- [ ] **Plugin-Host `src/adapters/plugin/plugin_host.{h,cpp}`** (Driving
+- [x] **Plugin-Host `src/adapters/plugin/plugin_host.{h,cpp}`** (Driving
       Adapter): `dlopen`/`dlsym`/`dlclose` **nur hier** (P1-Monopol);
       Handshake **vor** jedem C++-Kontakt (exakte Versions-Gleichheit;
       Mismatch / fehlendes Symbol / nicht ladbare Datei → Ablehnung **ohne**
@@ -168,7 +164,7 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
       vorgefundene Version** (Lastenheft-AK PLG-002); Fehlerpfad isoliert
       **ohne** `dlclose` (Entscheidung 3), Happy-Pfad Shutdown → Invalidierung
       → `dlclose`. Kein Qt, kein OCC, kein SQLite im Host.
-- [ ] **Beispiel-Plugin `plugins/example/`** (CMake-`MODULE`-Target, zugleich
+- [x] **Beispiel-Plugin `plugins/example/`** (CMake-`MODULE`-Target, zugleich
       AK-Fixture): führt in `onLoad` über den Kontext eine **echte
       Edit-Mutation** aus (inkl. eines bewusst außerhalb des Wertebereichs
       liegenden Parameters → Klemm-Beleg: dieselben Prüf-/Klemm-Regeln wie
@@ -181,20 +177,20 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
       (exportiert keine Eintrittspunkte). **Kein Plugin linkt
       `bcad_hexagon`** (nur `bcad_plugin_api`-Include-Target; statisches
       Kern-Dazulinken verboten).
-- [ ] **CMake/Symbol-Naht:** `ENABLE_EXPORTS ON` für `b-cad` und
+- [x] **CMake/Symbol-Naht:** `ENABLE_EXPORTS ON` für `b-cad` und
       `bcad_adapter_tests` (Entscheidung 1); Plugin-`MODULE`-Targets mit
       definierter Output-Location, den Tests als Compile-Definition
       übergeben; **kein** neuer `find_package`-/apt-Eintrag (`dlopen` =
       glibc; [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)-Beleg
       = `make build` grün ohne Dockerfile-Änderung).
-- [ ] **Composition Root `src/main.cpp`:** `--plugin <pfad>` (wiederholbar)
+- [x] **Composition Root `src/main.cpp`:** `--plugin <pfad>` (wiederholbar)
       lädt beim Start über den Host (Kontext = `StructureEditService`),
       druckt Annahme-/Ablehnungs-Meldung, entlädt beim Beenden. **Benannte
       Lücke:** keine GUI-Plugin-Verwaltung (Laden/Entladen aus der laufenden
       Oberfläche) — die Laufzeit-Fähigkeit belegt der AK-Test durch den
       echten Host im laufenden Prozess; die Oberflächen-Anbindung gehört zum
       UI-Strang der welle-5 (§6).
-- [ ] **AK-Tests `tests/adapters/test_plugin_host.cpp`** (reale `.so` durch
+- [x] **AK-Tests `tests/adapters/test_plugin_host.cpp`** (reale `.so` durch
       den echten Host; [ADR-0017](../../adr/0017-plugin-api-abi.md)
       §Fitness): **Happy** Load→Edit→Unload — Handshake ok, `onLoad` mutiert
       via Kontext (geklemmt, Klemm-Beleg über Port-Abfrage), Unload → Plugin
@@ -210,7 +206,7 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
       Plugin-Datei / defekte Datei** → Ablehnung ohne Absturz, Modell
       unverändert; **fehlendes Symbol** → Ablehnung. Kontext-Invalidierung:
       Zugriff nach Unload wirft beobachtbar (kein UB-Pfad im Test).
-- [ ] **arch-check Regel P** (`tools/arch-check.sh`): **P1** `dlfcn.h`-Include
+- [x] **arch-check Regel P** (`tools/arch-check.sh`): **P1** `dlfcn.h`-Include
       und `dlopen`/`dlsym`/`dlclose`-Aufrufe nur in `src/adapters/plugin/` —
       geprüft über `src/` **und** `plugins/`; **P2** Dateien unter `plugins/`
       und `src/{plugin_api}/` inkludieren nur `plugin_api/` +
@@ -220,25 +216,25 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
       wird ersetzt (es gibt **keine** Regel-E-Ausnahme — kein Qt im
       Plugin-Host; [ADR-0009](../../adr/0009-gui-framework-qt6.md)-Prüfpunkt
       beantwortet).
-- [ ] **Gate-Scope-Entscheidung umgesetzt (Entscheidung 2):** lint-Stage
+- [x] **Gate-Scope-Entscheidung umgesetzt (Entscheidung 2):** lint-Stage
       erfasst `plugins/` (`find src plugins -name '*.cpp'`,
       `.devcontainer/Dockerfile`); Coverage-Filter bleibt `src/`
       (Begründung dokumentiert, keine Schwellen-Änderung, kein
       [AGENTS.md §2.6](../../../../AGENTS.md)-Fall).
-- [ ] **Gate-Doku-Nachzug (Review-MED-1, Präzedenz Regel-E/slice-011b):**
+- [x] **Gate-Doku-Nachzug (Review-MED-1, Präzedenz Regel-E/slice-011b):**
       [`AGENTS.md`](../../../../AGENTS.md) §3 und
       [`harness/README.md`](../../../../harness/README.md) §Sensors —
       lint-Vertragszeile auf „0 Befunde in `src/` + `plugins/`", arch-check-
       Vertragszeile um **Regel P** (dlfcn-Monopol / Plugin-Import-Grenze)
       ergänzt; arch-check-Erfolgsmeldung nennt Regel P mit.
-- [ ] **`tools/idlink.py` um `PLG` angleichen (Review-LOW-2):** der
+- [x] **`tools/idlink.py` um `PLG` angleichen (Review-LOW-2):** der
       Link-Generator kennt nur `E-(IO|VAL|GEO)` — seit 026a validiert das
       Gate aber `E-(IO|VAL|GEO|PLG)` (Generator ≠ Gate, vorgefundene Drift).
       1-Zeilen-Angleich; die neuen
       [`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Nennungen
       im §1-Nachzug werden zusätzlich von Hand verlinkt (nicht auf
       `--apply` verlassen).
-- [ ] **Spec-Nachzug (klein, [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)-zulässig
+- [x] **Spec-Nachzug (klein, [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)-zulässig
       im Impl-Slice, Muster 019b/020b):** `spezifikation.md` §1
       [`LH-FA-PLG-001.a`](../../../../spec/lastenheft.md#lh-fa-plg-001) —
       die beiden dort ausdrücklich an diesen Slice delegierten Punkte
@@ -246,7 +242,7 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
       und Unload-Strategie im Fehlerpfad (Isolieren ohne Entladen). +
       `spezifikation-historie.md` + `**Letzte Änderung:**`-Header. **Kein**
       Lastenheft-Touch, kein neuer ADR, kein Schema.
-- [ ] `make gates` grün (inkl. neuer Regel P und lint über `plugins/`);
+- [x] `make gates` grün (inkl. neuer Regel P und lint über `plugins/`);
       `make schema-check`/`make io-smoke` unberührt; **unabhängiges
       Code-Review vor Closure** (Muster welle-4-Impl-Slices; **vor**
       schreibendem Review committen oder read-only erzwingen — Lehre 024b);
@@ -381,3 +377,84 @@ derselben Import-Grenze wie `plugins/` (Regel P2: nur `plugin_api`/`model`/
   ([ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)-invariant),
   Tests folgen der GoogleTest-/Fixture-Konvention (reale Artefakte statt
   Stubs, Muster IFC/DXF-Integrationstests).
+
+## 8. Closure-Notiz
+
+**Closure-Kriterien (beobachtbar, 2026-07-03):**
+
+- **Plugin-System lauffähig, alle DoD-Zeilen erfüllt:** Plugin-Host
+  (`src/adapters/plugin/`, dlfcn-Monopol; Handshake exakt/fail-closed **vor**
+  jedem C++-Kontakt; 7-Stufen-Lifecycle; Fehler-Barriere je Übergang mit
+  [`E-PLG-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Meldungen
+  `plugin_rejected`/`plugin_error`) + Plugin-API `src/plugin_api/` (header-only,
+  ABI v1, invalidierbarer Kontext) + Beispiel-Plugin und **vier** Test-Fixtures
+  (MODULE ohne Kern-Linkage) + `--plugin`-CLI + **8 AK-Tests mit realer `.so`
+  durch den echten Host** + arch-check-Regel P + Gate-Doku-Nachzug. `make gates`
+  grün (228/228, Coverage 90,3 % — der Host liegt voll im Scope, die
+  LOW-3-Schwellen-Sorge des Plan-Reviews blieb unbegründet); `make
+  schema-check`/`io-smoke` unberührt; **keine neue Dependency**.
+- **Benannte Entscheidungen getroffen und belegt:** (1) Symbol-Naht =
+  **`ENABLE_EXPORTS`** (Kern bleibt statisch) — empirisch belegt: die im
+  Plugin geworfene `std::runtime_error` wird **im Host gefangen** und ihr Text
+  transportiert (typeinfo-Unifikation über die Modul-Grenze; der dokumentierte
+  Fallback Shared-Kern blieb unnötig); (2) Gate-Scope = lint ja / Coverage
+  nein; (3) Fehlerpfad = Isolieren **ohne** Entladen; (4) Port-Subset v1 =
+  `EditStructurePort` + `EvaluatePort` — (1)–(4) in `spezifikation.md` §1
+  fixiert (die zwei von 026a delegierten Platzhalter geschlossen).
+- **Zwei Reviews:** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  0 HIGH (1 MED + 3 LOW + 2 INFO eingearbeitet) + unabhängiges **Code-Review
+  0 HIGH** auf committetem Stand (3 MED + 3 LOW: MED-1 Shutdown-Wurf-Fixture,
+  MED-2 create-Null-Event-Klassifikation, MED-3 P2-Angle-Include-Härtung,
+  LOW-1 `dlmopen`, LOW-2 `--plugin`-ohne-Pfad-Meldung — **alle vor Closure
+  behoben**; LOW-3-Orakel-Härtungen als Kandidaten unten).
+  [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+  **n/a** (keine neue Solid-/Bauteil-Geometrie — bestätigt).
+- **ADR-Index:** beide [ADR-0017](../../adr/0017-plugin-api-abi.md)-Folgepflichten
+  (Impl, Regel P) abgehakt — **alle drei
+  [ADR-0017](../../adr/0017-plugin-api-abi.md)-Folgepflichten erfüllt**.
+
+**Lerneintrag:**
+
+- **`bugprone-empty-catch` als Feedforward-Beleg:** der erste lint-Lauf über
+  den Host fing zwei leere Destroy-Barrieren — behoben durch **Behandlung**
+  (Destroy-Fehlschlag fließt in die E-PLG-Meldung) statt Suppression
+  ([AGENTS.md §2.4](../../../../AGENTS.md)). Der aktivierte `bugprone-*`-Satz
+  (inkl. `exception-escape` für die Destruktor-Pfade) trägt genau die
+  Fehlerklassen des Plugin-Hosts.
+- **Review-Kaskade wirkt versetzt:** das Plan-Review sah die Gate-Doku-Lücke
+  (MED-1), das Code-Review die Test-Lücke auf dem Shutdown-Pfad (MED-1) und
+  die P2-Angle-Lücke (MED-3) — drei Fund-Klassen, die je nur in ihrer Phase
+  sichtbar waren; keine Selbst-Bestätigung.
+- **Benannte Lücke GUI-Plugin-Verwaltung:** Laden/Entladen zur Laufzeit ist im
+  Host-Vertrag real (AK-Tests üben es im laufenden Prozess); die App bietet v1
+  `--plugin` beim Start. Oberflächen-Verwaltung → UI-Strang; die
+  Welle-Verifikation bewertet die Lücke bewusst gegen
+  [OBJ-004](../../../../spec/lastenheft.md#3-projektziele).
+- **Benannte Sensor-Lücke `--plugin`-CLI-Glue** (Plan-Review-LOW-1): kein
+  Smoke für die dünne main.cpp-Verdrahtung (io-smoke-Vertrag bleibt IO-rein).
+
+**Steering-Kandidaten (Projektinhaber-Anstoß, 2026-07-03):**
+
+- **lint-Härtung als eigener Quergewerk-Slice** (Muster 018/022, kein ADR —
+  Verschärfung, kein [AGENTS.md §2.6](../../../../AGENTS.md)-Fall): heutiger
+  Satz = `bugprone-*` + `clang-analyzer-*` + 1× readability. Kandidaten-
+  Familien laut Projektinhaber: **`cert-*`, `readability-*` (kuratiert),
+  `performance-*`, `modernize-*`, `misc-*`, `cppcoreguidelines-*`,
+  `portability-*`** — Vorgehen evidence-first: Dry-Run-Bestandslauf je
+  Familie über `src/` + `plugins/`, Befundzahlen sichten, kuratierte
+  Aktivierungsliste (0-Befunde-Latte muss halten), Befunde fixen, zentrale
+  Ausnahmen nur mit Slice-Bezug (bekannter Kollisionspunkt:
+  `cppcoreguidelines-pro-type-reinterpret-cast` vs. dlsym-Idiom;
+  `readability-magic-numbers` vs. Test-Literale), Gate-Doku-Nachzug.
+- **Plugin-Smoke** (Muster io-smoke, LH-Bindung LH-FA-PLG-*), wenn die
+  CLI-/GUI-Fläche wächst.
+- **Test-Orakel-Härtung** (Code-Review-LOW-3): Re-Load desselben Plugins nach
+  Isolation, `activeCount` nach `unloadAll`/Destruktor, strengere
+  Happy-Meldungs-Sonde.
+
+**Restrisiko / Nachfolge:** welle-5-Schwester-Stränge (DRW, UI-Themes/Docking,
+Mehrsprachigkeit) offen; **M5-Buchung** = Projektinhaber-Entscheidung bei der
+Welle-Closure (der [OBJ-004](../../../../spec/lastenheft.md#3-projektziele)-Pfad
+ist mit dem lauffähigen Plugin-System frei). „Isolieren ohne `dlclose`" ist
+verhaltensseitig nicht getestet (bewusst, UB-Vermeidungs-Präferenz —
+Code-Review-INFO-1).
