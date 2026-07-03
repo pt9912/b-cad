@@ -27,7 +27,7 @@ FAMILIES = [
     ("ACC",    re.compile(r'ACC-\d+'),                         "spec/lastenheft.md"),
     ("OBJ",    re.compile(r'OBJ-\d+'),                         "spec/lastenheft.md"),
     ("REQTEC", re.compile(r'REQ-TEC-\d+'),                     "spec/spezifikation.md"),
-    ("E",      re.compile(r'E-(?:IO|VAL|GEO)-\d+'),            "spec/spezifikation.md"),
+    ("E",      re.compile(r'E-(?:IO|VAL|GEO|PLG)-\d+'),            "spec/spezifikation.md"),
 ]
 ANY = re.compile("|".join("(?:%s)" % f[1].pattern for f in FAMILIES))
 TARGET = {n: t for n, _, t in FAMILIES}

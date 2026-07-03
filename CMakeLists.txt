@@ -20,4 +20,7 @@ if(BCAD_COVERAGE)
 endif()
 
 add_subdirectory(src)
+# Zur Laufzeit ladbare Plugins (ADR-0017, slice-026b) — eigener Baum
+# außerhalb src/; die AK-Tests laden die hier gebauten MODULE-Targets.
+add_subdirectory(plugins)
 add_subdirectory(tests)

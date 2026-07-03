@@ -13,7 +13,16 @@
 #          (ADR-0003 — SQLite bleibt im Persistenz-Adapter gekapselt).
 # Regel E: Qt-Header (<Q...>) NUR in src/adapters/ui/ und in der
 #          Composition Root src/main.cpp (ADR-0009 (c) — Qt bleibt im
-#          UI-Adapter gekapselt; Plugin-Ausnahme erst mit LH-FA-PLG-*).
+#          UI-Adapter gekapselt; es gibt KEINE Plugin-Ausnahme: der
+#          Plugin-Host ist Qt-frei, ADR-0017).
+# Regel P (ADR-0017, slice-026b): Plugin-System-Grenzen.
+#          P1: dlfcn.h/dlopen/dlsym/dlclose NUR in src/adapters/plugin/
+#              — kein anderer Adapter, nicht der Kern, nicht main.cpp,
+#              und KEIN Plugin im plugins/-Baum lädt selbst dynamisch.
+#          P2: Dateien unter plugins/ und src/plugin_api/ inkludieren
+#              per Quote-Include nur plugin_api/ + hexagon/model/ +
+#              hexagon/ports/driving/ — kein adapters/, kein Qt/OCC/
+#              SQLite, kein dlfcn.h.
 #
 # HINWEIS: Heuristik, kein C++-Parser. Das Qt-Muster `Q[A-Za-z]` würde
 # einen künftigen framework-freien Header wie `Queue.h` falsch
@@ -79,7 +88,40 @@ if [ -n "$e_hits" ]; then
     status=1
 fi
 
+# --- Regel P1: dynamisches Laden nur im Plugin-Host (ADR-0017) ---
+# Erfasst dlfcn.h-Includes und dlopen/dlsym/dlclose-Aufrufe in src/ und
+# plugins/ (das Monopol schließt den plugins/-Baum ein: ein Plugin, das
+# selbst dynamisch lädt, unterliefe Lifecycle und Fehler-Barriere).
+p1_hits="$(grep -rnE '#include[[:space:]]*[<"]dlfcn\.h[>"]|\bdl(open|sym|close)[[:space:]]*\(' src plugins \
+    --include='*.cpp' --include='*.h' 2>/dev/null \
+    | grep -vE '^src/adapters/plugin/' || true)"
+if [ -n "$p1_hits" ]; then
+    echo "ARCH-CHECK FAIL (ADR-0017, Regel P1): dynamisches Laden außerhalb src/adapters/plugin/:"
+    echo "$p1_hits"
+    status=1
+fi
+
+# --- Regel P2: Import-Grenze für plugins/ und src/plugin_api/ (ADR-0017) ---
+# Quote-Includes nur aus plugin_api/, hexagon/model/, hexagon/ports/driving/
+# (kein adapters/-Header — auch nicht die des Hosts; Qt/OCC/SQLite/dlfcn
+# fängt zusätzlich P1 bzw. Regel C/D/E über src/, hier für plugins/ gespiegelt).
+p2_hits="$(grep -rnE '#include[[:space:]]*"' plugins src/plugin_api \
+    --include='*.cpp' --include='*.h' 2>/dev/null \
+    | grep -vE '#include[[:space:]]*"(plugin_api/|hexagon/model/|hexagon/ports/driving/)' || true)"
+if [ -n "$p2_hits" ]; then
+    echo "ARCH-CHECK FAIL (ADR-0017, Regel P2): unzulässiger Quote-Include in plugins/ bzw. src/plugin_api/:"
+    echo "$p2_hits"
+    status=1
+fi
+p2b_hits="$(grep -rnE '#include[[:space:]]*[<"](Q[A-Za-z]|sqlite3[A-Za-z0-9_]*\.h)|#include[[:space:]]*[<"][^>"]*\.hxx[>"]' plugins \
+    --include='*.cpp' --include='*.h' 2>/dev/null || true)"
+if [ -n "$p2b_hits" ]; then
+    echo "ARCH-CHECK FAIL (ADR-0017, Regel P2): Qt-/OCC-/SQLite-Header im plugins/-Baum:"
+    echo "$p2b_hits"
+    status=1
+fi
+
 if [ "$status" -eq 0 ]; then
-    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter (ADR-0002) + SQLite im Persistenz-Adapter (ADR-0003) + Qt im UI-Adapter/Composition-Root (ADR-0009) gekapselt"
+    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter (ADR-0002) + SQLite im Persistenz-Adapter (ADR-0003) + Qt im UI-Adapter/Composition-Root (ADR-0009) + Plugin-Grenzen P1/P2 (ADR-0017: dlfcn-Monopol im Plugin-Host, Import-Grenze plugins//plugin_api) gewahrt"
 fi
 exit "$status"

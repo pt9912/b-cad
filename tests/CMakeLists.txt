@@ -43,9 +43,19 @@ add_executable(bcad_adapter_tests
     adapters/test_dxf_export.cpp       # slice-021b Commit ii: Export-AK + Roundtrip + E-IO-001
     adapters/test_pdf_export.cpp       # slice-025b: PDF-Export-AK + voll-Decode-Orakel + Maßstabs-Sonde + E-IO-001 + export-only
     adapters/test_png_export.cpp       # slice-025c: PNG-Export-AK + voll-Decode-Orakel (Inflate/Adler/CRC/Filter) + degenerierte BBox + E-IO-001 + export-only
+    adapters/test_plugin_host.cpp      # slice-026b: Plugin-Host-AK (reale .so durch echten Host: Happy/werfend/ABI-Mismatch/defekt/symbollos) + Kontext-Invalidierung
 )
 target_link_libraries(bcad_adapter_tests
     PRIVATE bcad_adapters bcad_hexagon GTest::gtest_main)
+# slice-026b (ADR-0017): die Plugin-AK-Tests laden REALE MODULE-Targets
+# durch den echten Host — Symbol-Naht wie im Produkt (ENABLE_EXPORTS,
+# Entscheidung 1); der Plugin-Ablageort kommt als Compile-Definition.
+set_target_properties(bcad_adapter_tests PROPERTIES ENABLE_EXPORTS ON)
+target_compile_definitions(bcad_adapter_tests
+    PRIVATE BCAD_TEST_PLUGIN_DIR="${CMAKE_BINARY_DIR}/plugins")
+add_dependencies(bcad_adapter_tests
+    bcad_example_plugin bcad_throwing_plugin
+    bcad_abi_mismatch_plugin bcad_no_symbols_plugin)
 
 include(GoogleTest)
 gtest_discover_tests(bcad_tests)

@@ -68,10 +68,13 @@ RUN xvfb-run -a ctest --test-dir build --output-on-failure
 # und findet dort keine libstdc++-Header ('string'/'iostream' not found).
 # --gcc-install-dir nagelt clang auf die gcc-15-Toolchain fest (= echter
 # Compiler). Beim Hochsetzen des Toolchain-Pins (ADR-0004) mitprüfen.
+# slice-026b (ADR-0017, Gate-Scope-Entscheidung): plugins/ ist Repo-Code
+# und wird mitgelintet (Verschärfung); die Coverage bleibt auf src/
+# gefiltert (plugins/ = AK-Fixtures, keine Produkt-Logik).
 FROM build AS lint
 RUN clang-tidy -p build \
         --extra-arg=--gcc-install-dir=/usr/lib/gcc/x86_64-linux-gnu/15 \
-        --warnings-as-errors='*' $(find src -name '*.cpp') \
+        --warnings-as-errors='*' $(find src plugins -name '*.cpp') \
  && bash tools/suppression-gate.sh
 
 # --- coverage-check: bootstrap-aware Coverage (gcov), ARG-kalibriert ---

@@ -725,9 +725,10 @@ mehr halten — Vertragspflicht, vom Test-Plugin der AK-Tests belegt).
 **Port-Vermittlung (Sandbox-Kern).** Der Plugin-Kontext reicht **ausschließlich
 Driving-Port-Referenzen** — **kein** Driven-Port, **kein** Beobachter-Zugang
 (Plugins sind **pull-only** und nur in ihren Lifecycle-Hooks aktiv), **kein**
-Durchgriff auf Adapter oder Modell-Interna (kein Nebeneingang). Welches
-**Port-Subset** der Kontext in v1 vermittelt, fixiert der Impl-Slice
-**dokumentiert**.
+Durchgriff auf Adapter oder Modell-Interna (kein Nebeneingang). **Port-Subset
+v1 (fixiert):** der Kontext vermittelt `EditStructurePort` (editierend) und
+`EvaluatePort` (lesend); weitere Driving-Ports kommen additiv mit einer
+Erhöhung des Vertragsstands hinzu.
 
 **Threading.** Der Host ruft alle Plugin-Hooks **synchron im Hauptthread**;
 Port-Aufrufe sind **nur aus dem Hook-Kontext** zulässig. Plugin-eigene Threads
@@ -738,8 +739,11 @@ rufen **keine** Ports — Vertragspflicht des Plugins, technisch nicht erzwingba
 werfendes Plugin wird isoliert/entladen
 ([`E-PLG-001`](#4-fehler-codes-und-logging-felder), `event=plugin_error`), das
 Modell bleibt unverändert, kein Plugin-Fehler propagiert als Absturz in den Host.
-Die Unload-Strategie im Fehlerpfad (Entladen vs. Isolieren **ohne** Entladen)
-dokumentiert der Impl-Slice.
+**Unload-Strategie im Fehlerpfad (fixiert):** das Plugin wird **isoliert ohne
+Entladen** — der Kontext wird entzogen und die Plugin-Instanz barriere-gesichert
+freigegeben, die geladene Bibliothek bleibt aber bewusst im Prozess
+(kontrolliertes Belassen vermeidet die Entlade-Restrisiken); nur der reguläre
+Weg (Beendet → Entladen) entfernt die Bibliothek vollständig.
 
 **Sandbox-Grenze (benannte Lücke, ehrlich).** In-process gibt es **keinen
 Speicherschutz**: nicht-wohlgeformter Maschinencode kann den Prozess crashen —

@@ -69,6 +69,11 @@ add_library(bcad_adapters
     # export-only. KEINE neue Dependency (kein zlib/libpng); arch-check Regel A/B.
     io/png_writer.cpp
     io/png_export_adapter.cpp
+    # slice-026b: Plugin-Host (ADR-0017) — Driving Adapter, lädt Shared-
+    # Library-Plugins über den System-Lader (dlfcn-Monopol, arch-check
+    # Regel P1) und vermittelt den Plugin-Kontext (Port-Subset v1).
+    # KEINE neue Dependency (der dynamische Lader ist Teil der glibc).
+    plugin/plugin_host.cpp
 )
 
 target_include_directories(bcad_adapters
@@ -99,5 +104,8 @@ target_link_libraries(bcad_adapters
         # slice-024a/ADR-0014 — dieselbe OCC-Distribution, keine neue Dependency).
         TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKMesh TKBO
         TKDESTEP TKDE TKXSBase TKShHealing
+        # slice-026b (ADR-0017): dynamischer Lader für den Plugin-Host —
+        # auf glibc >= 2.34 leer/in libc, portabel via CMAKE_DL_LIBS.
+        ${CMAKE_DL_LIBS}
 )
 target_compile_features(bcad_adapters PUBLIC cxx_std_20)

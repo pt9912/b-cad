@@ -30,6 +30,7 @@
 #include "adapters/io/png_export_adapter.h"
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
+#include "adapters/plugin/plugin_host.h"
 #include "adapters/ui/viewer_widget.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
@@ -93,6 +94,21 @@ std::optional<int> runExportIfRequested(
     }
 }
 
+// Plugin-Laden beim Start (ADR-0017, slice-026b): jedes `--plugin <pfad>`
+// läuft fail-closed durch den Host — Annahme wie Ablehnung sind sichtbar
+// (E-PLG-001-Meldung), eine Ablehnung stürzt nicht ab und ändert das
+// Modell nicht. Entladen übernimmt der Host beim Beenden (Destruktor).
+void loadPluginsFromCli(const QStringList& cli,
+                        bcad::adapters::plugin::PluginHost& host) {
+    for (int i = 0; i + 1 < cli.size(); ++i) {
+        if (cli.at(i) != QStringLiteral("--plugin")) {
+            continue;
+        }
+        const auto result = host.load(cli.at(i + 1).toStdString());
+        (result.ok ? std::cout : std::cerr) << result.message << '\n';
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -129,7 +145,15 @@ int main(int argc, char** argv) {
          {bcad::hexagon::ports::driving::ExchangeFormat::Pdf, &pdf_exporter},
          {bcad::hexagon::ports::driving::ExchangeFormat::Png, &png_exporter}});
 
+    // Plugin-Host (ADR-0017): zweiter Driving-Weg in denselben Kern —
+    // der Kontext vermittelt EditStructurePort + EvaluatePort (beide vom
+    // StructureEditService getragen). Lebt bis Programmende; sein
+    // Destruktor entlädt aktive Plugins kontrolliert.
+    bcad::adapters::plugin::PluginHost plugin_host(service, service);
+
     const QStringList cli = QApplication::arguments();
+    loadPluginsFromCli(cli, plugin_host);
+
     const int import_index =
         static_cast<int>(cli.indexOf(QStringLiteral("--import-ifc")));
     if (import_index >= 0 && import_index + 1 < cli.size()) {
