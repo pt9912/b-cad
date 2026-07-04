@@ -86,7 +86,7 @@ model::TriangleMesh OccGeometryAdapter::tessellateFootprint(
         // Lineare Ablenkung 1 mm: Wand-Prismen sind eben — die
         // Triangulation ist exakt, der Wert unkritisch (ADR-0009:
         // Granularität wird erst mit einem Latenz-Budget Thema).
-        BRepMesh_IncrementalMesh mesher(solid, /*theLinDeflection=*/1.0);
+        const BRepMesh_IncrementalMesh mesher(solid, /*theLinDeflection=*/1.0);
 
         model::TriangleMesh mesh;
         for (TopExp_Explorer faces(solid, TopAbs_FACE); faces.More();

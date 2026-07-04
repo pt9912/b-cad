@@ -369,7 +369,7 @@ model::Building mapToBuilding(const SpfReader& reader) {
 }  // namespace
 
 model::Building IfcImportAdapter::read(const fs::path& path) const {
-    std::ifstream in(path, std::ios::binary);
+    const std::ifstream in(path, std::ios::binary);
     if (!in) {
         throw std::runtime_error("E-IO-003: IFC-Datei nicht lesbar ('" +
                                  path.string() + "'); event=import_rejected");

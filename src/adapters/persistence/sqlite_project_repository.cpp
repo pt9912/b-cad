@@ -92,7 +92,7 @@ public:
     Db(Db&&) = delete;
     Db& operator=(Db&&) = delete;
 
-    sqlite3* handle() const { return db_; }
+    [[nodiscard]] sqlite3* handle() const { return db_; }
 
     void exec(const char* sql) {
         char* err = nullptr;
@@ -127,7 +127,7 @@ public:
     Stmt(Stmt&&) = delete;
     Stmt& operator=(Stmt&&) = delete;
 
-    sqlite3_stmt* get() const { return stmt_; }
+    [[nodiscard]] sqlite3_stmt* get() const { return stmt_; }
 
     // true = Zeile verfügbar (SELECT), false = fertig (INSERT/Ende).
     bool step() {

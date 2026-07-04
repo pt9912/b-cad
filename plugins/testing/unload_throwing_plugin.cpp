@@ -15,7 +15,7 @@ namespace {
 
 class UnloadThrowingPlugin : public bcad::plugin_api::Plugin {
 public:
-    std::string name() const override { return "bcad-unload-throwing"; }
+    [[nodiscard]] std::string name() const override { return "bcad-unload-throwing"; }
 
     void onLoad(bcad::plugin_api::PluginContext& /*context*/) override {}
 

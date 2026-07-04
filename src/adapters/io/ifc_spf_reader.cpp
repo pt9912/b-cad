@@ -18,10 +18,10 @@ class Cursor {
 public:
     explicit Cursor(const std::string& text) : text_(text) {}
 
-    bool eof() const { return pos_ >= text_.size(); }
-    char peek() const { return eof() ? '\0' : text_[pos_]; }
+    [[nodiscard]] bool eof() const { return pos_ >= text_.size(); }
+    [[nodiscard]] char peek() const { return eof() ? '\0' : text_[pos_]; }
     char get() { return eof() ? '\0' : text_[pos_++]; }
-    std::size_t pos() const { return pos_; }
+    [[nodiscard]] std::size_t pos() const { return pos_; }
     void seek(std::size_t pos) { pos_ = pos; }
 
     void skipWhitespace() {

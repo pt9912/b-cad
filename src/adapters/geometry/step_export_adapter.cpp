@@ -54,7 +54,7 @@ double storeyHeight(const model::Building& building, model::StoreyId id) {
 // (analytische Box-Union, kein OCC-Solid) bis slice-024b.
 TopoDS_Compound buildSolidCompound(const model::Building& building) {
     TopoDS_Compound compound;
-    BRep_Builder builder;
+    const BRep_Builder builder;
     builder.MakeCompound(compound);
 
     for (const model::Wall& w : building.walls) {

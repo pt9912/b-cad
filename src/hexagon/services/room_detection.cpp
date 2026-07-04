@@ -72,7 +72,7 @@ struct OffsetLine {
     // Offset-Punkt der Folgekante (lineare Überblendung statt exakter
     // Stufenkontur; spez. §1, Code-Review M2). Exakte Stufen erst mit
     // der Wandverschneidung (LH-FA-WAL-006).
-    Point2D intersectionWith(const OffsetLine& other) const {
+    [[nodiscard]] Point2D intersectionWith(const OffsetLine& other) const {
         const double cross =
             (dir.x_mm * other.dir.y_mm) - (dir.y_mm * other.dir.x_mm);
         if (std::abs(cross) < 1e-9) {
@@ -306,7 +306,7 @@ struct Candidate {
     Ring outer_contour;
     double inner_area{};
 
-    bool isInside(const Candidate& outer) const {
+    [[nodiscard]] bool isInside(const Candidate& outer) const {
         return pointInRing(outer.centerline, centerline.front());
     }
 };

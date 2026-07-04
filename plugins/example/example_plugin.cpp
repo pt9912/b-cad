@@ -18,7 +18,7 @@ namespace model = bcad::hexagon::model;
 
 class ExamplePlugin : public bcad::plugin_api::Plugin {
 public:
-    std::string name() const override { return "bcad-example"; }
+    [[nodiscard]] std::string name() const override { return "bcad-example"; }
 
     void onLoad(bcad::plugin_api::PluginContext& context) override {
         auto& edit = context.edit();

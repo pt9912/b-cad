@@ -38,9 +38,12 @@
 #     modernize-avoid-c-arrays + cppcoreguidelines-avoid-c-arrays (Alias,
 #     GL-Vertex-Arrays), cppcoreguidelines-avoid-do-while,
 #     cppcoreguidelines-avoid-const-or-ref-data-members.
-#   Zurückgestellte wertvolle Folge-Kandidaten (eigener lint-Härtungs-Slice):
-#     misc-const-correctness (14, stateful OCC/Streams), modernize-use-nodiscard
-#     (10), readability-inconsistent-declaration-parameter-name (19).
+#   slice-031 hat misc-const-correctness (13) + modernize-use-nodiscard (10)
+#     scharfgeschaltet + behandelt (Beleg docs/reviews/2026-07-04-slice-031-dryrun.md;
+#     const = lokale const-Qualifikation, nodiscard = [[nodiscard]] inkl. Basis
+#     plugin_api/plugin.h name()).
+#   Zurückgestellter Folge-Kandidat (kosmetisch, kein Wert-Fang):
+#     readability-inconsistent-declaration-parameter-name (19).
 Checks: >
   -*,
   bugprone-*,
@@ -62,10 +65,8 @@ Checks: >
   -modernize-use-ranges,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -readability-inconsistent-declaration-parameter-name,
-  -misc-const-correctness,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-vararg,
-  -modernize-use-nodiscard,
   -misc-non-private-member-variables-in-classes,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-constant-array-index,
@@ -98,10 +99,8 @@ WarningsAsErrors: >
   -modernize-use-ranges,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -readability-inconsistent-declaration-parameter-name,
-  -misc-const-correctness,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-vararg,
-  -modernize-use-nodiscard,
   -misc-non-private-member-variables-in-classes,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-constant-array-index,

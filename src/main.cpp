@@ -118,17 +118,17 @@ void loadPluginsFromCli(const QStringList& cli,
 }  // namespace
 
 int main(int argc, char** argv) {
-    QApplication app(argc, argv);
+    const QApplication app(argc, argv);
 
     std::cout << bcad::hexagon::services::application_banner() << '\n';
 
-    bcad::adapters::geometry::OccGeometryAdapter geometry;
+    const bcad::adapters::geometry::OccGeometryAdapter geometry;
     services::StructureEditService service(geometry);
     // MeshSource-Naht (slice-029): der driving-Pull der ui liegt in
     // ui/command/; deklariert NACH service und VOR window/viewer — das
     // Widget hält eine nicht-besitzende Referenz, die Quelle muss es
     // überleben.
-    bcad::adapters::ui::command::ViewModelMeshSource mesh_source(service);
+    const bcad::adapters::ui::command::ViewModelMeshSource mesh_source(service);
 
     // IFC-Austausch-Use-Case verdrahten (ADR-0013, slice-019b/c): Driven-
     // Adapter `IfcImportAdapter`/`IfcExportAdapter` -> Driving-Port-Service

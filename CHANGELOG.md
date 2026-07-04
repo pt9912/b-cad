@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-031 — **lint-Härtung II: `misc-const-correctness` + `modernize-use-nodiscard`
+  scharfgeschaltet** (harness-steering-Quergewerk, Fortsetzung slice-027; kein ADR —
+  Verschärfung, §2.6 n/a). Die zwei in slice-027 als wertvolle Folge-Kandidaten
+  zurückgestellten Checks sind aus der `.clang-tidy`-Exclude-Liste (Checks +
+  WarningsAsErrors) entfernt und ihre **23 Befunde verhaltensneutral behandelt**
+  (kein NOLINT): **const-correctness (13)** = `const`-Qualifikation lokaler Variablen
+  (OCC-Builder, `std::ifstream`, `model::Opening&`→`const&` im Kern, Composition-Root
+  in `main.cpp`); **use-nodiscard (10)** = `[[nodiscard]]` an const-Accessoren
+  (`room_detection`, `ifc_spf_reader`, `sqlite` `handle`/`get`, Plugin-`name()`),
+  plus die Basis `plugin_api/plugin.h` `name()` für Override-Konsistenz (ABI-neutral).
+  Dry-Run-Beleg `docs/reviews/2026-07-04-slice-031-dryrun.md`; MR-006 (zwei
+  unabhängige Agenten) 0 HIGH / 2 MED / 2 LOW (eingearbeitet). `readability-inconsistent-declaration-parameter-name`
+  (19, kosmetisch) bleibt zurückgestellt. `make gates` grün, `make test` 228/228 unverändert.
 - slice-027 — **lint-Härtung: kuratierte clang-tidy-Familien-Erweiterung (evidence-first)**
   (harness-steering-Quergewerk; kein ADR — Verschärfung, §2.6 n/a). `make lint` aktiviert
   zusätzlich zum Bestand (bugprone-*/clang-analyzer-*/cognitive-complexity) die 7 Familien

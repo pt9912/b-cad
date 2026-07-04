@@ -17,7 +17,7 @@ public:
 
     // Metadaten: stabiler, menschenlesbarer Plugin-Name (für Meldungen
     // und den Entlade-Aufruf).
-    virtual std::string name() const = 0;
+    [[nodiscard]] virtual std::string name() const = 0;
 
     // Initialisiert -> Aktiv: der Kontext bleibt bis onUnload gültig.
     // Wirft der Hook, wird das Plugin isoliert (E-PLG-001), das Modell

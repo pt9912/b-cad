@@ -533,7 +533,7 @@ std::optional<model::OpeningId> StructureEditService::addWindow(
 
 ports::driving::ParamResult StructureEditService::setOpeningWidth(
     model::OpeningId id, double mm) {
-    model::Opening& target = mutableOpening(id);
+    const model::Opening& target = mutableOpening(id);
     const double length = wallLength(wall(target.wall_id));
     const ports::driving::ParamResult result =
         evaluateParam(mm, openingWidthRange(target.kind), target.width_mm);
@@ -557,7 +557,7 @@ ports::driving::ParamResult StructureEditService::setOpeningWidth(
 
 ports::driving::ParamResult StructureEditService::setOpeningHeight(
     model::OpeningId id, double mm) {
-    model::Opening& target = mutableOpening(id);
+    const model::Opening& target = mutableOpening(id);
     const ports::driving::ParamResult result =
         evaluateParam(mm, openingHeightRange(target.kind), target.height_mm);
     if (result.status == ports::driving::ParamStatus::Rejected) {
@@ -576,7 +576,7 @@ ports::driving::ParamResult StructureEditService::setOpeningHeight(
 
 ports::driving::ParamResult StructureEditService::setWindowSill(
     model::OpeningId id, double mm) {
-    model::Opening& target = mutableOpening(id);
+    const model::Opening& target = mutableOpening(id);
     if (target.kind != model::OpeningKind::Window) {
         // Türen haben keine Brüstung (LH-FA-WIN-004 nur Fenster).
         return ports::driving::ParamResult{target.sill_height_mm,

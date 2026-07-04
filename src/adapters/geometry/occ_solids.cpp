@@ -71,7 +71,7 @@ TopoDS_Shape makeFootprintSolid(const model::Footprint& footprint,
         polygon.Add(gp_Pnt(p.x_mm, p.y_mm, 0.0));
     }
     polygon.Close();
-    BRepBuilderAPI_MakeFace face(polygon.Wire());
+    const BRepBuilderAPI_MakeFace face(polygon.Wire());
     const gp_Vec extrusion(0.0, 0.0, height_mm);
     return BRepPrimAPI_MakePrism(face.Face(), extrusion).Shape();
 }
@@ -92,7 +92,7 @@ TopoDS_Shape makeCutterSolid(const model::CutPrism& cut) {
         polygon.Add(gp_Pnt(p.x_mm, p.y_mm, z0));
     }
     polygon.Close();
-    BRepBuilderAPI_MakeFace face(polygon.Wire());
+    const BRepBuilderAPI_MakeFace face(polygon.Wire());
     return BRepPrimAPI_MakePrism(face.Face(), gp_Vec(0.0, 0.0, z1 - z0)).Shape();
 }
 
@@ -146,7 +146,7 @@ TopoDS_Shape meshToSolid(const model::TriangleMesh& mesh) {
         if (!poly.IsDone()) {
             continue;  // degeneriertes Dreieck überspringen
         }
-        BRepBuilderAPI_MakeFace face(poly.Wire());
+        const BRepBuilderAPI_MakeFace face(poly.Wire());
         if (face.IsDone()) {
             sewing.Add(face.Face());
         }
