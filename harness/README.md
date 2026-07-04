@@ -17,10 +17,13 @@ dupliziert sie nicht.
 
 **Stand:** Greenfield-Bootstrap (Kurs-Modul 2) abgeschlossen; **slice-001**
 (Build-Skelett & DevContainer) und **slice-002** (Code-Gates) sind
-umgesetzt und verifiziert. **Reale Gates** (jeweils Dockerfile-Target-
-Stage, keine Bind-Mounts): `make docs-check`, `make gate-consistency`,
-`make arch-check`, `make lint`, `make test`, `make coverage-gate`,
-`make build` — aggregiert in `make gates`. Details und Verträge:
+umgesetzt und verifiziert. **Reale Gates** (überwiegend Dockerfile-Target-
+Stages, keine Bind-Mounts): `make docs-check`, `make gate-consistency`,
+`make a-check`, `make arch-check`, `make lint`, `make test`,
+`make coverage-gate`, `make build` — aggregiert in `make gates`.
+**Ausnahme `make a-check`** (slice-030 / [MR-013](conventions.md#mr-013--arch-check-via-a-check)):
+externes, digest-gepinntes Image (netzloser read-only Bind-Mount statt
+COPY-Stage) — erster Bind-Mount-Member im Aggregat. Details und Verträge:
 §Sensors. Geplant (noch nicht behauptet): `coverage-gate-critical`,
 `ci`, `fullbuild`.
 
@@ -63,12 +66,13 @@ Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
 |---|---|---|
 | `make docs-check` | interne Links, Anker, Inline-Code-Pfade + **Referenz-Richtung Spec→ADR** (`matrix`/`ids`) + Span-/Host-Pfad-Hygiene; kein Pfad aus dem Repo, keine Abwärts-Referenz Spec → ADR — via d-check (digest-gepinnt, `.d-check.yml`; Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | [`MR-007`](conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [`MR-011`](conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) |
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl (AGENTS §3 / §Sensors) existiert im Makefile — fängt halluzinierte Gates | Modul 13 |
-| `make arch-check` | hexagonale Schichtung: Kern importiert kein Qt/OCC/SQLite/`adapters/`; kein Adapter importiert einen anderen; OCC-`.hxx` nur in `adapters/geometry/` (Regel C); `sqlite3*` nur in `adapters/persistence/` (Regel D); Qt-Header nur in `adapters/ui/` + `src/main.cpp` (Regel E); dynamisches Laden nur in `adapters/plugin/` — einschließlich `plugins/`-Verbot (Regel P1); Quote-Import-Grenze `plugins/` + `src/plugin_api/` auf `plugin_api`/`model`/`ports/driving` (Regel P2) | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md), [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md), [ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md), [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md) |
+| `make a-check` | **primäres Architektur-Gate** via externem digest-gepinntem Image **a-check** (`.a-check.yml`; `docker run --network none -v $(CURDIR):/src:ro`, read-only Bind-Mount): Kern importiert kein Qt/OCC/SQLite/`adapters/` (Regel A); kein Adapter importiert einen anderen (Regel B, MeshSource-Naht via `adapter_sink`); OCC-`.hxx`/`sqlite3`/Qt/`dlfcn.h`-Include gekapselt (Regel C/D/E); **Schicht-Kanten** (erlaubter Import-Graph) + **driving/driven-Richtung** | [MR-013](conventions.md#mr-013--arch-check-via-a-check), [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md), [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md), [ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md), [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md) |
+| `make arch-check` | Plugin-System-**P-Rest**, was der kanten-basierte a-check strukturell nicht sieht: `dlopen`/`dlsym`/`dlclose`-**Funktionsaufruf** nur in `adapters/plugin/` (Regel P1-Aufruf; der `dlfcn.h`-**Include** liegt bei a-check) + feine Quote-Import-Allowlist `plugins/` + `src/plugin_api/` auf `plugin_api`/`hexagon/model`/`hexagon/ports/driving` (Regel P2, Quote-Form + Angle-Verbot) | [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md), [MR-013](conventions.md#mr-013--arch-check-via-a-check) |
 | `make lint` | clang-tidy (0 Befunde in `src/` + `plugins/`) + Suppression-Gate | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) §Fitness (AGENTS.md §2.4) |
 | `make test` | GoogleTest-Suite: prüft Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite); Viewer-AK display-frei (Szenen-Surrogat) + GL-Smoke headless via Xvfb/llvmpipe | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) (f), [ADR-0010](../docs/plan/adr/0010-headless-gl-xvfb.md) |
 | `make coverage-gate` | Line-Coverage ≥ Schwelle (bootstrap-aware, Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 (siehe AGENTS.md §3) |
 | `make build` | Target-Kette kompiliert; erzwingt CMake-Target-Trennung (Kern ohne Adapter-Deps) | [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md) |
-| `make gates` | Aggregat: docs-check · gate-consistency · arch-check · lint · test · coverage-gate (+ `record-gates`-Nachweis) | — |
+| `make gates` | Aggregat: docs-check · gate-consistency · a-check · arch-check · lint · test · coverage-gate (+ `record-gates`-Nachweis) | — |
 | `make schema-check` | [ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md)-Drift: committete `schema.sql` == d-migrate(`data-model.yaml`). **Nicht** in `make gates` (d-migrate aus dem hermetischen Gate-Pfad gehalten) — gehört in die **CI-Befehlsliste** | [ADR-0006](../docs/plan/adr/0006-relationales-schema-design.md) |
 | `make acc-002-beleg` | **kein Gate:** rendert das [ACC-001](../spec/lastenheft.md#7-abnahmekriterien)-Kern-Demo headless (Xvfb) und schreibt das [ACC-002](../spec/lastenheft.md#7-abnahmekriterien)-Beleg-Bild — manueller Abnahme-Schritt des Projektinhabers, bewusst nicht in `gates` | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) (f), [ADR-0010](../docs/plan/adr/0010-headless-gl-xvfb.md) |
 | `make run` | **kein Gate:** startet die App im Container am lokalen Display (X11/XWayland; GPU-Durchreichung via `/dev/dri`, sonst llvmpipe-Fallback; vorher ggf. `xhost +local:`) | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md), AGENTS §2.9 |

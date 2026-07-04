@@ -5,7 +5,7 @@
 namespace bcad::hexagon::ports::driven {
 
 // Driven Port (Skelett-Beispiel, slice-002). Demonstriert die
-// Port-Abstraktion, an der `arch-check` die hexagonale Schichtung prüft,
+// Port-Abstraktion, an der `a-check` die hexagonale Schichtung prüft,
 // und ist mit einem Test-Double erfüllbar (ADR-0001 §Testbarkeit). Wird
 // ab slice-003 durch echte Driven Ports (GeometryKernelPort,
 // ProjectRepositoryPort …) ersetzt.

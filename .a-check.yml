@@ -1,0 +1,55 @@
+version: 1
+languages:
+  cpp: ["src/**/*.cpp", "src/**/*.h", "plugins/**/*.cpp", "plugins/**/*.h"]
+layers:
+  model:         {globs: ["src/hexagon/model/**"], role: domain}
+  services:      {globs: ["src/hexagon/services/**"], role: app}
+  services_geo:  {globs: ["src/hexagon/services/geometry/**"], role: app}
+  ports_driving: {globs: ["src/hexagon/ports/driving/**"], role: port, direction: driving}
+  ports_driven:  {globs: ["src/hexagon/ports/driven/**"], role: port, direction: driven}
+  ui:            {globs: ["src/adapters/ui/**"], role: adapter}
+  ui_command:    {globs: ["src/adapters/ui/command/**"], role: adapter, direction: driving}
+  ui_view:       {globs: ["src/adapters/ui/view/**"], role: adapter, direction: driven}
+  io:            {globs: ["src/adapters/io/**"], role: adapter, direction: driven}
+  geometry:      {globs: ["src/adapters/geometry/**"], role: adapter, direction: driven}
+  persistence:   {globs: ["src/adapters/persistence/**"], role: adapter, direction: driven}
+  pluginhost:    {globs: ["src/adapters/plugin/**"], role: adapter, direction: driving}
+  plugin_api:    ["src/plugin_api/**"]
+  plugins:       {globs: ["plugins/**"], role: adapter, direction: driving}
+adapter_sink: adapters/ui/view/mesh_source
+edges:
+  - {from: services, to: model}
+  - {from: services, to: ports_driving}
+  - {from: services, to: ports_driven}
+  - {from: services, to: services_geo}
+  - {from: services_geo, to: model}
+  - {from: ports_driving, to: model}
+  - {from: ports_driven, to: model}
+  - {from: plugin_api, to: model}
+  - {from: plugin_api, to: ports_driving}
+  - {from: ui_command, to: model}
+  - {from: ui_command, to: ui_view}
+  - {from: ui_command, to: ports_driving}
+  - {from: ui_view, to: model}
+  - {from: ui_view, to: ports_driven}
+  - {from: io, to: model}
+  - {from: io, to: ports_driven}
+  - {from: geometry, to: model}
+  - {from: geometry, to: ports_driven}
+  - {from: geometry, to: services_geo}
+  - {from: persistence, to: model}
+  - {from: persistence, to: ports_driven}
+  - {from: persistence, to: services_geo}
+  - {from: pluginhost, to: ports_driving}
+  - {from: pluginhost, to: plugin_api}
+  - {from: plugins, to: plugin_api}
+  - {from: plugins, to: model}
+  - {from: plugins, to: ports_driving}
+composition_root: ["src/main.cpp"]
+tech:
+  - {pattern: ".hxx", adapter: adapters/geometry}
+  - {pattern: "sqlite3", adapter: adapters/persistence}
+  - {pattern: "dlfcn.h", adapter: adapters/plugin, composition_root: forbid}
+  - {pattern: "Q[A-Za-z]", adapter: adapters/ui, match: regex}
+resolution:
+  cpp: {mode: fixed-root, roots: ["src"]}

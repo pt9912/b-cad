@@ -1,123 +1,61 @@
 #!/usr/bin/env bash
-# arch-check — hexagonale Schichtung durchsetzen (ADR-0001).
-# Computational feedback (Modul 13). Läuft als Dockerfile-Target-Stage
-# über die per COPY eingebackenen Quellen (kein Bind-Mount); rein
-# textbasiert, keine Toolchain nötig.
+# arch-check — Plugin-System-P-Rest der hexagonalen Durchsetzung (ADR-0017).
+# Computational feedback (Modul 13). Läuft als Dockerfile-Target-Stage über
+# die per COPY eingebackenen Quellen (kein Bind-Mount); rein textbasiert,
+# keine Toolchain nötig.
 #
-# Regel A: Der Kern src/hexagon/ ist framework-frei — kein Qt, kein
-#          OpenCascade (*.hxx), kein SQLite, kein Import aus adapters/.
-# Regel B: Kein Adapter importiert einen anderen Adapter.
-# Regel C: OCC-Header (*.hxx) NUR in src/adapters/geometry/ (ADR-0002 —
-#          OCC bleibt im Geometrie-Adapter gekapselt).
-# Regel D: SQLite-Header (sqlite3*) NUR in src/adapters/persistence/
-#          (ADR-0003 — SQLite bleibt im Persistenz-Adapter gekapselt).
-# Regel E: Qt-Header (<Q...>) NUR in src/adapters/ui/ und in der
-#          Composition Root src/main.cpp (ADR-0009 (c) — Qt bleibt im
-#          UI-Adapter gekapselt; es gibt KEINE Plugin-Ausnahme: der
-#          Plugin-Host ist Qt-frei, ADR-0017).
-# Regel P (ADR-0017, slice-026b): Plugin-System-Grenzen.
-#          P1: dlfcn.h/dlopen/dlsym/dlclose NUR in src/adapters/plugin/
-#              — kein anderer Adapter, nicht der Kern, nicht main.cpp,
-#              und KEIN Plugin im plugins/-Baum lädt selbst dynamisch.
-#          P2: Dateien unter plugins/ und src/plugin_api/ inkludieren
-#              per Quote-Include nur plugin_api/ + hexagon/model/ +
-#              hexagon/ports/driving/ — kein adapters/, kein Qt/OCC/
-#              SQLite, kein dlfcn.h.
+# SCOPE seit slice-030 / MR-013: Das primäre Architektur-Gate ist auf
+# a-check umgestellt (externes, digest-gepinntes Image, `.a-check.yml`,
+# `make a-check`). a-check trägt jetzt: Kern-Reinheit (vormals Regel A),
+# laterale Adapter (B), OCC-/SQLite-/Qt-Tech-Kapselung (C/D/E) — inkl. des
+# plugins/-Baums —, den dlfcn.h-INCLUDE, die Schicht-Kanten und die
+# driving/driven-Richtung. Dieses Skript hält nur noch den P-Rest, den
+# a-check strukturell NICHT sieht (a-check prüft ausschließlich Include-/
+# Import-KANTEN):
 #
-# HINWEIS: Heuristik, kein C++-Parser. Das Qt-Muster `Q[A-Za-z]` würde
-# einen künftigen framework-freien Header wie `Queue.h` falsch
-# anschlagen (False Positive, Regeln A und E). Heute unkritisch; bei
-# Bedarf auf eine Include-Allowlist umstellen.
+#   P1 (Aufruf): dlopen/dlsym/dlclose als FUNKTIONSAUFRUF (keine Include-Kante)
+#               NUR in src/adapters/plugin/ — kein anderer Adapter, nicht der
+#               Kern, nicht main.cpp, und KEIN Plugin im plugins/-Baum lädt
+#               selbst dynamisch. Den dlfcn.h-Include deckt a-check
+#               (tech-Regel `dlfcn.h`, composition_root: forbid).
+#   P2:         Feine Import-Allowlist für plugins/ und src/plugin_api/ —
+#               Quote-Include NUR aus plugin_api/ + hexagon/model/ +
+#               hexagon/ports/driving/, plus Angle-Include-Verbot für
+#               Projekt-Präfixe (src/ liegt für Plugins auf dem Include-Pfad).
+#               Die grobe Import-KANTE (plugins → nur diese Ebenen) deckt
+#               a-check zusätzlich über `edges`; die Quote-vs-Angle-Granularität
+#               (slice-026b, Code-Review-MED-3) liegt unter der Kanten-Ebene
+#               und bleibt darum hier.
+#
+# HINWEIS: Heuristik, kein C++-Parser.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 status=0
 
-# --- Regel A: Kern-Reinheit ---
-a_hits="$(grep -rnE '#include[[:space:]]*[<"](Q[A-Za-z]|sqlite3\.h)|#include[[:space:]]*"adapters/|#include[[:space:]]*[<"][^>"]*\.hxx[>"]' src/hexagon 2>/dev/null || true)"
-if [ -n "$a_hits" ]; then
-    echo "ARCH-CHECK FAIL (ADR-0001, Regel A): Kern src/hexagon/ importiert Qt/OpenCascade/SQLite/adapters:"
-    echo "$a_hits"
-    status=1
-fi
-
-# --- Regel B: keine Adapter-zu-Adapter-Importe ---
-while IFS= read -r f; do
-    own="$(printf '%s' "$f" | sed -E 's#^src/adapters/([^/]+)/.*#\1#')"
-    includes="$(grep -nE '#include[[:space:]]*"adapters/' "$f" || true)"
-    [ -n "$includes" ] || continue
-    bad="$(printf '%s\n' "$includes" | grep -vE "\"adapters/${own}/" || true)"
-    if [ -n "$bad" ]; then
-        echo "ARCH-CHECK FAIL (ADR-0001, Regel B): Adapter $f importiert einen anderen Adapter:"
-        echo "$bad"
-        status=1
-    fi
-done < <(find src/adapters -type f \( -name '*.cpp' -o -name '*.h' \) 2>/dev/null)
-
-# --- Regel C: OCC-Header (*.hxx) nur in src/adapters/geometry/ (ADR-0002) ---
-# Erfasst jede angled/quoted .hxx-Include-Form, auch mit Pfad-Präfix:
-#   <Foo.hxx>, "Foo.hxx", <opencascade/Foo.hxx>, "opencascade/Foo.hxx".
-c_hits="$(grep -rnE '#include[[:space:]]*[<"][^>"]*\.hxx[>"]' src \
-    --include='*.cpp' --include='*.h' 2>/dev/null \
-    | grep -vE '^src/adapters/geometry/' || true)"
-if [ -n "$c_hits" ]; then
-    echo "ARCH-CHECK FAIL (ADR-0002, Regel C): OCC-Header (*.hxx) außerhalb src/adapters/geometry/:"
-    echo "$c_hits"
-    status=1
-fi
-
-# --- Regel D: SQLite-Header (sqlite3*) nur in src/adapters/persistence/ (ADR-0003) ---
-# Erfasst <sqlite3.h>/"sqlite3.h" und Varianten wie <sqlite3ext.h>.
-d_hits="$(grep -rnE '#include[[:space:]]*[<"]sqlite3[A-Za-z0-9_]*\.h[>"]' src \
-    --include='*.cpp' --include='*.h' 2>/dev/null \
-    | grep -vE '^src/adapters/persistence/' || true)"
-if [ -n "$d_hits" ]; then
-    echo "ARCH-CHECK FAIL (ADR-0003, Regel D): SQLite-Header außerhalb src/adapters/persistence/:"
-    echo "$d_hits"
-    status=1
-fi
-
-# --- Regel E: Qt-Header nur in src/adapters/ui/ + src/main.cpp (ADR-0009) ---
-# Erfasst angled/quoted Qt-Includes (<QWidget>, <QtGui/...>, "QString").
-e_hits="$(grep -rnE '#include[[:space:]]*[<"]Q[A-Za-z]' src \
-    --include='*.cpp' --include='*.h' 2>/dev/null \
-    | grep -vE '^src/(adapters/ui/|main\.cpp)' || true)"
-if [ -n "$e_hits" ]; then
-    echo "ARCH-CHECK FAIL (ADR-0009, Regel E): Qt-Header außerhalb src/adapters/ui/ + src/main.cpp:"
-    echo "$e_hits"
-    status=1
-fi
-
-# --- Regel P1: dynamisches Laden nur im Plugin-Host (ADR-0017) ---
-# Erfasst dlfcn.h-Includes und dlopen/dlsym/dlclose-Aufrufe in src/ und
-# plugins/ (das Monopol schließt den plugins/-Baum ein: ein Plugin, das
-# selbst dynamisch lädt, unterliefe Lifecycle und Fehler-Barriere).
-p1_hits="$(grep -rnE '#include[[:space:]]*[<"]dlfcn\.h[>"]|\bdl(m?open|sym|close)[[:space:]]*\(' src plugins \
+# --- Regel P1 (Aufruf): dynamisches Laden nur im Plugin-Host (ADR-0017) ---
+# NUR das dlopen/dlsym/dlclose-AUFRUFmuster in src/ und plugins/ (das Monopol
+# schließt den plugins/-Baum ein: ein Plugin, das selbst dynamisch lädt,
+# unterliefe Lifecycle und Fehler-Barriere). Den dlfcn.h-Include deckt a-check.
+p1_hits="$(grep -rnE '\bdl(m?open|sym|close)[[:space:]]*\(' src plugins \
     --include='*.cpp' --include='*.h' 2>/dev/null \
     | grep -vE '^src/adapters/plugin/' || true)"
 if [ -n "$p1_hits" ]; then
-    echo "ARCH-CHECK FAIL (ADR-0017, Regel P1): dynamisches Laden außerhalb src/adapters/plugin/:"
+    echo "ARCH-CHECK FAIL (ADR-0017, Regel P1): dlopen/dlsym/dlclose-Aufruf außerhalb src/adapters/plugin/:"
     echo "$p1_hits"
     status=1
 fi
 
 # --- Regel P2: Import-Grenze für plugins/ und src/plugin_api/ (ADR-0017) ---
-# Quote-Includes nur aus plugin_api/, hexagon/model/, hexagon/ports/driving/
-# (kein adapters/-Header — auch nicht die des Hosts; Qt/OCC/SQLite/dlfcn
-# fängt zusätzlich P1 bzw. Regel C/D/E über src/, hier für plugins/ gespiegelt).
+# Quote-Includes nur aus plugin_api/, hexagon/model/, hexagon/ports/driving/.
+# (Qt/OCC/SQLite im plugins/-Baum fängt a-check über die tech-Regeln — vormals
+# P2b, hier entfernt.)
 p2_hits="$(grep -rnE '#include[[:space:]]*"' plugins src/plugin_api \
     --include='*.cpp' --include='*.h' 2>/dev/null \
     | grep -vE '#include[[:space:]]*"(plugin_api/|hexagon/model/|hexagon/ports/driving/)' || true)"
 if [ -n "$p2_hits" ]; then
     echo "ARCH-CHECK FAIL (ADR-0017, Regel P2): unzulässiger Quote-Include in plugins/ bzw. src/plugin_api/:"
     echo "$p2_hits"
-    status=1
-fi
-p2b_hits="$(grep -rnE '#include[[:space:]]*[<"](Q[A-Za-z]|sqlite3[A-Za-z0-9_]*\.h)|#include[[:space:]]*[<"][^>"]*\.hxx[>"]' plugins \
-    --include='*.cpp' --include='*.h' 2>/dev/null || true)"
-if [ -n "$p2b_hits" ]; then
-    echo "ARCH-CHECK FAIL (ADR-0017, Regel P2): Qt-/OCC-/SQLite-Header im plugins/-Baum:"
-    echo "$p2b_hits"
     status=1
 fi
 # Projekt-Header nur in Quote-Form: Angle-Includes von Projekt-Präfixen
@@ -132,6 +70,6 @@ if [ -n "$p2c_hits" ]; then
 fi
 
 if [ "$status" -eq 0 ]; then
-    echo "arch-check ok: hexagonale Schichtung gewahrt (ADR-0001) + OCC im Geometrie-Adapter (ADR-0002) + SQLite im Persistenz-Adapter (ADR-0003) + Qt im UI-Adapter/Composition-Root (ADR-0009) + Plugin-Grenzen P1/P2 (ADR-0017: dlfcn-Monopol im Plugin-Host, Import-Grenze plugins//plugin_api) gewahrt"
+    echo "arch-check ok: Plugin-P-Rest gewahrt (ADR-0017: dlopen/dlsym/dlclose-Aufruf-Monopol im Plugin-Host + P2-Import-Allowlist plugins//plugin_api). Kern-Reinheit/laterale Adapter/Tech-Kapselung/Schicht-Kanten/Richtung via a-check (MR-013)."
 fi
 exit "$status"

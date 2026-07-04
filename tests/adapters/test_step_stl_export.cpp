@@ -212,7 +212,7 @@ TEST(StlExportIntegration, ImportOfStlRejectedAsExportOnly) {
 }
 
 // ====================== STEP (B-Rep, Wände + Decken) =========================
-// Re-Read-Orakel ohne OCC im Test (arch-check Regel C): die STEP-Datei wird als
+// Re-Read-Orakel ohne OCC im Test (a-check Regel C): die STEP-Datei wird als
 // ISO-10303-21-Text geprüft (gültige Hülle + B-Rep-Solid-Entitäten).
 
 std::string readText(const fs::path& path) {

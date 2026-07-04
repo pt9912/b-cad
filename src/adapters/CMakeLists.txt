@@ -41,7 +41,7 @@ add_library(bcad_adapters
     persistence/sqlite_project_repository.cpp
     # slice-019b: IFC-Import (ADR-0013 Option D) — hand-gerollter IFC-SPF-
     # Subset-Codec + Domänen-Mapping. KEINE neue Dependency (kein vcpkg/Conan,
-    # kein OCC-Zwang); reines C++/STL, arch-check Regel A/B isolieren es.
+    # kein OCC-Zwang); reines C++/STL, a-check Regel A/B isolieren es.
     io/ifc_spf_reader.cpp
     io/ifc_import_adapter.cpp
     # slice-019c: IFC-Export (ADR-0013 Option D) — SPF-Writer (Spiegel des
@@ -50,7 +50,7 @@ add_library(bcad_adapters
     io/ifc_export_adapter.cpp
     # slice-021b Commit i: DXF-Codec (ADR-0015 Option D) — hand-gerollter ASCII-
     # DXF-Subset (R12) Reader+Writer, io-resident, format-agnostisch. KEINE neue
-    # Dependency (reines C++/STL); arch-check Regel A/B isolieren ihn.
+    # Dependency (reines C++/STL); a-check Regel A/B isolieren ihn.
     io/dxf_reader.cpp
     io/dxf_writer.cpp
     # slice-021b Commit ii: DXF-Import/-Export-Adapter (ADR-0015 Option D) —
@@ -62,7 +62,7 @@ add_library(bcad_adapters
     # Writer + Domänen→Plan-Mapping (maßstäblicher 2D-Grundriss), export-only,
     # io-resident. Geteilte Helfer plan_geometry (2D-Projektion) + io_atomic_write
     # (atomarer binär-treuer Writer, von 025c/PNG wiederverwendbar). KEINE neue
-    # Dependency (reines C++/STL); arch-check Regel A/B isolieren sie.
+    # Dependency (reines C++/STL); a-check Regel A/B isolieren sie.
     io/io_atomic_write.cpp
     io/plan_geometry.cpp
     io/pdf_writer.cpp
@@ -70,7 +70,7 @@ add_library(bcad_adapters
     # slice-025c: PNG-Export (ADR-0016 Option D) — hand-gerollter Raster-PNG-
     # Encoder (Bitmap + Chunks + CRC-32/Adler-32/stored-DEFLATE) + Domänen→Raster-
     # Mapping (Fit-to-Canvas, Geschoss-Farben; Reuse plan_geometry/io_atomic_write),
-    # export-only. KEINE neue Dependency (kein zlib/libpng); arch-check Regel A/B.
+    # export-only. KEINE neue Dependency (kein zlib/libpng); a-check Regel A/B.
     io/png_writer.cpp
     io/png_export_adapter.cpp
     # slice-026b: Plugin-Host (ADR-0017) — Driving Adapter, lädt Shared-

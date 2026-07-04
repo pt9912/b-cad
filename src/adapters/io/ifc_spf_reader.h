@@ -7,7 +7,7 @@
 
 // IO-Adapter (ADR-0013 Option D): hand-gerollter ISO-10303-21 (STEP Physical
 // File, `.ifc`-Klartext) Subset-Leser. Lebt AUSSCHLIESSLICH in src/adapters/io/
-// — der Kern bleibt format-frei (ADR-0001, arch-check Regel A). Keine externe
+// — der Kern bleibt format-frei (ADR-0001, a-check Regel A). Keine externe
 // IFC-Bibliothek (ADR-0013: kein vcpkg/Conan, kein OCC-Zwang).
 //
 // Trennung der Verantwortung (Muster Persistenz: Codec vs. Mapping):

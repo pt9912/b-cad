@@ -8,7 +8,7 @@
 // Seitenbaum, Content-Stream mit Grafik-Operatoren `m`/`l`/`S`/`re`, Text via
 // Standard-Font Helvetica, `xref`/`trailer`/`startxref`/`%%EOF`), aber **keine**
 // b-cad-Domäne — das Domänen→PDF-Mapping (Maßstab, Wand-Achsen) lebt im
-// `pdf_export_adapter`. Lebt ausschließlich in `src/adapters/io/` (arch-check
+// `pdf_export_adapter`. Lebt ausschließlich in `src/adapters/io/` (a-check
 // Regel A/B); **keine** externe PDF-Bibliothek, **kein** Qt/OCC — reines C++/STL.
 
 namespace bcad::adapters::io {

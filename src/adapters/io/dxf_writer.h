@@ -8,7 +8,7 @@
 // Gruppencode-**Syntax** (Paar-Formatierung, locale-freie Reals), aber keine
 // b-cad-Domänen-Entität. Das Domänen→DXF-Mapping (welche Sektionen/Entitäten)
 // lebt im `dxf_export_adapter`. Lebt ausschließlich in `src/adapters/io/`
-// (arch-check Regel A/B); keine externe DXF-Bibliothek (ADR-0015 Option D).
+// (a-check Regel A/B); keine externe DXF-Bibliothek (ADR-0015 Option D).
 
 namespace bcad::adapters::io {
 

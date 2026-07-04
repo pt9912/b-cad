@@ -13,7 +13,7 @@ namespace bcad::hexagon::services {
 // Import-Use-Case (Hexagon-Kern, framework-frei, ADR-0001/0013): implementiert
 // den Driving Port `ExchangeModelPort` und dispatcht je `ExchangeFormat` auf
 // den passenden Driven `ModelImporterPort`. **Pure Domäne** — kein IFC-/DXF-/
-// SPF-Symbol (arch-check Regel A); das Format-Backend lebt im IO-Adapter.
+// SPF-Symbol (a-check Regel A); das Format-Backend lebt im IO-Adapter.
 //
 // Atomarität (`LH-FA-IO-001`/`002` Negative): Import baut ein vollständiges
 // `Building` oder wirft `E-IO-003`; Export schreibt die vollständige Datei oder

@@ -9,7 +9,7 @@ namespace bcad::adapters::persistence {
 
 // Driven Adapter (ADR-0003): erfüllt `ProjectRepositoryPort` über SQLite.
 // Die SQLite-Typen bleiben vollständig in der `.cpp` gekapselt — dieser
-// Header bindet KEIN `sqlite3.h` ein (arch-check Regel D). Schreiben ist
+// Header bindet KEIN `sqlite3.h` ein (a-check Regel D). Schreiben ist
 // atomar (Temp-Datei + `fsync` + `rename`, LH-FA-BLD-002 Boundary); der
 // Crash-Recovery-Nachweis (`kill -9`, LH-QA-005) folgt in slice-008b.
 class SqliteProjectRepository final

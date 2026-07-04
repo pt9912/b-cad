@@ -11,7 +11,7 @@ namespace bcad::adapters::io {
 // `ModelExporterPort` für IFC. Bildet das welle-4-Subset (Geschosse + gerade
 // Wände, spez. §1 `LH-FA-IO-001.a`) auf IFC4-Entitäten ab und serialisiert über
 // den hand-gerollten `IfcSpfWriter` (`.ifc`-Klartext, ISO 10303-21). Der
-// SPF-/IFC-Code lebt ausschließlich hier (arch-check Regel A/B); der Kern bleibt
+// SPF-/IFC-Code lebt ausschließlich hier (a-check Regel A/B); der Kern bleibt
 // format-frei (ADR-0001). Keine externe IFC-Bibliothek.
 //
 // **Atomar** (Temp + Rename, Muster Persistenz): vollständige Datei oder Wurf,

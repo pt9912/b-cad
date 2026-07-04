@@ -12,7 +12,7 @@ namespace bcad::adapters::io {
 // ISO 10303-21) über den hand-gerollten `SpfReader` und mappt das welle-4-
 // Entitäts-Subset (Geschosse + gerade Wände, spez. §1 `LH-FA-IO-001.a`) auf
 // ein `model::Building`. Der SPF-/IFC-Code lebt ausschließlich hier
-// (arch-check Regel A/B); der Kern bleibt format-frei (ADR-0001).
+// (a-check Regel A/B); der Kern bleibt format-frei (ADR-0001).
 //
 // Fehler-Totalität (`LH-FA-IO-001` Negative): nicht erkanntes/invalides Format
 // oder eine fehlende tragende Pflicht-Referenz (Wand ohne Geschoss-Verortung

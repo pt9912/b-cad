@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- slice-030 — **Architektur-Gate umgestellt: a-check (externes digest-gepinntes Image)
+  übernimmt A–E + Schicht-Kanten + driving/driven; `tools/arch-check.sh` → P-Rest**
+  (harness-steering-Quergewerk, MR-013 nach Muster MR-007 = docs-check→d-check;
+  **keine ADR** — keine §2.6-Lockerung, a-check ist strenger). b-cad ist **erster
+  a-check-Pilot-Konsument** (a-check-Meilenstein M3). Das primäre Architektur-Gate
+  läuft jetzt über **a-check v0.9.0** (`ghcr.io/pt9912/a-check@sha256:0378211f…`,
+  netzlos `--network none`, read-only Bind-Mount) mit deklarativer `.a-check.yml`
+  (Vollrichtung: Kern-Reinheit A, laterale Adapter B inkl. `adapter_sink`-MeshSource-Naht,
+  Tech-Kapselung OCC/SQLite/Qt/`dlfcn.h`-Include C/D/E, **neu** Schicht-Kanten +
+  driving/driven-Richtung) + `a-check.mk` (digest-gepinnt, `include` im `Makefile`,
+  `make a-check` als `gates`-Member). `tools/arch-check.sh` behält nur den **P-Rest**,
+  den der kanten-basierte a-check strukturell nicht sieht: das `dlopen`/`dlsym`/`dlclose`-
+  **Funktionsaufruf**-Muster (P1-Aufruf; der `dlfcn.h`-Include liegt bei a-check) + die
+  feine Quote-vs-Angle-Import-Allowlist für `plugins/`+`src/plugin_api/` (P2). Regel
+  A/B/C/D/E + P2b (Qt/OCC/SQLite im `plugins/`-Baum) aus dem Skript **entfernt**
+  (a-check übernimmt, empirisch belegt). `tools/gate-consistency.sh` scannt zusätzlich
+  `a-check.mk` (Include-Awareness). **MR-006** 0 HIGH / 3 MED / 1 LOW (alle
+  eingearbeitet: Quell-/Test-Kommentar-Nachzug ~22 A–E-Zuschreibungen → a-check
+  [P1/P2 bleiben arch-check]; Makefile-Kopf-Bind-Mount-Ausnahme; Plan-Datei-ID-Hygiene).
+  Verifikation: `make a-check` 0 Befunde/Exit 0; Gegenprobe a `QWidget`→`core-impurity`/Exit 1;
+  Gegenprobe b `dlopen(`-Aufruf außerhalb Host → `arch-check.sh` feuert; `make gates` grün.
+
 ### Added
 - slice-028 + slice-029 — **a-check-Vorbereitung: Architektur-Struktur richtungs-rein**
   (harness-steering-Quergewerk; Pilot-Befunde des a-check-Schwester-Tools v0.8.0,

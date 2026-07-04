@@ -15,7 +15,7 @@ namespace bcad::adapters::io {
 // (Palette zyklisch) auf weißem Grund; serialisiert über den hand-gerollten
 // `png_writer` (Reuse `plan_geometry`) und schreibt **atomar** ([`E-IO-001`], Reuse
 // `io_atomic_write`). Der PNG-Code lebt ausschließlich hier + in `png_writer`
-// (arch-check Regel A/B — kein OCC/Qt, keine externe Bibliothek).
+// (a-check Regel A/B — kein OCC/Qt, keine externe Bibliothek).
 //
 // Export-only: kein Import-Adapter; ein Import-Request → `E-IO-003` (Lookup-Miss).
 class PngExportAdapter final : public hexagon::ports::driven::ModelExporterPort {

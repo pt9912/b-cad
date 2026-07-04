@@ -7,7 +7,7 @@
 // File) Subset-**Writer** — Spiegel des `ifc_spf_reader` (symmetrisch Lesen UND
 // Schreiben in einer Code-Basis). Generisch/format-agnostisch (kennt keine
 // IFC-Domänen-Entität); das Domänen→IFC-Mapping lebt im `ifc_export_adapter`.
-// Lebt ausschließlich in `src/adapters/io/` (arch-check Regel A/B); keine
+// Lebt ausschließlich in `src/adapters/io/` (a-check Regel A/B); keine
 // externe IFC-Bibliothek.
 
 namespace bcad::adapters::io {

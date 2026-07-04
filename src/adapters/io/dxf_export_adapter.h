@@ -12,7 +12,7 @@ namespace bcad::adapters::io {
 // Geschoss-`LAYER`, spez. §1 `LH-FA-IO-003.a`) auf ASCII-DXF (R12/AC1009) ab und
 // serialisiert über den hand-gerollten `DxfWriter`. **Atomar** (Temp + fsync +
 // Rename, Muster `ifc_export_adapter`): vollständige Datei oder Wurf, kein
-// Teil-Export. Der DXF-Code lebt ausschließlich hier (arch-check Regel A/B).
+// Teil-Export. Der DXF-Code lebt ausschließlich hier (a-check Regel A/B).
 //
 // Roundtrip-Disziplin: je gerade Wand eine `LINE` mit dem Geschoss-`LAYER` als
 // Gruppencode 8 (was der Import liest); z=0 (2D-Grundriss). Subset-Grenzen

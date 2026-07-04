@@ -1,9 +1,16 @@
 # b-cad — Harness-Gates.
 #
-# Jeder Gate ist eine Dockerfile-Target-Stage (Quelle per COPY ins Image
-# gebacken, Gate als RUN) — KEINE Bind-Mounts, maximal reproduzierbar
+# Jeder INTERNE Gate ist eine Dockerfile-Target-Stage (Quelle per COPY ins
+# Image gebacken, Gate als RUN) — KEINE Bind-Mounts, maximal reproduzierbar
 # (Modul 14, Vorbild cmake-xray). `make gates` aggregiert nur real
 # existierende Targets (Kurs-Modul 13).
+#
+# AUSNAHME (MR-013, slice-030): `a-check` ist das erste externe,
+# digest-gepinnte Gate im Aggregat und läuft als `docker run --network none
+# -v $(CURDIR):/src:ro` — ein read-only Bind-Mount statt COPY-Stage
+# (Definition in a-check.mk). Reproduzierbarkeit sitzt hier auf Image-Ebene
+# (@sha256), Hermetik via `--network none`; dieselbe Klasse wie das
+# digest-gepinnte docs-check (d-check) / schema-check (d-migrate).
 
 DOCKER ?= docker
 IMAGE ?= bcad
@@ -28,6 +35,10 @@ help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
 
+# a-check — externes Architektur-Gate (a-check.mk, digest-gepinnt v0.9.0).
+# Nach `help` eingebunden, damit `help` das Default-Goal bleibt.
+include a-check.mk
+
 dev-image: ## Toolchain-Image (deps-Stage) — z. B. für die IDE/DevContainer
 	$(GATE) --target deps -t $(IMAGE):deps .
 
@@ -40,7 +51,7 @@ test: ## REQ-TEC-005 — GoogleTest (Kern + Adapter-Linkage)
 lint: ## clang-tidy + Suppression-Gate (AGENTS.md §2.4)
 	$(GATE) --target lint -t $(IMAGE):lint .
 
-arch-check: ## ADR-0001 — hexagonale Schichtung (Kern ohne Qt/OCC/SQLite/adapters)
+arch-check: ## ADR-0017 — Plugin-P-Rest (dlopen/dlsym/dlclose-Aufruf + P2-Import-Allowlist); Schichtung A–E via a-check
 	$(GATE) --target arch-check -t $(IMAGE):arch-check .
 
 coverage-gate: ## bootstrap-aware Coverage (Schwelle $(COVERAGE_THRESHOLD)%, gcov; Composition Root ausgenommen)
@@ -128,5 +139,5 @@ schema-check: ## ADR-0006 — Drift: schema.sql == d-migrate(data-model.yaml) (N
 # REZEPT statt als letzter Prerequisite — unter `make -j` liefen
 # Prerequisites parallel und der Nachweis entstünde trotz roter Gates
 # (MR-005); das Rezept läuft erst, wenn ALLE Prerequisites grün sind.
-gates: docs-check gate-consistency arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)
+gates: docs-check gate-consistency a-check arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)
 	@bash tools/harness/record-gates.sh

@@ -12,7 +12,7 @@ namespace bcad::adapters::geometry {
 
 // Driven Adapter (ADR-0002): erfüllt `GeometryKernelPort` über
 // OpenCascade. Die OCC-Typen bleiben vollständig in der `.cpp` gekapselt —
-// dieser Header bindet KEIN OCC ein (ADR-0001/0002; arch-check Regel C).
+// dieser Header bindet KEIN OCC ein (ADR-0001/0002; a-check Regel C).
 class OccGeometryAdapter final
     : public hexagon::ports::driven::GeometryKernelPort {
 public:

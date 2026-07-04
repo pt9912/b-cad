@@ -11,7 +11,7 @@ namespace bcad::adapters::io {
 // `ModelImporterPort` für DXF. Liest eine ASCII-DXF-Datei (2D-Grundriss) über
 // den hand-gerollten `DxfReader` und mappt das welle-4-Subset (gerade
 // Wand-Achsen je Geschoss-`LAYER`, spez. §1 `LH-FA-IO-003.a`) auf ein
-// `model::Building`. Der DXF-Code lebt ausschließlich hier (arch-check Regel
+// `model::Building`. Der DXF-Code lebt ausschließlich hier (a-check Regel
 // A/B); der Kern bleibt format-frei (ADR-0001).
 //
 // Fehler-Totalität (`LH-FA-IO-003` Negative/Boundary): nicht wohlgeformter

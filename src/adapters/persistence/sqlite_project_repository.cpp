@@ -1,6 +1,6 @@
 // Driven Adapter (Persistenz, ADR-0003): ProjectRepositoryPort über SQLite.
 // Atomar (Temp + fsync + Rename); SQLite-Typen bleiben hier gekapselt
-// (arch-check Regel D). Schema-DDL aus spec/data-model.yaml generiert
+// (a-check Regel D). Schema-DDL aus spec/data-model.yaml generiert
 // (d-migrate, ADR-0006), eingebettet als kSchemaSql.
 //
 // Fehlercodes (slice-008b, Spec-Familie E-IO-*): gemappt nach SQLite-

@@ -430,6 +430,56 @@ sie.
   Zeile von `lastenheft-historie.md`.
 - **Auflösungs-Trigger:** permanent (erbt MR-010).
 
+### MR-013 — arch-check via a-check
+
+- **Datum:** 2026-07-04
+- **Geltungsbereich:** [`tools/arch-check.sh`](../tools/arch-check.sh),
+  [`.a-check.yml`](../.a-check.yml), [`a-check.mk`](../a-check.mk),
+  [`Makefile`](../Makefile), [`tools/gate-consistency.sh`](../tools/gate-consistency.sh),
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates),
+  [`AGENTS.md` §3](../AGENTS.md)
+- **Adaption:** Das **primäre Architektur-Gate** ist vom hand-gerollten
+  `tools/arch-check.sh` auf das externe, digest-gepinnte Image **a-check**
+  (`ghcr.io/pt9912/a-check`, v0.9.0 `@sha256:0378211f…`) umgestellt — deklarative
+  Config in `.a-check.yml`, Gate-Snippet in `a-check.mk` (`include a-check.mk`,
+  `make a-check` als `gates`-Member). a-check trägt jetzt: Kern-Reinheit (vormals
+  Regel A), laterale Adapter (B), Tech-Kapselung OCC-`.hxx`/`sqlite3`/Qt/
+  `dlfcn.h`-**Include** (C/D/E + P1-Include-Teil) — inkl. des `plugins/`-Baums —
+  sowie **neu** den Schicht-Kanten-Graph und die **driving/driven-Richtung**, die
+  `arch-check.sh` nie prüfte. `tools/arch-check.sh` ist auf den **P-Rest**
+  geschrumpft: (P1) das `dlopen`/`dlsym`/`dlclose`-**Funktionsaufruf**-Muster
+  (a-check prüft nur Include-/Import-**Kanten**, keine Aufrufe) und (P2) die feine
+  Quote-vs-Angle-Import-Allowlist für `plugins/`+`src/plugin_api/` — beides
+  strukturell außerhalb dessen, was ein kanten-basierter Prüfer sieht.
+- **Direkter Präzedenzfall [MR-007](#mr-007--auflösung-von-mr-003-docs-check-via-d-check):**
+  derselbe Formwechsel (hand-gerollter/vendorter Gate → externes digest-gepinntes
+  Image + deklarative `.<tool>.yml`-Config) wurde bereits für `docs-check`
+  (d-check) als MR-Adaption verankert. **Kein ADR:** es wird **keine**
+  Architekturregel gelockert ([`AGENTS.md` §2.6](../AGENTS.md) verlangt ADRs nur
+  für Lockerungen) — die Regeln bleiben erhalten und werden **strenger** (Kanten +
+  Richtung neu); nur der **Durchsetzungs-Mechanismus** wechselt. Die
+  Architektur-ADRs [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md)/[ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md)/[ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md)/[ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md)/[ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md)
+  bleiben unverändert gültig; ihre Sensors-Bindung wandert von `arch-check` auf
+  `a-check` (+ P-Rest). Roadmap-Vorgabe 2026-07-03 („eigener Folge-Slice Muster
+  MR-007").
+- **Bind-Mount-Abweichung (dokumentiert):** anders als die COPY-Stage-Gates läuft
+  a-check per `docker run --network none -v $(CURDIR):/src:ro` — read-only
+  Bind-Mount. Reproduzierbarkeit sitzt auf Image-Ebene (`@sha256`,
+  [ADR-0004](../docs/plan/adr/0004-toolchain-dependency-pinning.md)-Prinzip, Muster
+  d-migrate/d-check), Hermetik via `--network none`; `:ro` verhindert
+  Repo-Mutation. a-check ist der **erste Bind-Mount-Member im `gates`-Aggregat** —
+  der Makefile-Kopf trägt die Ausnahme.
+- **gate-consistency-Include-Awareness:** [`tools/gate-consistency.sh`](../tools/gate-consistency.sh)
+  scannt zusätzlich `a-check.mk` (der `a-check:`-Target lebt im Include, nicht im
+  `Makefile`), sonst Fehlalarm „halluziniertes Gate".
+- **Selbst-Pin-Lag:** `a-check --print-mk` aus dem v0.9.0-Image druckt bauartbedingt
+  noch den v0.8.0-Pin; maßgeblich ist das byte-genau eingebettete `a-check.mk`
+  (v0.9.0-Digest). Pin-Hebung ist ein bewusster Commit
+  ([ADR-0004](../docs/plan/adr/0004-toolchain-dependency-pinning.md)-Prinzip).
+- **Folgepflicht:** Source-Drift gegen a-check beim Update nachziehen (Entropy
+  Management, Modul 15); der a-check-Version-Hub ist ein bewusster Commit.
+- **Auflösungs-Trigger:** permanent (Zielzustand).
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

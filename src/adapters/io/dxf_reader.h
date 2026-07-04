@@ -7,7 +7,7 @@
 
 // IO-Adapter (ADR-0015 Option D): hand-gerollter ASCII-DXF (R12-Subset)
 // Tokenizer. Lebt AUSSCHLIESSLICH in `src/adapters/io/` — der Kern bleibt
-// format-frei (ADR-0001, arch-check Regel A). Keine externe DXF-Bibliothek.
+// format-frei (ADR-0001, a-check Regel A). Keine externe DXF-Bibliothek.
 //
 // Trennung der Verantwortung (Muster IFC-Codec: Codec vs. Mapping):
 //   - DIESE Datei  = generischer DXF-Gruppencode-Tokenizer + Struktureinheiten,

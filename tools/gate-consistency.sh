@@ -16,8 +16,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-# 1) reale Makefile-Targets als Menge
-targets="$(grep -oE '^[a-zA-Z][a-zA-Z0-9_-]*:' Makefile | sed 's/:$//' | sort -u)"
+# 1) reale Makefile-Targets als Menge. Inklusive der per `include` eingebundenen
+#    a-check.mk (slice-030/MR-013): der `a-check:`-Target lebt im Include, nicht
+#    im Makefile selbst — ohne diese Zeile meldete das Gate `make a-check`
+#    fälschlich als halluziniert. `-h` unterdrückt die Datei-Präfixe beim
+#    Mehr-Datei-Grep (sonst bräche das `sed 's/:$//'`-Mengen-Building).
+targets="$(grep -hoE '^[a-zA-Z][a-zA-Z0-9_-]*:' Makefile a-check.mk | sed 's/:$//' | sort -u)"
 is_target() { printf '%s\n' "$targets" | grep -qx "$1"; }
 
 status=0

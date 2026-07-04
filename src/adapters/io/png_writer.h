@@ -7,7 +7,7 @@
 // Raster-PNG-Encoder. Kennt die PNG-**Syntax** (8-Byte-Signatur, Chunks mit
 // Länge+Typ+CRC-32, `IHDR`/`IDAT`/`IEND`; `IDAT` = zlib-Header + **stored-DEFLATE**-
 // Blöcke + Adler-32), aber **keine** b-cad-Domäne — das Domänen→Raster-Mapping lebt im
-// `png_export_adapter`. Lebt ausschließlich in `src/adapters/io/` (arch-check Regel A/B);
+// `png_export_adapter`. Lebt ausschließlich in `src/adapters/io/` (a-check Regel A/B);
 // **keine** externe PNG-/zlib-Bibliothek, **kein** Qt/OCC — reines C++/STL.
 
 namespace bcad::adapters::io {

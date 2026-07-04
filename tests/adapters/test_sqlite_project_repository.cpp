@@ -456,7 +456,7 @@ TEST(SqliteProjectRepository_LH_FA_SLB_FND, RoundTripErhaeltPlatten) {
 
 // White-box-Korruption für die Negativ-Parse-Tests: roher UPDATE auf die
 // gespeicherte .bcad. Im Produktcode wäre rohes sqlite3 außerhalb des
-// Persistenz-Adapters ein arch-check-Regel-D-Verstoß — Regel D wie auch `lint`
+// Persistenz-Adapters ein a-check-Regel-D-Verstoß — Regel D wie auch `lint`
 // (clang-tidy) greppen aber nur `src/`, nicht `tests/`, daher hier zulässig.
 void corruptColumn(const fs::path& path, const char* sql) {
     sqlite3* db = nullptr;

@@ -1,6 +1,6 @@
 // Hello-Hexagon (slice-002): beweist den Driving-Port→Service→Driven-Port-
 // Roundtrip mit einem Test-Double — ohne jeden Adapter (ADR-0001
-// §Testbarkeit). Genau die Eigenschaft, die `arch-check` strukturell
+// §Testbarkeit). Genau die Eigenschaft, die `a-check` strukturell
 // absichert.
 
 #include <gtest/gtest.h>
