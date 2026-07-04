@@ -1,5 +1,6 @@
 #include "hexagon/services/geometry/slab_geometry.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
@@ -87,12 +88,9 @@ bool cutoutInsideSlab(const model::Slab& slab,
     // Ausschnitt-Stützpunkt muss strikt innen liegen. Damit ist der Boolean
     // koplanar-frei (innenliegendes Loch, kein lateraler Überstand nötig —
     // anders als bei der Wandöffnung, die die Wand zwangsläufig durchspannt).
-    for (const model::Point2D& pt : cutout.points) {
-        if (!pointInPolygon(slab.footprint, pt)) {
-            return false;
-        }
-    }
-    return true;
+    return std::ranges::all_of(cutout.points, [&](const model::Point2D& pt) {
+        return pointInPolygon(slab.footprint, pt);
+    });
 }
 
 model::TriangleMesh translateMeshZ(model::TriangleMesh mesh, double dz) {

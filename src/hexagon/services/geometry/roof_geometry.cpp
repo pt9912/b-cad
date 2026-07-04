@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 #include <map>
+#include <numbers>
 #include <utility>
 
 #include "hexagon/model/constants.h"
@@ -12,7 +13,7 @@ namespace bcad::hexagon::services {
 
 namespace {
 
-constexpr double kPi = 3.14159265358979323846;
+constexpr double kPi = std::numbers::pi;
 
 struct V3 {
     double x;

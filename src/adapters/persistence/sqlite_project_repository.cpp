@@ -89,6 +89,8 @@ public:
     ~Db() { sqlite3_close(db_); }
     Db(const Db&) = delete;
     Db& operator=(const Db&) = delete;
+    Db(Db&&) = delete;
+    Db& operator=(Db&&) = delete;
 
     sqlite3* handle() const { return db_; }
 
@@ -122,6 +124,8 @@ public:
     ~Stmt() { sqlite3_finalize(stmt_); }
     Stmt(const Stmt&) = delete;
     Stmt& operator=(const Stmt&) = delete;
+    Stmt(Stmt&&) = delete;
+    Stmt& operator=(Stmt&&) = delete;
 
     sqlite3_stmt* get() const { return stmt_; }
 

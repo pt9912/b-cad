@@ -1,17 +1,118 @@
-# clang-tidy-Konfiguration (slice-002). Konservativer Check-Satz; jeder
-# aktivierte Befund ist ein Fehler (der lint-Gate ist rot/grün, kein
-# Vorschlag — Modul 13). Inline-Suppression ist verboten (AGENTS.md §2.4,
-# zusätzlich durch tools/suppression-gate.sh erzwungen); echte Ausnahmen
-# werden hier zentral mit ADR-/Slice-Bezug eingetragen.
+# clang-tidy-Konfiguration. Jeder aktivierte Befund ist ein Fehler (der
+# lint-Gate ist rot/grün, kein Vorschlag — Modul 13; die lint-Stage promotet
+# per CLI `--warnings-as-errors='*'` jeden aktivierten Check sofort zum harten
+# Fehler). Inline-Suppression ist verboten (AGENTS.md §2.4, zusätzlich durch
+# tools/suppression-gate.sh erzwungen); echte Ausnahmen werden hier zentral mit
+# ADR-/Slice-Bezug eingetragen.
+#
+# slice-002: Initial-Satz bugprone-* + clang-analyzer-* +
+#   readability-function-cognitive-complexity.
+# slice-027 (evidence-first Familien-Erweiterung; Beleg-Matrix:
+#   docs/reviews/2026-07-04-slice-027-dryrun.md, gepinnte clang-tidy 21.1.8,
+#   ADR-0004): zusätzlich cert-* / readability-* / performance-* / modernize-* /
+#   misc-* / cppcoreguidelines-* / portability-*. Durch Aktivieren der Familien
+#   mit expliziter Exclude-Liste sind ALLE 0-Befund-Checks scharf
+#   (Falsifizierbarkeits-Invariante). Aktiviert+gefixt wurden: convert-member-
+#   functions-to-static, special-member-functions, use-anyofallof,
+#   simplify-boolean-expr, container-data-pointer, unnecessary-copy-
+#   initialization, use-std-numbers, rvalue-reference-param-not-moved.
+#
+# Bewusste Auslassungen (je Kriterium §1 des Slice-Plans; Details im Beleg):
+#   K2/K5 Groß/Stil: readability-identifier-length, modernize-use-trailing-
+#     return-type, misc-include-cleaner, modernize-use-designated-initializers,
+#     modernize-use-ranges.
+#   K4/K5 Magic-Numbers (Test-/Fixture-Literale) + K3 Alias:
+#     readability-magic-numbers, cppcoreguidelines-avoid-magic-numbers (Alias).
+#   K4 Idiom-Kollisionen: cppcoreguidelines-pro-type-reinterpret-cast
+#     (SQLite-C-API-Blob/Text-Cast), cppcoreguidelines-pro-type-vararg
+#     (snprintf-Codecs), cppcoreguidelines-owning-memory (Plugin-ABI Factory/
+#     Destroy), cert-err33-c (sichere snprintf-Formatierung — Trunkierung durch
+#     Puffergröße ausgeschlossen), misc-no-recursion (rekursiver-Abstieg
+#     SPF-Parser).
+#   K5 Wert-Structs: misc-non-private-member-variables-in-classes (pure
+#     Domänen-Wert-Structs sind bewusst offen).
+#   false-positive (C-/OCC-Interop): cppcoreguidelines-pro-bounds-pointer-
+#     arithmetic, -pro-bounds-constant-array-index, -pro-bounds-array-to-pointer-
+#     decay.
+#   K5 Stil-Rest: modernize-return-braced-init-list (Iterator-Paar-Risiko),
+#     modernize-avoid-c-arrays + cppcoreguidelines-avoid-c-arrays (Alias,
+#     GL-Vertex-Arrays), cppcoreguidelines-avoid-do-while,
+#     cppcoreguidelines-avoid-const-or-ref-data-members.
+#   Zurückgestellte wertvolle Folge-Kandidaten (eigener lint-Härtungs-Slice):
+#     misc-const-correctness (14, stateful OCC/Streams), modernize-use-nodiscard
+#     (10), readability-inconsistent-declaration-parameter-name (19).
 Checks: >
   -*,
   bugprone-*,
   clang-analyzer-*,
-  readability-function-cognitive-complexity
+  readability-function-cognitive-complexity,
+  cert-*,
+  readability-*,
+  performance-*,
+  modernize-*,
+  misc-*,
+  cppcoreguidelines-*,
+  portability-*,
+  -readability-identifier-length,
+  -modernize-use-trailing-return-type,
+  -misc-include-cleaner,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -modernize-use-designated-initializers,
+  -modernize-use-ranges,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -readability-inconsistent-declaration-parameter-name,
+  -misc-const-correctness,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-vararg,
+  -modernize-use-nodiscard,
+  -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cert-err33-c,
+  -misc-no-recursion,
+  -modernize-return-braced-init-list,
+  -modernize-avoid-c-arrays,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay
 WarningsAsErrors: >
+  -*,
   bugprone-*,
   clang-analyzer-*,
-  readability-function-cognitive-complexity
+  readability-function-cognitive-complexity,
+  cert-*,
+  readability-*,
+  performance-*,
+  modernize-*,
+  misc-*,
+  cppcoreguidelines-*,
+  portability-*,
+  -readability-identifier-length,
+  -modernize-use-trailing-return-type,
+  -misc-include-cleaner,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -modernize-use-designated-initializers,
+  -modernize-use-ranges,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -readability-inconsistent-declaration-parameter-name,
+  -misc-const-correctness,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-vararg,
+  -modernize-use-nodiscard,
+  -misc-non-private-member-variables-in-classes,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cert-err33-c,
+  -misc-no-recursion,
+  -modernize-return-braced-init-list,
+  -modernize-avoid-c-arrays,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay
 HeaderFilterRegex: '^src/'
 FormatStyle: none
 CheckOptions:

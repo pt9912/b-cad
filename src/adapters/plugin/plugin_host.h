@@ -73,13 +73,14 @@ private:
 
     // Barriere-gesicherte Abwicklung eines aktiven Plugins; true, wenn
     // regulär entladen (sonst isoliert).
-    bool shutdownAndClose(LoadedPlugin& entry, std::string* error_message);
+    static bool shutdownAndClose(LoadedPlugin& entry,
+                                 std::string* error_message);
 
     // Isolierung nach einem werfenden Hook (Fehlerpfad ohne Entladen):
     // Kontext entziehen, Instanz barriere-gesichert freigeben, Handle
     // bewusst offen lassen. Liefert den Meldungs-Präfix (nennt einen
     // zusätzlichen Destroy-Fehlschlag, statt ihn zu verschlucken).
-    std::string isolateAfterHookFailure(LoadedPlugin& entry);
+    static std::string isolateAfterHookFailure(LoadedPlugin& entry);
 
     hexagon::ports::driving::EditStructurePort& edit_;
     hexagon::ports::driving::EvaluatePort& evaluate_;

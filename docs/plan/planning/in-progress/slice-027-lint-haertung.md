@@ -1,7 +1,7 @@
 ---
 id: slice-027
 titel: lint-Härtung — kuratierte clang-tidy-Familien-Erweiterung (cert/readability/performance/modernize/misc/cppcoreguidelines/portability), evidence-first
-status: in-progress
+status: done
 welle: harness-steering
 lastenheft_refs: []
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md), [ADR-0017](../../adr/0017-plugin-api-abi.md)]
@@ -9,7 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0004](../.
 
 # Slice 027: lint-Härtung — kuratierte clang-tidy-Familien-Erweiterung (evidence-first)
 
-**Status:** in-progress — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
+**Status:** **done** (2026-07-04) — Dry-Run vermessen (**1630 Befunde / 7 Familien**,
+0 Parse-Fehler; Beleg [dryrun](../../../reviews/2026-07-04-slice-027-dryrun.md));
+**8 Checks aktiviert + 10 Befunde gefixt** (verhaltensneutral), 24 Auslassungen
+begründet, 0-Befund-Checks scharf (Falsifizierbarkeits-Invariante). `make gates`
+grün, `make test` unverändert 228/228. — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
 **0 HIGH / 3 MED / 4 LOW / 2 INFO**; Start **nicht blockiert**, alle Findings
 vor Start eingearbeitet: MED-1 (Dry-Run-Regelkonformität auf die tragende
 Begründung gestellt — Image-Pinnung statt falscher 025b/c-Präzedenz) +
@@ -115,7 +119,7 @@ bleibt unverändert; es wird nichts gelockert.
       Container — kein Host-Tooling, [AGENTS.md §2.9](../../../../AGENTS.md)),
       Scope `src/` + `plugins/`. Ergebnis: **Befund-Matrix**
       (Check → Befundanzahl, je Familie) als Beleg-Report
-      `docs/reviews/{2026-07-03-slice-027-dryrun}.md` — **inkl. der exakten
+      `docs/reviews/2026-07-04-slice-027-dryrun.md` — **inkl. der exakten
       `docker run`-Kommandos** (Reproduzierbarkeit, Review-LOW-2); die
       Ablage unter `docs/reviews/` ist eine **benannte Ausnahme**
       (Evidenz-Beleg statt Review — Review-LOW-4; Ort gewählt wegen der
@@ -155,12 +159,12 @@ bleibt unverändert; es wird nichts gelockert.
 
 | Datei / Komponente | Änderungs-Art | Begründung |
 |---|---|---|
-| `docs/reviews/{2026-07-03-slice-027-dryrun}.md` | neu | Beleg: Befund-Matrix je Familie/Check (Dry-Run im gepinnten Container) |
+| `docs/reviews/2026-07-04-slice-027-dryrun.md` | neu | Beleg: Befund-Matrix je Familie/Check (Dry-Run im gepinnten Container) |
 | `.clang-tidy` | ändern | kuratierte Familien-Erweiterung (`Checks` + `WarningsAsErrors` synchron; begründete Auslassungen als Kommentar mit Slice-Bezug) |
 | `src/**` · `plugins/**` (punktuell) | ändern | Fixes der Befunde aktivierter Checks (Behandlung, kein NOLINT; kein Verhaltens-Umbau) |
 | `docs/plan/planning/in-progress/roadmap.md` | ändern | Quergewerk-Eintrag „Historische Trigger-Verschiebungen" |
 | `CHANGELOG.md` | ändern (Closure) | Unreleased-Eintrag slice-027 |
-| `docs/reviews/{2026-07-03-slice-027-plan}.md` | neu | [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report |
+| `docs/reviews/2026-07-03-slice-027-plan.md` | neu | [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report |
 
 ## 4. Trigger
 

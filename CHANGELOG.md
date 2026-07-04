@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-027 — **lint-Härtung: kuratierte clang-tidy-Familien-Erweiterung (evidence-first)**
+  (harness-steering-Quergewerk; kein ADR — Verschärfung, §2.6 n/a). `make lint` aktiviert
+  zusätzlich zum Bestand (bugprone-*/clang-analyzer-*/cognitive-complexity) die 7 Familien
+  **cert-* / readability-* / performance-* / modernize-* / misc-* / cppcoreguidelines-* /
+  portability-***. Vorgehen: Dry-Run aller Familien im gepinnten Container (clang-tidy 21.1.8)
+  → **Befund-Matrix (1630 Befunde**, Beleg `docs/reviews/2026-07-04-slice-027-dryrun.md`),
+  dann kuratierte Aktivierung. **8 Checks aktiviert + 10 Befunde verhaltensneutral gefixt**
+  (convert-member-functions-to-static, special-member-functions [Rule-of-5 `Db`/`Stmt`],
+  use-anyofallof, simplify-boolean-expr, container-data-pointer, unnecessary-copy-initialization,
+  use-std-numbers [`std::numbers::pi`], rvalue-reference-param-not-moved → `const&`). Durch
+  Familien-Aktivierung mit Exclude-Liste sind **alle 0-Befund-Checks scharf**
+  (Falsifizierbarkeits-Invariante). **24 Auslassungen begründet** im `.clang-tidy`-Kommentar:
+  Alias-Dedup (Magic-Numbers); Idiom-Kollisionen (reinterpret-cast [SQLite-C-API], vararg
+  [snprintf-Codecs], owning-memory [Plugin-ABI], cert-err33-c [sichere snprintf],
+  no-recursion [SPF-Parser]); Wert-Structs; Bounds-false-positives; Groß-/Stil per
+  Umfangs-Deckel (identifier-length 544 u. a.). Zurückgestellte wertvolle Folge-Kandidaten:
+  const-correctness (14), nodiscard (10), inconsistent-parameter-name (19). `make gates`
+  grün, `make test` 228/228 unverändert; keine Suppression (AGENTS.md §2.4).
 - slice-030 — **Architektur-Gate umgestellt: a-check (externes digest-gepinntes Image)
   übernimmt A–E + Schicht-Kanten + driving/driven; `tools/arch-check.sh` → P-Rest**
   (harness-steering-Quergewerk, MR-013 nach Muster MR-007 = docs-check→d-check;

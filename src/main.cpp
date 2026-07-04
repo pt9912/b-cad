@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
         window.show();
         QApplication::processEvents();
         const QImage image = viewer->grabFramebuffer();
-        const QString path = args.at(beleg_index + 1);
+        const QString& path = args.at(beleg_index + 1);
         if (image.isNull() || !image.save(path)) {
             std::cerr << "acc-002-beleg: Rendern/Speichern fehlgeschlagen: "
                       << path.toStdString() << '\n';

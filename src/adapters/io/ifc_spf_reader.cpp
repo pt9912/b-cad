@@ -71,7 +71,7 @@ void copyStringLiteral(const std::string& in, std::size_t& i, std::string& out) 
 // das letzte Kommentar-Zeichen.
 void skipBlockComment(const std::string& in, std::size_t& i) {
     i += 2;  // über '/*'
-    while (i + 1 < in.size() && !(in[i] == '*' && in[i + 1] == '/')) {
+    while (i + 1 < in.size() && (in[i] != '*' || in[i + 1] != '/')) {
         ++i;
     }
     ++i;  // auf das schließende '/'

@@ -311,9 +311,9 @@ struct Candidate {
     }
 };
 
-std::vector<Candidate> buildCandidates(std::vector<Loop>&& loops) {
+std::vector<Candidate> buildCandidates(const std::vector<Loop>& loops) {
     std::vector<Candidate> candidates;
-    for (Loop& loop : loops) {
+    for (const Loop& loop : loops) {
         Candidate c;
         c.centerline = centerlineRing(loop);
         c.inner = offsetRing(loop, +1.0);

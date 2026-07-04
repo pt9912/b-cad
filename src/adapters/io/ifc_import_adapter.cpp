@@ -133,7 +133,7 @@ std::optional<model::Point2D> cartesianXY(const SpfReader& reader, int point_id)
         coords->items.size() < 2) {
         return std::nullopt;
     }
-    const auto x = asNumber(&coords->items[0]);
+    const auto x = asNumber(coords->items.data());
     const auto y = asNumber(&coords->items[1]);
     if (!x || !y) {
         return std::nullopt;
