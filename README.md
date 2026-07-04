@@ -18,13 +18,17 @@
 > (`src/plugin_api/`, Port-Subset v1) und Beispiel-/Test-Plugins im
 > `plugins/`-Baum, AK-getestet mit realen `.so` — der
 > [OBJ-004](spec/lastenheft.md#3-projektziele)/M5-Pfad ist frei (Buchung bei der Welle-Closure). Zusätzlich
-> ist die Architektur **richtungs-rein** für die geplante
-> arch-check-Ablösung durch a-check (Quergewerk slice-028/029:
-> Berechnungs-Kerne in `src/hexagon/services/geometry/`, ui verzeichnislich
-> in `view/` [driven] + `command/` [driving] getrennt). Geparkt startbar:
-> lint-Härtung (slice-027, [MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH); danach folgen in der Welle
-> 2D-Zeichen-Werkzeuge (`DRW`), UI-Themes/Docking und Mehrsprachigkeit
-> ([LH-QA-006](spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)).
+> ist das **Architektur-Gate auf a-check umgestellt** (Quergewerk slice-030,
+> [MR-013](harness/conventions.md#mr-013--arch-check-via-a-check)): das externe, digest-gepinnte Image **a-check**
+> (`make a-check`, netzlos/read-only) trägt jetzt Kern-Reinheit, laterale Adapter,
+> Tech-Kapselung, Schicht-Kanten und driving/driven-Richtung; `tools/arch-check.sh`
+> bleibt als **P-Rest** (`dlopen`-Aufruf + Plugin-Import-Allowlist). b-cad ist damit
+> **erster a-check-Pilot-Konsument** (a-check-M3; Struktur-Vorbedingung war
+> slice-028/029). Der `make lint`-Gate ist **evidence-first gehärtet** (slice-027:
+> sieben clang-tidy-Familien; slice-031: `misc-const-correctness` + `modernize-use-nodiscard`).
+> Als Nächstes in der Welle: 2D-Zeichen-Werkzeuge (`DRW`), UI-Themes/Docking und
+> Mehrsprachigkeit ([LH-QA-006](spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)); ein kleiner lint-Folge-Kandidat
+> (`readability-inconsistent-declaration-parameter-name`, kosmetisch) bleibt benannt-zurückgestellt.
 > Einstieg: [`harness/README.md`](harness/README.md).
 
 ## Was ist b-cad?
