@@ -14,7 +14,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0006](../.
 (Reviewer ≠ Autor); HIGH blockiert. **Reine Doku/Entscheidung — kein Code, kein Schema.**
 
 **Welle:** welle-5-erweiterung (DRW-Strang, Entscheidungs-/Spec-Hälfte — erster Schnitt
-**Fundament Hilfslinien + Layer**; Muster [slice-019a](../done-archive/slice-019a-ifc-ak-spec.md)/[slice-025a](../done-archive/slice-025a-pdf-png-ak-spec.md)/[slice-026a](../done-archive/slice-026a-plg-ak-spec.md)
+**Fundament Hilfslinien + Layer**; Muster [slice-019a](../done-archive/slice-019a-ifc-ak-spec.md)/[slice-025a](../done/slice-025a-pdf-png-ak-spec.md)/[slice-026a](../done/slice-026a-plg-ak-spec.md)
 — AK-Schärfung vor Impl).
 
 **Bezug:** [LH-FA-DRW-005](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)
@@ -195,4 +195,4 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
 ## 8. Closure-Notiz
 
 *Wird bei DoD-Erfüllung gefüllt (Closure-Kriterien beobachtbar + Lerneintrag —
-Muster [slice-026a](../done-archive/slice-026a-plg-ak-spec.md) §8).*
+Muster [slice-026a](../done/slice-026a-plg-ak-spec.md) §8).*

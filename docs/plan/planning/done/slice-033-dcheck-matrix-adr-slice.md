@@ -10,14 +10,14 @@ adr_refs: [[ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)]  # Digest
 # Slice 033: Doku-Referenz-Gate — d-check v0.37.1 & Matrix `adr→slice`
 
 **Status:** done (2026-07-05, **evidence-first** — Fallout vor dem
-Plan gemessen, Muster [slice-027](../done-archive/slice-027-lint-haertung.md)).
+Plan gemessen, Muster [slice-027](../done/slice-027-lint-haertung.md)).
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
 **0 HIGH** (3 MED eingearbeitet); `make gates` grün (docs-check über d-check.mk),
 Closure-Notiz §8.
 
 **Welle:** welle-5-erweiterung — **Quergewerk `harness-steering`** (kein
 Wellen-Feature; Muster [slice-018a](../done-archive/slice-018a-dcheck-gate-mechanik-done-archive.md)
-/ [slice-030](../done-archive/slice-030-a-check-gate.md)). **DRW-Scope
+/ [slice-030](../done/slice-030-a-check-gate.md)). **DRW-Scope
 (slice-032a/b/c) unberührt** — pausiert, WIP beiseite.
 
 **Bezug:** Referenz-Integritäts-Gate `make docs-check` (d-check, [MR-007](../../../../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check)/[MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths));
@@ -33,7 +33,7 @@ volatile Slice) und gegen b-cads eigene [ADR-Index](../../adr/README.md)-Konvent
 
 **Schnitt-Herkunft:** Werkzeug-/Gate-Steering, aus dem DRW-ADR-Entwurf emergiert. Ein
 Gate-Verschärfung + Pin-Hebung ist **kein** Wellen-Feature und gehört in ein eigenes
-Quergewerk (Muster [MR-007](../../../../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check)/[MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[slice-030](../done-archive/slice-030-a-check-gate.md)),
+Quergewerk (Muster [MR-007](../../../../harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check)/[MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[slice-030](../done/slice-030-a-check-gate.md)),
 getrennt von der DRW-Feature-Arbeit. **Reine Doku-/Tooling-Entscheidung, kein
 Produktions-Code.**
 
@@ -51,7 +51,7 @@ wird der `make docs-check`-Pin von **d-check v0.11.0 auf v0.37.1** gehoben (die
 als Link-Form gesetzt) wird durch den geteilten `token` mitgeschärft (Klartext-Token,
 nicht nur Links).
 
-**Evidenz (vor dem Plan gemessen, Muster [slice-027](../done-archive/slice-027-lint-haertung.md)):**
+**Evidenz (vor dem Plan gemessen, Muster [slice-027](../done/slice-027-lint-haertung.md)):**
 - **Pin-Sprung v0.11.0 → v0.37.1, Config unverändert: `docs-check` = 0 Befunde**
   (175 Dateien). Die neuen Module (`tracked`/`planning`/`commits`/`vcs`) sind opt-in
   und **nicht** in b-cads `modules:`-Liste → inert. `codepaths`-Verhalten unverändert.
@@ -218,7 +218,7 @@ die Token-Schärfung erstmals sichtbar. Sie werden **remediert**, nicht tolerier
 
 **Lerneintrag:**
 
-- **Evidence-first (Muster [slice-027](../done-archive/slice-027-lint-haertung.md)):** den
+- **Evidence-first (Muster [slice-027](../done/slice-027-lint-haertung.md)):** den
   26-Minor-d-check-Sprung **isoliert** gemessen (0 Fallout) **vor** der Regel-Aktivierung —
   trennt Pin-Risiko sauber vom Regel-Fallout; die Regel-Aktivierung ergab exakt die vorhergesagten
   30 Spec-Befunde, 0 ADR (Grandfathering trägt).

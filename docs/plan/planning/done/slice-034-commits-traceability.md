@@ -10,13 +10,13 @@ adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
 # Slice 034: Commit-Traceability-Gate — Modul `commits`
 
 **Status:** **done** (ausgeführt 2026-07-05; angelegt evidence-first — Fallout vor dem
-Plan gemessen, Muster [slice-027](../done-archive/slice-027-lint-haertung.md)/[slice-033](../done-archive/slice-033-dcheck-matrix-adr-slice.md)).
+Plan gemessen, Muster [slice-027](../done/slice-027-lint-haertung.md)/[slice-033](../done/slice-033-dcheck-matrix-adr-slice.md)).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
 1 HIGH behoben** (H1 — zweite §4-Fundstelle in `harness/README.md`; + 2 MED / 2 LOW
 eingearbeitet; [Report](../../../reviews/2026-07-05-slice-034-plan.md)).
 
 **Welle:** welle-5-erweiterung — **Quergewerk `harness-steering`** (kein
-Wellen-Feature; Muster [slice-030](../done-archive/slice-030-a-check-gate.md)/[slice-033](../done-archive/slice-033-dcheck-matrix-adr-slice.md)).
+Wellen-Feature; Muster [slice-030](../done/slice-030-a-check-gate.md)/[slice-033](../done/slice-033-dcheck-matrix-adr-slice.md)).
 **DRW-Scope (032a/b/c) unberührt** — pausiert.
 
 **Bezug:** die Traceability-Regel steht an **zwei** normativen Stellen —
