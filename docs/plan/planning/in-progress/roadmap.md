@@ -106,6 +106,27 @@ Bibliothek, PDF-Fit-to-Page/Bemaßung), Wandtyp-Bibliothek (`wall_type`-
 Template-Fallback), Observability (`TracingPort`-Anbindung), Drittanbieter-
 Attribution (slice-006 in `open/`).
 
+## Harness-Gate-Fahrplan (d-check-Module)
+
+Welche d-check-Module (Sensor `make docs-check` über [`d-check.mk`](../../../../d-check.mk),
+digest-gepinnt, [MR-014](../../../../harness/conventions.md)/[MR-015](../../../../harness/conventions.md))
+welche b-cad-Regel computational machen — Stand + Kandidaten. Jede Adoption ist ein eigenes
+**evidence-first `harness-steering`-Quergewerk** (kein Automatismus):
+
+| Modul | b-cad-Regel | Status |
+|---|---|---|
+| `links`·`anchors`·`ids`·`matrix`·`codepaths`·`spans`·`hostpaths` | Referenz-Integrität des Doku-Korpus | **aktiv** (im `docs-check`-`modules`-Set) |
+| `matrix` (Kante `adr→slice`) | ADR nennt keine Slice (no-downward / SDP) | **adoptiert** — slice-033 |
+| `commits` | [AGENTS.md §4](../../../../AGENTS.md) Commit-Traceability | **adoptiert** — slice-034 (CI-only-Sensor `make doc-commits`) |
+| `vcs` (o. `immutable`) | [AGENTS.md §2.5](../../../../AGENTS.md) Accepted-ADRs immutabel | **nächster Kandidat** (a-check-Präzedenz, `adr-check`) |
+| `planning` | Lifecycle-Invariante Roadmap↔`in-progress` | Kandidat (braucht Ruhe-Marker-Konvention) |
+| `tracked` | Fresh-Clone-Schutz (untrackte Link-Ziele) | Kandidat (geringster Aufwand) |
+| `--trace` | Anforderungs-Abdeckungs-Report (kein Gate) | Kandidat (`make doc-trace` bereits da) |
+| `versions` | Release-Register-Konsistenz (Version-Bump / Anker-Wanderung) | **verschoben** → Release-Reife-Phase: b-cad hat heute kein Versions-Register und keinen geschnittenen Release (Release-Regelwerk noch Outline); Register + Modul erst zum 1. Release. **Nicht verworfen.** |
+| `diagrams` · `external` · `--require-complete` | — | **passt nicht** (freie Diagramm-Labels / Netz-Modul / gewollte Outline-Waisen) |
+
+Reihenfolge der offenen Kandidaten: `vcs` → `planning` → `tracked` → `--trace`.
+
 ## Meilensteine
 
 | Meilenstein | Welle(n) | Trigger | Status |
