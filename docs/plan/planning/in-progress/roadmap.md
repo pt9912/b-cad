@@ -19,6 +19,10 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
+**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel;
+beim Öffnen des nächsten Slice entfernen). Nächster Schnitt: DRW-Impl `slice-032b` nach eigenem
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start).
+
 **Vorgänger-Trigger (beide erfüllt):** welle-4-austausch done (2026-07-01,
 [`../done/welle-4-results.md`](../done/welle-4-results.md)) + Plugin-API-/ABI-ADR accepted
 ([ADR-0017](../../adr/0017-plugin-api-abi.md), 2026-07-02 — unabhängiges Text-Review
@@ -59,7 +63,16 @@ Wellen-Inhalt ohne Meilenstein-Bindung — bei Umfangs-Druck entscheidet der Pro
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-5-results.md`;
   [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) erfüllt → **Meilenstein M5**.
 
-**Fortschritt (Stand 2026-07-03):**
+**Fortschritt (Stand 2026-07-05):**
+- ✓ **slice-032a — DRW-Strang eröffnet, Fundament AK-geschärft** (2026-07-05;
+  [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) Accepted, Text-Review 0 HIGH): 2D-Zeichen-Daten
+  (Hilfslinien + Ebenen) als **Kern-Werttypen** auf `Building`, neuer **`EditDrawingPort`** (Driving),
+  Layer-Sichtbarkeit = **Export-Filter**, Beobachtbarkeit über Persistenz + 2D-Export (**kein Canvas**
+  v1, deferiert). [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005)/006 Outline → AK
+  (Lastenheft 0.1.14) + Spec §1/§2.2/§4/§6-Mapping + Subset-Grenze um Hilfslinien;
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  **0 HIGH** (MED-1 Beobachtbarkeit tragfähig ohne Canvas). Folge: **slice-032b** (Impl: Kern + Port +
+  Service + `guide_lines`-Persistenz) → **slice-032c** (DXF/PDF/PNG-Export-Sichtbarkeit).
 - ✓ **slice-026b — Plugin-System lauffähig** (2026-07-03; Host/API/Beispiel-Plugin/Regel P):
   Plugin-Host als Driving Adapter (`src/adapters/plugin/`, dlfcn-Monopol) mit
   fail-closed-Handshake, 7-Stufen-Lifecycle und Fehler-Barriere

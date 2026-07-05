@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0006](../.
 
 # Slice 032a: DRW-Fundament — AK-Schärfung & Spec-Mapping
 
-**Status:** in-progress (angelegt 2026-07-05).
+**Status:** done (2026-07-05).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
 0 HIGH / 2 MED / 4 LOW → startbar** (MED-1 aufgelöst: Export-/Persistenz-Beobachtbarkeit trägt den
 Fundament-Schnitt, **kein** Canvas nötig; Ehrlichkeits-Klausel in den AK-Körper.
@@ -65,7 +65,7 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
 
 ## 2. Definition of Done
 
-- [ ] **Lastenheft [LH-FA-DRW-005](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)/006
+- [x] **Lastenheft [LH-FA-DRW-005](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)/006
       von Outline auf AK-Niveau** (**lösungsfrei, benutzer-beobachtbar** — **kein**
       Port-/Schema-/FK-/`E-VAL`-/Koordinaten-Mechanik-Vokabular, das gehört in §1;
       [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei));
@@ -89,7 +89,7 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
       + Header-Nachzug **`lastenheft.md` `Version:` → 0.1.14** == oberste
       `lastenheft-historie.md`-Zeile
       ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/[MR-012](../../../../harness/conventions.md#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie)).
-- [ ] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-DRW-005.a`](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)** (Sammelblock — **deckt
+- [x] **`spec/spezifikation.md` §1 neuer Block [`LH-FA-DRW-005.a`](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)** (Sammelblock — **deckt
       DRW-005 + 006**, Muster [`LH-FA-IO-007.a`](../../../../spec/lastenheft.md#lh-fa-io-007)):
       Mapping im [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-Rahmen, **ohne ADR-Verweis im
       Körper** ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)):
@@ -102,11 +102,11 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
       Asymmetrie benennen (Review-LOW-2):** die benutzer-Layer-Zuordnung überlebt nur **nativ (SQLite)**;
       durch DXF geht sie verloren (Export flacht auf den Geschoss-`LAYER` ab, nur Sichtbarkeits-Filter).
       + `spezifikation-historie.md` + `**Letzte Änderung:**`-Header.
-- [ ] **`data-model.yaml`-Kommentar-Heilung (Review-MED-2 — die stale Welle-Angaben liegen NUR hier):**
+- [x] **`data-model.yaml`-Kommentar-Heilung (Review-MED-2 — die stale Welle-Angaben liegen NUR hier):**
       `layers` „welle-3" (Z. 233) + `documents` „welle-3/4" (Z. 260) → **welle-5** (`entity_layers` Z. 247
       trägt **kein** Welle-Jahr → nicht anfassen). d-migrate ignoriert Kommentare → `schema.sql`/`schema-check`
       byte-unberührt.
-- [ ] **`spec/spezifikation.md` §2.2 + §4 + §6 nachgezogen:** **§2.2** = **neue Prosa** für die
+- [x] **`spec/spezifikation.md` §2.2 + §4 + §6 nachgezogen:** **§2.2** = **neue Prosa** für die
       forward-deklarierten Tabellen (`layers`/`guide_lines`, welle-5-Provenance) — §2.2 trägt heute **keinen**
       welle-3-Kommentar zu heilen (Review-MED-2); die `guide_lines`-Tabelle **selbsttragend** benennen
       (»aktiviert mit dem DRW-Impl-Slice«, **ohne** Slice-Nummer — sonst Slice-Token im Spec-Stratum,
@@ -116,18 +116,18 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
       **Ablehnungs-Lesart explizit** ausschreiben („Modell unverändert", **nicht** Klemmung — dessen
       §4-Kopf-Semantik; Review-LOW-1); **§6** neue **interne Grenz-Vertragszeile 2D-Zeichnen (DRW)** (kein
       Fremdsystem — Muster Plugin-Host-Grenzzeile; Review-INFO).
-- [ ] **`spec/spezifikation.md` Subset-Grenze DXF/PDF/PNG autorisiert erweitert** (Vertrags-
+- [x] **`spec/spezifikation.md` Subset-Grenze DXF/PDF/PNG autorisiert erweitert** (Vertrags-
       erweiterung, Muster [LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006)/slice-023a):
       **Hilfslinien auf sichtbarem Layer werden gezeichnet** (DXF `LINE` auf Geschoss-LAYER;
       PDF/PNG als 2D-Segment). Bemaßung/Schraffur/Räume bleiben ausgeschlossen. **Kein stiller
       Drift** — projektinhaber-autorisiert (Plan-Freigabe 2026-07-05); Impl = 032c.
-- [ ] **`spec/architecture.md`:** §1.1 Driving-Ports um die **DRW-Zeichen-Naht** ergänzen (Muster
+- [x] **`spec/architecture.md`:** §1.1 Driving-Ports um die **DRW-Zeichen-Naht** ergänzen (Muster
       [ADR-0012](../../adr/0012-evaluations-architektur.md)→[slice-017a](../done-archive/slice-017a-auswertung-material-adr-spec.md));
       `## Geschichte`-Provenance-Zeile »2D-Zeichen-Daten → [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)« (exclude-section). Kein
       Körper-ADR-Verweis ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)).
-- [ ] **[ADR-Index](../../adr/README.md)-Folgepflicht** „[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)
+- [x] **[ADR-Index](../../adr/README.md)-Folgepflicht** „[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)
       AK-Schärfung + Spec-Nachzug" → erfüllt (im Closure-Commit; setzt **[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) Accepted** voraus).
-- [ ] **Reine Doku/Entscheidung — kein Code, keine Tests, kein Schema** (`guide_lines`-Tabelle +
+- [x] **Reine Doku/Entscheidung — kein Code, keine Tests, kein Schema** (`guide_lines`-Tabelle +
       Persistenz + Export sind **032b/032c**). `make gates` grün; `make schema-check` unberührt;
       Closure-Notiz. **Nicht Teil:** **032b** (Modell-Typen + Driving-Port + Service +
       `data-model.yaml`/`schema.sql` + Persistenz + AK-Tests), **032c** (DXF/PDF/PNG-Export-
@@ -148,7 +148,7 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
 
 ## 4. Trigger
 
-- **[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) Accepted** (heute **Proposed**) — die
+- **[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) Accepted** (2026-07-05, Text-Review 0 HIGH) — die
   AK-Schärfung setzt das entschiedene Fundament voraus. [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) durchläuft vor Accept ein
   **unabhängiges Text-Review** (Reviewer ≠ Autor) + Projektinhaber-Durchsicht (Muster
   [ADR-0017](../../adr/0017-plugin-api-abi.md)); HIGH blockiert. Danach + eigenes
@@ -171,7 +171,10 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
   [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien), welle-3 Material canvas-los), AK
   strikt aufs **sichtbare Artefakt**, interaktive Fläche als benannter UI-Strang-Trigger
   ([ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Trigger) — kein stilles Über-Versprechen.
-  Wertet das Review die Fassung als zu dünn → **HIGH** (Scope-Nachschnitt statt weichgezeichnetes AK).
+  **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Ergebnis: tragfähig ohne Canvas, kein HIGH** — dieselbe Beobachtbarkeitsklasse wie
+  [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) (export-only) + canvas-loses Material;
+  der Plugin-Host ([ADR-0017](../../adr/0017-plugin-api-abi.md)) ist ein realer Driving-Weg. Die
+  Ehrlichkeits-Klausel steht im **AK-Körper** (nicht nur hier).
 - **Rest-Risiko #2 — Subset-Grenzen-Drift:** Hilfslinien in den DXF/PDF/PNG-Zeichenumfang erweitert
   die akzeptierte Subset-Grenze (slice-021/025) — **autorisiert** geführt (Muster
   [LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006)) + §-nachgezogen, kein stiller Drift.
@@ -211,5 +214,34 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
 
 ## 8. Closure-Notiz
 
-*Wird bei DoD-Erfüllung gefüllt (Closure-Kriterien beobachtbar + Lerneintrag —
-Muster [slice-026a](../done/slice-026a-plg-ak-spec.md) §8).*
+**Ausgeführt 2026-07-05** (`make docs-check` 0 Befunde, `make gates` grün, `make schema-check` ok —
+die Kommentar-Heilung driftete `schema.sql` nicht). Geliefert:
+
+- **Lastenheft 0.1.14:** [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005)/006 Outline → AK
+  (Happy/Boundary/Negative, per-ID-`####`-Anker); die **Teilumfang-/Ehrlichkeits-Klausel** (kein
+  interaktiver 2D-Canvas, Beobachtung übers Artefakt) steht im **AK-Körper** (Review-MED-1), dazu die
+  DXF-Round-Trip-Asymmetrie (Review-LOW-2) und die Export-Sichtbarkeits-Grenze der Ebenen (Review-INFO).
+- **Spezifikation:** §1 [`LH-FA-DRW-005.a`](../../../../spec/lastenheft.md#lh-fa-drw-005)-Sammelblock
+  (ADR-frei), §2.2 welle-5-DRW-Tabellen-Prosa (`guide_lines` **slice-nummer-frei**, Review-LOW-3), §4
+  [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) um die
+  **Ablehnungs-Lesart** erweitert (Review-LOW-1), §6 **interne** Grenz-Vertragszeile (Review-INFO),
+  Subset-Grenze DXF/PDF/PNG autorisiert um Hilfslinien.
+- **`data-model.yaml`** Kommentar-Heilung (`layers`/`documents` welle-3/-4 → welle-5; `entity_layers`
+  unangetastet — Review-MED-2), **`architecture.md`** §1.1 `EditDrawingPort` + Geschichte, **ADR-Index**-
+  Folgepflicht »AK-Schärfung« → erfüllt (+ die bei der ADR-Erstellung fehlenden Impl-/Export-Zeilen als
+  **offen** ergänzt).
+
+**Beobachtbare Closure-Kriterien:** die sechs Review-Findings sind in den **realen Spec-Dateien**
+eingelöst (nicht nur im Plan); [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)-Lösungsfreiheit
+gewahrt (Mechanik in §1/§4, nicht im Lastenheft); Header/Historie
+[MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/012-konform
+(0.1.14 == jüngste Zeile).
+
+**Lerneintrag:** Der [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Reviewer
+verortete den Kommentar-Heilungs-Nachzug **präziser** als mein Plan (MED-2: die stale Welle-Angaben
+liegen **nur** in `data-model.yaml`, nicht in `spezifikation.md` §2.2 — dort war **neue** Prosa nötig).
+Muster: einen delegierten „Heilungs"-Nachzug am **Ziel-File verifizieren**, nicht das erstgenannte File annehmen.
+
+**Folge:** **slice-032b** (DRW-Impl: Kern-Werttypen + `EditDrawingPort` + Service + `guide_lines`-Persistenz)
+wird startbar — eigenes [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+davor, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a.
