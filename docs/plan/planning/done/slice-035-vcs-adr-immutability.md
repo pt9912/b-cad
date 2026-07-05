@@ -1,7 +1,7 @@
 ---
 id: slice-035
 titel: ADR-Immutabilitäts-Gate — d-check-Modul `vcs` (AGENTS §2.5 computational)
-status: in-progress
+status: done
 welle: welle-5-erweiterung (Quergewerk harness-steering)
 lastenheft_refs: []  # reines Prozess-/Gate-Steering, keine LH-Anforderung
 adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
@@ -9,7 +9,7 @@ adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
 
 # Slice 035: ADR-Immutabilitäts-Gate — Modul `vcs`
 
-**Status:** in-progress (angelegt 2026-07-05, **evidence-first** — Fallout + Enforcement vor
+**Status:** **done** (ausgeführt 2026-07-05; angelegt evidence-first — Fallout + Enforcement vor
 dem Plan gemessen, Muster [slice-034](../done/slice-034-commits-traceability.md)).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
 1 HIGH behoben** (H1 — zweite §2.5-Fundstelle in `docs/plan/adr/README.md`; + 1 MED / 3 LOW
@@ -57,27 +57,27 @@ git-Range/`--staged`), als **CI-only-Sensor** (Muster `make doc-commits`/`schema
 
 ## 2. Definition of Done
 
-- [ ] **`.d-check.yml` `vcs`-Block** (`paths: [docs/plan/adr/[0-9]*.md]`, `immutable-when:
+- [x] **`.d-check.yml` `vcs`-Block** (`paths: [docs/plan/adr/[0-9]*.md]`, `immutable-when:
       '^\*\*Status:\*\* Accepted'`, `status-line: '^\*\*Status:\*\*'`, `exclude-sections:
       [Geschichte]`, `head-allow: '^\*\*Status:\*\* (Accepted|Superseded by ADR-\d{4})'` — `\d{4}`
       deckungsgleich zu `commits`/`ids` [Review-L1]).
       **NICHT** in die `modules`-Liste (git-abhängig, opt-in via `--enable`/`doc-immutable`).
       *(Bereits als Messschritt vollzogen.)*
-- [ ] **CI-only-Sensor `make doc-immutable`** (d-check.mk, git-Range) in die **CI-Befehlsliste**
+- [x] **CI-only-Sensor `make doc-immutable`** (d-check.mk, git-Range) in die **CI-Befehlsliste**
       aufgenommen (Muster `make doc-commits`/`schema-check`): CI ruft `make doc-immutable
       RANGE=<base>..<head>` (typ. `origin/main..HEAD`); `core-drift-vcs` bricht ab (Exit 1).
       **Kein `make gates`-Member** (nicht-hermetisch). *(Kein `.github/workflows/` — die
       CI-Befehlsliste ist dokumentarisch; real-verdrahtet mit der ersten CI-Datei.)*
-- [ ] **Optional: lokaler `pre-commit`-Hook** (dokumentiert, opt-in): `make doc-immutable
+- [x] **Optional: lokaler `pre-commit`-Hook** (dokumentiert, opt-in): `make doc-immutable
       STAGED=1` fängt eine Accepted-ADR-Core-Änderung **vor** dem Commit. Kein Gate-Pflichtteil.
-- [ ] **`harness/conventions.md` neuer Eintrag [MR-016](../../../../harness/conventions.md)**
+- [x] **`harness/conventions.md` neuer Eintrag [MR-016](../../../../harness/conventions.md)**
       (Verschärfung/Prozess-Gate, kein [§2.6](../../../../AGENTS.md)-Lockerungsfall; Muster
       [MR-015](../../../../harness/conventions.md)): dokumentiert (1) die `vcs`-Adoption + Config,
       (2) den CI-only-Sensor-Status, (3) `head-allow` erlaubt den Status-Übergang (defensiv;
       Supersede-Praxis + `matrix`-Kopplung siehe §6) + `Geschichte` bleibt mutabel (Provenance),
       (4) tool-native Ablösung des `adr-check`-Musters (a-check-Präzedenz), (5) `immutable`-Alternative
       erwogen + verworfen (siehe §6).
-- [ ] **Gate-Bindung an BEIDEN §2.5-Fundstellen (Review-H1):** die Immutabilitäts-Regel steht in
+- [x] **Gate-Bindung an BEIDEN §2.5-Fundstellen (Review-H1):** die Immutabilitäts-Regel steht in
       [AGENTS.md §2.5](../../../../AGENTS.md) **und** in [`docs/plan/adr/README.md` §Konventionen](../../adr/README.md)
       (Source-Precedence-höher; §Folgepflichten trägt eine weitere Immutabilitäts-Passage). **Beide**
       erhalten den Gate-Bindungs-Hinweis (`make doc-immutable`, [MR-016](../../../../harness/conventions.md));
@@ -85,17 +85,17 @@ git-Range/`--staged`), als **CI-only-Sensor** (Muster `make doc-commits`/`schema
       **abgeglichen** (kein stiller Regel↔Regel-Drift). *Der erste Grep-Sweep (nur AGENTS/README/
       conventions) hatte `docs/plan/adr/README.md` übersehen — die slice-034-H1-Lehre gilt jetzt real
       angewandt (repo-weiter Sweep), nicht nur behauptet.*
-- [ ] **Gate-Doku:** neue Zeile in [`harness/README.md` §Sensors](../../../../harness/README.md)
+- [x] **Gate-Doku:** neue Zeile in [`harness/README.md` §Sensors](../../../../harness/README.md)
       + [AGENTS.md §3](../../../../AGENTS.md) — `make doc-immutable` als **CI-only-Sensor**
       (Muster `doc-commits`), Bindung [AGENTS.md §2.5](../../../../AGENTS.md).
-- [ ] **Roadmap-Fahrplan-Nachzug:** die `vcs`-Zeile in [`roadmap.md`](../in-progress/roadmap.md)
+- [x] **Roadmap-Fahrplan-Nachzug:** die `vcs`-Zeile in [`roadmap.md`](../in-progress/roadmap.md)
       §Harness-Gate-Fahrplan von „nächster Kandidat" → **adoptiert (slice-035)** + Quergewerk-Zeile
       §Historische Trigger-Verschiebungen (Muster slice-034).
-- [ ] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
-- [ ] **`make gates` grün** (unberührt — `vcs` **nicht** in `gates`; `.d-check.yml`-`vcs`-Block
+- [x] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
+- [x] **`make gates` grün** (unberührt — `vcs` **nicht** in `gates`; `.d-check.yml`-`vcs`-Block
       additiv, `docs-check` fasst ihn nicht an — `make docs-check` grün **mit** dem Block belegt).
       `make doc-immutable RANGE=origin/main..HEAD` = 0 + Positiv-/Negativ-Test belegt.
-- [ ] **Nicht Teil:** die DRW-Arbeit; die weiteren Modul-Kandidaten `planning` (Lifecycle) und
+- [x] **Nicht Teil:** die DRW-Arbeit; die weiteren Modul-Kandidaten `planning` (Lifecycle) und
       `tracked` — eigene Folge-Slices.
 
 ## 3. Plan (vor Ausführung)
@@ -170,5 +170,25 @@ git-Range/`--staged`), als **CI-only-Sensor** (Muster `make doc-commits`/`schema
 
 ## 8. Closure-Notiz
 
-*Wird bei DoD-Erfüllung gefüllt (Closure-Kriterien beobachtbar + Lerneintrag —
-Muster [slice-034](../done/slice-034-commits-traceability.md) §8).*
+**Ausgeführt 2026-07-05** — DoD vollständig; `make gates` grün, `make docs-check` = 0 **mit**
+`vcs`-Block, `make doc-immutable RANGE=origin/main..HEAD` = 0 (kein Accepted-ADR-Core im Slice berührt).
+
+**Beobachtbare Closure-Kriterien:**
+- d-check-Modul `vcs` adoptiert (`.d-check.yml`-Block; `paths` ADR-Glob, `immutable-when` Accepted,
+  `exclude-sections` Geschichte, `head-allow` Supersede) — **nicht** im `modules:`-Set → `make gates`/
+  `make docs-check` hermetik-erhaltend unberührt.
+- `make doc-immutable` als **CI-only-Sensor** dokumentiert ([`harness/README.md` §Sensors](../../../../harness/README.md)
+  + [AGENTS.md §3](../../../../AGENTS.md), Muster `doc-commits`).
+- **Beide** §2.5-Regel-Fundstellen ([AGENTS.md §2.5](../../../../AGENTS.md) **+**
+  [`docs/plan/adr/README.md` §Konventionen](../../adr/README.md)) tragen den Gate-Bindungs-Hinweis;
+  divergenter ADR-README-Wortlaut („Schärfungen") mit §2.5 („Korrekturen") abgeglichen;
+  [MR-016](../../../../harness/conventions.md) verankert.
+
+**Lerneintrag:** Der [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review fing **denselben H1-Fehler wie slice-034** — die §2.5-Regel hatte eine
+zweite normative Heimat (`docs/plan/adr/README.md` §Konventionen), die mein Grep-Sweep (nur AGENTS/README/
+conventions) übersah; sie rangiert sogar Source-Precedence-**höher**. Verschärfte Lehre: der
+„alle-Fundstellen-Sweep" muss **repo-weit** sein (`grep -rl` ohne Datei-Whitelist) — die slice-034-Lehre
+nannte eine zu enge Grep-Liste. Zweite Lehre: eine Status-Transition, die *ein* Gate (`vcs`) segnet, kann
+ein *anderes* Gate (`matrix.status.forbidden`) verletzen — Gate-Wechselwirkungen mitdenken.
+
+**Folge:** die verbleibenden Modul-Kandidaten `planning` (Lifecycle), `tracked` und `--trace` werden startbar.
