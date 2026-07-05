@@ -1,7 +1,7 @@
 ---
 id: slice-034
 titel: Commit-Traceability-Gate — d-check-Modul `commits` (AGENTS §4 computational)
-status: in-progress
+status: done
 welle: welle-5-erweiterung (Quergewerk harness-steering)
 lastenheft_refs: []  # reines Prozess-/Gate-Steering, keine LH-Anforderung
 adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
@@ -9,7 +9,7 @@ adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
 
 # Slice 034: Commit-Traceability-Gate — Modul `commits`
 
-**Status:** in-progress (angelegt 2026-07-05, **evidence-first** — Fallout vor dem
+**Status:** **done** (ausgeführt 2026-07-05; angelegt evidence-first — Fallout vor dem
 Plan gemessen, Muster [slice-027](../done-archive/slice-027-lint-haertung.md)/[slice-033](../done-archive/slice-033-dcheck-matrix-adr-slice.md)).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
 1 HIGH behoben** (H1 — zweite §4-Fundstelle in `harness/README.md`; + 2 MED / 2 LOW
@@ -52,21 +52,21 @@ als **CI-only-Sensor** (Muster `make schema-check`/`make io-smoke`) — **nicht*
 
 ## 2. Definition of Done
 
-- [ ] **`.d-check.yml` `commits`-Block** (`id-patterns: [slice-\d{3}, ADR-\d{4}, MR-\d{3},
+- [x] **`.d-check.yml` `commits`-Block** (`id-patterns: [slice-\d{3}, ADR-\d{4}, MR-\d{3},
       LH-(FA-[A-Z][A-Z0-9]*|QA)-\d+]` — `slice-\d{3}` deckungsgleich zu `matrix`/[MR-002](../../../../harness/conventions.md#mr-002--id-schema-für-b-cad) [Review-L1];
       `exempt-pattern: '^(Merge |Revert )'`). **NICHT** in
       die `modules`-Liste (git-abhängig, opt-in via `--enable`/`doc-commits`). *(Bereits als
       Messschritt vollzogen.)*
-- [ ] **CI-only-Sensor `make doc-commits`** (d-check.mk, git-Range) in die **CI-Befehlsliste**
+- [x] **CI-only-Sensor `make doc-commits`** (d-check.mk, git-Range) in die **CI-Befehlsliste**
       aufgenommen (Muster `make schema-check`/`make io-smoke`): CI ruft `make doc-commits
       RANGE=<base>..<head>` (Push-/PR-Range, typ. `origin/main..HEAD`); Exit 1 bei
       kennungslosem Commit bricht ab. **Kein `make gates`-Member** (nicht-hermetisch).
       *(Kein `.github/workflows/` vorhanden — die CI-Befehlsliste ist heute dokumentarisch;
       der Sensor wird dort verankert, real-verdrahtet sobald eine CI-Datei existiert.)*
-- [ ] **Optional: lokaler `commit-msg`-Hook** (dokumentiert, opt-in): `d-check --enable
+- [x] **Optional: lokaler `commit-msg`-Hook** (dokumentiert, opt-in): `d-check --enable
       commits --commit-msg <datei>` fängt die kennungslose Message **vor** dem Commit
       (bessere DX). Kein Pflicht-Teil des Gates (die CI-Range ist die Durchsetzung).
-- [ ] **`harness/conventions.md` neuer Eintrag [MR-015](../../../../harness/conventions.md)** (Verschärfung/Prozess-Gate, kein
+- [x] **`harness/conventions.md` neuer Eintrag [MR-015](../../../../harness/conventions.md)** (Verschärfung/Prozess-Gate, kein
       [§2.6](../../../../AGENTS.md)-Lockerungsfall; Muster [MR-014](../../../../harness/conventions.md)):
       dokumentiert (1) die `commits`-Adoption + `id-patterns`, (2) den CI-only-Sensor-Status
       (Muster `schema-check`), (3) dass die `id-patterns` **bewusst breiter** sind als der
@@ -75,25 +75,25 @@ als **CI-only-Sensor** (Muster `make schema-check`/`make io-smoke`) — **nicht*
       slice-034 selbst) und `slice-*` ihr Traceability-Anker ist — der ADR-Verzicht deckt damit
       auch die *Verbreiterung* des Kennungs-Sets, nicht nur die Verschärfung (Review-M1); (4)
       die tool-native Ablösung des `trace-check`-Musters (a-check-Präzedenz).
-- [ ] **Wortlaut-Nachzug an BEIDEN Regel-Fundstellen (Review-H1):** die Traceability-Regel steht
+- [x] **Wortlaut-Nachzug an BEIDEN Regel-Fundstellen (Review-H1):** die Traceability-Regel steht
       in [AGENTS.md §4](../../../../AGENTS.md) **und** in [`harness/README.md` §Traceability rules](../../../../harness/README.md) —
       beide nennen heute nur `LH-*`/`ADR-*`. **Beide** werden **symmetrisch** um **`slice-*` und
       `MR-*`** ergänzt + die Gate-Bindung (`make doc-commits`) benannt, sodass der Regel-Text (an
       **beiden** Stellen) und die Gate-`id-patterns` deckungsgleich sind. Andernfalls bliebe genau
       der **stille Regel↔Gate-Drift** (drei Formulierungen, zwei Kennungs-Sets), den dieser Slice
       tilgen soll.
-- [ ] **Gate-Doku:** neue Zeile in [`harness/README.md` §Sensors](../../../../harness/README.md)
+- [x] **Gate-Doku:** neue Zeile in [`harness/README.md` §Sensors](../../../../harness/README.md)
       + [AGENTS.md §3](../../../../AGENTS.md) — `make doc-commits` als **CI-only-Sensor**
       (kein Gate, Muster `schema-check`/`io-smoke`), Bindung [AGENTS.md §4](../../../../AGENTS.md).
-- [ ] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
-- [ ] **Roadmap-Quergewerk-Eintrag (Review-M2):** eine Zeile in [`roadmap.md`](roadmap.md)
+- [x] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
+- [x] **Roadmap-Quergewerk-Eintrag (Review-M2):** eine Zeile in [`roadmap.md`](../in-progress/roadmap.md)
       §Historische Trigger-Verschiebungen (Muster slice-033-Zeile) — jedes harness-steering-
       Quergewerk trägt eine; das `planning`-Modul prüft Roadmap↔in-progress-Konsistenz.
-- [ ] **`make gates` grün** (unberührt — `commits` ist **nicht** in `gates`; nur additive
+- [x] **`make gates` grün** (unberührt — `commits` ist **nicht** in `gates`; nur additive
       `.d-check.yml`-`commits`-Config, die `docs-check` nicht anfasst — `make docs-check` grün
       **mit** dem Block bereits belegt, Config-Parse-Regression ausgeschlossen [Review-L2]).
       `make doc-commits RANGE=origin/main..HEAD` (die künftige CI-Range) = 0 Befunde belegt.
-- [ ] **Nicht Teil:** die DRW-Arbeit; die weiteren Modul-Kandidaten `vcs` (§2.5) und
+- [x] **Nicht Teil:** die DRW-Arbeit; die weiteren Modul-Kandidaten `vcs` (§2.5) und
       `planning` (Lifecycle) — eigene Folge-Slices.
 
 ## 3. Plan (vor Ausführung)
@@ -158,5 +158,26 @@ als **CI-only-Sensor** (Muster `make schema-check`/`make io-smoke`) — **nicht*
 
 ## 8. Closure-Notiz
 
-*Wird bei DoD-Erfüllung gefüllt (Closure-Kriterien beobachtbar + Lerneintrag —
-Muster [slice-033](../done-archive/slice-033-dcheck-matrix-adr-slice.md) §8).*
+**Ausgeführt 2026-07-05** — DoD vollständig; `make gates` grün, `make docs-check` = 0 **mit**
+`commits`-Block (Config-Parse-Regression ausgeschlossen), `make doc-commits RANGE=origin/main..HEAD`
+= 0.
+
+**Beobachtbare Closure-Kriterien:**
+- d-check-Modul `commits` adoptiert (`.d-check.yml`-Block; `id-patterns` `slice-\d{3}`/`ADR`/`MR`/`LH`,
+  `exempt-pattern` Merge/Revert) — **nicht** im `modules:`-Set → `make gates`/`make docs-check`
+  hermetik-erhaltend unberührt.
+- `make doc-commits` als **CI-only-Sensor** dokumentiert ([`harness/README.md` §Sensors](../../../../harness/README.md)
+  + [AGENTS.md §3](../../../../AGENTS.md), Muster `schema-check`/`io-smoke`).
+- **Beide** §4-Regel-Fundstellen ([AGENTS.md §4](../../../../AGENTS.md) **+**
+  [`harness/README.md` §Traceability rules](../../../../harness/README.md)) symmetrisch um
+  `slice-*`/`MR-*` + Gate-Bindung ergänzt; [MR-015](../../../../harness/conventions.md) verankert.
+
+**Lerneintrag:** Der MR-006-Review fing den zentralen Fehler (H1) — die §4-Regel steht an **zwei**
+normativen Stellen; nur eine zu amendieren hätte genau den *stillen Regel↔Gate-Drift* erzeugt, den
+der Slice tilgt. Lehre: **bei einer Regel-Verschärfung zuerst *alle* Fundstellen der Regel im
+Doku-Korpus lokalisieren** (grep über AGENTS/README/conventions), bevor die Amendment-Fläche
+fixiert wird. Zweite Lehre: **Steering-/Prozess-Slices sind legitim anforderungsfrei** — `slice-*`
+ist ihr Traceability-Anker (in MR-015 explizit, nicht nur „id-patterns breiter").
+
+**Folge:** die weiteren Modul-Kandidaten `vcs` (§2.5) und `planning` (Lifecycle) werden startbar
+(eigene evidence-first-Steering-Slices).
