@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-036 — **Planning-Lifecycle-Gate (d-check-Modul `planning`)** (harness-steering-Quergewerk;
+  kein ADR — Verschärfung, §2.6 n/a; MR-017). Eine **neue** Lifecycle-Invariante wird **computational**:
+  der Ruhe-Sentinel `Keine offenen Slices` im Roadmap-`## Aktuelle Welle`-Block steht genau dann, wenn
+  kein `slice-*` in `in-progress/` liegt (`planning-drift`). **Hermetisch → erster über den Harness-Gate-
+  Fahrplan adoptierter `make gates`-Member** (ins `.d-check.yml`-`modules:`-Set, **nicht** CI-only wie
+  commits/vcs). Ruhe-Marker-Toggle reitet im `git mv`-Commit (AGENTS §2.8 gewahrt + dort referenziert).
+  Evidence-first: Baseline 0, volle Wahrheitstafel (beide iff-Richtungen). MR-006 **0 HIGH / 2 MED**
+  (M1/M2) + 3 LOW eingearbeitet.
 - slice-035 — **ADR-Immutabilitäts-Gate (d-check-Modul `vcs`)** (harness-steering-Quergewerk; kein
   ADR — Verschärfung, §2.6 n/a; MR-016). AGENTS §2.5 (Accepted-ADRs immutabel) wird **computational**:
   `make doc-immutable` (git-Diff des ADR-**Core** über eine Range, d-check-Modul `vcs`, `core-drift-vcs`;

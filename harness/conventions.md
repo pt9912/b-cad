@@ -584,6 +584,29 @@ sie.
 - **Auflösungs-Trigger:** permanent (Zielzustand); reale CI-Verdrahtung mit der ersten
   `.github/workflows/`-Datei.
 
+### MR-017 — Planning-Lifecycle-Gate (d-check-Modul `planning`)
+
+- **Datum:** 2026-07-05
+- **Geltungsbereich:** [`.d-check.yml`](../.d-check.yml) (`modules:` + `planning:`),
+  [`AGENTS.md` §2.8/§3](../AGENTS.md), [`docs/plan/planning/README.md`](../docs/plan/planning/README.md),
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates)
+- **Adaption:** Eine **neue** Planning-Lifecycle-Invariante (bislang un-formuliert) wird **Gate**: das
+  d-check-Modul `planning` prüft **hermetisch**, dass der Ruhe-Marker-Sentinel `Keine offenen Slices`
+  im `## Aktuelle Welle`-Block der Roadmap **genau dann** steht, wenn `in-progress/` keinen `slice-*`-Plan
+  enthält (`planning-drift`). Weil hermetisch, ist `planning` ins **`modules:`-Set** aufgenommen → es läuft
+  in **`make docs-check` = `make gates`** (kein separater CI-Sensor).
+  - **Erster über den Harness-Gate-Fahrplan adoptierter Gate-Member** (erste Modul-Aufnahme ins Gate seit
+    der `ids`/`matrix`-Etablierung) — Kontrast zu den CI-only, git-abhängigen `commits`/`vcs`
+    ([MR-015](#mr-015--commit-traceability-gate-d-check-modul-commits)/[MR-016](#mr-016--adr-immutabilitäts-gate-d-check-modul-vcs)).
+  - **Ruhe-Marker-Toggle-Pflicht:** beim **Öffnen des ersten** / **Schließen des letzten** `in-progress`-Slice
+    wird der Sentinel entfernt / gesetzt — **im selben Commit wie der `git mv`** (Rename-Detection ist
+    per-Datei; die `roadmap.md`-Edit senkt die Rename-Similarität des Slice nicht → [AGENTS §2.8](../AGENTS.md)
+    gewahrt, **kein** transienter `planning-drift`). In §2.8 referenziert (Auffindbarkeit). Der Sentinel ist
+    **reserviert** (exakt-case, nie als Prosa im `## Aktuelle Welle`-Block — sonst Fehl-Match).
+- **Kein ADR (Verschärfung, kein [AGENTS.md §2.6](../AGENTS.md)-Fall):** eine unenforcte Konvention wird
+  enforced. Tool-native Ablösung des `planning-check`-Skript-Musters (a-check, **letztes** Familien-Skript).
+- **Auflösungs-Trigger:** permanent (Zielzustand).
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

@@ -108,6 +108,12 @@ Reine Move-Commits zuerst (Lifecycle-Bewegung von Slices/Carveouts),
 dann inhaltliche Änderungen — sonst fällt Git-Rename-Detection unter die
 50 %-Schwelle.
 
+**Ruhe-Marker-Toggle (Gate `planning`, [MR-017](harness/conventions.md)):** öffnet der
+**erste** bzw. schließt der **letzte** `in-progress`-Slice, wird der Ruhe-Marker
+(`Keine offenen Slices`) im Roadmap-`## Aktuelle Welle`-Block **entfernt** bzw. **gesetzt**
+— **im selben Commit wie der `git mv`** (die `roadmap.md`-Edit senkt die per-Datei-Rename-
+Similarität des Slice nicht, §2.8 bleibt gewahrt). Sonst `planning-drift` (Gate rot).
+
 ### 2.9 Werkzeugbindung (Tool-Allowlist)
 
 Der Agent baut, testet und prüft **nur über `make`** (das Docker nutzt,
@@ -141,7 +147,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 
 | Target | Zweck | Bindung |
 |---|---|---|
-| `make docs-check` | Doku-Konsistenz: interne Links/Anker/Inline-Code-Pfade + **Referenz-Richtung Spec→ADR + ADR↛Slice** (no-downward; d-check-Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | [MR-007](harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [MR-011](harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths), [MR-014](harness/conventions.md) |
+| `make docs-check` | Doku-Konsistenz: interne Links/Anker/Inline-Code-Pfade + **Referenz-Richtung Spec→ADR + ADR↛Slice** (no-downward; d-check-Module links/anchors/codepaths/spans/hostpaths/matrix/ids/**planning** [Roadmap↔in-progress-Lifecycle, hermetisch]) | [MR-007](harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [MR-011](harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths), [MR-014](harness/conventions.md), [MR-017](harness/conventions.md) |
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl existiert im Makefile (fängt halluzinierte Gates) | Modul 13 |
 | `make a-check` | Architektur (**primär**): hexagonale Schichtung via externem digest-gepinntem Image **a-check** (`.a-check.yml`; netzlos `--network none`, read-only Bind-Mount) — Kern-Reinheit (Regel A) · laterale Adapter (B, MeshSource-Naht via `adapter_sink`) · Tech-Kapselung OCC-`.hxx`/`sqlite3`/Qt/`dlfcn.h`-Include (C/D/E) · **Schicht-Kanten** · **driving/driven-Richtung** | [MR-013](harness/conventions.md#mr-013--arch-check-via-a-check), [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md), [ADR-0002](docs/plan/adr/0002-geometrie-kern-opencascade.md), [ADR-0003](docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md), [ADR-0017](docs/plan/adr/0017-plugin-api-abi.md) |
 | `make arch-check` | Plugin-System-**P-Rest** (was a-check strukturell nicht sieht): `dlopen`/`dlsym`/`dlclose`-**Aufruf** nur in `adapters/plugin/` (Regel P1-Aufruf; der `dlfcn.h`-Include liegt bei a-check) + feine Import-Allowlist `plugins/`+`src/plugin_api/` (nur `plugin_api/`/`hexagon/model/`/`hexagon/ports/driving/`, Quote-Form + Angle-Verbot, Regel P2) | [ADR-0017](docs/plan/adr/0017-plugin-api-abi.md), [MR-013](harness/conventions.md#mr-013--arch-check-via-a-check) |

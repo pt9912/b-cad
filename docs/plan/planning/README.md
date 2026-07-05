@@ -16,6 +16,16 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 | `done/` | **Lifecycle-Endzustand** abgeschlossener Slice-/Spike-Pläne (DoD erfüllt, gemerged, Closure-Notiz; reiner `git mv` aus `in-progress/`) — sie bleiben im **Live-`ids`-Scan** (gate-geprüft). Hält daneben die lebenden Wellen-Ergebnis-Artefakte (`*-results.md`, acc-002). |
 | `done-archive/` | **Kein regulärer Lifecycle-Schritt**, sondern der **eingefrorene Alt-Bestand**: die **früh abgeschlossenen Pläne (bis `slice-024`)**, deren `ids`-Links **nicht rückwirkend** an die seit der d-check-Einführung (slice-018a) verschärfte Linkpflicht angepasst werden. `.d-check.yml` nimmt den Pfad per `ids.scope.ignore` (`docs/plan/planning/done-archive`) aus dem Live-`ids`-Scan (schützt vor Nachzieh-Zwang bei Gate-Verschärfungen wie `adr→slice`, [MR-014](../../../harness/conventions.md); [MR-011](../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)). **Ab `slice-025`** gehen abgeschlossene Pläne nach `done/` (Live-Scan), nicht hierher. |
 
+### Ruhe-Marker (Gate `planning`, [MR-017](../../../harness/conventions.md))
+
+Der `## Aktuelle Welle`-Block der [Roadmap](in-progress/roadmap.md) trägt den **reservierten
+Sentinel „Keine offenen Slices"** (exakt-case, **nie** als Prosa) **genau dann**, wenn `in-progress/`
+keinen `slice-*`-Plan enthält. Das hermetische Gate-Modul `planning` (im `.d-check.yml`-`modules:`-Set)
+erzwingt diese Invariante (`planning-drift`). **Toggle-Pflicht:** beim **Öffnen des ersten** Slice den
+Sentinel entfernen, beim **Schließen des letzten** setzen — **im selben Commit wie der `git mv`**
+([`AGENTS.md` §2.8](../../../AGENTS.md): die `roadmap.md`-Edit senkt die per-Datei-Rename-Similarität
+des verschobenen Slice nicht).
+
 ## Aktueller Stand (nach Greenfield-Bootstrap)
 
 | Verzeichnis | Slices |
