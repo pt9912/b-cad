@@ -109,3 +109,17 @@ commits:
     - 'MR-\d{3}'
     - 'LH-(FA-[A-Z][A-Z0-9]*|QA)-\d+'
   exempt-pattern: '^(Merge |Revert )'
+
+# Modul vcs (slice-035, MR-016): git-Diff-Immutabilität des ADR-Core über eine Range —
+# macht AGENTS §2.5 (Accepted-ADRs immutabel) computational. NICHT im modules-Set (git-
+# abhängig via --range/--staged); läuft über `make doc-immutable` (CI-Liste, Muster
+# commits/schema-check), nicht im hermetischen `make gates`. immutable-when trifft b-cads
+# ADR-Status-Zeile (Zeile 3); head-allow = die §2.5-Supersede-Mechanik; die mutable
+# ## Geschichte-Provenance zählt nicht zum Core. Löst das adr-check-Skript-Muster ab
+# (a-check-Präzedenz, wie commits/trace-check).
+vcs:
+  paths: ["docs/plan/adr/[0-9]*.md"]
+  immutable-when: '^\*\*Status:\*\* Accepted'
+  status-line: '^\*\*Status:\*\*'
+  exclude-sections: [Geschichte]
+  head-allow: '^\*\*Status:\*\* (Accepted|Superseded by ADR-\d{4})'
