@@ -640,6 +640,36 @@ sie.
   enforced; **kein** `tracked-check`-Skript existierte (erstmals gegatet).
 - **Auflösungs-Trigger:** permanent (Zielzustand).
 
+### MR-019 — `--trace`-Report + Fahrplan-Abschluss (`--require-complete` verschoben)
+
+- **Datum:** 2026-07-05
+- **Geltungsbereich:** [`roadmap.md` §Harness-Gate-Fahrplan](../docs/plan/planning/in-progress/roadmap.md);
+  Werkzeug `make doc-trace` (`--trace`, DC-FA-CLI-009, in d-check.mk). **Kein Gate, keine Config-Änderung.**
+- **Entscheidung:** `make doc-trace` (`--trace`) bleibt ein **verfügbarer advisory Report** (Exit 0 auch bei
+  Waisen, read-only) — als **Backlog-Sicht** der Anforderungen; **nicht** gegatet.
+  - **`--trace` ist ein Live-Korpus-Teilausschnitt, kein Vollständigkeits-Bild:** die Matrix zeigt nur
+    **`###`-definierte** Anforderungen (52 von ~87 LH-Ids; DRW/UI/PLG/IO-`####`-Outlines fehlen) und ordnet
+    sie nur **glatt nummerierten `slice-\d{3}`-Ids** zu. b-cad setzte welle-2/3/4 in **31 Buchstaben-Sub-
+    Slices** (013a…024b) um → für `--trace` **unsichtbar**; die daraus gemessenen „8 ok / 44 WAISE" sind
+    **überwiegend Nicht-Defekte** (real implementiert, nur suffix-blind). **NICHT Folge des done-archive-
+    Freeze** — `--trace` scannt `done-archive/` (die glatten `slice-007`/`022` zählen; `ids.scope.ignore`
+    gilt nur fürs `ids`-Modul).
+  - **`--require-complete` (Gate) verschoben, nicht verworfen** (Muster `versions`): ein **Meilenstein-
+    Schalter** am Punkt der **Vollständigkeits-Zusage** (die Welle, die die letzten Anforderungen schließt),
+    **nicht** in `make gates`/CI. **Grund (Voll-Spec-Stil):** b-cads Lastenheft ist vorab vollständig → Waisen
+    sind **build-out-lang**, nicht transient (der Regelwerk-Hinweis „GF erlaubt *transiente* Waisen" trifft den
+    inkrementellen Stil, nicht den Voll-Spec-Fall). **Zweite Bindungs-Voraussetzung:** am Meilenstein müssten
+    **Suffix-Blindheit + truncierte Universe** behandelt sein (glatte-Slice-/`###`-Traceability oder `--trace`-
+    Fix), da `--require-complete` **keine** exempt-list hat → sonst rot an Nicht-Defekten. Bis dahin trägt
+    `--trace` den Backlog.
+  - **Echte offene Posten** (in-Matrix, nicht suffix-blind): `QA-006` (Mehrsprachigkeit, welle-5, dokumentiert
+    zurückgestellt); `QA-002` (Speicherverbrauch < 2 GB, un-referenzierte weiche NFR → abnahme-verifiziert /
+    benannte Lücke).
+- **Fahrplan-Abschluss:** die d-check-Modul-Adoptions-Linie (aus der Bewertung nach slice-033) ist durch —
+  `matrix adr→slice`/`commits`/`vcs`/`planning`/`tracked` (033–037) gegatet, `--trace` advisory verfügbar,
+  `--require-complete`/`versions` verschoben, `diagrams`/`external` passt nicht; keine offenen Kandidaten.
+- **Auflösungs-Trigger:** permanent; `--require-complete` re-evaluiert an der Vollständigkeits-Zusage.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

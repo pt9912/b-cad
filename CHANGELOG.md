@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-038 — **Harness-Gate-Fahrplan-Abschluss** (harness-steering-Quergewerk; kein Gate, kein ADR; MR-019).
+  `make doc-trace` (`--trace`, Requirements-Traceability-Matrix) als **advisory Report** eingeordnet — ein
+  Live-Korpus-Teilausschnitt (nur `###`-Anforderungen + glatte `slice-\d{3}`-Ids; b-cads Buchstaben-Sub-Slices
+  unsichtbar → die 44 „WAISEN" sind überwiegend Nicht-Defekte, **nicht** Freeze-Folge). **`--require-complete`
+  verschoben** auf den Vollständigkeits-Meilenstein (Voll-Spec-Backlog; nicht verworfen). Damit die
+  d-check-Modul-Adoptions-Linie (033–037 Gates + Report) **abgeschlossen**. MR-006 1 HIGH behoben
+  (Ursachen-Umbasierung Freeze→Suffix-Blindheit).
 - slice-037 — **Fresh-Clone-Gate (d-check-Modul `tracked`)** (harness-steering-Quergewerk; kein ADR —
   Verschärfung, §2.6 n/a; MR-018). Eine **neue** Referenz-Integritäts-Regel wird **computational**: jedes
   auflösbare, existierende Link-/Bild-Ziel ist im **git-Index getrackt** (`target-untracked` — untrackte
