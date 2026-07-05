@@ -1,7 +1,7 @@
 ---
 id: slice-037
 titel: Fresh-Clone-Gate — d-check-Modul `tracked` (Link-Ziele git-getrackt)
-status: in-progress
+status: done
 welle: welle-5-erweiterung (Quergewerk harness-steering)
 lastenheft_refs: []  # reines Prozess-/Gate-Steering, keine LH-Anforderung
 adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
@@ -9,7 +9,7 @@ adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
 
 # Slice 037: Fresh-Clone-Gate — Modul `tracked`
 
-**Status:** in-progress (angelegt 2026-07-05, **evidence-first**, Muster
+**Status:** **done** (ausgeführt 2026-07-05; angelegt evidence-first, Muster
 [slice-036](../done/slice-036-planning-lifecycle.md)).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
 0 HIGH / 1 MED / 3 LOW → startbar** (Gate-Member als „einzig werthaltige Platzierung" bestätigt
@@ -52,16 +52,16 @@ bleiben Sache von `links` (kein Doppelbefund); Verzeichnis-/Symlink-Ziele prüft
 
 ## 2. Definition of Done
 
-- [ ] **`.d-check.yml` `tracked`-Block** (`exempt-targets: []` — **explizit** [Muster slice-036-L2];
+- [x] **`.d-check.yml` `tracked`-Block** (`exempt-targets: []` — **explizit** [Muster slice-036-L2];
       `build/**` bliebe das Ventil für lokal-generierte Ziele, heute kein `build/`-Dir → leer).
       *(Bereits als Messschritt vollzogen.)*
-- [ ] **`tracked` in das `modules:`-Set** aufnehmen → **`make gates`-Member** (`.git` im Bind-Mount;
+- [x] **`tracked` in das `modules:`-Set** aufnehmen → **`make gates`-Member** (`.git` im Bind-Mount;
       **kein Range** — das Gate-Member-Kriterium ist **„range-frei", nicht „git-frei"** [Review-M1]).
       Ist-Zustand konsistent (Baseline 0) → `make docs-check` bleibt grün. **Keine Toggle-/Wartungspflicht**
       (anders als `planning`). **CI-Vakuität = die eigentliche Gate-Member-Rechtfertigung:** auf
       `index == HEAD` (frischer CI-Checkout) ist alles getrackt → `tracked` in CI **immer 0**; sein Wert
       liegt **nur** im lokalen `make gates` auf dem schmutzigen Arbeitsbaum → CI-only wäre nutzlos-grün.
-- [ ] **`harness/conventions.md` neuer Eintrag [MR-018](../../../../harness/conventions.md)**
+- [x] **`harness/conventions.md` neuer Eintrag [MR-018](../../../../harness/conventions.md)**
       (Verschärfung/Prozess-Gate, kein [§2.6](../../../../AGENTS.md)-Lockerungsfall; Muster
       [MR-017](../../../../harness/conventions.md)): dokumentiert (1) die `tracked`-Adoption + Config,
       (2) **Gate-Member-Kriterium = „range-frei" (nicht „git-frei")** [Review-M1]: `tracked` ist der
@@ -72,15 +72,15 @@ bleiben Sache von `links` (kein Doppelbefund); Verzeichnis-/Symlink-Ziele prüft
       „frischer Klon"-Homonym** ([MR-005](../../../../harness/conventions.md) = Nachweis-Hash über Datei-
       *Inhalte*; `tracked` = Index-Mitgliedschaft der Referenz-**Ziele**) [Review-L3]; die Symlink-
       Auslassung als „aus d-check-Doku, nicht b-cad-verifiziert" kennzeichnen [Review-L4].
-- [ ] **Gate-Doku:** [`harness/README.md` §Sensors](../../../../harness/README.md) + [AGENTS.md §3](../../../../AGENTS.md)
+- [x] **Gate-Doku:** [`harness/README.md` §Sensors](../../../../harness/README.md) + [AGENTS.md §3](../../../../AGENTS.md)
       — die `make docs-check`-Modul-Liste um `tracked` (Fresh-Clone-Schutz, git-Index).
-- [ ] **Roadmap-Fahrplan-Nachzug:** [`roadmap.md`](../in-progress/roadmap.md) §Harness-Gate-Fahrplan
+- [x] **Roadmap-Fahrplan-Nachzug:** [`roadmap.md`](../in-progress/roadmap.md) §Harness-Gate-Fahrplan
       `tracked` → **adoptiert (slice-037, Gate-Member)** + Quergewerk-Zeile §Historische Trigger-
       Verschiebungen (Muster slice-036). Verbleibt im Fahrplan nur `--trace` (Report, kein Gate).
-- [ ] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
-- [ ] **`make gates` grün** (jetzt **inklusive** `tracked` — Baseline 0 belegt); `make doc-tracked`
+- [x] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
+- [x] **`make gates` grün** (jetzt **inklusive** `tracked` — Baseline 0 belegt); `make doc-tracked`
       = 0 + Positiv-Test belegt.
-- [ ] **Nicht Teil:** die DRW-Arbeit; `--trace` (Report-only, kein Gate) — eigener/optionaler Schritt.
+- [x] **Nicht Teil:** die DRW-Arbeit; `--trace` (Report-only, kein Gate) — eigener/optionaler Schritt.
 
 ## 3. Plan (vor Ausführung)
 
@@ -143,5 +143,22 @@ bleiben Sache von `links` (kein Doppelbefund); Verzeichnis-/Symlink-Ziele prüft
 
 ## 8. Closure-Notiz
 
-*Wird bei DoD-Erfüllung gefüllt (Closure-Kriterien beobachtbar + Lerneintrag —
-Muster [slice-036](../done/slice-036-planning-lifecycle.md) §8).*
+**Ausgeführt 2026-07-05** — DoD vollständig; `make gates` grün **inklusive** des neuen `tracked`-Moduls
+(Ist-Zustand konsistent: keine untrackten Link-Ziele), `make doc-tracked` = 0.
+
+**Beobachtbare Closure-Kriterien:**
+- d-check-Modul `tracked` **im `.d-check.yml`-`modules:`-Set** → **zweiter Fahrplan-`make gates`-Member**
+  (nach `planning`; **erster `.git`-lesender** Member, range-frei).
+- Regel dokumentiert ([MR-018](../../../../harness/conventions.md)): Kriterium **range-frei** (nicht
+  git-frei), **CI-Vakuität** als Rechtfertigung, Index-Semantik, `exempt-targets`-Ventil, Abgrenzung zu
+  `links` + zum „frischer Klon"-Homonym.
+- Gate-Doku ([AGENTS §3](../../../../AGENTS.md) + [`harness/README.md` §Sensors](../../../../harness/README.md)).
+
+**Lerneintrag:** Kein HIGH — der sauberste der vier Adoptions-Slices. Schlüsselbefund des Reviews: die
+**CI-Vakuität** — ein Modul, das nur den *schmutzigen Arbeitsbaum* prüft (in CI immer grün), gehört
+**lokal ins Gate**, nicht in die CI-Liste — die Umkehrung der `commits`/`vcs`-Logik. Zweite Lehre (M1):
+das **Gate-Member-Kriterium ist „range-frei", nicht „git-frei"** — die zwei immutablen [MR-017](../../../../harness/conventions.md)/[MR-018](../../../../harness/conventions.md)-
+Einträge müssen dasselbe Kriterium tragen, sonst latenter Normen-Drift.
+
+**Folge:** die **vier Gate-Gewinner** (`commits`/`vcs`/`planning`/`tracked`) sind live; der Harness-Gate-
+Fahrplan ist **bis auf `--trace`** (Report-only, kein Gate) abgearbeitet.
