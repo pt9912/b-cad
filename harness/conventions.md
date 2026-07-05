@@ -401,13 +401,13 @@ sie.
   per reinem `git mv` (AGENTS §2.8) aus `in-progress/` nach `docs/plan/planning/done/`
   — dort **bleibt er im Live-`ids`-Scan** (gate-geprüft), neben den `*-results.md`- und
   acc-002-Artefakten. Das ist der reguläre Endzustand (`open → next → in-progress → done`).
-- **`done-archive/` (kein Lifecycle-Schritt, eingefrorener Alt-Bestand):** hält **allein**
-  die **vor der d-check-Einführung** (slice-018a,
-  [MR-011](#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)) abgeschlossenen
-  Pläne, deren `ids`-Links nie für die Linkpflicht geschrieben wurden. `.d-check.yml` nimmt
-  den Pfad per `ids.scope.ignore` aus dem Live-`ids`-Scan, damit dieser Alt-Bestand bei
-  Gate-Verschärfungen **nicht** nachgezogen werden muss. **Ab d-check** geschriebene Pläne
-  erfüllen die Linkpflicht und brauchen den Freeze nicht → sie gehen nach `done/`.
+- **`done-archive/` (kein Lifecycle-Schritt, eingefrorener Alt-Bestand):** hält die **früh
+  abgeschlossenen Pläne bis `slice-024`**, deren `ids`-Links **nicht rückwirkend** an die seit
+  der d-check-Einführung (slice-018a,
+  [MR-011](#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)) verschärfte
+  Linkpflicht angepasst werden. `.d-check.yml` nimmt den Pfad per `ids.scope.ignore` aus dem
+  Live-`ids`-Scan. **Ab `slice-025`** gehen abgeschlossene Pläne in den Lifecycle-Endzustand
+  `done/` (Live-Scan, gate-geprüft) — sie erfüllen die Linkpflicht und brauchen den Freeze nicht.
 - **Begründung:** Die d-check-v0.8.0-Hebung stellt `matrix`/`ids`/`spans`/
   `hostpaths` bereit; die Referenz-Richtung war bis dahin nur inferential
   (Plan-Review, MR-006). Computational feedforward (Modul 9/13) schließt die
