@@ -95,3 +95,17 @@ ids:
       target: spec/spezifikation.md
       link-policy: always
       exempt-paths: [CHANGELOG.md, "docs/reviews/**", "spec/*-historie.md"]
+
+# Modul commits (slice-034, MR-015): Traceability-Kennung je Commit-Message über
+# eine Range — macht AGENTS §4 computational. NICHT im Default-modules-Set (git-
+# abhängig via --range/--commit-msg); läuft über `make doc-commits` (CI-Liste,
+# Muster schema-check/io-smoke), nicht im hermetischen `make gates`. id-patterns =
+# b-cads gelebte Kennungs-Familien (slice dominiert; ADR/MR/LH ebenfalls — bewusst
+# breiter als der §4-Wortlaut "LH/ADR", der die slice-/MR-Praxis nicht abbildet).
+commits:
+  id-patterns:
+    - 'slice-\d{3}'
+    - 'ADR-\d{4}'
+    - 'MR-\d{3}'
+    - 'LH-(FA-[A-Z][A-Z0-9]*|QA)-\d+'
+  exempt-pattern: '^(Merge |Revert )'
