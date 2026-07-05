@@ -14,7 +14,7 @@ Rule "git mv + Inhaltsänderung = zwei Commits" in
 | `next/` | Als Nächstes priorisiert. |
 | `in-progress/` | Branch / PR existiert. |
 | `done/` | DoD erfüllt, gemerged, Closure-Notiz vorhanden. Hält die **lebenden** Abschluss-Artefakte (`*-results.md`, acc-002). |
-| `done-archive/` | Abgeschlossene Slice-/Spike-**Pläne**, **eingefroren** (Referenz-Integrität, slice-018a / [`MR-011`](../../../harness/conventions.md)). Per reinem `git mv` aus `done/` archiviert, damit slice-018b den Voll-Korpus-`ids` auf den Live-Korpus begrenzen kann. |
+| `done-archive/` | Abgeschlossene Slice-/Spike-**Pläne**, **eingefroren**. Existiert **allein als Gate-Mechanik**, nicht als eigenständige Lifecycle-Stufe: `.d-check.yml` nimmt den Pfad per `ids.scope.ignore` (`docs/plan/planning/done-archive`) aus dem Live-`ids`-Scan. **Grund:** die Slice-Pläne aus der Zeit **vor der d-check-Einführung** wurden nie für dessen `ids`-Linkpflicht geschrieben — blieben sie im Live-Korpus, müssten ihre `ids`-Links bei jeder Gate-Verschärfung (z. B. der `adr→slice`-Regel, [MR-014](../../../harness/conventions.md)) nachträglich angepasst werden. Der Freeze in `done-archive/` erspart das (slice-018a/b / [MR-011](../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)); abgeschlossene Pläne wandern generell per reinem `git mv` aus `in-progress/`/`done/` hierher. |
 
 ## Aktueller Stand (nach Greenfield-Bootstrap)
 
