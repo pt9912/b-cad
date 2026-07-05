@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-037 — **Fresh-Clone-Gate (d-check-Modul `tracked`)** (harness-steering-Quergewerk; kein ADR —
+  Verschärfung, §2.6 n/a; MR-018). Eine **neue** Referenz-Integritäts-Regel wird **computational**: jedes
+  auflösbare, existierende Link-/Bild-Ziel ist im **git-Index getrackt** (`target-untracked` — untrackte
+  Ziele fehlen auf jedem frischen Klon). **Range-frei → `make gates`-Member** (ins `.d-check.yml`-`modules:`-
+  Set; erster `.git`-lesender Member; CI-vakuum-grün → Wert nur lokal auf dem schmutzigen Baum).
+  `exempt-targets: []`. Evidence-first: Baseline 0, Positiv `target-untracked`, kein Doppelbefund
+  (fehlend bleibt `links`). MR-006 **0 HIGH / 1 MED** (Kriterium range-frei statt git-frei) + 3 LOW.
 - slice-036 — **Planning-Lifecycle-Gate (d-check-Modul `planning`)** (harness-steering-Quergewerk;
   kein ADR — Verschärfung, §2.6 n/a; MR-017). Eine **neue** Lifecycle-Invariante wird **computational**:
   der Ruhe-Sentinel `Keine offenen Slices` im Roadmap-`## Aktuelle Welle`-Block steht genau dann, wenn

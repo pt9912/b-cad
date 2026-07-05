@@ -607,6 +607,39 @@ sie.
   enforced. Tool-native Ablösung des `planning-check`-Skript-Musters (a-check, **letztes** Familien-Skript).
 - **Auflösungs-Trigger:** permanent (Zielzustand).
 
+### MR-018 — Fresh-Clone-Gate (d-check-Modul `tracked`)
+
+- **Datum:** 2026-07-05
+- **Geltungsbereich:** [`.d-check.yml`](../.d-check.yml) (`modules:` + `tracked:`),
+  [`AGENTS.md` §3](../AGENTS.md), [`harness/README.md` §Sensors](README.md#sensors-feedback-gates)
+- **Adaption:** Eine **neue** Referenz-Integritäts-Regel (bislang un-formuliert) wird **Gate**: das
+  d-check-Modul `tracked` prüft, dass jedes **auflösbare, existierende** Link-/Bild-**Datei**-Ziel im
+  Doku-Korpus im **git-Index getrackt** ist (`target-untracked`) — ein untracktes/gitignoriertes Ziel
+  existiert lokal, fehlt aber auf jedem frischen Klon. `tracked` ist ins **`modules:`-Set** aufgenommen
+  → es läuft in **`make docs-check` = `make gates`**.
+  - **Gate-Member-Kriterium = „range-frei", NICHT „git-frei":** `tracked` liest den **git-Index**
+    (read-only, **ohne** Range) und ist damit gate-fähig, **obwohl** es — anders als
+    [`planning`](#mr-017--planning-lifecycle-gate-d-check-modul-planning) — `.git` **braucht**
+    (fail-closed ohne `.git`; im read-only Bind-Mount `-v $(CURDIR):/repo:ro` liegt `.git`, daher
+    unkritisch, aber **erste harte `.git`-Abhängigkeit** im `gates`-Aggregat). Maßgeblich für
+    Gate-Membership ist die **Range-Freiheit** (deterministischer Einzel-Snapshot), nicht Hermetik-ohne-git.
+  - **CI-Vakuität = die eigentliche Rechtfertigung (Gate-Member statt CI-only):** auf `index == HEAD`
+    (frischer CI-/Commit-Checkout) ist jede vorhandene Datei getrackt → `tracked` dort **immer 0**. Sein
+    Wert liegt **nur** im lokalen `make gates` auf dem schmutzigen Arbeitsbaum (Pre-Handoff-Wächter) —
+    CI-only (wie `commits`/`vcs`) wäre nutzlos-grün.
+  - **Index-Semantik:** gestagt = getrackt (Index = Proxy für „was der nächste Commit trägt"); ein
+    Split-Commit-Bypass (Ziel staged-grün, dann nur das Doc committen) fängt `links` auf dem resultierenden
+    Commit (`target-missing`). **Abgrenzung:** fehlende Ziele bleiben `links` (`target-missing`), `tracked`
+    ergänzt nur den getrackt-Fall (kein Doppelbefund). `exempt-targets` (Glob über den **aufgelösten**
+    Zielpfad, z. B. `build/**`) = Ventil für absichtlich untrackte Ziele; heute leer. Verzeichnis-/Symlink-
+    Ziele prüft `tracked` nicht *(aus der d-check-Doku; b-cad hat keine Symlink-Ziele — nicht eigen-verifiziert)*.
+  - **Homonym-Warnung:** „frischer Klon" fällt auch beim Working-Tree-Hash (Gate-Nachweis/Stop-Hook), meint
+    dort aber den **Nachweis-Hash über Datei-*Inhalte*** — ein **anderes** Konzept als die Index-
+    Mitgliedschaft der Referenz-**Ziele** hier.
+- **Kein ADR (Verschärfung, kein [AGENTS.md §2.6](../AGENTS.md)-Fall):** eine unenforcte Konvention wird
+  enforced; **kein** `tracked-check`-Skript existierte (erstmals gegatet).
+- **Auflösungs-Trigger:** permanent (Zielzustand).
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

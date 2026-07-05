@@ -11,7 +11,7 @@
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 scan:
   roots: ["."]
-modules: [links, anchors, codepaths, spans, hostpaths, matrix, ids, planning]
+modules: [links, anchors, codepaths, spans, hostpaths, matrix, ids, planning, tracked]
 codepaths:
   roots: [docs, spec, harness, tools, src]
   # slice-033/MR-014: die tools/Dockerfile-FROM-Stage entfiel mit der Umstellung
