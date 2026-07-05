@@ -1,6 +1,6 @@
 # ADR-0018: DRW-Fundament — 2D-Zeichen-Daten im Modell, Zugriffs-Naht, Layer-Semantik und Beobachtbarkeit (Hilfslinien + Layer)
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Datum:** 2026-07-05
 
@@ -17,7 +17,7 @@ Die Meilensteine M1–M4 sind erreicht; M5 „Erweiterbar" ([OBJ-004](../../../s
 **DRW ist im Repo greenfield.** Das Lastenheft trägt nur sieben Outline-Einzeiler (Bullet-Titel ohne AK); es gibt keinen `src/`-DRW-Code und keine ADR. Zwei Beobachtungen prägen die Entscheidung:
 
 1. **Es gibt keine interaktive 2D-Zeichenfläche.** Der GUI-Viewer ist reines 3D (OpenGL, `paintGL`). Die **2D-Grundriss-Projektion** existiert ausschließlich **io-resident** (`src/adapters/io/plan_geometry.cpp`) und speist die 2D-Formate DXF/PDF/PNG (welle-4). 2D existiert in b-cad heute also nur als **Export-Sicht**, nicht als Editier-Fläche.
-2. **Das Persistenz-Schema deklariert die Zeichen-Daten bereits vor.** `spec/data-model.yaml` trägt seit dem Bootstrap (ungenutzt) die Tabellen `layers` (mit `name`/`visible`/`locked`/`color_hex` + projekt-eindeutigem Namen — deckt [LH-FA-DRW-006](../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw) wörtlich), `entity_layers` (polymorphe cross-cutting Zuordnung, in [ADR-0006](0006-relationales-schema-design.md) als bewusste #1/#5-Ausnahme begründet) und `documents`. Der Persistenz-Adapter verdrahtet sie noch nicht.
+2. **Das Persistenz-Schema deklariert die Zeichen-Daten bereits vor.** `spec/data-model.yaml` trägt seit dem Bootstrap (ungenutzt) die Tabellen `layers` (mit `name`/`visible`/`locked`/`color_hex` + projekt-eindeutigem Namen — deckt [LH-FA-DRW-006](../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw) wörtlich), `entity_layers` (polymorphe cross-cutting Zuordnung, in [ADR-0006](0006-relationales-schema-design.md) als bewusste **Ausnahme #6** [Abweichung von #1/#5] begründet) und `documents`. Der Persistenz-Adapter verdrahtet sie noch nicht.
 
 **Anders als das Plugin-System braucht DRW eine neue Datenklasse, aber keine neue Adapter-Technologie.** Hilfslinie und Layer sind **2D-Zeichen-/Organisations-Daten** — sie sind zu persistieren und zu exportieren, aber sie bringen **kein** neues Framework (kein OCC/Qt/SQLite-Zugriff jenseits der bestehenden Adapter, kein `dlopen`). Die offenen Fragen sind daher **Modell-/Schicht-seitig**, nicht technologie-seitig.
 
@@ -83,6 +83,7 @@ Vier Lösungsfragen, die der Spec-Text nicht entscheidet:
 - **Keine neue arch-check-Regel (Kontrast [ADR-0017](0017-plugin-api-abi.md)):** der Plugin-Host brachte mit `dlfcn`/`plugins/` ein neues Symbol-Monopol und Repo-Code außerhalb `src/` → Regel P. DRW bringt **nichts dergleichen** — kern-resident, header-frei, dependency-frei; Regel A+B + Schicht-Kanten genügen (»Regel F gegenstandslos«-Logik).
 - **`architecture.md`-Nachzug (Folgepflicht des AK-Schärfungs-Slice):** §1.1 Driving-Ports um die DRW-Zeichen-Naht ergänzen (Präzedenz [ADR-0012](0012-evaluations-architektur.md)); Provenance-Zeile in `## Geschichte`.
 - **Rest-Risiko benannt:** die Fundament-Stufe liefert keinen interaktiven Zeichen-Weg (Beobachtbarkeit über Export/Persistenz) — die AK-Fassung des Schärfungs-Slice muss das offen tragen; wertet ein Review die Fassung als „Feature ohne Nutzerweg", ist der Ausweg ein vorgezogener minimaler 2D-Canvas (UI-Strang), **nicht** ein weichgezeichnetes AK.
+- **Text-Review-Nachzüge an den AK-Schärfungs-Slice (unabhängiges Text-Review 2026-07-05, 0 HIGH):** (MED-2) der §4-[`E-VAL-001`](../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Nachzug fasst die drei DRW-Fälle (entartete Hilfslinie / leerer Layer-Name / Löschen referenzierter Ebene) explizit als **harte Ablehnung** („Modell unverändert"), **nicht** als Klemmung (dessen Kopf-Semantik); (LOW-2) die [LH-FA-DRW-006](../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)-AK verspricht **nicht mehr** als „benannte, projekt-eindeutige Ebene mit Sichtbarkeit, die die Export-Sichtbarkeit ihrer Hilfslinien steuert" (Bauteil-Layer/Editor-Sichtbarkeit deferiert); (LOW-3) die **Round-Trip-Asymmetrie** benennen — die benutzer-Layer-Zuordnung überlebt nur **nativ** (SQLite), nicht durch DXF (Export auf Geschoss-`LAYER`); (INFO) die §2.2-Kommentar-Heilung nimmt **auch** die `data-model.yaml`-Inline-Kommentare (`layers`/`documents` „welle-3/4" → welle-5) mit. MED-1 (Beobachtbarkeit ohne Erzeugungs-Nutzerweg) bleibt das offene Rest-Risiko (s. o.) — das **[MR-006](../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) des AK-Schärfungs-Slice** entscheidet, ob ein minimaler Erzeugungs-Weg in den Fundament-Schnitt gehört.
 - **[ADR-0001](0001-hexagonale-architektur.md)/0003/0006/0008/0009/0012/0015/0016 bleiben unverändert gültig** — diese ADR baut auf ihnen auf (Schichtung, Datennetz, Schema-Ausnahme-Begründung, Benachrichtigungs-Muster, Regel-E-Grenze, Port-Fork-Präzedenz, 2D-Grundriss-/Subset-Vertrag).
 
 ## Fitness Function
@@ -107,3 +108,4 @@ Vier Lösungsfragen, die der Spec-Text nicht entscheidet:
 | Datum | Ereignis | Verweis |
 |---|---|---|
 | 2026-07-05 | Proposed (DRW-Strang-Eröffnung welle-5 — Fundament Hilfslinien + Layer: Datenheimat = Domänen-Modell, Zugriffs-Naht = neuer Driving-Port, Layer-Scope v1 = nur Zeichen-Entitäten mit direktem typisierten Bezug + Sichtbarkeits-Filter, Beobachtbarkeit über Persistenz-Round-Trip + 2D-Export mit ehrlich benannter Canvas-Grenze; autorisierte DXF/PDF/PNG-Subset-Erweiterung um Hilfslinien; keine neue Gate-Regel, [MR-009](../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a) | welle-5 / DRW-Strang-Eröffnung |
+| 2026-07-05 | **Accepted** — unabhängiges Text-Review 0 HIGH (2 MED / 3 LOW / INFO): LOW-1 gefixt, MED-2/LOW-2/LOW-3/INFO als Konsequenzen-Nachzug an den AK-Schärfungs-Slice verankert; MED-1 (Beobachtbarkeit ohne Erzeugungs-Nutzerweg) dort delegiert. [Report](../../reviews/2026-07-05-adr-0018-text-review.md) | Text-Review + Projektinhaber-Accept |
