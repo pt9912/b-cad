@@ -150,7 +150,7 @@ analog LH-FA-WAL-002).
 **Beschreibung:** Wände, die sich berühren, verbinden sich zu einem
 geschlossenen Wandkörper.
 
-**Teilumfang Eckenschluss (geschärft 2026-06-12, slice-012; Auslöser:
+**Teilumfang Eckenschluss (geschärft 2026-06-12, slice-012; Auslöser: <!-- d-check:status-provenance -->
 ACC-002-Abnahme-Befund):** Gilt für Wände, die sich an einem
 **gemeinsamen Endpunkt** im **selben Geschoss** treffen — genau zwei
 Wände am Punkt.
@@ -205,7 +205,7 @@ Default-Material und Auswertungs-Kategorie.
 
 Türen sind **wand-gehostete Bauteile**: eine platzierte Tür sitzt in
 einer Wirtswand und bricht diese an ihrer Stelle durch (Öffnung). Die
-folgenden Anforderungen wurden 2026-06-13 (slice-013a) von Outline auf
+folgenden Anforderungen wurden 2026-06-13 (slice-013a) von Outline auf <!-- d-check:status-provenance -->
 Akzeptanz-Niveau geschärft (Reifephase-Klausel).
 
 #### LH-FA-DOR-001 — Tür platzieren
@@ -274,7 +274,7 @@ Wirtswand — ohne separaten Benutzer-Schritt (vgl. LH-FA-WIN-005).
 ### Modul Fenster (`WIN`)
 
 Fenster sind **wand-gehostete Bauteile** wie Türen (LH-FA-DOR-*),
-zusätzlich mit einer Brüstungshöhe. Geschärft 2026-06-13 (slice-013a).
+zusätzlich mit einer Brüstungshöhe. Geschärft 2026-06-13 (slice-013a). <!-- d-check:status-provenance -->
 
 #### LH-FA-WIN-001 — Fenster platzieren
 
@@ -321,7 +321,7 @@ ist die Wand wieder geschlossen.
 
 ### Modul Treppen (`STR`)
 
-Geschärft 2026-06-14 (slice-016a) von Outline auf AK-Niveau
+Geschärft 2026-06-14 (slice-016a) von Outline auf AK-Niveau <!-- d-check:status-provenance -->
 (Reifephase-Klausel). **Teilumfang welle-2: gerade einläufige Treppe** —
 eine gerade Treppe, die zwei Geschosse verbindet. Podest-, U-/L-förmige
 und Wendeltreppen bleiben ausdrücklich **offen** (späterer Vollumfang).
@@ -386,7 +386,7 @@ eine An/Aus-Schaltung oder Seitenwahl bleibt offen.
 
 ### Modul Dach (`ROF`)
 
-Geschärft 2026-06-13 (slice-014a) von Outline auf AK-Niveau
+Geschärft 2026-06-13 (slice-014a) von Outline auf AK-Niveau <!-- d-check:status-provenance -->
 (Reifephase-Klausel). **Teilumfang welle-2: rechteckiger
 Dach-Grundriss** — Sattel-, Walm- und Pultdach über einem rechteckigen
 Grundriss. Komplexe (L-/U-förmige) Polygon-Grundrisse bleiben
@@ -475,7 +475,7 @@ parametrisch im Bereich **0 mm bis 1500 mm**.
 ### Modul Decken (`SLB`)
 
 Decken sind **horizontale Platten** über einem Grundriss. Geschärft
-2026-06-13 (slice-015a) von Outline auf AK-Niveau (Reifephase-Klausel).
+2026-06-13 (slice-015a) von Outline auf AK-Niveau (Reifephase-Klausel). <!-- d-check:status-provenance -->
 
 #### LH-FA-SLB-001 — Decke erzeugen
 
@@ -516,7 +516,7 @@ eine Treppe oder einen Schacht).
 ### Modul Fundament (`FND`)
 
 Fundament und Bodenplatte sind **horizontale Platten** am
-Gebäude-Aufstand. Geschärft 2026-06-13 (slice-015a).
+Gebäude-Aufstand. Geschärft 2026-06-13 (slice-015a). <!-- d-check:status-provenance -->
 
 #### LH-FA-FND-001 — Fundament erzeugen
 
@@ -592,7 +592,7 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 
 ### Modul Materialsystem (`MAT`)
 
-Geschärft 2026-06-14 (slice-017a) von Outline auf AK-Niveau (Reifephase-
+Geschärft 2026-06-14 (slice-017a) von Outline auf AK-Niveau (Reifephase- <!-- d-check:status-provenance -->
 Klausel). Material ist eine **Eigenschaft**, die Bauteilen zugewiesen wird und
 in die Auswertungen (EVL) einfließt — **keine** Geometrie. **Teilumfang:**
 MAT-004 (Texturen) ist darstellungs-nah und bleibt **offen** (gehört zur Sicht,
@@ -648,7 +648,7 @@ je m³).
 
 ### Modul Auswertungen (`EVL`)
 
-Geschärft 2026-06-14 (slice-017a) von Outline auf AK-Niveau (Reifephase-
+Geschärft 2026-06-14 (slice-017a) von Outline auf AK-Niveau (Reifephase- <!-- d-check:status-provenance -->
 Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
 (read-only) — sie zeigen Werte, sie verändern das Modell nicht.
 
@@ -1024,4 +1024,4 @@ kontrolliert.
 ## 9. Historie
 
 Ausgelagert nach [`lastenheft-historie.md`](lastenheft-historie.md)
-(slice-018a / [MR-011](../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) — Provenance-Datei außerhalb der `matrix`-Spec-Straten).
+(slice-018a / [MR-011](../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) — Provenance-Datei außerhalb der `matrix`-Spec-Straten). <!-- d-check:status-provenance -->

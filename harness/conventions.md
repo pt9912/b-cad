@@ -480,6 +480,44 @@ sie.
   Management, Modul 15); der a-check-Version-Hub ist ein bewusster Commit.
 - **Auflösungs-Trigger:** permanent (Zielzustand).
 
+### MR-014 — Referenz-Richtungs-Verschärfung: ADR nennt keine Slice (d-check v0.37.1)
+
+- **Datum:** 2026-07-05
+- **Geltungsbereich:** [`.d-check.yml`](../.d-check.yml), [`d-check.mk`](../d-check.mk),
+  [`Makefile`](../Makefile), `docs/plan/adr/`, `spec/` (Spec-Straten),
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates), [`AGENTS.md` §3](../AGENTS.md)
+- **Adaption:** Das mit [MR-011](#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)
+  verankerte Referenz-Integritäts-Gate (`matrix`) wird um die Kante **`adr → slice`** erweitert:
+  ein **ADR-Körper nennt keine `slice`-Kennung** — Stable Dependencies / no-downward (die stabile
+  Entscheidungsschicht verweist nicht auf volatile Slices; die Folgepflicht-Zuordnung lebt im
+  **mutablen** [ADR-Index](../docs/plan/adr/README.md), nicht im immutablen ADR-Body). Umgesetzt
+  über `token: 'slice-\d{3}'` auf der `slice`-Klasse (Klartext-Token-Erkennung, nicht nur
+  Markdown-Links) — das schärft zugleich die bestehende Kante `spec-straten → slice` auf
+  Klartext-Token. docs-check ist dafür von der `tools/Dockerfile`-FROM-Stage (COPY) auf
+  **`d-check.mk`** umgestellt (`include`, netzloser read-only Bind-Mount, `DCHECK_DIGEST`
+  **v0.37.1**; Muster `a-check.mk`/slice-030, zweiter Bind-Mount-Member; `tools/Dockerfile`
+  entfernt, codepaths-`ignore-refs`-Tombstone). Die `token`/`exempt-paths`/`status-provenance`-
+  Features gibt es ab d-check v0.31; Pin-Sprung-Fallout auf b-cads Doku = **0** gemessen.
+  - **Grandfathering:** die vor der Verschärfung Accepted-ADRs (0001–0017, immutabel
+    [AGENTS.md §2.5](../AGENTS.md)) sind per `exempt-paths`-Globs ganz ausgenommen (sie nennen
+    Slices als Verifikations-Zeiger im Körper); ab dem DRW-Grundsatz-ADR (0018) gilt die Disziplin.
+  - **Ausnahme-Mittel:** ein legitimer Verifikations-Zeiger auf eine Slice wird per Zeilen-Marker
+    `<!-- d-check:status-provenance -->` deklariert (matrix-scoped; die `ids`-Linkpflicht bleibt
+    unberührt). Die vorbestehenden Spec-Straten-Slice-Tokens sind so remediert: reine
+    Reifephase-Provenance markiert, substanzielle Fachverweise **selbsttragend umformuliert**,
+    `architecture.md` slice-frei ([AGENTS.md §2.7](../AGENTS.md)).
+- **Lineage:** MR-014 **erweitert** [MR-011](#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)
+  (dort `spec-straten ↛ adr/slice` in Link-Form) um die Klartext-Token-Ebene und die
+  `adr ↛ slice`-Kante; der d-check-Live-Pin lebt seit
+  [MR-007](#mr-007--auflösung-von-mr-003-docs-check-via-d-check) im `tools/Dockerfile`.
+- **Kein ADR (Verschärfung, kein [AGENTS.md §2.6](../AGENTS.md)-Fall):** es wird **keine** Regel
+  gelockert — eine neue Matrix-Kante ist eine **Restriktion**, die Regeln werden strenger
+  (dieselbe Argumentation wie [MR-011](#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[MR-013](#mr-013--arch-check-via-a-check)).
+- **Direkter Präzedenzfall [MR-007](#mr-007--auflösung-von-mr-003-docs-check-via-d-check)/[MR-013](#mr-013--arch-check-via-a-check):**
+  externes digest-gepinntes Tool-Image + deklarative `.<tool>.yml`-Config; die Digest-Hebung ist ein
+  bewusster Commit mit Begründung ([ADR-0004](../docs/plan/adr/0004-toolchain-dependency-pinning.md)-Prinzip).
+- **Auflösungs-Trigger:** permanent (Zielzustand).
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

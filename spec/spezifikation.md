@@ -30,7 +30,7 @@ Stand und löst selbst keine Erkennung aus.
 1. Graph über Wand-Segmente: Knoten = Segment-Endpunkte
    (Punkt-Gleichheit über `GEOMETRY_TOLERANCE_MM`), Kanten = Segmente.
    *Welle-1-Einschränkung:* Schnittpunkte werden erst mit dem
-   **WAL-006-Vollumfang** zu Knoten (der slice-012-Teilumfang behandelt
+   **WAL-006-Vollumfang** zu Knoten (der Teilumfang behandelt
    nur Endpunkt-Ecken) — bis dahin schließen nur endpunkt-verbundene
    Wandzüge Räume.
 2. Geschlossene Kreise (**minimale Zyklen**) über planare
@@ -46,7 +46,7 @@ Stand und löst selbst keine Erkennung aus.
    Stärke** springt die Ecke auf den Offset-Punkt der Folgekante
    (lineare Überblendung statt exakter Stufenkontur); die exakte
    Stufe kommt mit dem **WAL-006-Vollumfang** (nicht Teil des
-   slice-012-Teilumfangs).
+   Teilumfangs).
 4. Verschachtelte Zyklen: der innere Zyklus erzeugt einen eigenen Raum
    (Innenkante nach innen); im umschließenden Raum wird die
    Außenkontur des inneren Zyklus als **Loch-Ring** geführt —
@@ -70,8 +70,7 @@ Punkt (§7, M3).
 
 ### LH-FA-WAL-006.a — Eckenschluss (Footprint-Regel, Teilumfang)
 
-Präzisiert den [LH-FA-WAL-006](lastenheft.md#lh-fa-wal-006--wand-verbinden)-Teilumfang (Lastenheft 0.1.2,
-slice-012). Die **Footprint-Hoheit liegt im Kern**: der Grundriss
+Präzisiert den [LH-FA-WAL-006](lastenheft.md#lh-fa-wal-006--wand-verbinden)-Teilumfang (Lastenheft 0.1.2). Die **Footprint-Hoheit liegt im Kern**: der Grundriss
 einer Wand ist ein Polygon, das der Kern aus Segment, Stärke und
 Nachbar-Wissen ableitet; der Geometrie-Adapter extrudiert/tesselliert
 nur noch das Polygon (Prisma in +Z auf Wandhöhe).
@@ -88,7 +87,7 @@ Eck-Punkten (nahtlos, keine Überlappung, keine Kerbe).
 weiter als `WALL_MITER_LIMIT` (§3) über den gemeinsamen Endpunkt
 hinaus (sehr spitzer Winkel) oder sind die Richtungen kollinear
 (keine Schnittpunkte), enden die Wände **stumpf** (Segment × Stärke,
-wie vor slice-012). Grad ≠ 2 (freies Ende, T-Stoß/Stern) → stumpf.
+wie ohne Eckenschluss). Grad ≠ 2 (freies Ende, T-Stoß/Stern) → stumpf.
 Die Eck-Volumina wandern dabei zwischen den Wänden; Auswertungen
 (LH-FA-EVL-*) müssen auf der **Footprint-Fläche** aufsetzen
 (Shoelace), nicht auf Länge·Stärke.
@@ -141,7 +140,7 @@ kein Durchbruch außerhalb der Wand, keine verwaiste Öffnung).
 **Totalität & Transaktion.** Das Netto-Solid entsteht **vor dem
 Commit**; eine fehlgeschlagene/degenerierte Subtraktion meldet
 `E-GEO-002` (§4), das Modell bleibt unverändert und es ergeht keine
-Meldung (Muster slice-012).
+Meldung (Muster wie beim Eckenschluss).
 
 **Folge-Meldung.** Eine Öffnungs-Mutation (anlegen/verschieben/Parameter/
 löschen) meldet `op = WallGeometryChanged` für die **Wirtswand**
@@ -224,8 +223,8 @@ Schema gemeinsam in `slabs` (Diskriminator `slab_type`).
 
 **Platten-Solid:** Eine Platte ist ein **Grundriss-Polygon, vertikal um
 die Dicke extrudiert** — ein flaches Prisma. Geometrisch dasselbe
-Vokabular wie die Wand-Footprint-Extrusion (`GeometryKernelPort`,
-slice-012), hier auf eine horizontale Platte angewandt; eigenständig
+Vokabular wie die Wand-Footprint-Extrusion (`GeometryKernelPort`),
+hier auf eine horizontale Platte angewandt; eigenständig
 begründet (nicht das Dach-Verfahren — das Dach ist ein analytisches
 Polyeder, [LH-FA-ROF-001](lastenheft.md#lh-fa-rof-001--satteldach).a).
 
@@ -252,7 +251,7 @@ z-Überstand `[−ε,Dicke+ε]` bleibt für Ober-/Unterseite).
 (kein Wurf); ein fehlgeschlagener mutierender Solid-Bau meldet
 `E-GEO-002`.
 
-**Port-Mechanik (slice-015b, entschieden):** der bestehende
+**Port-Mechanik (entschieden):** der bestehende
 `extrudeFootprint`/`tessellateFootprint` (extrudiert ab z=0) bleibt
 **unverändert** — das Volumen ist z-invariant, und der Kern **verschiebt
 das fertige Platten-Netz um `base_z`** (reine Mesh-Translation, NACH dem
@@ -352,7 +351,7 @@ aktualisierten Stand holt der Beobachter über die Abfrage-Ports
 (Solid, Räume, Modell). Mehrere Meldungen pro Mutation sind zulässig
 (z. B. Wand- plus Raum-Änderung; Mehr-Element-Updates nicht verbaut).
 
-**Mehr-Element-Update (Eckenschluss, [LH-FA-WAL-006](lastenheft.md#lh-fa-wal-006--wand-verbinden).a/slice-012):**
+**Mehr-Element-Update (Eckenschluss, [LH-FA-WAL-006](lastenheft.md#lh-fa-wal-006--wand-verbinden).a):**
 Ändert eine Mutation die Eck-Geometrie von Nachbar-Wänden
 (Wand-Anlage → Grad-Wechsel; Stärke-Änderung → Eck-Schnittpunkte),
 wird **jede tatsächlich geänderte Nachbar-Wand einzeln** mit
@@ -425,7 +424,7 @@ Auswertung ist **rein analytisch im Kern** und liest **nicht** das adapter-
 gemessene `Solid.volume_mm3` (das wäre eine driven-Volumenmessung — keine reine
 Kern-Query).
 **Eck-Näherung (welle-3, benannt):** die Summe der Wand-Volumina **doppelzählt**
-den Miter-Sporn endpunkt-verbundener Wände (slice-012-Footprint) — kleine
+den Miter-Sporn endpunkt-verbundener Wände (WAL-006-Footprint) — kleine
 Über-Zählung, bewusst in Kauf genommen; das exakte vereinigte Volumen
 (Footprint-Union je Geschoss) ist Re-Eval (parallel
 WAL-006-Vollumfang).
@@ -504,7 +503,7 @@ beide). IFC wird über einen **selbst getragenen IFC-SPF-Subset-Codec** im
 IO-Adapter (`adapters/io/`) gelesen/geschrieben — der Geometrie-Kern
 (OpenCascade) deckt STEP/STL, **nicht** IFC. Dieser Block legt das **Mapping** im
 welle-4-Subset fest; die Port-/Adapter-Mechanik (`ExchangeService`, Signaturen)
-ist slice-019b (Lösungsfreiheit der Ebenen). Backend-Provenance: § Historie.
+bleibt der Implementierung überlassen (Lösungsfreiheit der Ebenen). Backend-Provenance: § Historie.
 
 **Encoding.** IFC im **STEP-Physical-File** (ISO 10303-21, `.ifc`-Klartext);
 Schema **IFC4** beim Export, **IFC4 und IFC2x3** beim Import (soweit die
@@ -527,13 +526,13 @@ Quelle überein** ([`LH-FA-IO-001`](lastenheft.md#lh-fa-io-001--ifc-import) Happ
 Export → Import (Roundtrip, [`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002)) erhält
 Geschoss- und Wand-Anzahl.
 
-**Geschoss-Höhe (Import-Ableitung, slice-019b).** `IfcBuildingStorey.Elevation`
+**Geschoss-Höhe (Import-Ableitung).** `IfcBuildingStorey.Elevation`
 wird beim Import **transient** gelesen und **nicht** gespeichert (das
 b-cad-Modell ist höhen-basiert; `model::Storey` trägt kein `elevation_mm`). Die
 b-cad-Geschoss-Höhe ist die **Differenz zur nächsthöheren Geschoss-Elevation**
 (Geschosse aufsteigend nach Elevation sortiert, Tiebreak Quell-Reihenfolge); das
 **oberste** Geschoss erhält die Default-Höhe (`kDefaultStoreyHeightMm`). Beim
-**Export** (slice-019c) wird umgekehrt je `IfcBuildingStorey` die **Elevation aus
+**Export** wird umgekehrt je `IfcBuildingStorey` die **Elevation aus
 den kumulierten Geschoss-Höhen** geschrieben (unterstes Geschoss Elevation 0).
 Damit betrifft die Roundtrip-Treue ([`LH-FA-IO-002`](lastenheft.md#lh-fa-io-002))
 die **Anzahl**, nicht die Höhe des obersten Geschosses (benannte Subset-Grenze).
@@ -578,19 +577,18 @@ bleibt format-frei; kein Adapter ruft einen anderen (Regel B).
 **Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile:
 **Wände und Decken/Fundament** als extrudierte/boolesch geschnittene OCC-Solids,
 **Dächer** als das zu einem Solid **vernähte** wasserdichte Dach-Netz
-([`LH-FA-ROF-006`](lastenheft.md#lh-fa-rof-006), slice-024a), **Treppen** als die
-**analytisch rekonstruierten** Stufen-Box-Solids ([`LH-FA-STR-001`](lastenheft.md#lh-fa-str-001--treppe-erzeugen),
-slice-024b); Ziel-Schema AP214. **STL** schreibt das **tessellierte Dreiecksnetz**
+([`LH-FA-ROF-006`](lastenheft.md#lh-fa-rof-006)), **Treppen** als die
+**analytisch rekonstruierten** Stufen-Box-Solids ([`LH-FA-STR-001`](lastenheft.md#lh-fa-str-001--treppe-erzeugen)); Ziel-Schema AP214. **STL** schreibt das **tessellierte Dreiecksnetz**
 **aller** 3D-Bauteile (binär als Default). Längeneinheit mm.
 
 **Bauteil-Subset (welle-4).** **STL** deckt alle 3D-Bauteile — Wände (inkl.
 Wandöffnungen/Cutouts), Decken/Fundament, Dächer, Treppen (inkl. Geländer). **STEP**
 deckt **alle 3D-Bauteile als B-Rep**: Wände + Decken/Fundament (OCC-Solids), Dächer
-(das wasserdichte Dach-Netz wird zu einem B-Rep-Solid **vernäht** — slice-024a; ein
+(das wasserdichte Dach-Netz wird zu einem B-Rep-Solid **vernäht**; ein
 nicht geschlossen vernähbares Dach wird **fail-closed übersprungen**, bleibt dann im
 STL, fehlt aber im STEP) und **Treppen-Stufen** (analytische OCC-Box-Solids je Stufe
 — das flache Treppen-Netz ist eine nicht-manifolde Box-Union, daher rekonstruiert
-statt vernäht; slice-024b). **Nicht im STEP-B-Rep:** das **Treppen-Geländer** ist
+statt vernäht). **Nicht im STEP-B-Rep:** das **Treppen-Geländer** ist
 render-only (Heuristik-Dicke) und bleibt dem **STL** vorbehalten (kein stiller
 Teilumfang). **Generell nicht geschrieben** (beide Formate): Material/Farbe,
 Property-Sets, PMI, Assembly-Struktur.
@@ -772,7 +770,7 @@ Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
 ### 2.1 Domänen-Modell (Kern)
 
 Pure Werttypen in `src/hexagon/model/`, framework-frei. Implementiert
-(slice-003a): `Building`, `Storey`, `Wall`, `Point2D`, `Segment`, `Solid`,
+(slice-003a): `Building`, `Storey`, `Wall`, `Point2D`, `Segment`, `Solid`, <!-- d-check:status-provenance -->
 `WallType`. Wand-Auszug (Stand: Einzelsegment, welle-1):
 `{ id, storey_id, start: Point2D, end: Point2D, thickness_mm, height_mm, type ∈ {Innen, Aussen, Trag} }`.
 
@@ -881,7 +879,7 @@ im Schema (nur Undo) — eigener Slice.
 | `LIVING_AREA_FACTOR` | 1 | Wohnflächen-Anrechnungsfaktor (welle-3-Teilumfang: Wohnfläche = Netto-Grundfläche; Schrägen-/Balkon-Faktoren offen) | [LH-FA-EVL-003](lastenheft.md#lh-fa-evl-003--wohnflächenberechnung) |
 
 Die Default-**Wandhöhe** bei Anlage ist die **Höhe des Geschosses**
-(parametrisch, kein eigener Konstant; [LH-FA-WAL-001](lastenheft.md#lh-fa-wal-001--wand-zeichnen)). `slice-003a` hat
+(parametrisch, kein eigener Konstant; [LH-FA-WAL-001](lastenheft.md#lh-fa-wal-001--wand-zeichnen)). `slice-003a` hat <!-- d-check:status-provenance -->
 `DEFAULT_WALL_THICKNESS_MM` ergänzt (zuvor Spec-Lücke: das Lastenheft
 fordert eine Default-Stärke, §3 nannte keinen Wert).
 
@@ -953,7 +951,7 @@ nicht im Bootstrap.
 ## 8. Historie
 
 Ausgelagert nach [`spezifikation-historie.md`](spezifikation-historie.md)
-(slice-018a / [MR-011](../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) — Provenance-Datei außerhalb der `matrix`-Spec-Straten).
+(slice-018a / [MR-011](../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) — Provenance-Datei außerhalb der `matrix`-Spec-Straten). <!-- d-check:status-provenance -->
 
 ## 9. Technische Rahmenbedingungen (REQ-TEC)
 

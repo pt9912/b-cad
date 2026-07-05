@@ -21,10 +21,11 @@ umgesetzt und verifiziert. **Reale Gates** (überwiegend Dockerfile-Target-
 Stages, keine Bind-Mounts): `make docs-check`, `make gate-consistency`,
 `make a-check`, `make arch-check`, `make lint`, `make test`,
 `make coverage-gate`, `make build` — aggregiert in `make gates`.
-**Ausnahme `make a-check`** (slice-030 / [MR-013](conventions.md#mr-013--arch-check-via-a-check)):
-externes, digest-gepinntes Image (netzloser read-only Bind-Mount statt
-COPY-Stage) — erster Bind-Mount-Member im Aggregat. Details und Verträge:
-§Sensors. Geplant (noch nicht behauptet): `coverage-gate-critical`,
+**Ausnahmen `make a-check`** (slice-030 / [MR-013](conventions.md#mr-013--arch-check-via-a-check))
+und **`make docs-check`** (slice-033 / [MR-014](conventions.md)): externe,
+digest-gepinnte Images (netzloser read-only Bind-Mount statt COPY-Stage,
+Definition im jeweiligen `.mk`) — die zwei Bind-Mount-Member im Aggregat.
+Details und Verträge: §Sensors. Geplant (noch nicht behauptet): `coverage-gate-critical`,
 `ci`, `fullbuild`.
 
 ## Source precedence
@@ -58,13 +59,16 @@ COPY-Stage) — erster Bind-Mount-Member im Aggregat. Details und Verträge:
 
 ## Sensors (Feedback-Gates)
 
-**Real existierend.** Jeder Gate ist eine **Dockerfile-Target-Stage**
+**Real existierend.** Die meisten Gates sind **Dockerfile-Target-Stages**
 (`docker build --target …`, Quelle per `COPY` eingebacken) — **keine
-Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray):
+Bind-Mounts**, maximal reproduzierbar (Modul 14, Vorbild cmake-xray).
+**Ausnahme:** `make a-check` (`a-check.mk`) und `make docs-check`
+(`d-check.mk`) laufen als externe, digest-gepinnte Images per read-only
+Bind-Mount (`--network none`):
 
 | Target | Vertrag | Bindung |
 |---|---|---|
-| `make docs-check` | interne Links, Anker, Inline-Code-Pfade + **Referenz-Richtung Spec→ADR** (`matrix`/`ids`) + Span-/Host-Pfad-Hygiene; kein Pfad aus dem Repo, keine Abwärts-Referenz Spec → ADR — via d-check (digest-gepinnt, `.d-check.yml`; Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | [`MR-007`](conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [`MR-011`](conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths) |
+| `make docs-check` | interne Links, Anker, Inline-Code-Pfade + **Referenz-Richtung Spec→ADR + ADR↛Slice** (`matrix`/`ids`) + Span-/Host-Pfad-Hygiene; kein Pfad aus dem Repo, keine Abwärts-Referenz Spec → ADR, **kein Slice-Token im ADR-Körper** (no-downward, ab d-check v0.37.1) — via d-check (`d-check.mk`, digest-gepinnt v0.37.1, `.d-check.yml`; netzlos read-only Bind-Mount; Module links/anchors/codepaths/spans/hostpaths/matrix/ids) | [`MR-007`](conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [`MR-011`](conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths), [`MR-014`](conventions.md) |
 | `make gate-consistency` | jeder als real dokumentierte `make`-Befehl (AGENTS §3 / §Sensors) existiert im Makefile — fängt halluzinierte Gates | Modul 13 |
 | `make a-check` | **primäres Architektur-Gate** via externem digest-gepinntem Image **a-check** (`.a-check.yml`; `docker run --network none -v $(CURDIR):/src:ro`, read-only Bind-Mount): Kern importiert kein Qt/OCC/SQLite/`adapters/` (Regel A); kein Adapter importiert einen anderen (Regel B, MeshSource-Naht via `adapter_sink`); OCC-`.hxx`/`sqlite3`/Qt/`dlfcn.h`-Include gekapselt (Regel C/D/E); **Schicht-Kanten** (erlaubter Import-Graph) + **driving/driven-Richtung** | [MR-013](conventions.md#mr-013--arch-check-via-a-check), [ADR-0001](../docs/plan/adr/0001-hexagonale-architektur.md), [ADR-0002](../docs/plan/adr/0002-geometrie-kern-opencascade.md), [ADR-0003](../docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md), [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md) |
 | `make arch-check` | Plugin-System-**P-Rest**, was der kanten-basierte a-check strukturell nicht sieht: `dlopen`/`dlsym`/`dlclose`-**Funktionsaufruf** nur in `adapters/plugin/` (Regel P1-Aufruf; der `dlfcn.h`-**Include** liegt bei a-check) + feine Quote-Import-Allowlist `plugins/` + `src/plugin_api/` auf `plugin_api`/`hexagon/model`/`hexagon/ports/driving` (Regel P2, Quote-Form + Angle-Verbot) | [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md), [MR-013](conventions.md#mr-013--arch-check-via-a-check) |

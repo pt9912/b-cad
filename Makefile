@@ -5,12 +5,12 @@
 # (Modul 14, Vorbild cmake-xray). `make gates` aggregiert nur real
 # existierende Targets (Kurs-Modul 13).
 #
-# AUSNAHME (MR-013, slice-030): `a-check` ist das erste externe,
-# digest-gepinnte Gate im Aggregat und läuft als `docker run --network none
-# -v $(CURDIR):/src:ro` — ein read-only Bind-Mount statt COPY-Stage
-# (Definition in a-check.mk). Reproduzierbarkeit sitzt hier auf Image-Ebene
-# (@sha256), Hermetik via `--network none`; dieselbe Klasse wie das
-# digest-gepinnte docs-check (d-check) / schema-check (d-migrate).
+# AUSNAHME (MR-013, slice-030 → erweitert slice-033/MR-014): `a-check`
+# (a-check.mk) und `docs-check` (d-check.mk) sind externe, digest-gepinnte
+# Gates und laufen als `docker run --network none -v $(CURDIR):/…:ro` — ein
+# read-only Bind-Mount statt COPY-Stage (Definition im jeweiligen .mk).
+# Reproduzierbarkeit sitzt hier auf Image-Ebene (@sha256), Hermetik via
+# `--network none`; dieselbe Klasse wie schema-check (d-migrate).
 
 DOCKER ?= docker
 IMAGE ?= bcad
@@ -36,8 +36,11 @@ help: ## Targets anzeigen
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-16s %s\n", $$1, $$2}'
 
 # a-check — externes Architektur-Gate (a-check.mk, digest-gepinnt v0.9.0).
-# Nach `help` eingebunden, damit `help` das Default-Goal bleibt.
+# d-check — externes Doku-Referenz-Gate (d-check.mk, digest-gepinnt v0.37.1;
+# slice-033/MR-014, löst die tools/Dockerfile-FROM-Stage ab). Beide nach
+# `help` eingebunden, damit `help` das Default-Goal bleibt.
 include a-check.mk
+include d-check.mk
 
 dev-image: ## Toolchain-Image (deps-Stage) — z. B. für die IDE/DevContainer
 	$(GATE) --target deps -t $(IMAGE):deps .
@@ -59,9 +62,7 @@ coverage-gate: ## bootstrap-aware Coverage (Schwelle $(COVERAGE_THRESHOLD)%, gco
 		--build-arg BCAD_COVERAGE_THRESHOLD=$(COVERAGE_THRESHOLD) \
 		-t $(IMAGE):coverage-check .
 
-docs-check: ## Doku-Konsistenz — interne Markdown-Links/Anker/ID-Pfade (Modul 11/13)
-	$(DOCKER) build -f tools/Dockerfile --target docs-check -t $(IMAGE):docs-check .
-	$(DOCKER) run --rm $(IMAGE):docs-check
+docs-check: doc-check ## Doku-Konsistenz — Referenz-Integritäts-Gate via d-check (d-check.mk, digest-gepinnt, .d-check.yml; netzlos read-only Bind-Mount)
 
 gate-consistency: ## Modul 13 — jeder als real dokumentierte make-Befehl existiert (Doku↔Makefile)
 	$(GATE) --target gate-consistency -t $(IMAGE):gate-consistency .

@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-033 — **d-check v0.37.1 + Matrix-Verschärfung `adr→slice`** (harness-steering-Quergewerk;
+  kein ADR — Verschärfung, §2.6 n/a; MR-014). **docs-check** ist von der `tools/Dockerfile`-FROM-Stage
+  auf **`d-check.mk`** umgestellt (`include`, Bind-Mount, `DCHECK_DIGEST` **v0.37.1**; Muster
+  `a-check.mk`/slice-030; `tools/Dockerfile` entfernt, codepaths-`ignore-refs`-Tombstone;
+  Pin-Sprung-Fallout = **0** gemessen) und das `matrix`-Modul um die Kante **`adr → slice`**
+  erweitert: ein ADR-Körper nennt keine Slice-Kennung (Stable Dependencies / no-downward; Folgepflicht-
+  Zuordnung lebt im mutablen ADR-Index). Umsetzung: `token: slice-\d{3}` (Klartext-Token) +
+  Grandfathering der immutablen ADRs 0001–0017 + `<!-- d-check:status-provenance -->`-Ausnahmemarker.
+  Die **30** vorbestehenden Spec-Straten-Slice-Tokens sind remediert (Reifephase-Provenance markiert,
+  substanzielle Fachverweise selbsttragend umformuliert, `architecture.md` slice-frei). MR-006 **0 HIGH**
+  (3 MED eingearbeitet); `make docs-check`/`make gates` grün.
 - slice-031 — **lint-Härtung II: `misc-const-correctness` + `modernize-use-nodiscard`
   scharfgeschaltet** (harness-steering-Quergewerk, Fortsetzung slice-027; kein ADR —
   Verschärfung, §2.6 n/a). Die zwei in slice-027 als wertvolle Folge-Kandidaten
