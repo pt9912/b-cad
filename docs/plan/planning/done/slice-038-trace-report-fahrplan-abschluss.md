@@ -1,7 +1,7 @@
 ---
 id: slice-038
 titel: Harness-Gate-Fahrplan-Abschluss — `--trace` advisory Report, `--require-complete` verschoben
-status: in-progress
+status: done
 welle: welle-5-erweiterung (Quergewerk harness-steering)
 lastenheft_refs: []  # reines Prozess-/Doku-Steering, keine LH-Anforderung
 adr_refs: []         # kein ADR
@@ -9,7 +9,7 @@ adr_refs: []         # kein ADR
 
 # Slice 038: `--trace`-Report + Harness-Gate-Fahrplan-Abschluss
 
-**Status:** in-progress (angelegt 2026-07-05, **evidence-first**, Muster
+**Status:** **done** (ausgeführt 2026-07-05; angelegt evidence-first, Muster
 [slice-037](../done/slice-037-tracked-fresh-clone.md)).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
 1 HIGH behoben** (H1 — die Ursache war falsch zugeschrieben; + 2 MED / 4 LOW eingearbeitet;
@@ -60,7 +60,7 @@ Variante `--require-complete` wird **auf den Vollständigkeits-Meilenstein versc
 
 ## 2. Definition of Done
 
-- [ ] **`harness/conventions.md` neuer Eintrag [MR-019](../../../../harness/conventions.md)**
+- [x] **`harness/conventions.md` neuer Eintrag [MR-019](../../../../harness/conventions.md)**
       (Doku-Entscheidung; Muster [MR-018](../../../../harness/conventions.md)): dokumentiert
       (1) `make doc-trace` (`--trace`, DC-FA-CLI-009) als **verfügbaren advisory Report** — aber ein
       **Live-Korpus-Teilausschnitt**: nur `###`-Anforderungen (52 von ~87; DRW/UI/PLG/IO-Outlines fehlen)
@@ -79,14 +79,14 @@ Variante `--require-complete` wird **auf den Vollständigkeits-Meilenstein versc
       (welle-5), `QA-002` (Speicherverbrauch, abnahme-verifiziert / offene Lücke);
       (4) **Fahrplan-Abschluss** (033–037 Gate-Adoptionen live + `--trace`-Report; `versions` verschoben,
       `diagrams`/`external` passt nicht).
-- [ ] **Roadmap-Fahrplan-Nachzug:** [`roadmap.md`](../in-progress/roadmap.md) §Harness-Gate-Fahrplan
+- [x] **Roadmap-Fahrplan-Nachzug:** [`roadmap.md`](../in-progress/roadmap.md) §Harness-Gate-Fahrplan
       `--trace` → **verfügbar (advisory Report)**, `--require-complete` → **verschoben (Vollständigkeits-
       Meilenstein)** + **Abschluss-Notiz** + Quergewerk-Zeile §Historische Trigger-Verschiebungen. **Ohne**
       den (falschen) Freeze-Mechanismus.
-- [ ] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
-- [ ] **Kein Gate, keine `.d-check.yml`-Änderung, kein `modules:`-Eintrag** (report-only). `make gates`
+- [x] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
+- [x] **Kein Gate, keine `.d-check.yml`-Änderung, kein `modules:`-Eintrag** (report-only). `make gates`
       unberührt; `make doc-trace` als Report belegt (8 ok / 44 WAISE).
-- [ ] **Nicht Teil:** die WAISEN „reparieren" (die suffix-blinden sind Nicht-Defekte; `QA-002` ist eine
+- [x] **Nicht Teil:** die WAISEN „reparieren" (die suffix-blinden sind Nicht-Defekte; `QA-002` ist eine
       benannte Abnahme-/Backlog-Frage, kein Slice-Ziel hier); die DRW-Arbeit; `diagrams`/`external`/`versions`.
 
 ## 3. Plan (vor Ausführung)
@@ -139,5 +139,22 @@ Variante `--require-complete` wird **auf den Vollständigkeits-Meilenstein versc
 
 ## 8. Closure-Notiz
 
-*Wird bei DoD-Erfüllung gefüllt (Closure-Kriterien beobachtbar + Lerneintrag —
-Muster [slice-037](../done/slice-037-tracked-fresh-clone.md) §8).*
+**Ausgeführt 2026-07-05** — DoD vollständig; `make gates` grün (unberührt — kein Gate); `make doc-trace`
+als advisory Report belegt (8 ok / 44 WAISE).
+
+**Beobachtbare Closure-Kriterien:**
+- `--trace` (`make doc-trace`) als **advisory Report** dokumentiert ([MR-019](../../../../harness/conventions.md)),
+  ausdrücklich **Live-Korpus-Teilausschnitt** (suffix-blind + truncated), kein Vollständigkeits-Instrument.
+- `--require-complete` **verschoben** (Vollständigkeits-Meilenstein), nicht verworfen — Fahrplan + [MR-019](../../../../harness/conventions.md).
+- **Harness-Gate-Fahrplan abgeschlossen:** 033–037 Gates live, `--trace` Report, `--require-complete`/`versions`
+  verschoben, `diagrams`/`external` passt nicht.
+
+**Lerneintrag:** Der [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review fing einen **echten Kausal-Fehler**: meine done-archive-Freeze-Erklärung der
+44 WAISE war **empirisch falsch** (reproduziert widerlegt — `--trace` scannt done-archive; die glatten 007/022
+zählen). Wahre Ursache: `--trace`-Slice-Token `slice-\d{3}` ist **suffix-blind**. Lehre: **eine plausible
+Kausal-Erklärung vor dem Festschreiben empirisch prüfen** (der Freeze *klang* passend, war es aber nicht) —
+besonders vor near-immutablen MR-Einträgen. Zweite Lehre (Nutzer-Korrektur): `--require-complete` ist ein
+**Meilenstein-Schalter**, kein Jetzt-Zwang — verschoben, nicht verworfen (Muster `versions`).
+
+**Folge:** die d-check-Modul-Adoptions-Linie ist durch. Außerhalb des Fahrplans: DRW ([ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-Text-Review);
+`versions`/`--require-complete` bei Substrat-/Meilenstein-Änderung.
