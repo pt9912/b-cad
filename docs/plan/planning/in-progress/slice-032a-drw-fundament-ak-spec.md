@@ -9,9 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0006](../.
 
 # Slice 032a: DRW-Fundament — AK-Schärfung & Spec-Mapping
 
-**Status:** in-progress (angelegt 2026-07-05). **Vor Ausführung:**
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
-(Reviewer ≠ Autor); HIGH blockiert. **Reine Doku/Entscheidung — kein Code, kein Schema.**
+**Status:** in-progress (angelegt 2026-07-05).
+**[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
+0 HIGH / 2 MED / 4 LOW → startbar** (MED-1 aufgelöst: Export-/Persistenz-Beobachtbarkeit trägt den
+Fundament-Schnitt, **kein** Canvas nötig; Ehrlichkeits-Klausel in den AK-Körper.
+[Report](../../../reviews/2026-07-05-slice-032a-plan.md)). **Reine Doku/Entscheidung — kein Code, kein Schema.**
 
 **Welle:** welle-5-erweiterung (DRW-Strang, Entscheidungs-/Spec-Hälfte — erster Schnitt
 **Fundament Hilfslinien + Layer**; Muster [slice-019a](../done-archive/slice-019a-ifc-ak-spec.md)/[slice-025a](../done/slice-025a-pdf-png-ak-spec.md)/[slice-026a](../done/slice-026a-plg-ak-spec.md)
@@ -70,14 +72,18 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
       je Anforderung ein eigenes `####`-Heading mit **Inline-HTML-Anker** (Muster
       [LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007); Modul-Heading bleibt).
       Mindestens:
-      **DRW-005 Hilfslinien — Happy:** Given ein Projekt mit Geschoss und **sichtbarer** Ebene,
-      when eine Hilfslinie darauf angelegt und das Projekt gespeichert/neu geladen wird, then ist
+      **DRW-005 Hilfslinien — Happy:** Given ein Projekt, dessen Geschoss auf einer **sichtbaren**
+      Ebene eine Hilfslinie trägt, when das Projekt gespeichert und neu geladen wird, then ist
       die Hilfslinie mit Endpunkten und Ebene unverändert vorhanden; when der Grundriss exportiert
       wird, then erscheint sie im Artefakt. **Boundary:** Hilfslinie ohne Ausdehnung (Anfang =
       Ende) → verworfen. **Negative:** Ebene auf **unsichtbar** → keine Hilfslinie dieser Ebene im
-      Artefakt.
+      Artefakt. **Teilumfang-Klausel (Review-MED-1, must-fix — in den AK-KÖRPER, nicht nur Plan-Risiken):**
+      in dieser Ausbaustufe wird **nicht interaktiv gezeichnet**; die Beobachtung ruht auf dem
+      **persistierten/exportierten Artefakt** (Muster STEP/STL »export-only«, MAT »canvas-los« — beide
+      lösungsfrei im Lastenheft). Das *When* ist **artefakt-/zustandsbasiert**, **keine** Nutzer-Zeichenhandlung.
       **DRW-006 Layer — Happy:** Ebene mit Name (optional Farbe) anlegen/umbenennen/sichtbar-
-      schalten → bereit/geändert; nach Speichern/Laden unverändert. **Boundary:** Ebene ohne Namen
+      schalten → bereit/geändert; die Sichtbarkeit steuert **die Export-Sichtbarkeit ihrer Hilfslinien**
+      (nicht die 3D-Viewer-Sicht) [Review-INFO]; nach Speichern/Laden unverändert. **Boundary:** Ebene ohne Namen
       → abgelehnt. **Negative:** noch genutzte Ebene löschen → abgelehnt, Modell unverändert (kein
       stiller Verlust).
       + Header-Nachzug **`lastenheft.md` `Version:` → 0.1.14** == oberste
@@ -92,14 +98,24 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
       Validierung wie Bauteil-Edits); Layer benannt + sichtbar/gesperrt + optionale Farbe,
       projekt-eindeutig, **Sichtbarkeit = Export-Filter**; Zuordnung = typisierter Bezug;
       Löschschutz referenzierter Ebene; kein interaktiver 2D-Canvas (Beobachtung über
-      Round-Trip + Export); **DXF-Geschoss-LAYER unverändert** (benutzer-Layer ≠ DXF-Layer).
+      Round-Trip + Export); **DXF-Geschoss-LAYER unverändert** (benutzer-Layer ≠ DXF-Layer). **Round-Trip-
+      Asymmetrie benennen (Review-LOW-2):** die benutzer-Layer-Zuordnung überlebt nur **nativ (SQLite)**;
+      durch DXF geht sie verloren (Export flacht auf den Geschoss-`LAYER` ab, nur Sichtbarkeits-Filter).
       + `spezifikation-historie.md` + `**Letzte Änderung:**`-Header.
-- [ ] **`spec/spezifikation.md` §2.2 + §4 + §6 nachgezogen:** **§2.2** Kommentar-Heilung
-      (`layers`/`entity_layers`/`documents` „welle-3"→„welle-5"; `guide_lines` als 032b-Tabelle
-      benannt); **§4** Ablehnungs-/Totalitäts-Bedingungen via **Wiederverwendung
-      [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)**
-      (Hilfslinie ohne Ausdehnung, Layer-Name leer, Löschen referenzierter Ebene) — **kein neuer
-      Fehler-Code**; **§6** neue Vertragszeile **2D-Zeichnen (DRW)**.
+- [ ] **`data-model.yaml`-Kommentar-Heilung (Review-MED-2 — die stale Welle-Angaben liegen NUR hier):**
+      `layers` „welle-3" (Z. 233) + `documents` „welle-3/4" (Z. 260) → **welle-5** (`entity_layers` Z. 247
+      trägt **kein** Welle-Jahr → nicht anfassen). d-migrate ignoriert Kommentare → `schema.sql`/`schema-check`
+      byte-unberührt.
+- [ ] **`spec/spezifikation.md` §2.2 + §4 + §6 nachgezogen:** **§2.2** = **neue Prosa** für die
+      forward-deklarierten Tabellen (`layers`/`guide_lines`, welle-5-Provenance) — §2.2 trägt heute **keinen**
+      welle-3-Kommentar zu heilen (Review-MED-2); die `guide_lines`-Tabelle **selbsttragend** benennen
+      (»aktiviert mit dem DRW-Impl-Slice«, **ohne** Slice-Nummer — sonst Slice-Token im Spec-Stratum,
+      Review-LOW-3). **§4** Ablehnungs-Bedingungen via **Wiederverwendung
+      [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)** (Hilfslinie ohne
+      Ausdehnung, Layer-Name leer, Löschen referenzierter Ebene) — **kein neuer Fehler-Code**, aber die
+      **Ablehnungs-Lesart explizit** ausschreiben („Modell unverändert", **nicht** Klemmung — dessen
+      §4-Kopf-Semantik; Review-LOW-1); **§6** neue **interne Grenz-Vertragszeile 2D-Zeichnen (DRW)** (kein
+      Fremdsystem — Muster Plugin-Host-Grenzzeile; Review-INFO).
 - [ ] **`spec/spezifikation.md` Subset-Grenze DXF/PDF/PNG autorisiert erweitert** (Vertrags-
       erweiterung, Muster [LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006)/slice-023a):
       **Hilfslinien auf sichtbarem Layer werden gezeichnet** (DXF `LINE` auf Geschoss-LAYER;
@@ -123,7 +139,8 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
 |---|---|---|
 | `spec/lastenheft.md` | ändern | [LH-FA-DRW-005](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)/006 Outline → AK (lösungsfrei; per-ID-Heading + Inline-Anker); Header `Version:` → 0.1.14 |
 | `spec/lastenheft-historie.md` | ändern | oberste Zeile 0.1.14 ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/[MR-012](../../../../harness/conventions.md#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie)) |
-| `spec/spezifikation.md` | ändern | §1 [`LH-FA-DRW-005.a`](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)-Sammelblock; §2.2 Kommentar-Heilung; §4 [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Wiederverwendung; §6 DRW-Zeile; DXF/PDF/PNG-Subset-Grenze um Hilfslinien |
+| `spec/data-model.yaml` | ändern | Kommentar-Heilung `layers` Z. 233 / `documents` Z. 260 „welle-3/-4"→„welle-5" (Review-MED-2; `schema-check` unberührt) |
+| `spec/spezifikation.md` | ändern | §1 [`LH-FA-DRW-005.a`](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)-Sammelblock; **§2.2 neue Prosa** (forward-deklarierte Tabellen welle-5, `guide_lines` slice-nummer-frei); §4 [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Wiederverwendung (**Ablehnungs-Lesart explizit**); §6 interne Grenz-Vertragszeile; DXF/PDF/PNG-Subset-Grenze um Hilfslinien |
 | `spec/spezifikation-historie.md` | ändern | Provenance-Zeile (slice-032a) |
 | `spec/architecture.md` | ändern | §1.1 DRW-Driving-Port-Zeile; `## Geschichte`-Provenance »DRW → [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)« |
 | [ADR-Index](../../adr/README.md) | ändern (Closure) | [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-Folgepflicht „AK-Schärfung" → erfüllt |
@@ -170,7 +187,7 @@ und **verschwindet, wenn ihr Layer unsichtbar** geschaltet wird. Die interaktive
   `**Version:**` → 0.1.14 == jüngste `lastenheft-historie.md`-Zeile (vorige Schärfung 026a = 0.1.13).
 - **Spec-Straten ADR-frei ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)):**
   die §1/§4/§6-Einarbeitung darf **keinen** ADR-Verweis im `spezifikation.md`-Körper hinterlassen
-  (Provenance nur `*-historie.md`) — vor dem Gate per `grep ADR-` selbst fangen (Lerneintrag
+  (Provenance nur `*-historie.md`) — vor dem Gate per `grep -E 'ADR-|slice-\d{3}'` selbst fangen — **auch Slice-Tokens** (Review-LOW-3: `guide_lines`-Nennung in §2.2 slice-nummer-frei, sonst [MR-014](../../../../harness/conventions.md)-adr↛slice-Klasse-Falle) (Lerneintrag
   019a/026a). Ebenso `architecture.md`-Körper.
 
 ## 7. Sub-Area-Modus-Begründung
