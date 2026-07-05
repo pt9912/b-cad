@@ -1,7 +1,7 @@
 ---
 id: slice-033
 titel: Doku-Referenz-Gate — d-check v0.37.1 & Matrix-Verschärfung adr→slice (no-downward, SDP)
-status: in-progress
+status: done
 welle: welle-5-erweiterung (Quergewerk harness-steering)
 lastenheft_refs: []  # reines Werkzeug-/Gate-Steering, keine LH-Anforderung
 adr_refs: [[ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)]  # Digest-/Dependency-Pinning-Prinzip (Pin-Hebung)
@@ -9,11 +9,11 @@ adr_refs: [[ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)]  # Digest
 
 # Slice 033: Doku-Referenz-Gate — d-check v0.37.1 & Matrix `adr→slice`
 
-**Status:** in-progress (angelegt 2026-07-05, **evidence-first** — Fallout vor dem
+**Status:** done (2026-07-05, **evidence-first** — Fallout vor dem
 Plan gemessen, Muster [slice-027](../done-archive/slice-027-lint-haertung.md)).
-**Vor Ausführung der Spec-Remediation:**
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
-(Reviewer ≠ Autor); HIGH blockiert.
+**0 HIGH** (3 MED eingearbeitet); `make gates` grün (docs-check über d-check.mk),
+Closure-Notiz §8.
 
 **Welle:** welle-5-erweiterung — **Quergewerk `harness-steering`** (kein
 Wellen-Feature; Muster [slice-018a](../done-archive/slice-018a-dcheck-gate-mechanik-done-archive.md)
