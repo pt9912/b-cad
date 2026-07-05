@@ -1,7 +1,7 @@
 ---
 id: slice-036
 titel: Planning-Lifecycle-Gate — d-check-Modul `planning` (Roadmap↔in-progress, erster Gate-Member)
-status: in-progress
+status: done
 welle: welle-5-erweiterung (Quergewerk harness-steering)
 lastenheft_refs: []  # reines Prozess-/Gate-Steering, keine LH-Anforderung
 adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
@@ -9,7 +9,7 @@ adr_refs: []         # kein ADR (Verschärfung/Prozess-Gate, §2.6 n/a)
 
 # Slice 036: Planning-Lifecycle-Gate — Modul `planning`
 
-**Status:** in-progress (angelegt 2026-07-05, **evidence-first**, Muster
+**Status:** **done** (ausgeführt 2026-07-05; angelegt evidence-first, Muster
 [slice-035](../done/slice-035-vcs-adr-immutability.md)).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review:
 0 HIGH / 2 MED / 3 LOW → startbar** (Gate-Member-Entscheidung als sound bestätigt; M1/M2
@@ -52,15 +52,15 @@ hermetisch, wird `planning` in das **`modules:`-Set** aufgenommen → es läuft 
 
 ## 2. Definition of Done
 
-- [ ] **`.d-check.yml` `planning`-Block** (`roadmap: docs/plan/planning/in-progress/roadmap.md`,
+- [x] **`.d-check.yml` `planning`-Block** (`roadmap: docs/plan/planning/in-progress/roadmap.md`,
       `marker: "Keine offenen Slices"` [reservierter Sentinel]; `heading` **+** `slice-glob` explizit `## Aktuelle Welle`/`slice-*` [Review-L2],
       passen). *(Bereits als Messschritt vollzogen.)*
-- [ ] **`planning` in das `modules:`-Set** aufnehmen → **`make gates`-Member** (nicht CI-only). Der
+- [x] **`planning` in das `modules:`-Set** aufnehmen → **`make gates`-Member** (nicht CI-only). Der
       Ist-Zustand ist konsistent (slice-032a aktiv ⇒ kein Marker) → `make docs-check` bleibt grün.
       **Entscheidung gegen den CI-only-Sensor** (`make doc-immutable`-Muster): `planning` ist
       hermetisch, gehört also ins Gate (Muster `ids`/`matrix`); ein separater Sensor verschenkte die
       lokale Blockade. (Alternative in §6 benannt.)
-- [ ] **Ruhe-Marker-Konvention dokumentieren** — **neue** Regel, **eine** Heimat
+- [x] **Ruhe-Marker-Konvention dokumentieren** — **neue** Regel, **eine** Heimat
       ([`planning/README.md`](../README.md) Lifecycle-Abschnitt): der `## Aktuelle Welle`-Block trägt
       den **reservierten Sentinel „Keine offenen Slices"** (exakt-case, **nie** als Prosa — [Review-L3])
       genau dann, wenn `in-progress/` keinen `slice-*`-Plan enthält; **Toggle-Pflicht** — beim **Öffnen
@@ -68,27 +68,27 @@ hermetisch, wird `planning` in das **`modules:`-Set** aufgenommen → es läuft 
       der Marker-Toggle **reitet im selben Commit wie der `git mv`** (die `roadmap.md`-Edit senkt die
       per-Datei-Rename-Similarität des Slice **nicht** → AGENTS §2.8 gewahrt) → **kein** transienter
       `planning-drift`-Snapshot. Erklär-Kommentar (Sentinel reserviert) im Roadmap-`## Aktuelle Welle`-Block.
-- [ ] **`harness/conventions.md` neuer Eintrag [MR-017](../../../../harness/conventions.md)**
+- [x] **`harness/conventions.md` neuer Eintrag [MR-017](../../../../harness/conventions.md)**
       (Verschärfung/Prozess-Gate, kein [§2.6](../../../../AGENTS.md)-Lockerungsfall; Muster
       [MR-016](../../../../harness/conventions.md)): dokumentiert (1) die `planning`-Adoption + Config,
       (2) **Gate-Member-Status** (hermetisch → `modules:`; **erstes über den Harness-Gate-Fahrplan
       adoptiertes Gate-Modul** [Review-L1], Kontrast zu den CI-only `commits`/`vcs`), (3) die Ruhe-Marker-
       Toggle-Pflicht **+ Commit-Sequenz** (Marker reitet im `git mv`-Commit), (4) tool-native
       Ablösung des `planning-check`-Skript-Musters (a-check, letztes Familien-Skript).
-- [ ] **Gate-Doku:** [`harness/README.md` §Sensors](../../../../harness/README.md) + [AGENTS.md §3](../../../../AGENTS.md)
+- [x] **Gate-Doku:** [`harness/README.md` §Sensors](../../../../harness/README.md) + [AGENTS.md §3](../../../../AGENTS.md)
       — die `make docs-check`-Zeile nennt `planning` als neues Modul (Roadmap↔in-progress, hermetisch);
       **kein** separater `doc-planning`-Sensor-Eintrag (es ist Teil von `docs-check`/`gates`).
-- [ ] **[AGENTS.md §2.8](../../../../AGENTS.md)-Toggle-Referenz (Review-M2):** die Hard-Rule-Heimat der
+- [x] **[AGENTS.md §2.8](../../../../AGENTS.md)-Toggle-Referenz (Review-M2):** die Hard-Rule-Heimat der
       Lifecycle-Bewegung (`git mv`) erhält eine Ein-Zeilen-Referenz auf die Ruhe-Marker-Toggle-Pflicht
       (Marker reitet im Move-Commit des ersten/letzten Slice) — sonst läuft ein schließender Agent, der
       nur §2.8 liest, blind in den `planning-drift` (bei einem **Gate-Member** verschärft).
-- [ ] **Roadmap-Fahrplan-Nachzug:** [`roadmap.md`](../in-progress/roadmap.md) §Harness-Gate-Fahrplan
+- [x] **Roadmap-Fahrplan-Nachzug:** [`roadmap.md`](../in-progress/roadmap.md) §Harness-Gate-Fahrplan
       `planning` → **adoptiert (slice-036, Gate-Member)** + Quergewerk-Zeile §Historische Trigger-
       Verschiebungen (Muster slice-035).
-- [ ] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
-- [ ] **`make gates` grün** (jetzt **inklusive** `planning` — Ist-Zustand konsistent belegt);
+- [x] **`CHANGELOG.md`** (grobkörnig, [MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
+- [x] **`make gates` grün** (jetzt **inklusive** `planning` — Ist-Zustand konsistent belegt);
       `make doc-planning` = 0 + Positiv-Test belegt.
-- [ ] **Nicht Teil:** die DRW-Arbeit; die verbleibenden Modul-Kandidaten `tracked` + `--trace` —
+- [x] **Nicht Teil:** die DRW-Arbeit; die verbleibenden Modul-Kandidaten `tracked` + `--trace` —
       eigene Folge-Slices.
 
 ## 3. Plan (vor Ausführung)
@@ -158,5 +158,22 @@ hermetisch, wird `planning` in das **`modules:`-Set** aufgenommen → es läuft 
 
 ## 8. Closure-Notiz
 
-*Wird bei DoD-Erfüllung gefüllt (Closure-Kriterien beobachtbar + Lerneintrag —
-Muster [slice-035](../done/slice-035-vcs-adr-immutability.md) §8).*
+**Ausgeführt 2026-07-05** — DoD vollständig; `make gates` grün **inklusive** des neuen `planning`-Moduls
+(Ist-Zustand konsistent: slice-032a + slice-036 aktiv ⇒ Sentinel abwesend), `make doc-planning` = 0.
+
+**Beobachtbare Closure-Kriterien:**
+- d-check-Modul `planning` **im `.d-check.yml`-`modules:`-Set** → **erster über den Harness-Gate-Fahrplan
+  adoptierter `make gates`-Member** (hermetisch; Kontrast zu den CI-only `commits`/`vcs`).
+- Ruhe-Marker-Invariante dokumentiert (**eine** Heimat [`planning/README.md`](../README.md) §Ruhe-Marker)
+  + Toggle-Pflicht an [AGENTS §2.8](../../../../AGENTS.md) referenziert (Review-M2); der Sentinel ist
+  reserviert; [MR-017](../../../../harness/conventions.md) verankert.
+- Commit-Sequenz gelöst (Review-M1): der Marker-Toggle reitet **im `git mv`-Commit** → kein transienter Drift.
+
+**Lerneintrag:** Diesmal **kein HIGH** — der repo-weite H1-Sweep (slice-035-Lehre) trug, die Ruhe-Marker-
+Regel war echt neu (eine Heimat). Das Review verlagerte den Fokus auf **Gate-Wechselwirkungen** (die
+slice-035-M1-Klasse): ein neuer hermetischer Gate-Member koppelt an die §2.8-Zwei-Commit-Regel — Auflösung
+über „Toggle reitet im Move-Commit" (Rename-Detection ist per-Datei). Lehre: **bei einem Gate-Member die
+Commit-Sequenz + Lifecycle-Wechselwirkung mitdenken**, nicht nur die Einzel-Invariante.
+
+**Folge:** die drei „Regel→computational"-Gewinner (`commits`/`vcs`/`planning`) sind live; verbleibend
+`tracked` + `--trace`.
