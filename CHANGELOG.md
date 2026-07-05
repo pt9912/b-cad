@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-034 — **Commit-Traceability-Gate (d-check-Modul `commits`)** (harness-steering-Quergewerk;
+  kein ADR — Verschärfung/Prozess-Gate, §2.6 n/a; MR-015). Die AGENTS-§4-Traceability-Regel wird
+  **computational**: `make doc-commits` (git-Range, d-check-Modul `commits`, `id-patterns`
+  `slice-\d{3}`/`ADR`/`MR`/`LH`, `exempt-pattern` Merge/Revert) prüft, dass jede Commit-Message
+  einer Range eine Kennung trägt — **CI-only-Sensor** (Muster `schema-check`/`io-smoke`), **nicht**
+  in `make gates` (git-abhängig, nicht-hermetisch). Evidence-first: 0 kennungslose Commits in
+  `HEAD~30..HEAD`. **Beide** Regel-Fundstellen (AGENTS §4 **+** harness/README §Traceability rules)
+  symmetrisch um `slice-*`/`MR-*` ergänzt (kein Regel↔Gate-Drift). MR-006 **1 HIGH behoben**
+  (zweite §4-Fundstelle) + 2 MED/2 LOW eingearbeitet. `make gates`/`make docs-check` grün.
 - slice-033 — **d-check v0.37.1 + Matrix-Verschärfung `adr→slice`** (harness-steering-Quergewerk;
   kein ADR — Verschärfung, §2.6 n/a; MR-014). **docs-check** ist von der `tools/Dockerfile`-FROM-Stage
   auf **`d-check.mk`** umgestellt (`include`, Bind-Mount, `DCHECK_DIGEST` **v0.37.1**; Muster

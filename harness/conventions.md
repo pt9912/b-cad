@@ -518,6 +518,33 @@ sie.
   bewusster Commit mit Begründung ([ADR-0004](../docs/plan/adr/0004-toolchain-dependency-pinning.md)-Prinzip).
 - **Auflösungs-Trigger:** permanent (Zielzustand).
 
+### MR-015 — Commit-Traceability-Gate (d-check-Modul `commits`)
+
+- **Datum:** 2026-07-05
+- **Geltungsbereich:** [`.d-check.yml`](../.d-check.yml), [`AGENTS.md` §4/§3](../AGENTS.md),
+  [`harness/README.md` §Traceability rules + §Sensors](README.md#traceability-rules)
+- **Adaption:** Die §4-Traceability-Regel („jeder Commit nennt eine Kennung") wird von Konvention
+  zu **Gate**: das d-check-Modul `commits` prüft, dass **jede Commit-Message einer Range** eine
+  `id-patterns`-Kennung trägt (`slice-\d{3}` · `ADR-\d{4}` · `MR-\d{3}` · `LH-(FA-…|QA)-\d+`;
+  `exempt-pattern` = Merge-/Revert-Betreffe). Lauf über **`make doc-commits RANGE=<base>..<head>`**
+  (git-Range) bzw. `--commit-msg` (lokaler `commit-msg`-Hook, opt-in DX) — **CI-only-Sensor**
+  (Muster [`make schema-check`](README.md#sensors-feedback-gates)/`io-smoke`), **nicht** in
+  `make gates` (git-abhängig; `commits` ist nicht im `modules:`-Set → `docs-check`/`gates`
+  unberührt).
+  - **Kennungs-Set breiter als der frühere Wortlaut** (nur `LH-/ADR-`): die gelebte Praxis ist
+    `slice-`-dominiert. **Steering-/Prozess-Slices sind legitim anforderungsfrei**
+    (`lastenheft_refs`/`adr_refs` leer) — `slice-*` ist ihr Traceability-Anker. **Beide**
+    Regel-Fundstellen ([`AGENTS.md` §4](../AGENTS.md) **und** `harness/README.md`
+    [§Traceability rules](README.md#traceability-rules)) sind **symmetrisch** um `slice-*`/`MR-*`
+    + die Gate-Bindung ergänzt — kein Regel↔Gate-Drift.
+- **Kein ADR (Verschärfung, kein [AGENTS.md §2.6](../AGENTS.md)-Fall):** eine unenforcte Konvention
+  wird enforced (netto strenger); die Kennungs-Verbreiterung bildet die **reale Praxis** ab und
+  lockert keine Schwelle. Tool-native Ablösung des `trace-check`-Skript-Musters (a-check dogfoodet
+  `commits`); dieselbe d-check.mk-Verteilform wie
+  [MR-014](#mr-014--referenz-richtungs-verschärfung-adr-nennt-keine-slice-d-check-v0371).
+- **Auflösungs-Trigger:** permanent (Zielzustand); die reale CI-Verdrahtung folgt mit der ersten
+  `.github/workflows/`-Datei (heute dokumentarisch in der CI-Befehlsliste, Muster `schema-check`).
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

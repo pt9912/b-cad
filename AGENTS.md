@@ -152,6 +152,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 | `make acc-002-beleg` | [ACC-002](spec/lastenheft.md#7-abnahmekriterien)-Beleg-Bild headless rendern — **kein Gate**, manueller Abnahme-Schritt, nicht in `gates` | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) (f)/0010 |
 | `make run` | App im Container am lokalen Display starten — **kein Gate** (GPU via `/dev/dri`, sonst llvmpipe) | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) |
 | `make io-smoke` | IO-Binary headless je Format (IFC/DXF Export+Re-Import, STEP/STL Export; exit 0 + nicht-leere Datei, fail-closed) — belegt die coverage-ausgenommene `main.cpp`-CLI-/Composition-Root-Glue; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `schema-check`) | LH-Bindung [LH-FA-IO-001](spec/lastenheft.md#lh-fa-io-001--ifc-import) … [LH-FA-IO-006](spec/lastenheft.md#lh-fa-io-006) |
+| `make doc-commits` | Commit-Message-Traceability: jede Commit-Message einer Range trägt eine `slice-*`/`ADR-*`/`MR-*`/`LH-*`-Kennung (d-check-Modul `commits`, git-Range; `exempt-pattern` Merge/Revert) — macht §4 computational; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `schema-check`) | [MR-015](harness/conventions.md), §4 |
 
 **Geplant (noch NICHT behauptet):**
 
@@ -164,7 +165,10 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 ## 4. Dokumentations-Regeln
 
 - Requirement- und ADR-IDs müssen in PRs/Commits referenziert sein
-  (`LH-FA-*`, `LH-QA-*`, `ADR-*`). **Vergeben** werden IDs beim
+  (`LH-FA-*`, `LH-QA-*`, `ADR-*`, `MR-*`, `slice-*` — Steering-/Prozess-Slices
+  sind anforderungsfrei, `slice-*` ist ihr Anker). **Maschinell erzwungen** via
+  `make doc-commits` ([MR-015](harness/conventions.md), d-check-Modul `commits`,
+  CI-Range). **Vergeben** werden IDs beim
   Spec-/ADR-Schreiben nach dem in
   [`harness/conventions.md` (MR-002)](harness/conventions.md) deklarierten
   Schema — nie ad hoc im PR. Agenten **referenzieren** IDs nur, sie

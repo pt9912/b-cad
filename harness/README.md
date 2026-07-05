@@ -81,6 +81,7 @@ Bind-Mount (`--network none`):
 | `make acc-002-beleg` | **kein Gate:** rendert das [ACC-001](../spec/lastenheft.md#7-abnahmekriterien)-Kern-Demo headless (Xvfb) und schreibt das [ACC-002](../spec/lastenheft.md#7-abnahmekriterien)-Beleg-Bild — manueller Abnahme-Schritt des Projektinhabers, bewusst nicht in `gates` | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) (f), [ADR-0010](../docs/plan/adr/0010-headless-gl-xvfb.md) |
 | `make run` | **kein Gate:** startet die App im Container am lokalen Display (X11/XWayland; GPU-Durchreichung via `/dev/dri`, sonst llvmpipe-Fallback; vorher ggf. `xhost +local:`) | [ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md), AGENTS §2.9 |
 | `make io-smoke` | **kein Gate** (nicht in `gates` → CI-Befehlsliste, Muster `make schema-check`): startet das gebaute Binary headless (xvfb, [ADR-0010](../docs/plan/adr/0010-headless-gl-xvfb.md)) je Austauschformat — **IFC/DXF** Export+Re-Import, **STEP/STL** Export — jeder Aufruf exit 0 + nicht-leere Datei (fail-closed je-Aufruf-Guard). Belegt die sonst coverage-ausgenommene `main.cpp`-CLI-/Composition-Root-Glue der IO-Pfade | LH-Bindung [LH-FA-IO-001](../spec/lastenheft.md#lh-fa-io-001--ifc-import) … [LH-FA-IO-006](../spec/lastenheft.md#lh-fa-io-006) (conventions.md) |
+| `make doc-commits` | Commit-Traceability: jede Commit-Message einer Range trägt eine `slice-*`/`ADR-*`/`MR-*`/`LH-*`-Kennung (d-check-Modul `commits`, git-Range, `d-check.mk`; `exempt-pattern` Merge/Revert) — macht die §Traceability-Regel / [`AGENTS.md` §4](../AGENTS.md) computational; **kein Gate** (nicht in `gates` → CI-Befehlsliste, Muster `make schema-check`) | [MR-015](conventions.md) |
 
 **Warum `build` nicht in `gates`:** `test`, `lint` und `coverage-gate`
 sind Dockerfile-Stages `FROM build` und **kompilieren die Target-Kette
@@ -112,7 +113,10 @@ pro Commit gehört in CI, nicht in diese Datei (Rang 9; Kurs-Modul 13).
 
 ## Traceability rules
 
-- PRs/Commits **müssen** mindestens eine `LH-*`- oder `ADR-*`-ID nennen.
+- PRs/Commits **müssen** mindestens eine `LH-*`-, `ADR-*`-, `MR-*`- oder
+  `slice-*`-ID nennen (Steering-/Prozess-Slices sind anforderungsfrei, `slice-*`
+  ist ihr Anker). **Maschinell erzwungen** via `make doc-commits`
+  ([MR-015](conventions.md), d-check-Modul `commits`, CI-Range).
 - Neue Anforderungen brauchen Beleg: Test (mit ID im Namen), Gate, Demo
   oder ADR.
 - Neue ADRs müssen [`../docs/plan/adr/README.md`](../docs/plan/adr/README.md) aktualisieren.
