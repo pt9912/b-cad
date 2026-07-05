@@ -135,3 +135,11 @@ planning:
   slice-glob: "slice-*"               # explizit statt Default [Review-L2]
   marker: "Keine offenen Slices"      # RESERVIERTER Sentinel [Review-L3]: nur vom Toggle
                                       # geschrieben, exakt-case, NIE als Prosa im AW-Block
+
+# Modul tracked (slice-037, MR-018): Getrackt-Status auflösbarer, existierender Link-/Bild-Ziele
+# gegen den git-Index — untrackte/gitignorierte Ziele fehlen auf jedem frischen Klon
+# (target-untracked). Braucht .git (im Bind-Mount da), OHNE Range -> Gate-Member (ins modules-Set,
+# wie planning). exempt-targets = Ventil für absichtlich untrackte/generierte Ziele (z. B.
+# build/**); heute leer (kein build/-Dir, Baseline 0).
+tracked:
+  exempt-targets: []
