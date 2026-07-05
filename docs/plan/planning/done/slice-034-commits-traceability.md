@@ -172,12 +172,12 @@ als **CI-only-Sensor** (Muster `make schema-check`/`make io-smoke`) — **nicht*
   [`harness/README.md` §Traceability rules](../../../../harness/README.md)) symmetrisch um
   `slice-*`/`MR-*` + Gate-Bindung ergänzt; [MR-015](../../../../harness/conventions.md) verankert.
 
-**Lerneintrag:** Der MR-006-Review fing den zentralen Fehler (H1) — die §4-Regel steht an **zwei**
+**Lerneintrag:** Der [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review fing den zentralen Fehler (H1) — die §4-Regel steht an **zwei**
 normativen Stellen; nur eine zu amendieren hätte genau den *stillen Regel↔Gate-Drift* erzeugt, den
 der Slice tilgt. Lehre: **bei einer Regel-Verschärfung zuerst *alle* Fundstellen der Regel im
 Doku-Korpus lokalisieren** (grep über AGENTS/README/conventions), bevor die Amendment-Fläche
 fixiert wird. Zweite Lehre: **Steering-/Prozess-Slices sind legitim anforderungsfrei** — `slice-*`
-ist ihr Traceability-Anker (in MR-015 explizit, nicht nur „id-patterns breiter").
+ist ihr Traceability-Anker (in [MR-015](../../../../harness/conventions.md) explizit, nicht nur „id-patterns breiter").
 
 **Folge:** die weiteren Modul-Kandidaten `vcs` (§2.5) und `planning` (Lifecycle) werden startbar
 (eigene evidence-first-Steering-Slices).
