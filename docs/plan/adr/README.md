@@ -62,8 +62,9 @@ Entscheidung nicht und braucht daher keine Supersedes-ADR.
 ## Konventionen
 
 - ADRs sind nach `Accepted` **immutable** (Hard Rule, siehe
-  [`AGENTS.md` §2.5](../../../AGENTS.md)). Schärfungen entstehen als
-  neue ADR mit `Supersedes ADR-NN`.
+  [`AGENTS.md` §2.5](../../../AGENTS.md); **maschinell erzwungen** via
+  `make doc-immutable`, [MR-016](../../../harness/conventions.md)). Korrekturen
+  entstehen als neue ADR mit `Supersedes ADR-NN`.
 - Eine ADR im Status `Proposed` darf während des Slice-Reviews iteriert
   werden; bei `Accepted` wird dieser Index aktualisiert (Status, Datum).
 - Gates dürfen nicht ohne ADR gelockert werden (siehe `AGENTS.md` §2.6).

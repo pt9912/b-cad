@@ -77,7 +77,9 @@ Slice-ID).
 ### 2.5 ADRs sind nach `Accepted` immutable
 
 Korrekturen entstehen als neue ADR mit `Supersedes ADR-NN`. Den
-ADR-Index aktualisieren.
+ADR-Index aktualisieren. **Maschinell erzwungen** via `make doc-immutable`
+([MR-016](harness/conventions.md), d-check-Modul `vcs`, git-Diff des ADR-Core über
+eine Range; CI-Sensor).
 
 ### 2.6 Gates dürfen nicht ohne ADR gelockert werden
 
@@ -153,6 +155,7 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 | `make run` | App im Container am lokalen Display starten — **kein Gate** (GPU via `/dev/dri`, sonst llvmpipe) | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md) |
 | `make io-smoke` | IO-Binary headless je Format (IFC/DXF Export+Re-Import, STEP/STL Export; exit 0 + nicht-leere Datei, fail-closed) — belegt die coverage-ausgenommene `main.cpp`-CLI-/Composition-Root-Glue; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `schema-check`) | LH-Bindung [LH-FA-IO-001](spec/lastenheft.md#lh-fa-io-001--ifc-import) … [LH-FA-IO-006](spec/lastenheft.md#lh-fa-io-006) |
 | `make doc-commits` | Commit-Message-Traceability: jede Commit-Message einer Range trägt eine `slice-*`/`ADR-*`/`MR-*`/`LH-*`-Kennung (d-check-Modul `commits`, git-Range; `exempt-pattern` Merge/Revert) — macht §4 computational; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `schema-check`) | [MR-015](harness/conventions.md), §4 |
+| `make doc-immutable` | ADR-Immutabilität: der **Core** einer `Accepted`-ADR (ohne `## Geschichte`) unverändert über eine Range (d-check-Modul `vcs`, git-Diff; `head-allow` erlaubt `Superseded by`) — macht §2.5 computational; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `doc-commits`) | [MR-016](harness/conventions.md), §2.5 |
 
 **Geplant (noch NICHT behauptet):**
 

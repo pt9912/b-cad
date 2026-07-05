@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-035 — **ADR-Immutabilitäts-Gate (d-check-Modul `vcs`)** (harness-steering-Quergewerk; kein
+  ADR — Verschärfung, §2.6 n/a; MR-016). AGENTS §2.5 (Accepted-ADRs immutabel) wird **computational**:
+  `make doc-immutable` (git-Diff des ADR-**Core** über eine Range, d-check-Modul `vcs`, `core-drift-vcs`;
+  `head-allow` erlaubt `Superseded by ADR-NNNN`) — **CI-only-Sensor** (Muster `doc-commits`), **nicht**
+  in `make gates`. Die `## Geschichte`-Provenance bleibt mutabel. Evidence-first: Positiv `core-drift-vcs`,
+  Negativ (Geschichte) 0, Voll-Historie (315 Commits) 0. MR-006 **1 HIGH behoben** (zweite §2.5-Fundstelle
+  in `docs/plan/adr/README.md` §Konventionen — dieselbe Lehre wie slice-034) + M1/L1/L2 eingearbeitet.
 - slice-034 — **Commit-Traceability-Gate (d-check-Modul `commits`)** (harness-steering-Quergewerk;
   kein ADR — Verschärfung/Prozess-Gate, §2.6 n/a; MR-015). Die AGENTS-§4-Traceability-Regel wird
   **computational**: `make doc-commits` (git-Range, d-check-Modul `commits`, `id-patterns`

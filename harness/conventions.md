@@ -551,6 +551,39 @@ sie.
 - **Auflösungs-Trigger:** permanent (Zielzustand); die reale CI-Verdrahtung folgt mit der ersten
   `.github/workflows/`-Datei (heute dokumentarisch in der CI-Befehlsliste, Muster `schema-check`).
 
+### MR-016 — ADR-Immutabilitäts-Gate (d-check-Modul `vcs`)
+
+- **Datum:** 2026-07-05
+- **Geltungsbereich:** [`.d-check.yml`](../.d-check.yml), [`AGENTS.md` §2.5/§3](../AGENTS.md),
+  [`docs/plan/adr/README.md` §Konventionen](../docs/plan/adr/README.md),
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates)
+- **Adaption:** Die §2.5-Regel („`Accepted`-ADRs immutabel") wird von Konvention zu **Gate**: das
+  d-check-Modul `vcs` prüft per git-Diff, dass der **Core** einer immutablen ADR (`immutable-when:
+  '^\*\*Status:\*\* Accepted'`, `paths: docs/plan/adr/[0-9]*.md`) über eine Commit-Range unverändert
+  bleibt (`core-drift-vcs`); die mutable `## Geschichte`-Provenance zählt nicht zum Core
+  (`exclude-sections`). Lauf über **`make doc-immutable RANGE=<base>..<head>`** bzw. `STAGED=1`
+  (lokaler pre-commit) — **CI-only-Sensor** (Muster [`make doc-commits`](README.md#sensors-feedback-gates)/`schema-check`),
+  **nicht** in `make gates` (git-abhängig; `vcs` ist nicht im `modules:`-Set → `docs-check`/`gates`
+  unberührt).
+  - **`head-allow` = §2.5-Supersede-Status-Übergang:** erlaubt `Accepted` (unverändert) oder
+    `Superseded by ADR-NNNN`, sonst `core-drift-vcs`. **Praxis-Nuance:** b-cad führt den Supersede-/
+    Erfüllungsstatus im **mutablen [ADR-Index](../docs/plan/adr/README.md)** (nicht im Body); eine
+    reale Supersession ist eine **gekoppelte Operation** (das `matrix.status.forbidden`-Gate flaggt
+    Inbound-Links auf ein superseded Ziel).
+  - **Zwei Regel-Fundstellen (Review-H1):** [`AGENTS.md` §2.5](../AGENTS.md) **und**
+    [`docs/plan/adr/README.md` §Konventionen](../docs/plan/adr/README.md) (Source-Precedence-höher) —
+    **beide** tragen den Gate-Bindungs-Hinweis; der ADR-README-Wortlaut wurde mit §2.5 abgeglichen
+    („Korrekturen" statt „Schärfungen").
+- **Kein ADR (Verschärfung, kein [AGENTS.md §2.6](../AGENTS.md)-Fall):** eine unenforcte Konvention
+  wird enforced (netto strenger). Tool-native Ablösung des `adr-check`-Skript-Musters (a-check dogfoodet
+  `vcs`); dieselbe d-check.mk-Verteilform wie
+  [MR-015](#mr-015--commit-traceability-gate-d-check-modul-commits).
+- **`immutable`-Alternative (hermetisch, Marker) erwogen + verworfen:** würde einen `make gates`-Member
+  erlauben, verlangt aber 16 sha256-Marker (je Accepted-ADR) + Pflege und modelliert den Supersede-
+  Übergang nicht nativ; `vcs` erkennt Accepted-ADRs automatisch über die Status-Zeile. (slice-035)
+- **Auflösungs-Trigger:** permanent (Zielzustand); reale CI-Verdrahtung mit der ersten
+  `.github/workflows/`-Datei.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·
