@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-03.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-05.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -755,6 +755,66 @@ Schutz. Die Sandbox-Zusage gilt für **wohlgeformtes** Fehlverhalten
 UI-Erweiterungspunkte, Skript-Plugins und ein Signier-/Vertrauensmodell sind
 **nicht** spezifiziert (benannte Lücken, Re-Eval).
 
+### LH-FA-DRW-005.a — 2D-Zeichen-Daten (Hilfslinien + Ebenen, Mapping, Teilumfang)
+
+Bezug: [`LH-FA-DRW-005`](lastenheft.md#lh-fa-drw-005) (Hilfslinien),
+[`LH-FA-DRW-006`](lastenheft.md#lh-fa-drw-006) (Layer/Ebenen) — **Sammelblock** (deckt
+beide). Hilfslinie und Ebene sind **2D-Zeichen-/Organisations-Daten**: zu persistieren und
+in den 2D-Grundriss-Export aufzunehmen, **ohne** neue Framework-Technologie. Backend-
+Provenance: § Historie.
+
+**Datenheimat & Schicht.** Hilfslinie und Ebene sind **pure Werttypen im framework-freien
+Kern** (`model/`), gehalten auf `Building` — persistiert und exportiert, **nicht**
+UI-Zustand (Persistenz- und IO-Adapter sehen nur `model`). Muster: das Material-Aggregat
+lebt ebenso als pure Werte auf `Building`. Der **einzige neue Kern-Zuwachs** ist eine
+Datenklasse + eine Driving-Port-Naht am bestehenden Hexagon — **keine** neue Adapter-
+Technologie (kein OCC/Qt/`dlopen`; der 2D-Export liest das Modell direkt wie
+`plan_geometry` heute).
+
+**Zugriffs-Naht.** Ein **neuer Driving-Port fürs 2D-Zeichnen** (Anlegen/Ändern/Löschen von
+Ebenen und Hilfslinien) plus ein zugehöriger Anwendungs-Service — **nicht** eine
+Erweiterung des Bauteil-Editier-Ports (2D-Zeichnen ist eine **eigene Use-Case-Familie**,
+keine Bauteil-Eigenschaft; Muster `EvaluatePort` als eigener Port). Die Naht ist von den
+bestehenden Schicht-Kanten gedeckt (Services/GUI/Plugin-Host dürfen Driving-Ports
+importieren) — **keine** neue Gate-Regel. **Keine** neue Lese-/ViewModel-Naht in v1: der
+`ViewModelPort` bleibt strikt 3D-Tessellation; die Beobachtung läuft über Persistenz +
+Export. **Kein neuer `op`** in der Änderungs-Benachrichtigung (Material-Präzedenz).
+
+**Repräsentation.** Eine **Hilfslinie** ist ein **2D-Segment** (Anfangs-/Endpunkt in mm)
+auf einem Geschoss, einer Ebene zugeordnet; eine **Ebene** trägt Namen, Sichtbarkeits- und
+Sperr-Flag sowie optional eine Farbe und ist im Namen **projekt-eindeutig**. Die Zuordnung
+Hilfslinie→Ebene ist ein **direkter, typisierter Bezug** (die Hilfslinie trägt ihre Ebene),
+**nicht** die polymorphe cross-cutting Zuordnung (die erst mit einer Ausweitung auf Bauteile
+aktiviert). Längeneinheit mm.
+
+**Layer-Semantik (zwei »Layer«-Begriffe, getrennt).** Die **Sichtbarkeit** einer Ebene
+wirkt als **Export-Filter**: eine unsichtbare Ebene → ihre Hilfslinien werden **nicht**
+gezeichnet. Der **DXF-Geschoss-`LAYER`** (`STOREY_n`, die akzeptierte Ausgabe-Gruppierung)
+bleibt **unverändert**. **Round-Trip-Asymmetrie (benannt):** die Benutzer-Ebenen-Zuordnung
+einer Hilfslinie überlebt nur im **nativen Projektformat** (SQLite); der DXF-Export bildet
+die Hilfslinie auf den Geschoss-`LAYER` ab und trägt die Benutzer-Ebene **nicht** ins
+Austauschformat (kein Hilfslinien-DXF-Re-Import). Eine Abbildung Benutzer-Ebene → eigener
+DXF-Layer-Name/-Farbe ist ein benannter Re-Eval.
+
+**Beobachtbarkeit (ohne 2D-Canvas).** b-cad kennt 2D heute nur als **Export-Sicht**; die
+Fundament-Stufe ist daher über **Persistenz-Round-Trip + Export-Artefakt** beobachtbar
+(Hilfslinie überlebt Speichern/Laden; erscheint im DXF/PDF/PNG-Grundriss; unsichtbare Ebene
+→ fehlt im Artefakt). Die **interaktive 2D-Zeichenfläche** ist deferiert (UI-Strang,
+Re-Eval). In dieser Stufe kann der Nutzer eine Hilfslinie **nicht zeichnen**; ihr Wert ist
+zunächst datenseitig (persistiert, exportierbar, ebenen-organisiert) — offen benannt.
+
+**Totalität & Ablehnung.** Drei Fälle werden **hart abgelehnt** (Modell **unverändert** —
+**keine** Klemmung): eine Hilfslinie **ohne Ausdehnung** (Anfang = Ende), ein **leerer**
+Ebenen-Name und das **Löschen einer noch referenzierten Ebene** (`restrict`, kein stiller
+Verlust). Alle drei melden [`E-VAL-001`](#4-fehler-codes-und-logging-felder) in der
+**Ablehnungs-Lesart** (`Rejected`, Modell unverändert) — **kein** neuer Fehler-Code.
+
+**Subset-Grenze (autorisierte Erweiterung).** Der 2D-Grundriss-Zeichenumfang (DXF/PDF/PNG)
+wird um **Hilfslinien auf sichtbarer Ebene** erweitert (DXF `LINE` auf dem Geschoss-`LAYER`;
+PDF/PNG als 2D-Segment) — eine autorisierte Vertragserweiterung (Muster Dach-Volumen),
+**kein** stiller Drift. **Bemaßung, Schraffur und Räume bleiben ausgeschlossen** (eigene
+spätere Entscheidungen).
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -807,6 +867,16 @@ Kerntabellen (welle-1) — vollständig in `data-model.yaml`:
 | `openings` → `doors`/`windows` | Wandöffnungen mit 1:1-Spezialisierung |
 | `materials`, `wall_types` | Material- und Wandtyp-Bibliothek |
 | `undo_commands` | persistierter Undo-Stack ([LH-QA-003](lastenheft.md#lh-qa-003--undoredo)) |
+
+**2D-Zeichen-Daten (welle-5, DRW-Strang).** Das Neutral-Format deklariert die
+Ebenen-Tabelle (`layers`: Name/Sichtbarkeit/Sperre/Farbe, projekt-eindeutiger Name)
+**forward**; der DRW-Fundament-Slice nimmt sie erstmals real in Betrieb und ergänzt eine
+**Hilfslinien-Tabelle** (`guide_lines`: Anfangs-/Endpunkt in mm, Geschoss- und
+Ebenen-Bezug, Ebenen-Fremdschlüssel `restrict`). Die polymorphe cross-cutting
+Zuordnungstabelle (`entity_layers`) und die Dokument-Ablage (`documents`) bleiben
+**forward-deklariert** (Aktivierung erst mit der Bauteil-Ebenen-Ausweitung bzw. einem
+Dokument-Slice). `schema.sql` wird aus `data-model.yaml` per d-migrate regeneriert
+(`schema-check`).
 
 **Migrationsregel:** Schema-Version steigt monoton; jede Erhöhung braucht
 eine getestete Aufwärts-Migration (vgl. `releasing.md`).
@@ -890,7 +960,7 @@ fordert eine Default-Stärke, §3 nannte keinen Wert).
 | `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern, IFC-/STEP-/STL-/DXF-/PDF-/PNG-Export) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
 | `E-IO-002` | Zielmedium voll / Schreibfehler | vorheriger Stand intakt (atomar), Log `event=persist_error` |
 | `E-IO-003` | Import-Format nicht erkannt / invalide | kein Teil-Import, Log `event=import_rejected` |
-| `E-VAL-001` | Parameter außerhalb des Wertebereichs | auf Grenzwert geklemmt, Hinweis, Log `event=validation_rejected` |
+| `E-VAL-001` | Parameter außerhalb des Wertebereichs **oder strukturell ungültige Mutation** (z. B. entartete Hilfslinie [Anfang = Ende], leerer Ebenen-Name, Löschen einer referenzierten Ebene) | Wertebereich → **auf Grenzwert geklemmt**; strukturell ungültig → **hart abgelehnt, Modell unverändert** (`restrict`, kein stiller Verlust). Hinweis, Log `event=validation_rejected` |
 | `E-GEO-001` | Eingabe außerhalb des Zeichenbereichs | abgelehnt, Log `event=geometry_out_of_range` |
 | `E-GEO-002` | Geometrie-Operation fehlgeschlagen / degeneriert | Operation rückgängig, Modell unverändert, Log `event=geometry_error` |
 | `E-PLG-001` | Plugin nicht ladbar / unpassender Vertragsstand (**Load-/Handshake-Ablehnung**) oder Plugin-Fehlverhalten zur **Laufzeit** | nicht geladen bzw. isoliert/entladen, Modell unverändert; Log `event=plugin_rejected` (Laden/Handshake) bzw. `event=plugin_error` (Laufzeit-Fehlverhalten) — **ein** Code, zwei Log-Events (§1 [`LH-FA-PLG-001.a`](lastenheft.md#lh-fa-plg-001)) |
@@ -931,6 +1001,7 @@ nicht im Bootstrap.
 | PDF | Vektor-PDF, **2D-Maßstabsplan** (selbst getragener Writer) | `ModelExporterPort` **io-resident** (Export-only; maßstäblicher Achsen-Plan je Geschoss, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
 | PNG | Raster-PNG, **2D-Plan-Rasterbild** (selbst getragener Writer, unkomprimiert) | `ModelExporterPort` **io-resident** (Export-only; Rasterbild desselben Achsen-Plans, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
 | Plugin-API | **versionierter Vertrag**, exakte Versions-Gleichheit beim Laden (fail-closed) | Plugin-Host (Driving Adapter) vermittelt **Driving-Ports** an Plugins (kein Driven-Port, kein Qt/OCC/SQLite in der Plugin-API); Plugins = Shared Libraries (REQ-TEC-008), §1 [`LH-FA-PLG-001.a`](lastenheft.md#lh-fa-plg-001) |
+| 2D-Zeichnen (DRW) | **intern** (kein Fremdsystem) | neuer **Driving-Port** fürs 2D-Zeichnen (Hilfslinien + Ebenen) am bestehenden Hexagon — kern-resident, keine neue Technologie; Beobachtung über Persistenz + 2D-Grundriss-Export, §1 [`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) |
 
 ## 7. Offene Punkte
 

@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.13
+**Version:** 0.1.14
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -586,8 +586,63 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 - **LH-FA-DRW-002 — Raster.**
 - **LH-FA-DRW-003 — Winkelvorgaben.**
 - **LH-FA-DRW-004 — Bemaßung.**
-- **LH-FA-DRW-005 — Hilfslinien.**
-- **LH-FA-DRW-006 — Layer.**
+
+#### <a id="lh-fa-drw-005"></a>LH-FA-DRW-005 — Hilfslinien
+
+**Beschreibung:** Eine **Hilfslinie** ist eine gerade 2D-Zeichenhilfe (Anfangs- und
+Endpunkt) auf einem Geschoss, einer **Ebene** ([LH-FA-DRW-006](#lh-fa-drw-006))
+zugeordnet. Sie überlebt Speichern/Laden und erscheint im maßstäblichen 2D-Grundriss-
+Export (Muster [LH-FA-IO-007](#lh-fa-io-007)/008).
+
+**Teilumfang (welle-5, Fundament):** in dieser Ausbaustufe wird eine Hilfslinie **nicht
+interaktiv gezeichnet** — es gibt (noch) **keine 2D-Zeichenfläche** in der Oberfläche;
+die Beobachtung ruht auf dem **persistierten und exportierten Artefakt** (Muster
+[LH-FA-IO-007](#lh-fa-io-007)/008 »Export-only«; das Materialsystem ist ebenso ohne
+Zeichenfläche nur über Persistenz/Auswertung beobachtbar). Das interaktive Setzen/Ziehen
+mit der Maus (samt Fangen/Raster) ist **ausdrücklich offen** (späterer UI-Umfang), kein
+stiller Vollumfang. Die **Ebenen-Zuordnung** einer Hilfslinie bleibt nur im **nativen
+Projektformat** erhalten; der 2D-Export zeichnet die Hilfslinie in die Geschoss-Ausgabe-
+Gruppierung, überträgt die Benutzer-Ebene aber **nicht** ins Austauschformat.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Projekt, dessen Geschoss auf einer **sichtbaren** Ebene eine
+  Hilfslinie trägt, when das Projekt gespeichert und neu geladen wird, then ist die
+  Hilfslinie mit Anfangs-/Endpunkt und Ebene **unverändert** vorhanden; when der
+  2D-Grundriss exportiert wird, then **erscheint** sie im Artefakt.
+- **Boundary:** Given eine Hilfslinie **ohne Ausdehnung** (Anfangs- = Endpunkt), when sie
+  ins Modell aufgenommen werden soll, then wird sie **abgelehnt** und das Modell bleibt
+  **unverändert**.
+- **Negative:** Given eine Hilfslinie auf einer Ebene, die auf **unsichtbar** geschaltet
+  ist, when der Grundriss exportiert wird, then **erscheint keine** Hilfslinie dieser Ebene
+  im Artefakt.
+
+#### <a id="lh-fa-drw-006"></a>LH-FA-DRW-006 — Layer (Ebenen)
+
+**Beschreibung:** Eine **Ebene** (Layer) ist eine benannte, **projekt-eindeutige**
+Organisations-Ebene mit **Sichtbarkeit** (optional Sperre und Farbe). Hilfslinien
+([LH-FA-DRW-005](#lh-fa-drw-005)) werden einer Ebene zugeordnet; die Sichtbarkeit der
+Ebene steuert, ob **ihre Hilfslinien im 2D-Export erscheinen**.
+
+**Teilumfang (welle-5, Fundament):** in dieser Ausbaustufe ordnen sich **nur Hilfslinien**
+(Zeichen-Entitäten) einer Ebene zu — die Zuordnung von **Bauteilen** (Wänden/Räumen) zu
+Benutzer-Ebenen und eine Sichtbarkeits-Steuerung im **3D-Viewer** sind **ausdrücklich
+offen** (späterer Umfang), kein stiller Vollumfang. Die Ebenen-Sichtbarkeit wirkt hier als
+**Export-Filter** für die Hilfslinien der Ebene, **nicht** als 3D-Ansichts-Schalter.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein Projekt, when eine Ebene mit **Namen** (optional Farbe)
+  angelegt, umbenannt oder sichtbar/unsichtbar geschaltet wird, then ist die Ebene bereit
+  bzw. entsprechend geändert; when das Projekt gespeichert und neu geladen wird, then ist
+  sie **unverändert** vorhanden. Die **Sichtbarkeit** bestimmt, ob die **Hilfslinien dieser
+  Ebene im 2D-Grundriss-Export erscheinen** (vgl. [LH-FA-DRW-005](#lh-fa-drw-005)-Negative).
+- **Boundary:** Given eine Ebene **ohne Namen** (leer), when sie angelegt werden soll, then
+  wird sie **abgelehnt** und das Modell bleibt **unverändert**.
+- **Negative:** Given eine Ebene, die noch von einer Hilfslinie **referenziert** wird, when
+  sie gelöscht werden soll, then wird das Löschen **abgelehnt** und das Modell bleibt
+  **unverändert** (kein stiller Datenverlust).
+
 - **LH-FA-DRW-007 — Gruppen.**
 
 ### Modul Materialsystem (`MAT`)

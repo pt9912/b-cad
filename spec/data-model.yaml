@@ -230,7 +230,7 @@ tables:
   #    (siehe spezifikation.md §2.2). ──────────────────────────────────────
 
   layers:
-    description: "Layer-Verwaltung (LH-FA-DRW-006; forward-declared, welle-3)."
+    description: "Layer-Verwaltung (LH-FA-DRW-006; forward-declared, welle-5)."
     columns:
       id: { type: identifier, auto_increment: true }
       project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
@@ -257,7 +257,7 @@ tables:
     primary_key: [id]
 
   documents:
-    description: "Plaene/Zeichnungen (LH-FA-DRW-*; forward-declared, welle-3/4)."
+    description: "Plaene/Zeichnungen (LH-FA-DRW-*; forward-declared, welle-5)."
     columns:
       id: { type: identifier, auto_increment: true }
       project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }

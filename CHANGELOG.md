@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-032a — **DRW-Fundament: 2D-Zeichen-Daten AK-Schärfung** (welle-5 DRW-Strang eröffnet;
+  ADR-0018 Accepted). LH-FA-DRW-005/006 (Hilfslinien + Ebenen) Outline → AK (Lastenheft 0.1.14;
+  **Teilumfang-/Ehrlichkeits-Klausel** Canvas-los im AK-Körper); Spezifikation §1-Sammelblock
+  LH-FA-DRW-005.a + §2.2 welle-5-Tabellen-Prosa + §4 E-VAL-001-Ablehnungs-Lesart + §6 interne
+  Grenz-Vertragszeile + Subset-Grenze DXF/PDF/PNG autorisiert um Hilfslinien; data-model.yaml-
+  Kommentar-Heilung; architecture.md §1.1 EditDrawingPort. Reine Doku, kein Code (Impl = 032b,
+  Export = 032c). MR-006 0 HIGH (2 MED/4 LOW eingearbeitet; MED-1 Beobachtbarkeit tragfähig ohne Canvas).
 - slice-038 — **Harness-Gate-Fahrplan-Abschluss** (harness-steering-Quergewerk; kein Gate, kein ADR; MR-019).
   `make doc-trace` (`--trace`, Requirements-Traceability-Matrix) als **advisory Report** eingeordnet — ein
   Live-Korpus-Teilausschnitt (nur `###`-Anforderungen + glatte `slice-\d{3}`-Ids; b-cads Buchstaben-Sub-Slices
