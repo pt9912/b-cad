@@ -123,3 +123,15 @@ vcs:
   status-line: '^\*\*Status:\*\*'
   exclude-sections: [Geschichte]
   head-allow: '^\*\*Status:\*\* (Accepted|Superseded by ADR-\d{4})'
+
+# Modul planning (slice-036, MR-017): Roadmap-↔-in-progress-Lifecycle-Konsistenz — der
+# Ruhe-Marker steht im `## Aktuelle Welle`-Block genau dann, wenn kein slice-* in
+# in-progress/ liegt (planning-drift). HERMETISCH (nur Arbeitsbaum, kein git) -> kann als
+# modules-Member echter make-gates-Bestandteil sein (Entscheidung slice-036). Löst das
+# planning-check-Skript-Muster ab (letztes Familien-Skript).
+planning:
+  roadmap: docs/plan/planning/in-progress/roadmap.md
+  heading: "## Aktuelle Welle"        # explizit statt Default [Review-L2]
+  slice-glob: "slice-*"               # explizit statt Default [Review-L2]
+  marker: "Keine offenen Slices"      # RESERVIERTER Sentinel [Review-L3]: nur vom Toggle
+                                      # geschrieben, exakt-case, NIE als Prosa im AW-Block
