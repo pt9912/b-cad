@@ -19,13 +19,13 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel;
-beim Öffnen des nächsten Slice entfernen). **DRW-Fundament 032a→b→c komplett** (2026-07-22, `make gates`
-grün): Hilfslinie/Ebene durabel (`slice-032b`) **und** sichtbar im 2D-Export (`slice-032c`), je Slice
-Plan- + Code-Review 0 HIGH. Nächste DRW-Kandidaten (eigene spätere Slices, je eigenes
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)):
-Fangpunkte/Raster/Winkel/Bemaßung/Gruppen, interaktiver 2D-Canvas (UI-Strang), Bauteil-Layer
-(`entity_layers`).
+**In Arbeit:** `slice-041a` — DRW interaktiver 2D-Canvas (Opener): verfasst die Grundsatz-ADR (0019,
+2D-Zeichenfläche + 2D-Lese-Naht) + schärft die interaktive Erzeugungs-AK von
+[LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), gestartet 2026-07-22 nach eigenem
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+(0 HIGH → startbar). **2D-Lese-Naht-Entscheidung (Projektinhaber):** Projektion → Kern
+(`hexagon/services/geometry/plan_geometry` + Read-Port `PlanViewPort`), eigener Refactor-Slice vor dem
+Canvas. **DRW-Fundament 032a→b→c komplett** (durabel + sichtbar, je Slice Plan-/Code-Review 0 HIGH).
 
 **Vorgänger-Trigger (beide erfüllt):** welle-4-austausch done (2026-07-01,
 [`../done/welle-4-results.md`](../done/welle-4-results.md)) + Plugin-API-/ABI-ADR accepted
