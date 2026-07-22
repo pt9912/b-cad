@@ -19,7 +19,7 @@ DOCKERFILE ?= .devcontainer/Dockerfile
 # ADR-0006: d-migrate als externe Tool-Dependency per @sha256
 # gepinnt (ADR-0004-Prinzip auf externe Tools angewandt; ein Floating-Tag
 # erzeugte sonst nicht reproduzierbare DDL).
-DMIGRATE ?= ghcr.io/pt9912/d-migrate:0.9.7@sha256:69afc2147754c23b2d34c6a5ad8fbaae3787a5c061efd32f45d1c953bbc52fd9
+DMIGRATE ?= ghcr.io/pt9912/d-migrate:0.9.12@sha256:1618cdfa54bb5d03f4a5d538b81139d5baabc6275f0dd38cd6741a8f32a75666
 
 # Gate-Kalibrierung (Threshold-as-Variable; "Kalibrierungs-Bindung"
 # Modul 13). coverage-gate ist bootstrap-aware: niedrige Anfangsschwelle,
