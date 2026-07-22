@@ -16,9 +16,9 @@ Eingebunden als `make docs-check` / `make gates`.
 ### Verwendung (Docker, gemäß Hard Rule AGENTS.md §2.3)
 
 Die Validierung läuft über [d-check](https://github.com/pt9912/d-check) — ein
-**digest-gepinntes Container-Image** (v0.37.1), eingebunden über
+**digest-gepinntes Container-Image** (v0.51.1), eingebunden über
 [`../d-check.mk`](../d-check.mk) (`include d-check.mk`, erzeugt von
-`d-check --print-mk`; Pin über `DCHECK_DIGEST`), Konfiguration in
+`d-check --print-mk`; Pin über `DCHECK_DIGEST` im [`../Makefile`](../Makefile)), Konfiguration in
 [`../.d-check.yml`](../.d-check.yml). Aufruf **netzlos, read-only Bind-Mount**:
 
 ```bash
@@ -26,7 +26,8 @@ make docs-check          # docker run --network none -v REPO:/repo:ro …
 ```
 
 `d-check.mk` stellt daneben `doc-doctor` (Diagnose), `doc-repair`
-(Fix-Patch) und `doc-trace` (RTM) bereit — kein Gate.
+(Fix-Patch), `doc-trace` (RTM) und `doc-targets` (Doku↔Build-Targets) bereit —
+kein Gate.
 
 ### Herkunft und Drift
 
