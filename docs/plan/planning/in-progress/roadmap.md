@@ -19,9 +19,10 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel;
-beim Öffnen des nächsten Slice entfernen). Nächster Schnitt: DRW-Impl `slice-032b` nach eigenem
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start).
+**In Arbeit:** `slice-032b` — DRW-Impl (Layer/GuideLine-Werttypen + `EditDrawingPort` am
+bestehenden `StructureEditService` + `guide_lines`-Persistenz-Round-Trip), gestartet 2026-07-22
+nach eigenem [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+(0 HIGH / 2 MED / 2 LOW / 2 INFO → startbar). Folge: `slice-032c` (Export-Sichtbarkeit DXF/PDF/PNG).
 
 **Vorgänger-Trigger (beide erfüllt):** welle-4-austausch done (2026-07-01,
 [`../done/welle-4-results.md`](../done/welle-4-results.md)) + Plugin-API-/ABI-ADR accepted
