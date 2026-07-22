@@ -42,6 +42,10 @@ using bcad::hexagon::model::MaterialId;
 using bcad::hexagon::model::Wall;
 using bcad::hexagon::model::WallId;
 using bcad::hexagon::model::WallType;
+using bcad::hexagon::model::Layer;
+using bcad::hexagon::model::LayerId;
+using bcad::hexagon::model::GuideLine;
+using bcad::hexagon::model::GuideLineId;
 
 Building sampleBuilding() {
     Building building;
@@ -260,6 +264,96 @@ TEST(SqliteProjectRepository_LH_FA_MAT, LeereBibliothekUndUnzugewiesen) {
     for (const Wall& wall : loaded.walls) {
         EXPECT_FALSE(wall.material_id.has_value());  // unzugewiesen → nullopt
     }
+    fs::remove(path);
+}
+
+// LH-FA-DRW-005/006 (ADR-0018, slice-032b): Ebenen + Hilfslinien überleben den
+// Round-Trip feldgleich — layers (name/visible/locked/Farbe, NULL-korrekt) +
+// guide_lines (Endpunkte exakt, storey_id/layer_id erhalten). Das ist die
+// benutzer-beobachtbare Fundament-Stufe (Persistenz-Round-Trip; die Export-
+// Sichtbarkeit ist slice-032c).
+Building drawingBuilding() {
+    Building building;
+    building.storeys.push_back({StoreyId{1}, 2500.0});
+    building.storeys.push_back({StoreyId{2}, 3000.0});
+    Layer visible;
+    visible.id = LayerId{1};
+    visible.name = "Achsen";
+    visible.visible = true;
+    visible.locked = false;
+    visible.color_hex = "#00ff00";
+    building.layers.push_back(visible);
+    Layer hidden;
+    hidden.id = LayerId{2};
+    hidden.name = "Skizze";
+    hidden.visible = false;
+    hidden.locked = true;  // color_hex bleibt nullopt (NULL-Korrektheit)
+    building.layers.push_back(hidden);
+    building.guide_lines.push_back({GuideLineId{1}, StoreyId{1}, LayerId{1},
+                                    {{100.0, 200.0}, {900.0, 200.0}}});
+    // storey_id ≠ layer_id (Geschoss 2, Ebene 1) — fängt einen storey_id↔layer_id-
+    // Bind/Spalten-Swap, der bei gleichen Werten unentdeckt bliebe (Review-MED-1).
+    building.guide_lines.push_back({GuideLineId{2}, StoreyId{2}, LayerId{1},
+                                    {{0.0, 0.0}, {0.0, 1500.0}}});
+    return building;
+}
+
+TEST(SqliteProjectRepository_LH_FA_DRW, RoundTripErhaeltEbeneUndHilfslinie) {
+    const SqliteProjectRepository repo;
+    const Building original = drawingBuilding();
+    const fs::path path = tempPath("bcad_drawing.bcad");
+    fs::remove(path);
+
+    repo.save(original, path);
+    const Building loaded = repo.load(path);
+
+    // Ebenen feldgleich (inkl. NULL-Farbe der zweiten Ebene).
+    ASSERT_EQ(loaded.layers.size(), 2U);
+    const Layer& l1 = loaded.layers[0];
+    EXPECT_EQ(static_cast<int>(l1.id), 1);
+    EXPECT_EQ(l1.name, "Achsen");
+    EXPECT_TRUE(l1.visible);
+    EXPECT_FALSE(l1.locked);
+    ASSERT_TRUE(l1.color_hex.has_value());
+    EXPECT_EQ(*l1.color_hex, "#00ff00");
+    const Layer& l2 = loaded.layers[1];
+    EXPECT_EQ(l2.name, "Skizze");
+    EXPECT_FALSE(l2.visible);
+    EXPECT_TRUE(l2.locked);
+    EXPECT_FALSE(l2.color_hex.has_value());  // NULL → nullopt (nicht "")
+
+    // Hilfslinien feldgleich: Endpunkte exakt + storey_id/layer_id erhalten.
+    ASSERT_EQ(loaded.guide_lines.size(), 2U);
+    const GuideLine& g1 = loaded.guide_lines[0];
+    EXPECT_EQ(static_cast<int>(g1.id), 1);
+    EXPECT_EQ(static_cast<int>(g1.storey_id), 1);
+    EXPECT_EQ(static_cast<int>(g1.layer_id), 1);
+    EXPECT_DOUBLE_EQ(g1.segment.start.x_mm, 100.0);
+    EXPECT_DOUBLE_EQ(g1.segment.start.y_mm, 200.0);
+    EXPECT_DOUBLE_EQ(g1.segment.end.x_mm, 900.0);
+    EXPECT_DOUBLE_EQ(g1.segment.end.y_mm, 200.0);
+    const GuideLine& g2 = loaded.guide_lines[1];
+    EXPECT_EQ(static_cast<int>(g2.storey_id), 2);  // storey ≠ layer: fängt einen Swap
+    EXPECT_EQ(static_cast<int>(g2.layer_id), 1);
+    EXPECT_DOUBLE_EQ(g2.segment.start.x_mm, 0.0);
+    EXPECT_DOUBLE_EQ(g2.segment.start.y_mm, 0.0);
+    EXPECT_DOUBLE_EQ(g2.segment.end.x_mm, 0.0);
+    EXPECT_DOUBLE_EQ(g2.segment.end.y_mm, 1500.0);
+
+    fs::remove(path);
+}
+
+// Leere Ebenen/Hilfslinien round-trippen sauber (keine DRW-Daten).
+TEST(SqliteProjectRepository_LH_FA_DRW, LeereEbenenUndHilfslinien) {
+    const SqliteProjectRepository repo;
+    const fs::path path = tempPath("bcad_drawing_empty.bcad");
+    fs::remove(path);
+
+    repo.save(sampleBuilding(), path);  // Wände, keine DRW-Daten
+    const Building loaded = repo.load(path);
+
+    EXPECT_TRUE(loaded.layers.empty());
+    EXPECT_TRUE(loaded.guide_lines.empty());
     fs::remove(path);
 }
 

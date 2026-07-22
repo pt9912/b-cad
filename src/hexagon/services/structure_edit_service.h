@@ -11,6 +11,7 @@
 #include "hexagon/ports/driven/geometry_kernel_port.h"
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/ports/driving/detect_rooms_port.h"
+#include "hexagon/ports/driving/edit_drawing_port.h"
 #include "hexagon/ports/driving/edit_structure_port.h"
 #include "hexagon/ports/driving/evaluate_port.h"
 #include "hexagon/ports/driving/view_model_port.h"
@@ -31,7 +32,8 @@ namespace bcad::hexagon::services {
 class StructureEditService final : public ports::driving::EditStructurePort,
                                    public ports::driving::DetectRoomsPort,
                                    public ports::driving::ViewModelPort,
-                                   public ports::driving::EvaluatePort {
+                                   public ports::driving::EvaluatePort,
+                                   public ports::driving::EditDrawingPort {
 public:
     explicit StructureEditService(const ports::driven::GeometryKernelPort& geometry);
 
@@ -115,6 +117,21 @@ public:
                          std::optional<model::MaterialId> material) override;
     bool setSlabMaterial(model::SlabId slab,
                          std::optional<model::MaterialId> material) override;
+
+    // EditDrawingPort (LH-FA-DRW-005/006, ADR-0018): 2D-Zeichnen — Ebenen +
+    // Hilfslinien auf DERSELBEN `Building`-Instanz wie die Bauteile (eigener
+    // Port, geteiltes Service-Objekt — Muster EvaluatePort). KEIN `op`
+    // (Material-Präzedenz); Ablehnungen = E-VAL-001-Rejection (Modell
+    // unverändert); removeLayer ist `restrict`-treu (referenzierte Ebene nicht
+    // löschbar).
+    std::optional<model::LayerId> addLayer(
+        const model::Layer& prototype) override;
+    bool renameLayer(model::LayerId id, const std::string& name) override;
+    bool setLayerVisible(model::LayerId id, bool visible) override;
+    bool removeLayer(model::LayerId id) override;
+    std::optional<model::GuideLineId> addGuideLine(
+        const model::GuideLine& prototype) override;
+    bool removeGuideLine(model::GuideLineId id) override;
 
     // DetectRoomsPort (LH-FA-ROM-001): zuletzt erkannte Räume, reine Query.
     std::vector<model::Room> rooms(model::StoreyId storey) const override;
@@ -247,6 +264,8 @@ private:
     int next_slab_id_{1};
     int next_stair_id_{1};
     int next_material_id_{1};
+    int next_layer_id_{1};
+    int next_guide_line_id_{1};
 };
 
 }  // namespace bcad::hexagon::services

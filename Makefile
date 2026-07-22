@@ -29,7 +29,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check acc-002-beleg run io-smoke
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check schema-regen acc-002-beleg run io-smoke
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -138,6 +138,19 @@ schema-check: ## ADR-0006 — Drift: schema.sql == d-migrate(data-model.yaml) (N
 # Hinweis: d-migrate-stderr (u. a. W200-DEZIMAL→REAL-Hinweise) bleibt
 # sichtbar — Pull-/Image-Fehler so diagnostizierbar; der Diff vergleicht
 # nur stdout (die reine DDL).
+
+# schema.sql aus data-model.yaml NEU erzeugen (dieselbe DMIGRATE-Bild-Version
+# wie schema-check, nur schreibend statt diffend). Nach einer data-model.yaml-
+# Aenderung aufrufen, dann `make schema-check` zur Byte-Verifikation. BEWUSST
+# NICHT in `make gates` (Muster schema-check; d-migrate bleibt aus dem
+# hermetischen Gate-Build-Pfad) — haelt die Regen in der "nur ueber make"-
+# Disziplin (AGENTS §2.9), statt eines rohen Einmal-docker-run (slice-032b/L2).
+schema-regen: ## ADR-0006 — schema.sql aus data-model.yaml neu erzeugen (danach schema-check)
+	@$(DOCKER) run --rm -v $(CURDIR)/spec:/work:ro $(DMIGRATE) \
+		schema generate --source=/work/data-model.yaml --target=sqlite \
+		--deterministic --report=/dev/null \
+		> src/adapters/persistence/schema.sql
+	@echo "schema-regen ok: schema.sql neu erzeugt — jetzt 'make schema-check' zur Verifikation"
 
 # `build` ist NICHT separat gelistet: test/lint/coverage-gate sind
 # Dockerfile-Stages FROM build und kompilieren die Target-Kette bereits

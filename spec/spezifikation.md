@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-05.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-22.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -815,6 +815,15 @@ PDF/PNG als 2D-Segment) — eine autorisierte Vertragserweiterung (Muster Dach-V
 **kein** stiller Drift. **Bemaßung, Schraffur und Räume bleiben ausgeschlossen** (eigene
 spätere Entscheidungen).
 
+**Durabilität (Impl-Stand).** Ebene und Hilfslinie sind **durabel**: der SQLite-Adapter
+round-trippt `layers` und `guide_lines` in der bestehenden atomaren Speicher-Transaktion
+(Ebenen **vor** Hilfslinien — FK `layer_id`; Hilfslinien **nach** Geschossen — FK
+`storey_id`), ID- und feld-erhaltend. Das `locked`-Flag ist **daten-durabel, aber (noch)
+nicht verhaltenswirksam** — es gibt in dieser Stufe keinen Editier-Pfad, den eine Sperre
+schützen könnte (kein interaktiver 2D-Canvas); benannte Lücke. Die **Export-Sichtbarkeit**
+(Hilfslinie im DXF/PDF/PNG-Grundriss, Ebenen-Sichtbarkeit als Export-Filter) folgt im
+Export-Slice.
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -868,15 +877,15 @@ Kerntabellen (welle-1) — vollständig in `data-model.yaml`:
 | `materials`, `wall_types` | Material- und Wandtyp-Bibliothek |
 | `undo_commands` | persistierter Undo-Stack ([LH-QA-003](lastenheft.md#lh-qa-003--undoredo)) |
 
-**2D-Zeichen-Daten (welle-5, DRW-Strang).** Das Neutral-Format deklariert die
-Ebenen-Tabelle (`layers`: Name/Sichtbarkeit/Sperre/Farbe, projekt-eindeutiger Name)
-**forward**; der DRW-Fundament-Slice nimmt sie erstmals real in Betrieb und ergänzt eine
-**Hilfslinien-Tabelle** (`guide_lines`: Anfangs-/Endpunkt in mm, Geschoss- und
-Ebenen-Bezug, Ebenen-Fremdschlüssel `restrict`). Die polymorphe cross-cutting
-Zuordnungstabelle (`entity_layers`) und die Dokument-Ablage (`documents`) bleiben
-**forward-deklariert** (Aktivierung erst mit der Bauteil-Ebenen-Ausweitung bzw. einem
-Dokument-Slice). `schema.sql` wird aus `data-model.yaml` per d-migrate regeneriert
-(`schema-check`).
+**2D-Zeichen-Daten (welle-5, DRW-Strang).** Das Neutral-Format führt die
+Ebenen-Tabelle (`layers`: Name/Sichtbarkeit/Sperre/Farbe, projekt-eindeutiger Name) —
+seit dem DRW-Impl-Slice erstmals **real verdrahtet** (Persistenz-Round-Trip durch den
+SQLite-Adapter) — und die **Hilfslinien-Tabelle** (`guide_lines`: Anfangs-/Endpunkt in mm,
+Geschoss- und Ebenen-Bezug, Ebenen-Fremdschlüssel `restrict`), **aktiv**. Die polymorphe
+cross-cutting Zuordnungstabelle (`entity_layers`) und die Dokument-Ablage (`documents`)
+bleiben **forward-deklariert** (Aktivierung erst mit der Bauteil-Ebenen-Ausweitung bzw.
+einem Dokument-Slice). `schema.sql` wird aus `data-model.yaml` per d-migrate regeneriert
+(`schema-regen`; verifiziert durch `schema-check`).
 
 **Migrationsregel:** Schema-Version steigt monoton; jede Erhöhung braucht
 eine getestete Aufwärts-Migration (vgl. `releasing.md`).

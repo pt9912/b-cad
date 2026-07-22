@@ -8,6 +8,7 @@ find_package(GTest REQUIRED)   # REQ-TEC-005
 # Port-Doubles statt echter Adapter (ADR-0001 §Testbarkeit).
 add_executable(bcad_tests
     hexagon/test_bootstrap_info.cpp
+    hexagon/test_drawing.cpp
     hexagon/test_evaluate.cpp
     hexagon/test_evaluate_lists.cpp
     hexagon/test_evaluate_volume.cpp

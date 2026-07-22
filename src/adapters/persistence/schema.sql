@@ -196,6 +196,25 @@ CREATE TABLE "slabs" (
     "material_id" INTEGER REFERENCES "materials"("id") ON DELETE RESTRICT
 );
 
+-- [W200] Decimal(12,3) mapped to REAL in SQLite. Precision may be lost.
+-- Hint: Store as TEXT if exact decimal precision is required.
+-- [W200] Decimal(12,3) mapped to REAL in SQLite. Precision may be lost.
+-- Hint: Store as TEXT if exact decimal precision is required.
+-- [W200] Decimal(12,3) mapped to REAL in SQLite. Precision may be lost.
+-- Hint: Store as TEXT if exact decimal precision is required.
+-- [W200] Decimal(12,3) mapped to REAL in SQLite. Precision may be lost.
+-- Hint: Store as TEXT if exact decimal precision is required.
+CREATE TABLE "guide_lines" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "project_id" INTEGER NOT NULL REFERENCES "projects"("id") ON DELETE CASCADE,
+    "storey_id" INTEGER NOT NULL REFERENCES "storeys"("id") ON DELETE CASCADE,
+    "layer_id" INTEGER NOT NULL REFERENCES "layers"("id") ON DELETE RESTRICT,
+    "start_x_mm" REAL NOT NULL,
+    "start_y_mm" REAL NOT NULL,
+    "end_x_mm" REAL NOT NULL,
+    "end_y_mm" REAL NOT NULL
+);
+
 CREATE TABLE "entity_layers" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "project_id" INTEGER NOT NULL REFERENCES "projects"("id") ON DELETE CASCADE,

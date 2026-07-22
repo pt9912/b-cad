@@ -535,6 +535,46 @@ void insertMaterials(Db& db, const hexagon::model::Building& building) {
     }
 }
 
+// Ebenen (LH-FA-DRW-006, ADR-0018): benannte Zeichen-Ebenen. NACH projects
+// (FK project_id), VOR guide_lines (FK layer_id, `restrict`). `visible`/`locked`
+// als INTEGER 0/1; `color_hex` optional (NULL-sicher).
+void insertLayers(Db& db, const hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "INSERT INTO layers (id,project_id,name,visible,locked,color_hex) "
+              "VALUES (?,1,?,?,?,?);");
+    for (const auto& layer : building.layers) {
+        sqlite3_bind_int(stmt.get(), 1, static_cast<int>(layer.id));
+        sqlite3_bind_text(stmt.get(), 2, layer.name.c_str(), -1,
+                          SQLITE_TRANSIENT);
+        sqlite3_bind_int(stmt.get(), 3, layer.visible ? 1 : 0);
+        sqlite3_bind_int(stmt.get(), 4, layer.locked ? 1 : 0);
+        bindOptionalText(stmt, 5, layer.color_hex);
+        stmt.step();
+        stmt.reset();
+    }
+}
+
+// Hilfslinien (LH-FA-DRW-005, ADR-0018): 2D-Segment je Geschoss, einer Ebene
+// zugeordnet. NACH storeys (FK storey_id) UND layers (FK layer_id). Koordinaten
+// als *_mm (decimal 12,3); ID-Erhalt via bind_int.
+void insertGuideLines(Db& db, const hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "INSERT INTO guide_lines (id,project_id,storey_id,layer_id,"
+              "start_x_mm,start_y_mm,end_x_mm,end_y_mm) "
+              "VALUES (?,1,?,?,?,?,?,?);");
+    for (const auto& guide : building.guide_lines) {
+        sqlite3_bind_int(stmt.get(), 1, static_cast<int>(guide.id));
+        sqlite3_bind_int(stmt.get(), 2, static_cast<int>(guide.storey_id));
+        sqlite3_bind_int(stmt.get(), 3, static_cast<int>(guide.layer_id));
+        sqlite3_bind_double(stmt.get(), 4, guide.segment.start.x_mm);
+        sqlite3_bind_double(stmt.get(), 5, guide.segment.start.y_mm);
+        sqlite3_bind_double(stmt.get(), 6, guide.segment.end.x_mm);
+        sqlite3_bind_double(stmt.get(), 7, guide.segment.end.y_mm);
+        stmt.step();
+        stmt.reset();
+    }
+}
+
 void insertStoreys(Db& db, const hexagon::model::Building& building) {
     Stmt stmt(db,
               "INSERT INTO storeys (id,project_id,name,level_index,"
@@ -744,6 +784,42 @@ void loadMaterials(Db& db, hexagon::model::Building& building) {
     }
 }
 
+void loadLayers(Db& db, hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "SELECT id,name,visible,locked,color_hex FROM layers ORDER BY id;");
+    while (stmt.step()) {
+        hexagon::model::Layer layer;
+        layer.id = static_cast<hexagon::model::LayerId>(
+            sqlite3_column_int(stmt.get(), 0));
+        const auto* name = sqlite3_column_text(stmt.get(), 1);
+        layer.name = (name != nullptr) ? reinterpret_cast<const char*>(name) : "";
+        layer.visible = sqlite3_column_int(stmt.get(), 2) != 0;
+        layer.locked = sqlite3_column_int(stmt.get(), 3) != 0;
+        layer.color_hex = columnOptionalText(stmt, 4);
+        building.layers.push_back(layer);
+    }
+}
+
+void loadGuideLines(Db& db, hexagon::model::Building& building) {
+    Stmt stmt(db,
+              "SELECT id,storey_id,layer_id,start_x_mm,start_y_mm,end_x_mm,"
+              "end_y_mm FROM guide_lines ORDER BY id;");
+    while (stmt.step()) {
+        hexagon::model::GuideLine guide;
+        guide.id = static_cast<hexagon::model::GuideLineId>(
+            sqlite3_column_int(stmt.get(), 0));
+        guide.storey_id = static_cast<hexagon::model::StoreyId>(
+            sqlite3_column_int(stmt.get(), 1));
+        guide.layer_id = static_cast<hexagon::model::LayerId>(
+            sqlite3_column_int(stmt.get(), 2));
+        guide.segment.start = {sqlite3_column_double(stmt.get(), 3),
+                               sqlite3_column_double(stmt.get(), 4)};
+        guide.segment.end = {sqlite3_column_double(stmt.get(), 5),
+                             sqlite3_column_double(stmt.get(), 6)};
+        building.guide_lines.push_back(guide);
+    }
+}
+
 void loadStoreys(Db& db, hexagon::model::Building& building) {
     Stmt stmt(db, "SELECT id,height_mm FROM storeys ORDER BY level_index;");
     while (stmt.step()) {
@@ -919,12 +995,14 @@ void SqliteProjectRepository::save(const hexagon::model::Building& building,
             db->exec("BEGIN;");
             insertProject(*db);
             insertStoreys(*db, building);
+            insertLayers(*db, building);     // vor guide_lines (FK layer_id, restrict)
             insertMaterials(*db, building);  // vor walls/roofs/slabs (FK material_id)
             insertWalls(*db, building);
             insertOpenings(*db, building);  // nach Wänden (FK wall_id)
             insertRoofs(*db, building);      // nach Geschossen (FK storey_id)
             insertSlabs(*db, building);      // nach Geschossen (FK storey_id)
             insertStairs(*db, building);     // nach Geschossen (FK from/to_storey)
+            insertGuideLines(*db, building);  // nach storeys (FK storey_id) + layers (FK layer_id)
             db->exec("COMMIT;");
             db.reset();  // schließen vor fsync/rename
         } catch (const SqliteError& e) {
@@ -966,12 +1044,14 @@ hexagon::model::Building SqliteProjectRepository::load(
         hexagon::model::Building building;
         Db db(path);
         loadStoreys(db, building);
+        loadLayers(db, building);
         loadMaterials(db, building);
         loadWalls(db, building);
         loadOpenings(db, building);
         loadRoofs(db, building);
         loadSlabs(db, building);  // Lade-Reihenfolge: Stil-Konsistenz (kein FK auf load)
         loadStairs(db, building);
+        loadGuideLines(db, building);
         return building;
     } catch (const SqliteError& e) {
         throw std::runtime_error("E-IO: Projektdatei nicht lesbar ('" +

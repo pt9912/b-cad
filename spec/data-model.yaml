@@ -242,6 +242,21 @@ tables:
     constraints:
       - { name: uq_layers_project_name, type: unique, columns: [project_id, name] }
 
+  guide_lines:
+    description: "Hilfslinien (LH-FA-DRW-005; gerade 2D-Zeichenhilfe je Geschoss, einer Ebene zugeordnet). welle-5."
+    columns:
+      id: { type: identifier, auto_increment: true }
+      project_id: { type: integer, required: true, references: { table: projects, column: id, on_delete: cascade } }
+      storey_id: { type: integer, required: true, references: { table: storeys, column: id, on_delete: cascade } }
+      # direkter typisierter Ebenen-Bezug (ADR-0018, NICHT entity_layers);
+      # restrict = Loeschschutz einer referenzierten Ebene (kein stiller Verlust)
+      layer_id: { type: integer, required: true, references: { table: layers, column: id, on_delete: restrict } }
+      start_x_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      start_y_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      end_x_mm: { type: decimal, precision: 12, scale: 3, required: true }
+      end_y_mm: { type: decimal, precision: 12, scale: 3, required: true }
+    primary_key: [id]
+
   entity_layers:
     description: >
       Layer-Zuordnung (forward-declared). BEWUSSTE Ausnahme zu ADR-0006

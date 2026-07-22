@@ -1161,6 +1161,139 @@ bool StructureEditService::setSlabMaterial(
     return true;
 }
 
+// --- 2D-Zeichnen: Ebenen + Hilfslinien (LH-FA-DRW-005/006, ADR-0018) ---
+// Eigener Driving-Port `EditDrawingPort` auf DERSELBEN Building-Instanz (Muster
+// EvaluatePort: eigener Port, geteiltes Service-Objekt). Zeichen-Mutationen
+// melden KEINEN `op` (Material-Präzedenz, ADR-0008); Ablehnungen sind die
+// E-VAL-001-Rejection-Lesart (Modell unverändert). `isBlankName`/`nearPoint`
+// werden aus den obigen anonymen Namespaces wiederverwendet.
+
+namespace {
+
+bool layerExists(const model::Building& b, model::LayerId id) {
+    return std::any_of(b.layers.begin(), b.layers.end(),
+                       [id](const model::Layer& l) { return l.id == id; });
+}
+
+// Projekt-Eindeutigkeit des Ebenen-Namens (uq_layers_project_name): existiert
+// bereits eine ANDERE Ebene (≠ `exclude`) mit diesem Namen? App-seitig geprüft,
+// damit die Ablehnung im Modell greift — nicht erst als Constraint-Wurf beim
+// Speichern (default-`exclude` LayerId{} == 0 schließt beim Anlegen nichts aus,
+// da vergebene Ids ≥ 1).
+bool layerNameTaken(const model::Building& b, const std::string& name,
+                    model::LayerId exclude) {
+    return std::any_of(b.layers.begin(), b.layers.end(),
+                       [&](const model::Layer& l) {
+                           return l.id != exclude && l.name == name;
+                       });
+}
+
+bool storeyExists(const model::Building& b, model::StoreyId id) {
+    return std::any_of(b.storeys.begin(), b.storeys.end(),
+                       [id](const model::Storey& s) { return s.id == id; });
+}
+
+// `on_delete: restrict` (ADR-0018): wird die Ebene noch von einer Hilfslinie
+// referenziert? Dann nicht löschbar (kein stiller Verlust der Zuordnung).
+bool layerReferenced(const model::Building& b, model::LayerId id) {
+    return std::any_of(b.guide_lines.begin(), b.guide_lines.end(),
+                       [id](const model::GuideLine& g) {
+                           return g.layer_id == id;
+                       });
+}
+
+}  // namespace
+
+std::optional<model::LayerId> StructureEditService::addLayer(
+    const model::Layer& prototype) {
+    if (isBlankName(prototype.name)) {
+        return std::nullopt;  // DRW-006 Boundary: ohne Name abgelehnt
+    }
+    if (layerNameTaken(building_, prototype.name, model::LayerId{})) {
+        return std::nullopt;  // projekt-eindeutig (uq_layers_project_name)
+    }
+    model::Layer layer = prototype;
+    layer.id = static_cast<model::LayerId>(next_layer_id_);
+    building_.layers.push_back(layer);
+    ++next_layer_id_;
+    return layer.id;  // kein op (ADR-0018 §Entscheidung 2)
+}
+
+bool StructureEditService::renameLayer(model::LayerId id,
+                                       const std::string& name) {
+    if (isBlankName(name)) {
+        return false;  // leerer Name → Modell unverändert
+    }
+    if (layerNameTaken(building_, name, id)) {
+        return false;  // Kollision mit einer anderen Ebene
+    }
+    const auto it = std::find_if(
+        building_.layers.begin(), building_.layers.end(),
+        [id](const model::Layer& l) { return l.id == id; });
+    if (it == building_.layers.end()) {
+        return false;  // unbekannt
+    }
+    it->name = name;
+    return true;
+}
+
+bool StructureEditService::setLayerVisible(model::LayerId id, bool visible) {
+    const auto it = std::find_if(
+        building_.layers.begin(), building_.layers.end(),
+        [id](const model::Layer& l) { return l.id == id; });
+    if (it == building_.layers.end()) {
+        return false;  // unbekannt
+    }
+    it->visible = visible;  // Export-Filter; kein op
+    return true;
+}
+
+bool StructureEditService::removeLayer(model::LayerId id) {
+    const auto it = std::find_if(
+        building_.layers.begin(), building_.layers.end(),
+        [id](const model::Layer& l) { return l.id == id; });
+    if (it == building_.layers.end()) {
+        return false;  // unbekannt
+    }
+    // `on_delete: restrict` (ADR-0018): noch referenzierte Ebene nicht löschbar.
+    if (layerReferenced(building_, id)) {
+        return false;
+    }
+    building_.layers.erase(it);
+    return true;
+}
+
+std::optional<model::GuideLineId> StructureEditService::addGuideLine(
+    const model::GuideLine& prototype) {
+    // DRW-005 Boundary: Hilfslinie ohne Ausdehnung (Anfang = Ende, innerhalb der
+    // Geometrie-Toleranz) → abgelehnt, Modell unverändert.
+    if (nearPoint(prototype.segment.start, prototype.segment.end)) {
+        return std::nullopt;
+    }
+    if (!layerExists(building_, prototype.layer_id)) {
+        return std::nullopt;  // unbekannte Ebene
+    }
+    if (!storeyExists(building_, prototype.storey_id)) {
+        return std::nullopt;  // unbekanntes Geschoss
+    }
+    model::GuideLine guide = prototype;
+    guide.id = static_cast<model::GuideLineId>(next_guide_line_id_);
+    building_.guide_lines.push_back(guide);
+    ++next_guide_line_id_;
+    return guide.id;  // kein op (ADR-0018 §Entscheidung 2)
+}
+
+bool StructureEditService::removeGuideLine(model::GuideLineId id) {
+    const auto it = std::find_if(
+        building_.guide_lines.begin(), building_.guide_lines.end(),
+        [id](const model::GuideLine& g) { return g.id == id; });
+    if (it == building_.guide_lines.end()) {
+        return false;  // unbekannt
+    }
+    building_.guide_lines.erase(it);
+    return true;
+}
+
 const std::vector<model::Material>& StructureEditService::materials() const {
     return building_.materials;  // MAT-002, read-only
 }

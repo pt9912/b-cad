@@ -1,7 +1,7 @@
 ---
 id: slice-032b
 titel: DRW-Impl — Kern-Werttypen (Layer/GuideLine) + EditDrawingPort + Service + guide_lines-Persistenz
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), [LH-FA-DRW-006](../../../../spec/lastenheft.md#lh-fa-drw-006), [LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0003](../../adr/0003-persistenz-sqlite.md), [ADR-0006](../../adr/0006-relationales-schema-design.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)]
@@ -9,17 +9,16 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0003](../.
 
 # Slice 032b: DRW-Impl — Layer/GuideLine + EditDrawingPort + Service + guide_lines-Persistenz
 
-**Status:** open (Plan **startbar** nach Review-Einarbeitung — noch **nicht** in-progress; Impl-Start
-auf Projektinhaber-Wort). **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
-2026-07-22 (Reviewer ≠ Autor, read-only): 0 HIGH / 2 MED / 2 LOW / 2 INFO → startbar**
-([Report](../../../reviews/2026-07-22-slice-032b-plan.md)). M1 (Design „Port getrennt, Service geteilt")
-+ M2 (Export-AK erst 032c) als tragfähig bestätigt; L1 (Wortlaut §2.2) + L2 (`make schema-regen`-Target)
-+ INFO-1 (Zusatz-Sonden) eingearbeitet.
+**Status:** done (2026-07-22, `make gates` grün — 237 Tests, Coverage 90,6 %).
+**[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review**
+0 HIGH / 2 MED / 2 LOW / 2 INFO → startbar ([Report](../../../reviews/2026-07-22-slice-032b-plan.md);
+M1/M2 tragfähig, L1/L2/INFO-1 eingearbeitet). **Unabhängiges Code-Review** (Persistenz-Latte)
+**0 HIGH / 1 MED / 2 LOW / 2 INFO → closure-fähig** ([Report](../../../reviews/2026-07-22-slice-032b-code-review.md);
+Round-Trip Zeile-für-Zeile verifiziert, kein Datenkorruptions-Defekt; MED-1 [Swap-Orakel] + LOW-2
+eingearbeitet).
 **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a**
 (Hilfslinie = 2 Punkte, **keine** neue Solid-Geometrie —
-[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Konsequenzen (c)). Persistenz-Latte:
-zusätzliches unabhängiges **Code-Review vor Welle-Closure** (stille-Verfälschungs-/Drift-Klasse,
-Muster [slice-017e](../done-archive/slice-017e-material-persistenz.md)).
+[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Konsequenzen (c)).
 
 **Welle:** welle-5-erweiterung (DRW-Strang, **Impl-Hälfte** des Fundaments; Nachfolge
 [slice-032a](../done/slice-032a-drw-fundament-ak-spec.md) [AK/Spec]; Muster
@@ -109,7 +108,7 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
 
 ## 2. Definition of Done
 
-- [ ] **Kern-Werttypen** (`src/hexagon/model/{layer,guide_line}.h`; header-only, pure
+- [x] **Kern-Werttypen** (`src/hexagon/model/{layer,guide_line}.h`; header-only, pure
       Werte, `namespace bcad::hexagon::model`, kein I/O — Regel A):
       `enum class LayerId : int {}` + `struct Layer { LayerId id; std::string name; bool
       visible{true}; bool locked{false}; std::optional<std::string> color_hex; };`;
@@ -118,7 +117,7 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
       `Point2D` in mm, wiederverwendet). **`Building`** (`building.h`) erhält
       `std::vector<Layer> layers;` + `std::vector<GuideLine> guide_lines;`. **Kein** CMake-Edit
       (header-only; Muster `material.h`).
-- [ ] **Driving-Port `src/hexagon/ports/driving/{edit_drawing_port}.h`** (neu, `namespace
+- [x] **Driving-Port `src/hexagon/ports/driving/{edit_drawing_port}.h`** (neu, `namespace
       bcad::hexagon::ports::driving`, rein abstrakt) — **eigener Port** ([ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)
       §Entscheidung 2), Command-Idiom wie `EditStructurePort` (Anlegen → `std::optional<Id>`
       [nullopt = abgelehnt], Mutation/Löschen → `bool` [false = unbekannt/abgelehnt]):
@@ -132,7 +131,7 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
       [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-**Rejection-
       Lesart** (Modell unverändert), **keine** Klemmung. **Kein** neuer `op`
       ([ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), Material-Präzedenz).
-- [ ] **Service** (`structure_edit_service.{h,cpp}`): `StructureEditService` implementiert
+- [x] **Service** (`structure_edit_service.{h,cpp}`): `StructureEditService` implementiert
       `EditDrawingPort` **zusätzlich** (5. Basisklasse); `int next_layer_id_{1};` +
       `int next_guide_line_id_{1};`. **Validierung:** `addLayer` lehnt leeren Namen ab
       (`isBlankName`, wiederverwendet) **und** projekt-doppelten Namen (App-seitig, konsistent mit
@@ -141,12 +140,12 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
       `layer_id`/`storey_id`; `removeLayer` lehnt ab, solange eine `GuideLine` die Ebene
       referenziert (`layerReferenced(building_, id)`-Helfer, Muster `materialReferenced` —
       **`restrict`**). ID-Erhalt/Vergabe wie alle Bauteil-Ids.
-- [ ] **Schema** — **`guide_lines`-Tabelle** in `spec/data-model.yaml` (id; `project_id`
+- [x] **Schema** — **`guide_lines`-Tabelle** in `spec/data-model.yaml` (id; `project_id`
       cascade; `storey_id` cascade; **`layer_id` `on_delete: restrict`** [DB-Löschschutz]; vier
       `*_mm` decimal 12,3 required) + **`schema.sql` via `make schema-regen` regeneriert** (neues
       Target, L2 — §3); `layers`-Tabelle **unverändert** (liegt vor, wird nur real verdrahtet).
       **`make schema-check` grün** (Byte-Gleichheit committete `schema.sql` == d-migrate(`data-model.yaml`)).
-- [ ] **Persistenz** (`sqlite_project_repository.cpp`): `insertLayers`/`loadLayers`,
+- [x] **Persistenz** (`sqlite_project_repository.cpp`): `insertLayers`/`loadLayers`,
       `insertGuideLines`/`loadGuideLines` (Muster `insertMaterials`/`loadMaterials`); NULL-sichere
       Optional-Helfer für `color_hex` (`bindOptionalText`/`columnOptionalText`, wiederverwendet);
       `visible`/`locked` als int 0/1. **Insert-Reihenfolge:** `insertLayers` **vor**
@@ -154,7 +153,7 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
       Beide in die bestehende **BEGIN/COMMIT**-Transaktion + `save`/`load`-Aufruflisten
       eingehängt; Fehler lässt den Vorstand intakt (Temp verworfen, E-IO).
       `entity_layers`/`documents` bleiben unverdrahtet (benannte Lücke).
-- [ ] **AK-Tests Kern** (`tests/hexagon/test_drawing.cpp`, neu; Suite-Namen mit LH-id;
+- [x] **AK-Tests Kern** (`tests/hexagon/test_drawing.cpp`, neu; Suite-Namen mit LH-id;
       port-double-Geometrie, OCC-frei):
       **`Drawing_LH_FA_DRW_006, EbeneAnlegenUmbenennenSichtbarkeit`** (Happy: anlegen mit
       Name/Farbe, umbenennen, sichtbar/unsichtbar → Zustand geändert);
@@ -168,13 +167,13 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
       abgelehnt (`uq_layers_project_name`-App-Guard), `addGuideLine` mit unbekannter Ebene/unbekanntem
       Geschoss → `nullopt`, `removeGuideLine` (Happy + unbekannte Id) — übt die Logik + hält
       `coverage-gate` ≥ 70 % komfortabel. Neues File in `tests/CMakeLists.txt` (`bcad_tests`) eingehängt.
-- [ ] **AK-Tests Persistenz** (`tests/adapters/test_sqlite_project_repository.cpp`, ergänzt):
+- [x] **AK-Tests Persistenz** (`tests/adapters/test_sqlite_project_repository.cpp`, ergänzt):
       **`SqliteProjectRepository_LH_FA_DRW, RoundTripEbeneUndHilfslinie`** — Projekt mit Ebene
       (sichtbar, Farbe) + Hilfslinie auf einem Geschoss speichern/laden → Ebene (Name/`visible`/
       `locked`/Farbe) **unverändert**, Hilfslinie (Anfangs-/Endpunkt exakt, `storey_id`/`layer_id`
       erhalten) **unverändert**; **leere** `layers`/`guide_lines` round-trippen. **Regression:**
       bestehende Round-Trip-/Atomaritäts-Tests textlich unverändert grün.
-- [ ] **Spec-Nachzug (durabel):** `spezifikation.md` **§1** [`LH-FA-DRW-005.a`](../../../../spec/spezifikation.md)
+- [x] **Spec-Nachzug (durabel):** `spezifikation.md` **§1** [`LH-FA-DRW-005.a`](../../../../spec/spezifikation.md)
       um „durabel / Round-Trip aktiv; `locked` daten-durabel, nicht verhaltenswirksam (Lücke)"
       ergänzt; **§2.2** (Review-L1: die Futur-DRW-Prosa auf Präsens/abgeschlossen umschreiben — heute
       trägt **`layers`** das „forward-deklariert", und `guide_lines` ist bereits in Futur beschrieben):
@@ -186,16 +185,16 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
       vor dem Gate per `grep -E 'ADR-|slice-[0-9]{3}'` selbst fangen). **Lastenheft unberührt**
       (kein [MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile) —
       032a hat die AK bereits gesetzt).
-- [ ] **[ADR-Index](../../adr/README.md)-Folgepflicht:** die [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-
+- [x] **[ADR-Index](../../adr/README.md)-Folgepflicht:** die [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-
       **Impl-Zeile** (Kern+Port+Service+Persistenz) → erfüllt; die **Export-Zeile** bleibt **offen**
       (032c). **CHANGELOG** ([MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog))
       Slice-Eintrag.
-- [ ] **Gates:** engster Sensor zuerst (`make schema-check`, dann `make test`), danach
+- [x] **Gates:** engster Sensor zuerst (`make schema-check`, dann `make test`), danach
       **`make gates` grün** (docs-check inkl. `planning`/`ids`/`matrix`; a-check/arch-check
       unverändert — **keine** neue Regel [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)
       §Entscheidung 6; lint 0; coverage ≥ 70 %; build Target-Trennung). **Unabhängiges
       Code-Review vor Welle-Closure** (Persistenz-Latte) ohne offene HIGH. Closure-Notiz.
-- [ ] **Lifecycle:** beim Start `git mv open/ → in-progress/` **+ Ruhe-Sentinel** `Keine offenen
+- [x] **Lifecycle:** beim Start `git mv open/ → in-progress/` **+ Ruhe-Sentinel** `Keine offenen
       Slices` aus dem Roadmap-`## Aktuelle Welle`-Block **entfernen** — **im selben Commit**
       ([MR-017](../../../../harness/conventions.md#mr-017--planning-lifecycle-gate-d-check-modul-planning),
       [AGENTS §2.8](../../../../AGENTS.md)); bei Closure `git mv → done/` (+ Sentinel wieder setzen,
@@ -223,7 +222,7 @@ zurück. Koordinaten `*_mm` (decimal 12,3) exakt.
 | [ADR-Index](../../adr/README.md) | ändern (Closure) | [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) Impl-Zeile erfüllt (Export offen) |
 | `CHANGELOG.md` | ändern | Slice-Eintrag ([MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)) |
 | `docs/reviews/2026-07-22-slice-032b-plan.md` | neu (erledigt) | [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report (0 HIGH → startbar) |
-| `docs/reviews/{2026-07-2x-slice-032b-code-review}.md` | neu | Code-Review-Report (Persistenz-Latte) |
+| `docs/reviews/2026-07-22-slice-032b-code-review.md` | neu (erledigt) | Code-Review-Report (Persistenz-Latte; 0 HIGH → closure-fähig) |
 
 **`schema.sql`-Regeneration via neuem `make schema-regen`-Target (L2-Entscheidung):** heute existiert
 **kein** Regen-Target — nur `schema-check` (diffend). 032b legt **`make schema-regen`** an: dasselbe
@@ -316,5 +315,42 @@ Vertragsergänzung; **nicht** in `make gates` (Muster `schema-check`, d-migrate 
 
 ## 8. Closure-Notiz
 
-*(bei Closure ausgefüllt: gelieferte Dateien, Test-Zahl, `make schema-check`/`make gates`-Ergebnis,
-Review-Ergebnisse [[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review], Lerneintrag, Rest-Risiken/Folge 032c.)*
+**Ausgeführt 2026-07-22** (`make schema-regen` + `make schema-check` ok — Byte-Gleichheit;
+`make gates` grün — **237 Tests** [+9 DRW: 7 Kern + 2 Persistenz], Coverage **90,6 %**, a-check/
+arch-check/lint/docs-check ok; **keine** neue Gate-Regel, wie
+[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Entscheidung 6 vorhersagte). Geliefert:
+
+- **Kern:** `model::Layer`/`GuideLine` (pure Werttypen auf `Building`), Driving-Port
+  `EditDrawingPort` (eigener Port), implementiert vom bestehenden `StructureEditService`
+  (geteilte `Building`-Instanz, 5. Basisklasse — Muster `EvaluatePort`); `addLayer`/`renameLayer`/
+  `setLayerVisible`/`removeLayer` + `addGuideLine`/`removeGuideLine`. Ablehnungen =
+  [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Rejection
+  (leerer/projekt-doppelter Ebenen-Name, entartete Hilfslinie, unbekannte Ebene/Geschoss,
+  `restrict`-Löschschutz); **kein** neuer `op`.
+- **Schema/Persistenz:** additive `guide_lines`-Tabelle (FK `layer_id` `restrict`, `storey_id`
+  `cascade`) via neuem **`make schema-regen`**-Target; `layers` real verdrahtet;
+  `insert/loadLayers` + `insert/loadGuideLines` im atomaren Round-Trip (Ebenen **vor** Hilfslinien,
+  Hilfslinien **nach** Geschossen — FK), ID-/feld-/NULL-sicher.
+- **Tests:** `tests/hexagon/test_drawing.cpp` (7 Kern-AK) + 2 Persistenz-Round-Trip-AK; **Spec**
+  §1-Durabilität + §2.2-Aktiv-Prosa (ADR-/slice-frei), **CHANGELOG** (`Added`), **ADR-Index**
+  Impl-Zeile → erfüllt (Export bleibt offen).
+
+**Reviews (beide unabhängig, Reviewer ≠ Autor):**
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+**0 HIGH** (M1 Design/M2 Export-Grenze tragfähig; L1/L2/INFO-1 eingearbeitet). **Code-Review**
+(Persistenz-Latte) **0 HIGH** — Bind-Positionen/Spalten-Indizes/FK-Reihenfolge/`restrict`
+Zeile-für-Zeile verifiziert, **kein Datenkorruptions-Defekt**. **MED-1 eingearbeitet:** das
+Round-Trip-Orakel hatte `storey_id == layer_id` in beiden Zeilen → ein Swap wäre grün
+durchgerutscht; g2 auf `storey ≠ layer` gesetzt + beide Felder asserted (LOW-2: g2-Koordinaten
+vervollständigt).
+
+**Lerneintrag:** Das Code-Review fand **0 HIGH am Code**, aber **1 MED am Test-Orakel** — die
+„Swap-nicht-gefangen-weil-Werte-gleich"-Klasse (Muster
+[slice-017e](../done-archive/slice-017e-material-persistenz.md) NULL-vs-0.0). Distinkte Werte je
+Spalte/FK sind die Round-Trip-Orakel-Pflicht, nicht nur Feld-Gleichheit.
+
+**Folge:** **slice-032c** (DXF/PDF/PNG-Export-Sichtbarkeit + `io-smoke`) — schließt die Export-Hälfte
+der [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005)-Happy- und die
+[LH-FA-DRW-006](../../../../spec/lastenheft.md#lh-fa-drw-006)-Negative-AK; eigenes
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+davor.

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- slice-032b — **DRW-Impl: 2D-Zeichen-Daten durabel** (welle-5 DRW-Strang, erster Code-Slice; ADR-0018).
+  Kern-Werttypen `model::Layer`/`GuideLine` auf `Building`; neuer Driving-Port `EditDrawingPort`
+  (implementiert vom bestehenden `StructureEditService` — eigener Port, geteiltes Objekt, Muster
+  `EvaluatePort`) für Ebenen (anlegen/umbenennen/sichtbar/löschen) + Hilfslinien (anlegen/löschen).
+  Ablehnungen als E-VAL-001-Rejection (leerer/projekt-doppelter Ebenen-Name, entartete Hilfslinie,
+  unbekannte Ebene/Geschoss, `restrict`-Löschschutz referenzierter Ebene), **kein** neuer `op`. Neue
+  `guide_lines`-Tabelle (FK `layer_id` `restrict`) + `layers`-Aktivierung; `schema.sql` via neuem
+  **`make schema-regen`**-Target regeneriert (`schema-check` grün); SQLite-Persistenz-Round-Trip
+  (Ebenen vor Hilfslinien, ID-/feld-erhaltend). AK-Tests Kern + Persistenz. Export-Sichtbarkeit folgt
+  in 032c. MR-006 0 HIGH (L1/L2/INFO-1 eingearbeitet; `make schema-regen` = L2).
+
 ### Changed
 - slice-032a — **DRW-Fundament: 2D-Zeichen-Daten AK-Schärfung** (welle-5 DRW-Strang eröffnet;
   ADR-0018 Accepted). LH-FA-DRW-005/006 (Hilfslinien + Ebenen) Outline → AK (Lastenheft 0.1.14;
