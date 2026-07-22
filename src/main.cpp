@@ -69,6 +69,20 @@ void buildAcc001KernDemo(services::StructureEditService& service) {
     if (partition.has_value()) {
         service.setWallThickness(*partition, 115.0);  // committete Mutation
     }
+
+    // DRW (LH-FA-DRW-005/006, slice-032c): eine sichtbare Ebene + eine Hilfslinie
+    // auf dem EG — erscheint im 2D-Grundriss-Export (DXF/PDF/PNG) und belegt den
+    // Zeichen-Pfad im `make io-smoke`. 2D-export-only (NICHT im 3D-ViewModelPort,
+    // ADR-0018 §2) → der ACC-002-Beleg (headless-3D-Render) bleibt unverändert.
+    model::Layer drw_layer;
+    drw_layer.name = "Hilfslinien";
+    if (const auto layer_id = service.addLayer(drw_layer)) {
+        model::GuideLine guide;
+        guide.storey_id = eg;
+        guide.layer_id = *layer_id;
+        guide.segment = {{1000.0, 3000.0}, {7000.0, 3000.0}};
+        service.addGuideLine(guide);
+    }
 }
 
 // Headless-Export: bei gesetztem `flag <pfad>` das Demo-Modell exportieren und

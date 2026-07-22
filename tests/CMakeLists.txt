@@ -31,6 +31,7 @@ target_link_libraries(bcad_tests PRIVATE bcad_hexagon GTest::gtest_main)
 add_executable(bcad_adapter_tests
     adapters/test_probes.cpp
     adapters/test_occ_geometry_adapter.cpp
+    adapters/test_plan_geometry.cpp   # slice-032c: DRW-Projektions-Filter + BBox-Erweiterung
     adapters/test_sqlite_project_repository.cpp
     adapters/test_sqlite_crash_recovery.cpp
     adapters/test_viewer_scene.cpp

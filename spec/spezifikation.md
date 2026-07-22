@@ -820,9 +820,14 @@ round-trippt `layers` und `guide_lines` in der bestehenden atomaren Speicher-Tra
 (Ebenen **vor** Hilfslinien — FK `layer_id`; Hilfslinien **nach** Geschossen — FK
 `storey_id`), ID- und feld-erhaltend. Das `locked`-Flag ist **daten-durabel, aber (noch)
 nicht verhaltenswirksam** — es gibt in dieser Stufe keinen Editier-Pfad, den eine Sperre
-schützen könnte (kein interaktiver 2D-Canvas); benannte Lücke. Die **Export-Sichtbarkeit**
-(Hilfslinie im DXF/PDF/PNG-Grundriss, Ebenen-Sichtbarkeit als Export-Filter) folgt im
-Export-Slice.
+schützen könnte (kein interaktiver 2D-Canvas); benannte Lücke. Die **Export-Sichtbarkeit ist
+aktiv**: eine Hilfslinie auf **sichtbarer** Ebene wird in den 2D-Grundriss-Export gezeichnet
+(DXF `LINE` auf dem Geschoss-`LAYER`; PDF/PNG als schlichtes 2D-Segment); eine **unsichtbare**
+Ebene wirkt als **Export-Filter** — ihre Hilfslinien werden nicht gezeichnet. Der Filter
+(Menge der sichtbaren Ebenen) ist **eine geteilte, format-agnostische Quelle** (PDF/PNG über
+die gemeinsame Plan-Projektion inkl. Bounding-Box, DXF über denselben Filter im Adapter) —
+kein Format-Drift. Der Geschoss-`LAYER` bleibt unverändert (der Benutzer-Layer ist reiner
+Filter, kein eigener DXF-Layer).
 
 ## 2. Datenstrukturen und Schemas
 

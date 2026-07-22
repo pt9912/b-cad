@@ -87,6 +87,32 @@ model::Building sampleBuilding() {
     return b;
 }
 
+// slice-032c (LH-FA-DRW-005/006, ADR-0018): ein Geschoss mit einer Wand-BOX
+// (2D-Ausdehnung → nicht-degenerierte BBox) + 1 Ebene + 1 Hilfslinie INNERHALB
+// der Box. Weil die Hilfslinie in der Wand-BBox liegt, ist die BBox (und damit
+// der Maßstab) für sichtbar/unsichtbar IDENTISCH — der einzige Unterschied ist
+// die zusätzliche Hilfslinien-Tinte (sauberer Erscheint/Fehlt-Vergleich).
+model::Building drwBuilding(bool layer_visible) {
+    model::Building b;
+    b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
+    b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {5000.0, 0.0}));
+    b.walls.push_back(makeWall(2, model::StoreyId{1}, {5000.0, 0.0}, {5000.0, 4000.0}));
+    b.walls.push_back(makeWall(3, model::StoreyId{1}, {5000.0, 4000.0}, {0.0, 4000.0}));
+    b.walls.push_back(makeWall(4, model::StoreyId{1}, {0.0, 4000.0}, {0.0, 0.0}));
+    model::Layer layer;
+    layer.id = model::LayerId{1};
+    layer.name = "Achsen";
+    layer.visible = layer_visible;
+    b.layers.push_back(layer);
+    model::GuideLine guide;
+    guide.id = model::GuideLineId{1};
+    guide.storey_id = model::StoreyId{1};
+    guide.layer_id = model::LayerId{1};
+    guide.segment = {{1000.0, 1000.0}, {4000.0, 3000.0}};  // innerhalb der Box
+    b.guide_lines.push_back(guide);
+    return b;
+}
+
 std::string readFile(const fs::path& path) {
     std::ifstream in(path, std::ios::binary);
     std::ostringstream ss;
@@ -248,6 +274,48 @@ TEST(PngExport, FullDecodeStructureAndInk) {
     }
     EXPECT_FALSE(colors.empty()) << "keine Tinte";
     EXPECT_GE(colors.size(), 2U) << "Geschoss-Farben nicht unterscheidbar";
+}
+
+// Zahl der Nicht-weiß-Pixel (Tinte) eines dekodierten PNG (nutzt die
+// parseChunks/inflateStored-Decoder-Helfer oben).
+int inkPixels(const std::string& png) {
+    std::string idat;
+    for (const Chunk& chunk : parseChunks(png)) {
+        if (chunk.type == "IDAT") {
+            idat += chunk.data;
+        }
+    }
+    const std::string raw = inflateStored(idat);
+    const std::size_t stride = 1U + (static_cast<std::size_t>(kCanvasWidthPx) * 3U);
+    int ink = 0;
+    for (int y = 0; y < kCanvasHeightPx; ++y) {
+        const std::size_t rowbase = (static_cast<std::size_t>(y) * stride) + 1U;
+        for (int x = 0; x < kCanvasWidthPx; ++x) {
+            const std::size_t i = rowbase + (static_cast<std::size_t>(x) * 3U);
+            if (!(static_cast<unsigned char>(raw[i]) == 255U &&
+                  static_cast<unsigned char>(raw[i + 1]) == 255U &&
+                  static_cast<unsigned char>(raw[i + 2]) == 255U)) {
+                ++ink;
+            }
+        }
+    }
+    return ink;
+}
+
+// --- LH-FA-DRW-005 (ADR-0018): Hilfslinie im PNG-Grundriss, Ebenen-Filter -----
+// Gleiche Wand-BBox in beiden Fällen (Hilfslinie innerhalb) → identischer
+// Maßstab; der Unterschied ist allein die Hilfslinien-Tinte.
+
+// DRW-005 Happy (Export) + DRW-005-Negative (unsichtbar → fehlt): eine sichtbare
+// Hilfslinie fügt Tinte hinzu; eine unsichtbare Ebene nicht.
+TEST(PngExport, LH_FA_DRW_005_SichtbareHilfslinieMehrTinte) {
+    const TempPath vis("drw_vis");
+    const TempPath inv("drw_inv");
+    PngExportAdapter().write(drwBuilding(/*layer_visible=*/true), vis.path);
+    PngExportAdapter().write(drwBuilding(/*layer_visible=*/false), inv.path);
+    const int ink_visible = inkPixels(readFile(vis.path));
+    const int ink_hidden = inkPixels(readFile(inv.path));
+    EXPECT_GT(ink_visible, ink_hidden) << "sichtbare Hilfslinie fügt keine Tinte hinzu";
 }
 
 // --- LH-FA-IO-008 Boundary (leer): weißes, valides PNG ----------------------

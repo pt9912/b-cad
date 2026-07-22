@@ -87,6 +87,26 @@ model::Building sampleBuilding() {
     return b;
 }
 
+// slice-032c (LH-FA-DRW-005/006, ADR-0018): 1 Geschoss + 1 Wand + 1 Ebene +
+// 1 Hilfslinie (distinkte Koordinaten). `layer_visible` schaltet die Ebene.
+model::Building drwBuilding(bool layer_visible) {
+    model::Building b;
+    b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
+    b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {5000.0, 0.0}));
+    model::Layer layer;
+    layer.id = model::LayerId{1};
+    layer.name = "Achsen";
+    layer.visible = layer_visible;
+    b.layers.push_back(layer);
+    model::GuideLine guide;
+    guide.id = model::GuideLineId{1};
+    guide.storey_id = model::StoreyId{1};
+    guide.layer_id = model::LayerId{1};
+    guide.segment = {{1000.0, 2000.0}, {4000.0, 2500.0}};
+    b.guide_lines.push_back(guide);
+    return b;
+}
+
 std::string readFile(const fs::path& path) {
     std::ifstream in(path, std::ios::binary);
     std::ostringstream ss;
@@ -263,6 +283,26 @@ TEST(PdfExport, ScaleFidelityKnownEdge) {
     const double length = std::hypot(s.x2 - s.x1, s.y2 - s.y1);
     // 5000 mm bei 1:100 -> 5000 * (72/25.4)/100 pt.
     EXPECT_NEAR(length, 5000.0 * kMmToPt, 0.5);
+}
+
+// --- LH-FA-DRW-005 (ADR-0018): Hilfslinie im PDF-Grundriss, Ebenen-Filter -----
+// Ein Geschoss → Seite 0 = Objekt 5; jede Planlinie ist ein " l\n"-Operator.
+
+// DRW-005 Happy (Export): sichtbare Hilfslinie → Segment zusätzlich zur Wand.
+TEST(PdfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
+    const TempPath out("drw_vis");
+    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/true), out.path);
+    const std::string page = streamOfObject(readFile(out.path), 5);
+    EXPECT_EQ(countOccurrences(page, " l\n"), 2);  // Wand + Hilfslinie
+}
+
+// DRW-005 Negative (DRW-006-Happy-Sichtbarkeits-Klausel): unsichtbare Ebene →
+// keine Hilfslinie (nur die Wand).
+TEST(PdfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
+    const TempPath out("drw_inv");
+    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/false), out.path);
+    const std::string page = streamOfObject(readFile(out.path), 5);
+    EXPECT_EQ(countOccurrences(page, " l\n"), 1);  // nur Wand
 }
 
 // --- LH-FA-IO-007 Boundary: leeres Modell -> gültige (leere) PDF ------------

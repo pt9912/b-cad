@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_set>
 #include <vector>
 
 #include "hexagon/model/building.h"
@@ -45,8 +46,16 @@ struct PlanView {
     bool has_geometry{false};
 };
 
+// Roh-Ids der SICHTBAREN Ebenen (`layer.visible`, LH-FA-DRW-006). Geteilte,
+// format-agnostische Quelle des Export-Sichtbarkeits-Filters (ADR-0018 §3:
+// unsichtbare Ebene → ihre Hilfslinien werden nicht gezeichnet) — von `projectPlan`
+// (PDF/PNG) UND dem DXF-Export genutzt, damit alle Formate identisch filtern.
+std::unordered_set<int> visibleLayerIds(const hexagon::model::Building& building);
+
 // Projiziert `building` auf die 2D-Grundriss-Sicht (deterministisch aus der
-// Modell-Reihenfolge). Rein — keine I/O, kein Format.
+// Modell-Reihenfolge). Rein — keine I/O, kein Format. Enthält je Geschoss die
+// Wand-Achsen + die Hilfslinien auf sichtbarer Ebene (LH-FA-DRW-005, ADR-0018)
+// als schlichte 2D-Segmente; die gemeinsame BBox schließt beide ein.
 PlanView projectPlan(const hexagon::model::Building& building);
 
 }  // namespace bcad::adapters::io

@@ -6,6 +6,10 @@
 
 #include "adapters/io/dxf_export_adapter.h"
 #include "adapters/io/dxf_import_adapter.h"
+#include "adapters/io/dxf_reader.h"  // slice-032c: rohes DRW-Decode-Orakel (kein Wand-Round-Trip)
+
+#include <fstream>
+#include <sstream>
 
 #include <filesystem>
 #include <map>
@@ -30,6 +34,7 @@ namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;
 using bcad::adapters::io::DxfExportAdapter;
 using bcad::adapters::io::DxfImportAdapter;
+using bcad::adapters::io::DxfReader;
 using bcad::hexagon::ports::driving::ExchangeFormat;
 using bcad::hexagon::services::ExchangeService;
 
@@ -73,6 +78,69 @@ model::Building sampleBuilding() {
     b.walls.push_back(makeWall(2, model::StoreyId{1}, {5000.0, 0.0}, {5000.0, 4000.0}));
     b.walls.push_back(makeWall(3, model::StoreyId{2}, {0.0, 0.0}, {3000.0, 0.0}));
     return b;
+}
+
+std::string readFile(const fs::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    std::ostringstream ss;
+    ss << in.rdbuf();
+    return ss.str();
+}
+
+// slice-032c (LH-FA-DRW-005/006, ADR-0018): 1 Geschoss + 1 Wand + 1 Ebene +
+// 1 Hilfslinie mit distinkten Koordinaten (x ≠ y, ≠ Wand — fängt Koordinaten-/
+// Geschoss-Vertausch). `layer_visible` schaltet die Ebenen-Sichtbarkeit.
+model::Building drwBuilding(bool layer_visible) {
+    model::Building b;
+    b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
+    b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {5000.0, 0.0}));
+    model::Layer layer;
+    layer.id = model::LayerId{1};
+    layer.name = "Achsen";
+    layer.visible = layer_visible;
+    b.layers.push_back(layer);
+    model::GuideLine guide;
+    guide.id = model::GuideLineId{1};
+    guide.storey_id = model::StoreyId{1};
+    guide.layer_id = model::LayerId{1};
+    guide.segment = {{1000.0, 2000.0}, {4000.0, 2500.0}};
+    b.guide_lines.push_back(guide);
+    return b;
+}
+
+// --- LH-FA-DRW-005 (ADR-0018): Hilfslinie im DXF-Grundriss, Ebenen-Filter -----
+// Rohes DxfReader-Orakel (NICHT der Wand-Round-Trip — eine Hilfslinien-LINE auf
+// STOREY_n re-importierte sonst als Wand, Falsch-Positiv).
+
+// DRW-005 Happy (Export): sichtbare Hilfslinie erscheint als LINE auf STOREY_1.
+TEST(DxfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
+    const TempPath out("drw_vis");
+    DxfExportAdapter().write(drwBuilding(/*layer_visible=*/true), out.path);
+    const DxfReader reader = DxfReader::parse(readFile(out.path));
+    const auto lines = reader.sectionEntities("ENTITIES");
+    ASSERT_EQ(lines.size(), 2U);  // 1 Wand + 1 Hilfslinie
+    bool found = false;
+    for (const auto* entity : lines) {
+        if (entity->str(8).value_or("") == "STOREY_1" &&
+            entity->num(10).value_or(-1.0) == 1000.0 &&
+            entity->num(20).value_or(-1.0) == 2000.0 &&
+            entity->num(11).value_or(-1.0) == 4000.0 &&
+            entity->num(21).value_or(-1.0) == 2500.0) {
+            found = true;
+        }
+    }
+    EXPECT_TRUE(found) << "Hilfslinie fehlt im DXF-Export";
+}
+
+// DRW-005 Negative (DRW-006-Happy-Sichtbarkeits-Klausel): unsichtbare Ebene →
+// keine Hilfslinie im Artefakt (nur die Wand-LINE bleibt).
+TEST(DxfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
+    const TempPath out("drw_inv");
+    DxfExportAdapter().write(drwBuilding(/*layer_visible=*/false), out.path);
+    const DxfReader reader = DxfReader::parse(readFile(out.path));
+    const auto lines = reader.sectionEntities("ENTITIES");
+    ASSERT_EQ(lines.size(), 1U);  // nur die Wand
+    EXPECT_DOUBLE_EQ(lines[0]->num(11).value_or(-1.0), 5000.0);  // Wand-Endpunkt
 }
 
 // --- LH-FA-IO-004 Roundtrip: Anzahl je Geschoss + Achs-Lage ----------------

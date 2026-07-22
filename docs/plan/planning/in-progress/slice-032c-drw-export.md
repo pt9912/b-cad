@@ -1,7 +1,7 @@
 ---
 id: slice-032c
 titel: DRW-Export — Hilfslinien im 2D-Grundriss (DXF/PDF/PNG) mit Ebenen-Sichtbarkeits-Filter
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), [LH-FA-DRW-006](../../../../spec/lastenheft.md#lh-fa-drw-006), [LH-FA-IO-004](../../../../spec/lastenheft.md#lh-fa-io-004), [LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007), [LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0015](../../adr/0015-dxf-backend.md), [ADR-0016](../../adr/0016-pdf-png-backend.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)]
@@ -9,12 +9,15 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0015](../.
 
 # Slice 032c: DRW-Export — Hilfslinien im 2D-Grundriss (DXF/PDF/PNG), Ebenen-Sichtbarkeits-Filter
 
-**Status:** open (Plan **startbar** nach Review-Einarbeitung — Impl-Start auf Projektinhaber-Wort).
+**Status:** done (2026-07-22, `make gates` + `make io-smoke` grün — 245 Tests, Coverage 90,7 %).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review**
-2026-07-22 (Reviewer ≠ Autor, read-only): **0 HIGH / 1 MED / 1 LOW / 3 INFO → startbar**
-([Report](../../../reviews/2026-07-22-slice-032c-plan.md)). **M1 eingearbeitet** (AK-Umetikettierung:
-invisible→absent ist **DRW-005-Negative + DRW-006-Happy-Sichtbarkeits-Klausel**, **nicht** DRW-006-Negative
-[= Löschschutz, schon in 032b geschlossen]); L1 ([LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008) ins Frontmatter); I1–I3 bestätigt.
+0 HIGH / 1 MED / 1 LOW / 3 INFO → startbar ([Report](../../../reviews/2026-07-22-slice-032c-plan.md);
+M1 [AK-Umetikettierung: invisible→absent = **DRW-005-Negative + DRW-006-Happy-Sichtbarkeits-Klausel**,
+**nicht** DRW-006-Negative = Löschschutz/032b] + L1 [[LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)]
+eingearbeitet). **Unabhängiges Code-Review** (Export-/Decode-Orakel-Latte)
+**0 HIGH / 1 MED / 1 LOW / 3 INFO → closure-fähig** ([Report](../../../reviews/2026-07-22-slice-032c-code-review.md);
+Filter-Konsistenz/Koordinaten/`writeLayerTable` verifiziert; **MED-1** [BBox-Erweiterung nicht gepinnt] +
+**LOW-1** [Projektions-Koordinaten swap-blind] eingearbeitet — neuer `test_plan_geometry.cpp`).
 **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) n/a**
 (Hilfslinie = 2-Punkt-`LINE`/-Segment, **keine** neue Solid-Geometrie); Export-Latte:
 zusätzliches unabhängiges **Code-Review vor Welle-Closure** (Decode-Orakel-/self-rolled-Writer-
@@ -98,21 +101,21 @@ je Geschoss-Seite/Palette).
 
 ## 2. Definition of Done
 
-- [ ] **`plan_geometry.{h,cpp}`:** Helfer `visibleLayerIds(const model::Building&) → std::unordered_set<int>`
+- [x] **`plan_geometry.{h,cpp}`:** Helfer `visibleLayerIds(const model::Building&) → std::unordered_set<int>`
       (LayerId-Rohwerte der sichtbaren Ebenen). `projectPlan` faltet je Geschoss die Hilfslinien mit
       **sichtbarer** Ebene und `guide.storey_id == storey.id` als `PlanSegment` (aus `guide.segment`) in
       `StoreyPlan.segments` **und** in die BBox (`min/max_x/y`, `has_geometry`) — **nach** dem Wand-Loop,
       damit ein hilfslinien-only-Geschoss eine gültige BBox erhält.
-- [ ] **`dxf_export_adapter.cpp`:** in `writeEntities` ein zweiter Loop über `building.guide_lines`,
+- [x] **`dxf_export_adapter.cpp`:** in `writeEntities` ein zweiter Loop über `building.guide_lines`,
       gefiltert per `visibleLayerIds`, → `LINE` (Gruppencode 8 = `layerName(gl.storey_id)`; 10/20/30 +
       11/21/31 aus `guide.segment.start/end`, z = 0). **`writeLayerTable` unverändert** (kein neuer
       Layer). Unsichtbare Ebene → kein `LINE`.
-- [ ] **CLI-Demo** (`src/main.cpp`, `buildAcc001KernDemo`): eine **sichtbare** Ebene + eine Hilfslinie
+- [x] **CLI-Demo** (`src/main.cpp`, `buildAcc001KernDemo`): eine **sichtbare** Ebene + eine Hilfslinie
       auf einem bestehenden Geschoss über `service.addLayer(...)`/`addGuideLine(...)` — damit
       `make io-smoke` den Zeichen-Pfad **end-to-end** übt (2D-Export mit Hilfslinien-Inhalt). **[ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)-
       Beleg unberührt** (Hilfslinien sind **2D-export-only**, **nicht** im 3D-`ViewModelPort` —
       [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §2; der headless-3D-Render ändert sich nicht).
-- [ ] **Decode-Orakel-AK-Tests** (je Format ein **Erscheint** [DRW-005-Happy] + ein **Fehlt**
+- [x] **Decode-Orakel-AK-Tests** (je Format ein **Erscheint** [DRW-005-Happy] + ein **Fehlt**
       [DRW-005-Negative, getragen von der DRW-006-Happy-Sichtbarkeits-Klausel]; LH-id im Suite-Namen —
       `LH_FA_DRW_005` für Erscheinen/Fehlen, `LH_FA_DRW_006` für die Sichtbarkeits-Klausel; Muster der
       bestehenden Export-Decode-Orakel):
@@ -126,22 +129,22 @@ je Geschoss-Seite/Palette).
       schließt sie ein (falls ein `test_plan_geometry` existiert; sonst über die PDF/PNG-Orakel gedeckt).
       **Distinkte Koordinaten** (Hilfslinie ≠ Wand-Koordinaten, x ≠ y) — sonst fängt das Orakel keinen
       Vertausch (Lehre [slice-032b](../done/slice-032b-drw-impl.md)-Review-MED-1).
-- [ ] **`spec/spezifikation.md` §1** [`LH-FA-DRW-005.a`](../../../../spec/spezifikation.md) um
+- [x] **`spec/spezifikation.md` §1** [`LH-FA-DRW-005.a`](../../../../spec/spezifikation.md) um
       „Export-Sichtbarkeit **aktiv**: sichtbare Hilfslinie im DXF/PDF/PNG-Grundriss, unsichtbare Ebene →
       Export-Filter" ergänzt (Impl-Stand; ADR-/slice-token-frei im Körper,
       [MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[MR-014](../../../../harness/conventions.md#mr-014--referenz-richtungs-verschärfung-adr-nennt-keine-slice-d-check-v0371),
       vor dem Gate selbst greppen). **`spezifikation-historie.md`** Provenance-Zeile +
       `**Letzte Änderung:**`-Header. **Lastenheft unberührt** (AK liegen seit 032a vor, kein
       [MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)).
-- [ ] **[ADR-Index](../../adr/README.md)-Folgepflicht:** die [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-
+- [x] **[ADR-Index](../../adr/README.md)-Folgepflicht:** die [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-
       **Export-Zeile** → erfüllt. **CHANGELOG** ([MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
-- [ ] **Gates:** engster Sensor zuerst (`make test`), dann **`make gates` grün** (a-check/arch-check
+- [x] **Gates:** engster Sensor zuerst (`make test`), dann **`make gates` grün** (a-check/arch-check
       unverändert — **keine** neue Regel, io-resident Codecs header-frei;
       [ADR-0015](../../adr/0015-dxf-backend.md)/[0016](../../adr/0016-pdf-png-backend.md) „Regel F
       gegenstandslos"); zusätzlich **`make io-smoke`** grün (CLI-Demo mit Hilfslinie exportiert je Format,
       exit 0 + nicht-leer). **`make schema-check` unberührt** (kein Schema-Edit — reine Export-Seite).
       **Unabhängiges Code-Review vor Closure** (Decode-Orakel-Latte) ohne offene HIGH. Closure-Notiz.
-- [ ] **Lifecycle:** beim Start `git mv open/ → in-progress/` **+ Ruhe-Sentinel** entfernen (selber
+- [x] **Lifecycle:** beim Start `git mv open/ → in-progress/` **+ Ruhe-Sentinel** entfernen (selber
       Commit, [MR-017](../../../../harness/conventions.md#mr-017--planning-lifecycle-gate-d-check-modul-planning),
       [AGENTS §2.8](../../../../AGENTS.md)); bei Closure `git mv → done/` (+ Sentinel zurück).
 
@@ -162,7 +165,8 @@ je Geschoss-Seite/Palette).
 | `CHANGELOG.md` | ändern | Slice-Eintrag ([MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)) |
 | `tools/io-smoke.sh` | ggf. ändern | nur falls eine DRW-spezifische Zusatz-Assertion sinnvoll (sonst deckt der Demo-Inhalt den Pfad) |
 | `docs/reviews/2026-07-22-slice-032c-plan.md` | neu (erledigt) | [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report (0 HIGH → startbar) |
-| `docs/reviews/{2026-07-2x-slice-032c-code-review}.md` | neu | Code-Review-Report (Decode-Orakel-Latte) |
+| `docs/reviews/2026-07-22-slice-032c-code-review.md` | neu (erledigt) | Code-Review-Report (0 HIGH → closure-fähig) |
+| `tests/adapters/test_plan_geometry.cpp` | neu | Projektions-Filter + BBox-Erweiterung (Review-MED-1/LOW-1) |
 
 **Kein neues Source-/Test-File nötig** (alle Änderungen in bestehenden `io/`-Dateien + Export-Tests →
 kein CMake-Edit). **Kein Schema-Edit** (reine Export-Seite; `schema-check` unberührt).
@@ -232,5 +236,40 @@ kein CMake-Edit). **Kein Schema-Edit** (reine Export-Seite; `schema-check` unber
 
 ## 8. Closure-Notiz
 
-*(bei Closure ausgefüllt: gelieferte Dateien, Test-Zahl, `make gates`/`make io-smoke`-Ergebnis,
-Review-Ergebnisse [[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review], Lerneintrag, DRW-Fundament-Abschluss 032a→b→c.)*
+**Ausgeführt 2026-07-22** (`make gates` grün — **245 Tests** [+8 DRW-Export: 3 `plan_geometry` +
+2 DXF + 2 PDF + 1 PNG], Coverage **90,7 %**, a-check/arch-check/lint/docs-check ok, **keine** neue
+Gate-Regel; `make io-smoke` grün — alle 6 Formate exportieren, DXF-Re-Import zeigt 10 LINEs = 9 Wände +
+1 Hilfslinie). Geliefert:
+
+- **`plan_geometry`:** geteilter `visibleLayerIds`-Filter + sichtbare Hilfslinien in `projectPlan`
+  (Segmente **und** Bounding-Box, via ausgelagertem `accumulate`) — die eine format-agnostische Quelle
+  für PDF/PNG.
+- **DXF:** zweiter gefilterter Loop in `writeEntities` (`LINE` auf `STOREY_n`, `writeLayerTable`
+  **unverändert** — der Benutzer-Layer ist reiner Filter, kein neuer DXF-Layer).
+- **CLI-Demo:** eine sichtbare Ebene + Hilfslinie (io-smoke-Übung; [ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)-3D-Beleg unberührt,
+  da Hilfslinien 2D-export-only).
+- **Tests:** Decode-Orakel je Format (Erscheint/Fehlt: DXF roher `DxfReader`, PDF `" l\n"`, PNG Tinte) +
+  `plan_geometry`-Unit-Test (Filter + **BBox-Erweiterung** + Koordinaten-Treue). **Spec** §1 Export-
+  Sichtbarkeit aktiv (ADR-/slice-frei), **CHANGELOG** (`Added`), **ADR-Index** Export-Zeile → erfüllt.
+
+**Reviews (beide unabhängig):**
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+**0 HIGH** (M1 AK-Umetikettierung invisible→absent = DRW-005-Negative + DRW-006-Happy [nicht
+DRW-006-Negative]; L1 IO-008). **Code-Review** (Export-Latte) **0 HIGH** — Filter-Konsistenz über alle
+drei Formate, Koordinaten/Geschoss, `writeLayerTable` unberührt Zeile-für-Zeile verifiziert. **MED-1
+eingearbeitet:** die BBox-Erweiterung für Hilfslinien **außerhalb** der Wand-Ausdehnung war
+implementiert, aber von keinem Orakel gepinnt (mein PNG-Test lag *innerhalb* der Box, PDF-Count ist
+BBox-agnostisch) → neuer direkter `plan_geometry`-Unit-Test pinnt BBox-Erweiterung **und** (LOW-1)
+Koordinaten-Treue des Projektions-Pfads.
+
+**Lerneintrag:** Zwei Mal in Folge (032b-MED-1, 032c-MED-1/LOW-1) fand das Code-Review **0 HIGH am Code,
+aber eine Orakel-Lücke**: ein Test, der die *implementierte* Invariante nicht *pinnt* (Swap bei gleichen
+Werten; BBox-Erweiterung bei einer Linie innerhalb der Box). Muster: das Orakel muss den **Negativ-Fall
+konstruieren** (Werte/Geometrie so wählen, dass ein Weglassen der Invariante durchfiele) — Feld-Gleichheit
+allein genügt nicht. Der geteilte Projektions-Pfad braucht einen **eigenen** Unit-Test, nicht nur
+format-Decode-Orakel.
+
+**Folge — DRW-Fundament 032a→b→c KOMPLETT:** Hilfslinie/Ebene durabel (032b) **und** sichtbar im
+2D-Export (032c). Die übrigen DRW-Familien (Fangpunkte/Raster/Winkel/Bemaßung/Gruppen) + der interaktive
+2D-Canvas (UI-Strang) + Bauteil-Layer (`entity_layers`) bleiben eigene spätere Slices
+([ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Re-Evaluierungs-Trigger).

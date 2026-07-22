@@ -20,8 +20,13 @@
 #include <string>
 #include <system_error>
 
+#include <unordered_set>
+
 #include "adapters/io/dxf_writer.h"
+#include "adapters/io/plan_geometry.h"  // visibleLayerIds (geteilter Filter)
 #include "hexagon/model/building.h"
+#include "hexagon/model/guide_line.h"
+#include "hexagon/model/layer.h"
 #include "hexagon/model/storey.h"
 #include "hexagon/model/wall.h"
 
@@ -72,6 +77,25 @@ void writeEntities(DxfWriter& writer, const model::Building& building) {
         writer.pair(30, 0.0);
         writer.pair(11, wall.end.x_mm);
         writer.pair(21, wall.end.y_mm);
+        writer.pair(31, 0.0);
+    }
+    // Hilfslinien auf SICHTBARER Ebene (LH-FA-DRW-005, ADR-0018): je eine LINE
+    // auf ihrem Geschoss-LAYER (STOREY_n bleibt unverändert — der Benutzer-Layer
+    // `visible` ist reiner Export-Filter, KEIN neuer DXF-Layer, ADR-0018 §3).
+    // Unsichtbare Ebene → keine LINE (DRW-005-Negative). Derselbe
+    // visibleLayerIds-Filter wie PDF/PNG (plan_geometry) — kein Format-Drift.
+    const std::unordered_set<int> visible = visibleLayerIds(building);
+    for (const model::GuideLine& guide : building.guide_lines) {
+        if (!visible.contains(static_cast<int>(guide.layer_id))) {
+            continue;
+        }
+        writer.pair(0, "LINE");
+        writer.pair(8, layerName(guide.storey_id));
+        writer.pair(10, guide.segment.start.x_mm);
+        writer.pair(20, guide.segment.start.y_mm);
+        writer.pair(30, 0.0);
+        writer.pair(11, guide.segment.end.x_mm);
+        writer.pair(21, guide.segment.end.y_mm);
         writer.pair(31, 0.0);
     }
     writer.pair(0, "ENDSEC");

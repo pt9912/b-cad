@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-032c — **DRW-Export: Hilfslinien im 2D-Grundriss sichtbar** (welle-5 DRW-Strang; ADR-0018;
+  schließt die DRW-Fundament-Sequenz 032a→b→c). Der 2D-Grundriss-Export zeichnet jede Hilfslinie auf
+  **sichtbarer** Ebene (DXF `LINE` auf dem Geschoss-`LAYER`, PDF/PNG als 2D-Segment); eine **unsichtbare**
+  Ebene wirkt als **Export-Filter** (Hilfslinie fehlt im Artefakt). Der Sichtbarkeits-Filter ist eine
+  geteilte format-agnostische Quelle (`visibleLayerIds` in `plan_geometry`; PDF/PNG via `projectPlan`
+  inkl. Bounding-Box-Erweiterung, DXF via denselben Filter) — kein Format-Drift; der Geschoss-`LAYER`
+  bleibt unverändert. Decode-Orakel je Format (Erscheint/Fehlt: DXF roher Reader, PDF ` l\n`-Zählung,
+  PNG Tinte). CLI-Demo trägt eine Hilfslinie (io-smoke-Übung; ACC-002-3D-Beleg unberührt). Damit sind
+  die Export-Teilklauseln von LH-FA-DRW-005 (Happy „erscheint im Artefakt" / Negative) benutzer-
+  beobachtbar. MR-006 0 HIGH.
 - slice-032b — **DRW-Impl: 2D-Zeichen-Daten durabel** (welle-5 DRW-Strang, erster Code-Slice; ADR-0018).
   Kern-Werttypen `model::Layer`/`GuideLine` auf `Building`; neuer Driving-Port `EditDrawingPort`
   (implementiert vom bestehenden `StructureEditService` — eigener Port, geteiltes Objekt, Muster
