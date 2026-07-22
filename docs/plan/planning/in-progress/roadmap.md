@@ -19,11 +19,13 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**In Arbeit:** `slice-032c` — DRW-Export (sichtbare Hilfslinien im 2D-Grundriss DXF/PDF/PNG +
-Ebenen-Sichtbarkeits-Filter), gestartet 2026-07-22 nach eigenem
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-(0 HIGH / 1 MED / 1 LOW / 3 INFO → startbar). Schließt die DRW-Fundament-Sequenz 032a→b→c
-(`slice-032b` DRW-Impl done 2026-07-22, Plan- + Code-Review je 0 HIGH).
+**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel;
+beim Öffnen des nächsten Slice entfernen). **DRW-Fundament 032a→b→c komplett** (2026-07-22, `make gates`
+grün): Hilfslinie/Ebene durabel (`slice-032b`) **und** sichtbar im 2D-Export (`slice-032c`), je Slice
+Plan- + Code-Review 0 HIGH. Nächste DRW-Kandidaten (eigene spätere Slices, je eigenes
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)):
+Fangpunkte/Raster/Winkel/Bemaßung/Gruppen, interaktiver 2D-Canvas (UI-Strang), Bauteil-Layer
+(`entity_layers`).
 
 **Vorgänger-Trigger (beide erfüllt):** welle-4-austausch done (2026-07-01,
 [`../done/welle-4-results.md`](../done/welle-4-results.md)) + Plugin-API-/ABI-ADR accepted
