@@ -19,13 +19,27 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**In Arbeit:** `slice-041a` — DRW interaktiver 2D-Canvas (Opener): verfasst die Grundsatz-ADR (0019,
-2D-Zeichenfläche + 2D-Lese-Naht) + schärft die interaktive Erzeugungs-AK von
-[LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), gestartet 2026-07-22 nach eigenem
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-(0 HIGH → startbar). **2D-Lese-Naht-Entscheidung (Projektinhaber):** Projektion → Kern
-(`hexagon/services/geometry/plan_geometry` + Read-Port `PlanViewPort`), eigener Refactor-Slice vor dem
-Canvas. **DRW-Fundament 032a→b→c komplett** (durabel + sichtbar, je Slice Plan-/Code-Review 0 HIGH).
+**In Arbeit:** `slice-041a` — DRW interaktiver 2D-Canvas (Opener), gestartet 2026-07-22 ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH).
+**DRW-Fundament 032a→b→c komplett** (durabel + sichtbar; gepusht auf origin/main `da33d3a`).
+
+**⏸ TAGES-ABSCHLUSS 2026-07-22 — WIEDEREINSTIEG (nächste Aktion zuerst):**
+Der DRW-Canvas-Dialog hat einen **Architektur-Debt** aufgedeckt (`services/geometry`-Adapter-Zugriff wurde per
+»Regel-lockern-statt-fixen« legalisiert). Projektinhaber wählte **Weg 1 (voll)**: driven Adapter serialisieren nur,
+der Kern liefert abgeleitete Geometrie. Daraus **zwei Grundsatz-ADRs, beide `Proposed`, beide text-reviewed +
+Findings eingearbeitet (0 HIGH offen), beide warten auf PROJEKTINHABER-ACCEPT:**
+- **[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)** (Driven-Adapter serialisieren,
+  Kern liefert Geometrie als `DerivedGeometry`-Bündel; alle `adapter→services_geo`-Kanten weg; `architecture.md`
+  §2-Tabelle + §1-Diagramm werden wahr). Text-Review 1 HIGH/2 MED/3 LOW → **eingearbeitet** (HIGH-1 `translateMeshZ →
+  model/`; MED-1 DXF nutzt nur `visibleLayerIds`; Report `docs/reviews/2026-07-22-adr-0020-text-review.md`).
+- **[ADR-0019](../../adr/0019-drw-2d-canvas.md)** (2D-Canvas) — **hängt an [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)** (io→services_geo dissolviert;
+  Canvas neu zu schneiden nach Accept). Text-Review 1 HIGH eingearbeitet; Report `.../2026-07-22-slice-041a-plan.md`
+  + `.../2026-07-22-adr-drw-canvas-text-review.md`.
+
+**MORGEN, Reihenfolge:** (1) **[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) accepten** (Projektinhaber; Status Proposed→Accepted) → (2) **[ADR-0019](../../adr/0019-drw-2d-canvas.md)
+accepten** + auf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) neu schneiden → (3) **Lastenheft/Spec-AK von slice-041a finalisieren** (ADR stabil VOR AK)
++ 041a schließen → (4) **Refactor-Slices** ([ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten, ADR-Index): Kern-Naht/Vertrag → 2D-Projektion
+(entsperrt Canvas) → STEP/STL → Persistenz → a-check+architecture-Abschluss → (5) dann Canvas-Impl.
+**~10 Commits LOKAL vor origin/main, NICHT gepusht** (Push nur auf explizites Wort). Baum sauber, gates grün.
 
 **Vorgänger-Trigger (beide erfüllt):** welle-4-austausch done (2026-07-01,
 [`../done/welle-4-results.md`](../done/welle-4-results.md)) + Plugin-API-/ABI-ADR accepted
