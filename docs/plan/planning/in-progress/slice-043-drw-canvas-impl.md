@@ -1,7 +1,7 @@
 ---
 id: slice-043
 titel: DRW-2D-Canvas-Impl — interaktives Zeichenwidget, screenToModel, Kommando-Naht, Composition-Root-Umschaltung
-status: open
+status: in-progress
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), [LH-FA-DRW-006](../../../../spec/lastenheft.md#lh-fa-drw-006), [OBJ-003](../../../../spec/lastenheft.md#3-projektziele)]
 adr_refs: [[ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)]

@@ -28,7 +28,10 @@ add_library(bcad_adapters
     # Rendering), command/ = driving (MeshSource-Naht ueber ViewModelPort).
     ui/view/viewer_scene.cpp
     ui/view/viewer_widget.cpp
+    ui/view/canvas_widget.cpp        # slice-043: interaktive 2D-Zeichenfläche (ADR-0019)
     ui/command/view_model_mesh_source.cpp
+    # slice-043 (ADR-0019, Option A): die 2D-Read-/Schreib-Naht (PlanViewPlanSource,
+    # EditDrawingGuideLineSink) sind header-only (trivial) — kein .cpp-Eintrag.
     geometry/occ_probe.cpp
     geometry/occ_solids.cpp          # geteilter OCC-Solid-Builder (slice-020b)
     geometry/occ_geometry_adapter.cpp

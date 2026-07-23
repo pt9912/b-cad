@@ -20,6 +20,7 @@
 #include <QApplication>
 #include <QImage>
 #include <QMainWindow>
+#include <QTabWidget>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "adapters/geometry/step_export_adapter.h"
@@ -31,7 +32,10 @@
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
 #include "adapters/plugin/plugin_host.h"
+#include "adapters/ui/command/edit_drawing_guide_line_sink.h"
+#include "adapters/ui/command/plan_view_plan_source.h"
 #include "adapters/ui/command/view_model_mesh_source.h"
+#include "adapters/ui/view/canvas_widget.h"
 #include "adapters/ui/view/viewer_widget.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
@@ -52,7 +56,11 @@ model::Segment seg(double x1, double y1, double x2, double y2) {
 // Trennwand → zwei Räume, LH-FA-ROM-001) + OG. Eine abschließende
 // Parameteränderung lässt den dargestellten Stand der
 // Echtzeit-Mechanik folgen (sichtbare Hälfte LH-FA-D3-002).
-void buildAcc001KernDemo(services::StructureEditService& service) {
+// Gibt die angelegte DRW-Hilfslinien-Ebene zurück (der 2D-Canvas nutzt sie als
+// aktive Ebene, slice-043) — `nullopt` nur, wenn die Ebene nicht angelegt werden
+// konnte (frischer Service: immer gesetzt).
+std::optional<model::LayerId> buildAcc001KernDemo(
+    services::StructureEditService& service) {
     const auto eg = service.building().storeys.front().id;
     service.addWall(eg, seg(0, 0, 8000, 0));
     service.addWall(eg, seg(8000, 0, 8000, 6000));
@@ -76,13 +84,15 @@ void buildAcc001KernDemo(services::StructureEditService& service) {
     // ADR-0018 §2) → der ACC-002-Beleg (headless-3D-Render) bleibt unverändert.
     model::Layer drw_layer;
     drw_layer.name = "Hilfslinien";
-    if (const auto layer_id = service.addLayer(drw_layer)) {
+    const auto layer_id = service.addLayer(drw_layer);
+    if (layer_id) {
         model::GuideLine guide;
         guide.storey_id = eg;
         guide.layer_id = *layer_id;
         guide.segment = {{1000.0, 3000.0}, {7000.0, 3000.0}};
         service.addGuideLine(guide);
     }
+    return layer_id;
 }
 
 // Headless-Export: bei gesetztem `flag <pfad>` das Demo-Modell exportieren und
@@ -235,16 +245,48 @@ int main(int argc, char** argv) {
         }
     }
 
-    // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz,
-    // dann Beobachter-Lebenszyklus.
-    QMainWindow window;
+    // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz, dann
+    // Beobachter-Lebenszyklus. Der 3D-Viewer akkumuliert seinen Szenen-Stand über
+    // die ADR-0008-Meldungen → subscribe VOR dem Modell-Aufbau.
     auto* viewer = new bcad::adapters::ui::view::ViewerWidget(mesh_source);
-    window.setCentralWidget(viewer);  // Qt übernimmt das Widget-Ownership
+    service.subscribe(*viewer);
+    const auto drw_layer = buildAcc001KernDemo(service);  // Meldungen in die Szene
+
+    // 2D-Canvas (ADR-0019, slice-043): Read/Schreib laufen PORT-FREI über
+    // ui/command/-Objekte, die der Composition-Root als std::function in den
+    // view/-Canvas verdrahtet (Option A — kein command/->view/-Include). Der
+    // Canvas PULLT seinen Stand (kein Akkumulieren) → subscribe genügt für
+    // spätere op-Mutationen. Aktives Geschoss = EG (front); aktive Ebene = die
+    // Demo-Hilfslinien-Ebene (v1 fix; interaktive Auswahl ist ein ADR-0019-Re-Eval).
+    const auto active_storey = service.building().storeys.front().id;
+    const model::LayerId canvas_layer = [&]() -> model::LayerId {
+        if (drw_layer) {
+            return *drw_layer;
+        }
+        model::Layer fallback;
+        fallback.name = "Canvas";
+        return *service.addLayer(fallback);
+    }();
+    const bcad::adapters::ui::command::PlanViewPlanSource plan_source(service);
+    const bcad::adapters::ui::command::EditDrawingGuideLineSink guide_sink(
+        service, active_storey, canvas_layer);
+    auto* canvas = new bcad::adapters::ui::view::CanvasWidget(
+        [&plan_source]() { return plan_source.planView(); },
+        [&guide_sink](model::Point2D a, model::Point2D b) {
+            return guide_sink.addGuideLine(a, b);
+        },
+        static_cast<int>(active_storey));
+    service.subscribe(*canvas);
+
+    // Umschalt-Layout 3D↔2D (ADR-0019 E7): der Viewer ist Tab 0 (Default-Sicht),
+    // sein GL-Kontext initialisiert beim show() → der ACC-002-Beleg bleibt heil.
+    QMainWindow window;
+    auto* tabs = new QTabWidget;
+    tabs->addTab(viewer, QStringLiteral("3D"));
+    tabs->addTab(canvas, QStringLiteral("2D"));
+    window.setCentralWidget(tabs);  // Qt übernimmt das Widget-Ownership
     window.resize(1280, 800);
     window.setWindowTitle(QStringLiteral("b-cad"));
-
-    service.subscribe(*viewer);
-    buildAcc001KernDemo(service);  // Meldungen laufen bereits in die Szene
 
     const QStringList args = QApplication::arguments();
     const int beleg_index = static_cast<int>(args.indexOf(
@@ -252,7 +294,10 @@ int main(int argc, char** argv) {
     int result = 0;
     if (beleg_index >= 0 && beleg_index + 1 < args.size()) {
         // Headless-Beleg (ADR-0009 (f)/ADR-0010): Fenster anzeigen
-        // (initialisiert den GL-Kontext unter Xvfb), rendern, grabben.
+        // (initialisiert den GL-Kontext unter Xvfb), rendern, grabben. Der
+        // Viewer muss die aktuelle Tab-Seite sein, sonst initialisiert das
+        // QOpenGLWidget beim show() seinen GL-Kontext nicht (Plan-Review-MED-1).
+        tabs->setCurrentWidget(viewer);
         window.show();
         QApplication::processEvents();
         const QImage image = viewer->grabFramebuffer();
@@ -272,6 +317,7 @@ int main(int argc, char** argv) {
         result = QApplication::exec();
     }
 
-    service.unsubscribe(*viewer);  // vor der Widget-Zerstörung (ADR-0008 #5)
+    service.unsubscribe(*canvas);  // vor der Widget-Zerstörung (ADR-0008 #5)
+    service.unsubscribe(*viewer);
     return result;
 }

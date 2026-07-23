@@ -836,8 +836,9 @@ erscheint im DXF/PDF/PNG-Grundriss; unsichtbare Ebene → fehlt im Artefakt). Da
 über — die durchgängig benannte Fundament-Lücke »der Nutzer kann noch nicht zeichnen« wird
 damit geschlossen.
 
-**Interaktive 2D-Zeichenfläche (Canvas-Naht).** Der Erzeugungs-Weg ist als **Design entschieden**
-(Implementierung folgt in einem eigenen Impl-Slice, sequenziert **nach** der 2D-Lese-Naht-Hebung):
+**Interaktive 2D-Zeichenfläche (Canvas-Naht).** Der Erzeugungs-Weg ist **realisiert**: der Nutzer
+zeichnet eine Hilfslinie per Maus-Zug auf einem eigenen 2D-Canvas-Widget, sie erscheint sofort und geht in
+denselben durablen/exportierten Zustand wie eine port-erzeugte. Die Gestalt:
 
 - **Zeichenfläche = Driving-Adapter.** Ein **eigenes 2D-Canvas-Widget** in der GUI-`view/`-Zone
   (neben dem 3D-Viewer; **nicht** der orbit-verdrahtete 3D-Viewer), 2D-Zeichnung einer mm-Ebene.
@@ -847,10 +848,10 @@ damit geschlossen.
   — das 2D-Analog zum `ViewModelPort`. **Eine Quelle** für Bildschirm **und** Export: der Canvas
   **pullt** den Read-Port; die 2D-Exporter beziehen dieselbe Projektion vom Kern (**kein** Adapter
   leitet 2D-Geometrie selbst ab). Die GUI zieht die Projektion damit **aus dem Kern**, nicht lateral
-  aus dem IO-Adapter (Regel B gewahrt); die Hebung ist ein **eigener, vorgelagerter Refactor-Slice**
-  (reiner Umzug, die 2D-Export-Decode-Orakel als Netz). **Inzwischen realisiert:** `projectPlan`/`PlanView`
+  aus dem IO-Adapter (Regel B gewahrt); die Hebung war ein **eigener, vorgelagerter Refactor-Slice**
+  (reiner Umzug, die 2D-Export-Decode-Orakel als Netz). **Realisiert:** `projectPlan`/`PlanView`
   liegen im Kern (`services/geometry` bzw. `model/`), der `PlanViewPort` ist implementiert, PDF/PNG beziehen
-  die `PlanView` aus dem `DerivedGeometry`-Bündel — das **Canvas-Widget** selbst folgt als eigener Impl-Slice.
+  die `PlanView` aus dem `DerivedGeometry`-Bündel; das **Canvas-Widget** pullt denselben `PlanViewPort`.
 - **Bildschirm→Modell-Abbildung.** Der Canvas trägt eine **invertierbare** 2D-Sicht-Transformation
   (Pan/Zoom) mit einer **display-frei testbaren** Naht Bildschirm-Punkt → Modell-mm.
 - **Refresh = Selbst-Refresh, kein neuer `op`.** Der Canvas ist Treiber und Betrachter derselben

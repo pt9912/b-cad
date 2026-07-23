@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- slice-043 — **Interaktiver DRW-2D-Zeichen-Canvas** (welle-5; [ADR-0019](docs/plan/adr/0019-drw-2d-canvas.md)-Konsequenz;
+  der ursprüngliche Roadmap-Endpunkt). Der Nutzer **zeichnet** eine Hilfslinie per Links-Zug auf einer neuen
+  2D-Zeichenfläche (`CanvasWidget`, `QWidget`/`QPainter` — **nicht** der orbit-verdrahtete 3D-Viewer), sie
+  **erscheint sofort** und geht in denselben durablen/exportierten Zustand wie eine port-erzeugte. Der Canvas
+  **pullt** die 2D-Grundriss-Projektion über den `PlanViewPort` und **mutiert** über den `EditDrawingPort` — beide
+  Driving-Ports **port-frei** über `ui/command/`-Objekte, die der Composition-Root als `std::function` in den
+  `view/`-Canvas verdrahtet (das Widget hält **keinen** Driving-Port; Richtungs-Trennung gewahrt, kein
+  `command/ → view/`-Include, `.a-check.yml` unverändert). `screenToModel`/`modelToScreen` ist ein reiner,
+  display-frei testbarer `ViewTransform`-Werttyp (Pan/Zoom, Modell-+y-oben). **Refresh:** Selbst-Refresh nach dem
+  eigenen `addGuideLine` (kein `op`, ADR-0018 §2 unrevidiert) + Beobachter-Refresh (`ModelChangedPort`) nach
+  `op`-Mutationen. Fenster: `QTabWidget`-Umschaltung 3D↔2D (der ACC-002-Beleg des 3D-Viewers bleibt heil).
+  **v1 zeichnet frei** (Fang/Raster/Winkel, interaktive Geschoss-/Ebenen-Auswahl, Selektion/Picking = benannte
+  ADR-0019-Re-Eval-Trigger, eigene spätere Slices). Headless-`QMouseEvent`-AK (Xvfb): Maus-Zug → `guide_lines`
+  wächst um eins mit den `screenToModel`-gemappten mm, entarteter Zug (Anfang=Ende) → keine Hilfslinie; plus ein
+  reiner `ViewTransform`-Roundtrip-Test. 256 Tests. **MR-006 1 HIGH (gelöst: Option A) / 1 MED / 2 LOW** — der
+  HIGH deckte auf, dass der `.a-check.yml`-`adapter_sink` ein skalarer Präfix ist; die `std::function`-Verdrahtung
+  umgeht die Gate-Lockerung ehrlich. Damit ist der **DRW-Interaktiv-Strang v1 fertig** (Schritt 5 der Roadmap).
+
 ### Changed
 - slice-042d — **Export-Refactor Persistenz: `rise` kern-geliefert + letzte Adapter→Kern-Kante entfernt**
   (welle-5; vierte von fünf ADR-0020-Folgepflichten; **intern, verhaltens-invariant**). Der SQLite-Persistenz-
