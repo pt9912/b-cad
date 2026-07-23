@@ -1,7 +1,7 @@
 ---
 id: slice-042a
 titel: Export-Refactor Kern-Naht — DerivedGeometry-Vertrag + StepBox/translateMeshZ → model/
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[OBJ-005](../../../../spec/lastenheft.md#3-projektziele), [LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005), [LH-FA-IO-006](../../../../spec/lastenheft.md#lh-fa-io-006)]
 adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md), [ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md), [ADR-0014](../../adr/0014-step-stl-export-backend.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-g
 
 # Slice 042a: Export-Refactor Kern-Naht — DerivedGeometry-Vertrag
 
-**Status:** open (Plan — **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review 2026-07-23: 0 HIGH / 1 MED / 2 LOW → startbar**; MED-1 [`ExchangeService`-Berechnung → 042c] + LOW-1 [`tests/CMakeLists.txt`] + LOW-2 [geteilter Höhen-Helfer, 042c-Vormerkung] eingearbeitet; [Report](../../../reviews/2026-07-23-slice-042a-plan.md). Start auf Projektinhaber-Wort).
+**Status:** done (2026-07-23 — Impl geliefert, `make gates` grün [248 Tests, Coverage 90,7 %], Export-Orakel unverändert grün = Invarianz-Beweis). **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review** 0 HIGH / 1 MED / 2 LOW → alle eingearbeitet ([Report](../../../reviews/2026-07-23-slice-042a-plan.md)).
 
 **Welle:** welle-5-erweiterung. **Erster** der fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Refactor-Slices
 ([ADR-Index](../../adr/README.md), Familie 042a…e): **Kern-Naht/Vertrag** → 2D-Projektion → STEP/STL →
@@ -42,30 +42,30 @@ Umzug — die Export-Artefakte bleiben byte-/struktur-identisch.
 
 ## 2. Definition of Done
 
-- [ ] **`model::StepBox`.** `StepBox` (heute `services::StepBox`, `src/hexagon/services/geometry/stair_geometry.h:27`,
+- [x] **`model::StepBox`.** `StepBox` (heute `services::StepBox`, `src/hexagon/services/geometry/stair_geometry.h:27`,
       reiner 6-`double`-POD) → neuer header-only `src/hexagon/model/{step_box}.h` (Namespace `bcad::hexagon::model`,
       `#pragma once`, Muster der übrigen `model/`-PODs). Alle Verwender nachziehen: `stair_geometry.h/.cpp`
       (`stairStepBoxes`-Rückgabe), `step_export_adapter.cpp`, `tests/hexagon/test_stair_geometry.cpp`.
       `stair_geometry` importiert dann `model::StepBox` (Richtung `services_geo → model`, `.a-check.yml:25` — legal).
-- [ ] **`model::translateMeshZ`** ([ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
+- [x] **`model::translateMeshZ`** ([ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
       HIGH-1). Die pure `TriangleMesh`-z-Verschiebung (heute `services::translateMeshZ`,
       `src/hexagon/services/geometry/slab_geometry.{h:46,cpp:96}`) → header-only `model/`-Util (z. B.
       `src/hexagon/model/{mesh_ops}.h`, frei von `services/geometry`, adapter-erreichbar). Verwender nachziehen:
       `structure_edit_service.cpp:817`, `stl_export_adapter.cpp:74`, `tests/hexagon/test_slab_geometry.cpp:101`.
       Reine Wert-Operation, kein Modell-Ableiten — der STL-Adapter darf sie auf sein **eigenes** Mesh anwenden.
-- [ ] **`model::DerivedGeometry`-Bündel.** Neuer header-only `src/hexagon/model/{derived_geometry}.h`: ein pures
+- [x] **`model::DerivedGeometry`-Bündel.** Neuer header-only `src/hexagon/model/{derived_geometry}.h`: ein pures
       Werttyp-Aggregat, **format-selektiv** befüllbar, das per Bauteil die Primitive trägt, die die Exporter
       künftig konsumieren — Wand `{Footprint, height_mm, CutPrism[]}`, Decke `{Footprint, thickness_mm,
       CutPrism[], baseZ}`, Dach `TriangleMesh`, Treppe `{StepBox[], TriangleMesh, rise_mm}` (die 2D-`PlanView`
       kommt **erst** mit dem 2D-Projektions-Slice hinzu — hier noch nicht). Nur `model/`-Typen + Standardbibliothek
       (lib-frei, Kern-Link-Barriere). Genaue Feld-/Struct-Gestalt legt die Impl fest (die AK bindet nur
       Lib-Freiheit + Verhaltens-Invarianz).
-- [ ] **`ModelExporterPort::write`-Vertrag geweitet.** `write(const model::Building&, const model::DerivedGeometry&,
+- [x] **`ModelExporterPort::write`-Vertrag geweitet.** `write(const model::Building&, const model::DerivedGeometry&,
       const std::filesystem::path&) const` (`src/hexagon/ports/driven/model_exporter_port.h:26`). **Alle sechs**
       Exporter-Overrides (IFC/DXF/STEP/STL/PDF/PNG) nehmen den Parameter an und **ignorieren ihn** (Body
       unverändert — accept-and-ignore, [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
       LOW-3). STEP/STL rufen `services/geometry` in **diesem** Slice **weiter direkt** (Body-Migration = Slice 042c).
-- [ ] **`ExchangeService` reicht ein (leeres) Bündel durch.** `exportModel` (`src/hexagon/services/exchange_service.cpp:33`)
+- [x] **`ExchangeService` reicht ein (leeres) Bündel durch.** `exportModel` (`src/hexagon/services/exchange_service.cpp:33`)
       konstruiert ein **leeres** `model::DerivedGeometry` und reicht es an `write(...)`. Die **format-selektive
       Berechnung** (per-Format-Verzweigung; STEP/STL → extrudierbare Primitive + Treppen, IFC/DXF/PDF/PNG → leer)
       wandert nach **Slice 042c** — dort konsumieren STEP/STL das Bündel und die B-Rep-/STL-Orakel netzen die
@@ -74,12 +74,12 @@ Umzug — die Export-Artefakte bleiben byte-/struktur-identisch.
       fail-closed try/catch-skip + `kDefaultStoreyHeightMm`-Pfade). Composition-Root (`main.cpp`) **unverändert** —
       der Driving-Port `ExchangeModelPort::exportModel` ändert die Signatur **nicht**, nur der Driven-Port `write`
       wächst; ExporterMap-Verdrahtung bleibt.
-- [ ] **Verhaltens-Invarianz maschinell.** `make gates` grün; **die Export-Decode-/Round-Trip-Orakel bleiben
+- [x] **Verhaltens-Invarianz maschinell.** `make gates` grün; **die Export-Decode-/Round-Trip-Orakel bleiben
       unverändert grün** (STEP `CLOSED_SHELL`-Zahl, STL-Netz, IFC/DXF-Round-Trip, PDF/PNG-Decode) — der Beweis,
       dass der Umzug nichts am Artefakt ändert. `make schema-check` unberührt. Kein neuer Test-**Bedarf** außer der
       Anpassung bestehender Tests an die umgezogenen Typen/Signaturen; ein **kleiner** Kern-Test für `DerivedGeometry`
       (Aggregat baubar, lib-frei) ist zulässig.
-- [ ] **Doku.** `spec/spezifikation.md` §1 (Export-Datenfluss-Umfeld) um die Kern-Naht
+- [x] **Doku.** `spec/spezifikation.md` §1 (Export-Datenfluss-Umfeld) um die Kern-Naht
       (Kern berechnet, Adapter serialisiert) — **ADR-/slice-token-frei** ([MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[MR-014](../../../../harness/conventions.md),
       vor Gate greppen); `spezifikation-historie.md` + Header. **architecture §2-Tabelle NICHT** hier (die zieht
       erst Slice 042e, wenn die Kanten real fallen — Byte-Ehrlichkeit). [ADR-Index](../../adr/README.md) Zeile
@@ -169,6 +169,28 @@ Entfernung final + `architecture.md` §2-Tabelle/§1-Diagramm wahr (042e).
 
 ## 8. Closure-Notiz
 
-*(bei Closure ausgefüllt: umgezogene Typen, Vertrags-Änderung, `ExchangeService`-Berechnung, Export-Orakel-
-Invarianz-Beleg, Review-Ergebnisse [[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-+ Code-Review], Lerneintrag, Folge = Slice 042b.)*
+**Closure 2026-07-23.** `make gates` grün (248/248 Tests, Coverage 90,7 %); die Export-Decode-/Round-Trip-
+Orakel (STEP/STL/IFC/DXF/PDF/PNG) **unverändert grün** = Invarianz-Beweis. `make schema-check` unberührt.
+
+- **Umgezogene Typen (verhaltens-invariant):** `services::StepBox` → `model::StepBox` (POD, header-only);
+  `services::translateMeshZ` → `model::translateMeshZ` (inline `model/mesh_ops.h`, [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
+  HIGH-1) — beide adapter-erreichbar ohne `services/geometry`-Import; Verwender (`stair_geometry`,
+  `slab_geometry`, `structure_edit_service`, `step`/`stl`-Export, Tests) nachgezogen.
+- **Naht:** `model::DerivedGeometry` (pures lib-freies Bündel-Aggregat, `model/derived_geometry.h`);
+  `ModelExporterPort::write(Building, DerivedGeometry, path)` — **alle 6 Exporter** accept-and-ignore;
+  `ExchangeService` reicht ein **leeres** Bündel. `main.cpp` unverändert (`ExchangeModelPort::exportModel`
+  unberührt). **Keine** `.a-check.yml`-Kante entfernt (`geometry`/`persistence → services_geo` bleiben →
+  Folge-Slices 042c/042d/042e).
+- **Doku:** Spec §1 STEP/STL-„Schicht" um die Geometrie-Bereitstellung (Kern-Naht, staged, token-frei)
+  + `spezifikation-historie`; CHANGELOG; ADR-Index Kern-Naht-Zeile „erfüllt". architecture §2/§1 **unberührt**
+  (zieht slice-042e — die Kanten fallen erst dort).
+- **Reviews:** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  0 HIGH / 1 MED / 2 LOW → alle eingearbeitet ([Report](../../../reviews/2026-07-23-slice-042a-plan.md)).
+  Geometrie-berührend → Code-Review vor Welle-Closure ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)) offen.
+- **Lerneintrag (MED-1):** Eine Berechnung, die niemand konsumiert, bringt **null Verifikations-Gewinn** bei
+  **realer** neuer Wurf-Fläche (die STEP/STL-Adapter kapseln jeden Geometrie-Aufruf fail-closed +
+  `kDefaultStoreyHeightMm`) — daher wanderte die `ExchangeService`-Berechnung nach 042c, wo Konsum +
+  B-Rep-/STL-Orakel sie **gleichzeitig netzen**. 042a blieb rein mechanisch.
+- **Folge:** **slice-042b** (2D-Projektion → Kern + `PlanViewPort`, entsperrt Canvas; Skelett in `open/`,
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) beim Start) — [MR-020](../../../../harness/conventions.md) (Closure-Disziplin) erfüllt: die nächste
+  Folge-Slice existiert als Plan-Datei.

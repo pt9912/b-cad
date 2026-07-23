@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- slice-042a — **Export-Refactor Kern-Naht: `DerivedGeometry`-Vertrag** (welle-5; erste von fünf
+  ADR-0020-Folgepflichten; **intern, verhaltens-invariant**). Der `ModelExporterPort::write`-Vertrag
+  trägt jetzt ein kern-berechnetes `DerivedGeometry`-Bündel (pre-OCC-Primitive je Bauteil, format-selektiv)
+  — driven Export-Adapter serialisieren nur, sie leiten keine Geometrie ab (ADR-0020). `StepBox` +
+  `translateMeshZ` nach `model/`-Kern gehoben (header-only, lib-frei); alle 6 Exporter nehmen das Bündel
+  **accept-and-ignore** an; der `ExchangeService` reicht (vorerst) ein **leeres** Bündel — die
+  format-selektive Berechnung + der STEP/STL-Konsum folgen mit slice-042c (MR-006-MED-1). **Keine**
+  `.a-check.yml`-Kante entfernt (Folge-Slices 042c–e). Export-Decode-/Round-Trip-Orakel (STEP/STL/IFC/DXF/
+  PDF/PNG) **unverändert grün** = Invarianz-Beweis; 248 Tests, Coverage 90,7 %. MR-006 0 HIGH/1 MED/2 LOW.
+
 ### Added
 - slice-041a — **DRW interaktiver 2D-Canvas: Grundsatz-ADRs accepted + interaktive Erzeugungs-AK**
   (welle-5 DRW-Interaktiv-Strang; ADR-0019/ADR-0020; reine Doku/Entscheidung, kein Code). **ADR-0020**
