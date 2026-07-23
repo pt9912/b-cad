@@ -19,9 +19,13 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel;
-beim Öffnen des nächsten Slice entfernen). `slice-041a` **done** (2026-07-23): die **DRW-Canvas-
-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
+**In Arbeit:** `slice-042a` — Export-Refactor **Kern-Naht** (`DerivedGeometry`-Vertrag + `StepBox`/
+`translateMeshZ` → `model/`; accept-and-ignore über die 6 Exporter), gestartet 2026-07-23
+([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+0 HIGH/1 MED/2 LOW → startbar; MED-1 [ExchangeService-Berechnung → 042c] eingearbeitet). **Erster** der
+fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Slices (Familie 042a…e).
+
+`slice-041a` **done** (2026-07-23): die **DRW-Canvas-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
 (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel; alle
 `adapter→services_geo`-`.a-check.yml`-Kanten entfallen; `architecture.md` §2/§1 werden wahr) und
 [ADR-0019](../../adr/0019-drw-2d-canvas.md) (2D-Canvas + 2D-Lese-Naht `PlanViewPort`, **auf
