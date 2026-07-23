@@ -1,7 +1,7 @@
 ---
 id: slice-042c
 titel: Export-Refactor STEP/STL — Body-Migration auf das Bündel + geometry→services_geo-Kante raus
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[OBJ-005](../../../../spec/lastenheft.md#3-projektziele), [LH-FA-IO-005](../../../../spec/lastenheft.md#lh-fa-io-005), [LH-FA-IO-006](../../../../spec/lastenheft.md#lh-fa-io-006)]
 adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md), [ADR-0002](../../adr/0002-geometrie-kern-opencascade.md), [ADR-0014](../../adr/0014-step-stl-export-backend.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-g
 
 # Slice 042c: Export-Refactor STEP/STL — Body-Migration auf das `DerivedGeometry`-Bündel
 
-**Status:** open (Plan — **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review 2026-07-23: 0 HIGH / 2 MED / 2 LOW → startbar**; MED-1 [Netz-Loch: Integrationstest über den **echten** `ExchangeService` mit **Voll-Modell** + starken Orakeln — die Direkt-Helfer umgehen die Service-Berechnung] + MED-2 [architecture §2-geometry-Zeile in **042c**, Option A] + LOW-1 [Koordinaten-Sonde] + LOW-2 [Negativ-Test beide Fälle] eingearbeitet; [Report](../../../reviews/2026-07-23-slice-042c-plan.md). Start auf Projektinhaber-Wort).
+**Status:** done (2026-07-23 — Impl geliefert, `make gates` grün [252 Tests, Coverage 91,5 %], STEP-B-Rep-/STL-Netz-Orakel unverändert grün = Invarianz-Beweis, `make a-check` grün nach Kanten-Entfernung). **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)** 0 HIGH / 2 MED / 2 LOW ([Plan-Report](../../../reviews/2026-07-23-slice-042c-plan.md)) + **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) Code-Review** 0 HIGH ([Report](../../../reviews/2026-07-23-slice-042c-code-review.md)).
 
 **Welle:** welle-5-erweiterung. **Dritter** der fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Refactor-Slices
 (Familie 042a…e). **Vorgänger:** slice-042b (done). **Hier wandert die aus slice-042a per
@@ -45,36 +45,36 @@ total ist, ist ihr Umzug aus dem `try` heraus **verhaltens-neutral** (sie warf n
 
 ## 2. Definition of Done
 
-- [ ] **`ExchangeService` berechnet das STEP/STL-Bündel.** In `exportModel` ein format-selektiver Zweig für
+- [x] **`ExchangeService` berechnet das STEP/STL-Bündel.** In `exportModel` ein format-selektiver Zweig für
       `Step`/`Stl` (parallel zum 042b-`Pdf`/`Png`-Zweig): pro `building.wall`/`slab`/`roof`/`stair` einen
       `DerivedWall`/`DerivedSlab`/`DerivedRoof`/`DerivedStair` befüllen (`wallFootprint`+`height_mm`+`wallCutPrisms`;
       `slab.footprint`+`thickness_mm`+`slabCutPrisms`+`slabBaseZ`; `roofMesh`; `stairStepBoxes` **und** `stairMesh`
       + `rise` (letzteres 042d-Vorrat, hier optional)). **Ein-Eintrag-pro-Bauteil in Modell-Reihenfolge** (die
       Compound-/Netz-Reihenfolge deterministisch halten). services/geometry-Includes im `ExchangeService`
       ergänzen. `services → services_geo` deckt den Aufruf (`.a-check.yml`) — **keine** neue Kante.
-- [ ] **`storeyHeight` konsolidiert (eine Kopie).** Die totale Höhen-Auflösung (`→ kDefaultStoreyHeightMm`) liegt
+- [x] **`storeyHeight` konsolidiert (eine Kopie).** Die totale Höhen-Auflösung (`→ kDefaultStoreyHeightMm`) liegt
       heute als **identische** private Kopie in **beiden** Geometrie-Adaptern. Da nach der Migration **nur** der
       `ExchangeService` sie braucht (die Adapter konsumieren die pre-resolved `baseZ`/`boxes`/`mesh`), wird sie in
       den `ExchangeService` gezogen (private Helfer-Funktion) und die **zwei Adapter-Kopien entfernt** —
       **eine** Wahrheit (löst [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-042a-LOW-2;
       Alternative: geteilter `model/`-Helfer, falls ein zweiter Konsument absehbar — Review entscheidet).
-- [ ] **STEP-Adapter auf das Bündel** (`step_export_adapter.cpp`). Der `buildSolidCompound`-Bau iteriert
+- [x] **STEP-Adapter auf das Bündel** (`step_export_adapter.cpp`). Der `buildSolidCompound`-Bau iteriert
       `derived.walls`→`makeNetSolid(dw.footprint, dw.height_mm, dw.cutPrisms)`, `derived.slabs`→`makeNetSolid` +
       OCC-Lift um `ds.baseZ_mm`, `derived.roofs`→`meshToSolid(dr.mesh)`, `derived.stairs`→`makeBoxSolid` je
       `StepBox`. **Der per-Bauteil-`try/catch{continue}` + `IsNull`-Guards bleiben** (OCC-Skip). services/geometry-
       Includes + die `storeyHeight`-Kopie **entfernt**; `occ_solids`-Montage + `STEPControl_Writer` + atomarer
       Write unverändert.
-- [ ] **STL-Adapter auf das Bündel** (`stl_export_adapter.cpp`). Die `append*Meshes`-Sammler iterieren
+- [x] **STL-Adapter auf das Bündel** (`stl_export_adapter.cpp`). Die `append*Meshes`-Sammler iterieren
       `derived.*`: Wände/Slabs → `GeometryKernelPort::tessellateFootprint(footprint, height/thickness, cutPrisms)`
       (+ `model::translateMeshZ(mesh, ds.baseZ_mm)` für Slabs), Dächer → `dr.mesh`, Treppen → `ds.mesh`. **Der
       `try/catch{continue}` um `tessellateFootprint` bleibt** (OCC-Skip). services/geometry-Includes + `storeyHeight`
       **entfernt**; `GeometryKernelPort`-Injektion + `buildStl` + atomarer Write unverändert.
-- [ ] **`.a-check.yml`-Kante `geometry → services_geo` entfernt.** Nach der Migration ruft **kein**
+- [x] **`.a-check.yml`-Kante `geometry → services_geo` entfernt.** Nach der Migration ruft **kein**
       Geometrie-Adapter mehr `services/geometry` (step/stl waren die einzigen Nutzer; `occ_geometry_adapter` nie;
       `occ_solids` ist intra-`geometry`). **Gegenprobe:** `make a-check` grün **nach** der Entfernung; ein
       Rest-`services/geometry`-Aufruf im geometry-Layer würde jetzt **failen**. `persistence → services_geo`
       **bleibt** (042d).
-- [ ] **Verhaltens-Invarianz — das Netz muss die neue SERVICE-Berechnung treffen ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-MED-1).**
+- [x] **Verhaltens-Invarianz — das Netz muss die neue SERVICE-Berechnung treffen ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-MED-1).**
       `make gates` grün; die bestehende **STEP-B-Rep-`CLOSED_SHELL`-Zählung** (Wände/Dach `+1`/Treppe `+step_count`)
       + das **binäre STL-Netz-Orakel** (`84 + 50·triangles`) bleiben **unverändert grün** — **aber sie prüfen nur
       die Adapter-Serialisierung eines vorgefertigten Bündels**, nicht die format-selektive `ExchangeService`-
@@ -86,22 +86,22 @@ total ist, ist ihr Umzug aus dem `try` heraus **verhaltens-neutral** (sie warf n
       vergessenes `derived.stairs`/`slabs`/`roofs`, `s.storey_id` statt `s.from_storey_id`, weggelassene
       `wallCutPrisms`). **Alternative:** `writeStep`/`writeStl` das Bündel über eine reale `ExchangeService`-Instanz
       beziehen lassen (dann fließen die starken Direkt-Orakel durch den Service).
-- [ ] **Koordinaten-Sonde ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-LOW-1).**
+- [x] **Koordinaten-Sonde ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-LOW-1).**
       Die Zähl-Orakel sind **positions-blind** (ein falsches `slabBaseZ`/`storeyHeight`/OCC-Lift verschiebt in Z,
       ohne die Zahl zu ändern) — und 042c **verlagert genau diese `baseZ`/`storeyHeight`-Rechnung in den Service**.
       In mindestens einem migrierten Fall eine **Extent-/Vertex-Sonde** (bekannte Z-Ausdehnung bzw. Vertex-Koordinate)
       ergänzen.
-- [ ] **Negativ-Test — beide Pfade ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-LOW-2, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-042a+042b-INFO-1).**
+- [x] **Negativ-Test — beide Pfade ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-LOW-2, [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-042a+042b-INFO-1).**
       `exportModel` (STEP **und** STL) wirft **nicht** bei (a) **danglendem `from_storey_id`** (→ `storeyHeight`-
       Fallback `kDefaultStoreyHeightMm`; Bauteil wird **exportiert**) **und** (b) **degeneriertem Bauteil**
       (`step_count=0`/`width=0` → leere Ableitung → **OCC-Skip-Pfad** im Adapter). STEP/STL erhalten ein
       **befülltes**, IFC/DXF ein **leeres** Bündel.
-- [ ] **Test-Aufrufer-Migration.** Die ~10 direkten `exporter.write(building, DerivedGeometry{}, path)`-Aufrufe in
+- [x] **Test-Aufrufer-Migration.** Die ~10 direkten `exporter.write(building, DerivedGeometry{}, path)`-Aufrufe in
       `test_step_stl_export.cpp` (leeres Bündel → nach Migration **kein Body**) auf **`writeStep`/`writeStl`-Helfer**
       umstellen (Muster 042b `writePdf`: das Bündel aus **derselben** services-Quelle befüllen → **Byte-Identität**
       geprüft, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-042b-LOW-2).
       Die Integrationstests (`service.exportModel`) laufen unverändert.
-- [ ] **Doku.** `spec/spezifikation.md` §1 STEP/STL-„Geometrie-Bereitstellung" von „staged" auf **realisiert**
+- [x] **Doku.** `spec/spezifikation.md` §1 STEP/STL-„Geometrie-Bereitstellung" von „staged" auf **realisiert**
       nachziehen (token-frei, [MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[MR-014](../../../../harness/conventions.md)
       vor Gate greppen) + `spezifikation-historie`; [ADR-Index](../../adr/README.md) STEP/STL-Zeile „erfüllt";
       **CHANGELOG** ([MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
@@ -192,8 +192,33 @@ restlos** (keine Erweiterung).
 
 ## 8. Closure-Notiz
 
-*(bei Closure ausgefüllt: `ExchangeService`-Berechnung + `storeyHeight`-Konsolidierung, STEP/STL-Body-Konsum,
-Skip-Grenze [Ableitung→Service / OCC-Skip→Adapter], entfernte `geometry → services_geo`-Kante + a-check-Gegenprobe,
-architecture-§2-Entscheidung, B-Rep-/STL-Orakel-Invarianz + Negativ-Test, Review-Ergebnisse
-[[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review],
-Lerneintrag, Folge = Slice 042d.)*
+**Closure 2026-07-23.** `make gates` grün (252/252 Tests, Coverage 91,5 %); die STEP-B-Rep-`CLOSED_SHELL`-
+Zählung + das binäre STL-Netz-Orakel **unverändert grün** = Invarianz-Beweis; `make a-check` grün **nach** der
+Kanten-Entfernung (Gegenprobe). `make schema-check` unberührt.
+
+- **`ExchangeService`-Berechnung + `storeyHeight`-Konsolidierung:** der Service befüllt `derived.walls/slabs/
+  roofs/stairs` format-selektiv (ein Eintrag je Bauteil in Modell-Reihenfolge; die reine Ableitung ist total);
+  `storeyHeight` liegt als **eine** Wahrheit im Service, die **zwei** Adapter-Kopien entfielen (042a-LOW-2).
+- **STEP/STL-Body-Konsum + Skip-Grenze:** die Adapter iterieren `derived.*` und bauen OCC (STEP `occ_solids`) bzw.
+  tessellieren (STL `GeometryKernelPort`); der **fail-closed per-Bauteil-`try/catch{continue}`-Skip bleibt im
+  Adapter** (OCC-resident, Regel C) — die Ableitung wanderte in den Service, der OCC-Skip nicht. `building`-Param
+  in beiden `write` folgenlos ungenutzt.
+- **Kante `geometry → services_geo` restlos entfernt** (`.a-check.yml`); **Gegenprobe:** `make a-check` grün, ein
+  Rest-`services/geometry`-Aufruf im geometry-Layer würde jetzt failen. `architecture.md` §2-geometry-Zeile
+  mitgezogen (Option A, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-MED-2
+  — schritt-genau konsistent); [ADR-Index](../../adr/README.md) reconcilet (042c = geometry-Kante + §2-geometry;
+  042e = `persistence`-Kante + §2-persistence + §1-Diagramm). `persistence → services_geo` **bleibt** (042d).
+- **Netz gegen die neue Service-Berechnung ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-MED-1):**
+  `writeStep`/`writeStl` fahren jetzt über den **echten** `ExchangeService` (die starken B-Rep-/STL-Orakel
+  verifizieren die Service-Berechnung mit); neu: **Voll-Modell-Integrationstest** (`CLOSED_SHELL == wallShells +
+  1 + 1 + step_count`), **STL-`baseZ`-Z-Sonde** (LOW-1), **Totalitäts-Test beide Pfade** (danglendes Geschoss →
+  Fallback+Export; degeneriert → OCC-Skip; LOW-2).
+- **Reviews:** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  0 HIGH / 2 MED / 2 LOW (alle eingearbeitet) + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+  Code-Review **0 HIGH** (Byte-Identität Zeile-für-Zeile verifiziert; [Report](../../../reviews/2026-07-23-slice-042c-code-review.md)).
+- **Lerneintrag (MED-1):** das 042b-`writePdf`-Direkt-Helfer-Muster **umgeht den Service** — auf STEP/STL
+  übertragen hätten die starken Orakel nur die Adapter-Serialisierung eines **vorgefertigten** Bündels geprüft,
+  nicht die neue Service-Berechnung (den Löwenanteil). Das Review fing es; das Netz fährt jetzt durch den Service.
+- **Folge:** **slice-042d** (Persistenz-`rise` kern-seitig + `persistence → services_geo`-Kante raus; Skelett in
+  `open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  beim Start) — [MR-020](../../../../harness/conventions.md) Closure-Disziplin erfüllt (042d existiert).

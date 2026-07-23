@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-042c — **Export-Refactor STEP/STL: Body-Migration auf das `DerivedGeometry`-Bündel** (welle-5;
+  dritte von fünf ADR-0020-Folgepflichten; **intern, verhaltens-invariant**). Der `ExchangeService` berechnet
+  die 3D-Bauteil-Ableitung (pre-OCC-Primitive) format-selektiv für STEP/STL und reicht sie im Bündel; die
+  Export-Adapter **iterieren `derived.*` + serialisieren** (STEP baut B-Rep via `occ_solids`, STL tesselliert
+  über den `GeometryKernelPort`) — die reine Ableitung ist kern-total, der fail-closed-Skip degenerierter
+  Bauteile bleibt adapter-resident (OCC, Regel C). Die Geschoss-Höhen-Auflösung (`storeyHeight`) liegt als **eine**
+  Wahrheit im Service (die zwei Adapter-Kopien entfielen). **Die Schicht-Kante `geometry → services_geo` ist aus
+  `.a-check.yml` + `architecture.md` §2 entfernt** (kein Geometrie-Adapter ruft mehr `services/geometry`;
+  Verschärfung). Die STEP-B-Rep-`CLOSED_SHELL`-Zählung + das binäre STL-Netz-Orakel bleiben **unverändert grün**
+  (Invarianz-Beweis); neu: ein **Voll-Modell-Integrationstest** über den echten Service (Wände+Decke+Dach+Treppe),
+  eine STL-`baseZ`-Koordinaten-Sonde und ein Totalitäts-Test (danglendes Geschoss + degeneriertes Bauteil). 252
+  Tests, Coverage 91,5 %. **MR-006 0 HIGH; MR-009 Code-Review 0 HIGH** (Byte-Identität Zeile-für-Zeile verifiziert).
+  `persistence → services_geo` bleibt (Folge-Slice 042d).
 - slice-042b — **Export-Refactor 2D-Projektion: `plan_geometry` in den Kern + `PlanViewPort`** (welle-5;
   zweite von fünf ADR-0020-Folgepflichten; zugleich ADR-0019-Lese-Naht-Refactor; **intern, verhaltens-
   invariant**). Die reine 2D-Grundriss-Projektion (`projectPlan`/`PlanView`) ist aus dem io-Adapter in den

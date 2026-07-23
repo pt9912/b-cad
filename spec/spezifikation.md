@@ -579,10 +579,13 @@ leiten **keine** Domänen-Geometrie ab. Der Kern berechnet die abgeleitete Baute
 reicht sie als **pures Werttyp-Bündel** (`DerivedGeometry`: pre-OCC-Primitive je Bauteil, format-
 selektiv befüllt) über den `ModelExporterPort` (`write(Building, DerivedGeometry, path)`); die
 OCC-B-Rep-Montage aus diesen Primitiven bleibt **adapter-resident** (kein `TopoDS`-Typ kreuzt den
-neutralen Port). **Staged:** der Port-Vertrag trägt das Bündel bereits (in dieser Stufe leer
-durchgereicht); die kern-seitige Berechnung + der Adapter-Konsum folgen mit der STEP/STL-Body-
-Migration. Die zwei zuvor adapter-genutzten puren Werte (`StepBox`, die Mesh-z-Verschiebung) liegen
-dazu im `model/`-Kern (adapter-erreichbar, lib-frei).
+neutralen Port). **Realisiert:** der `ExchangeService` berechnet die 3D-Bauteil-Ableitung
+(Wand `{Footprint, Höhe, Schnitt-Prismen}`, Decke `{…, baseZ}`, Dach/Treppe als Netze/Box-Solids)
+format-selektiv und reicht sie im Bündel; STEP baut daraus das B-Rep (`occ_solids`), STL tesselliert
+über den `GeometryKernelPort` — die reine Ableitung ist kern-total, den fail-closed-Skip degenerierter
+Bauteile besorgt der Adapter **beim OCC-/Tessellations-Bau** (adapter-resident, Regel C). Die zwei
+zuvor adapter-genutzten puren Werte (`StepBox`, die Mesh-z-Verschiebung) liegen dazu im `model/`-Kern
+(adapter-erreichbar, lib-frei); die Geschoss-Höhen-Auflösung liegt als **eine** Wahrheit im Service.
 
 **Repräsentation.** **STEP** schreibt die **B-Rep-Volumenkörper** der Bauteile:
 **Wände und Decken/Fundament** als extrudierte/boolesch geschnittene OCC-Solids,
