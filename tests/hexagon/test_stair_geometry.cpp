@@ -23,7 +23,7 @@ using bcad::hexagon::services::stairMesh;
 using bcad::hexagon::services::stairRiseMm;
 using bcad::hexagon::services::stairRunLengthMm;
 using bcad::hexagon::services::stairStepBoxes;
-using bcad::hexagon::services::StepBox;
+using bcad::hexagon::model::StepBox;
 
 struct Bounds {
     double lo{std::numeric_limits<double>::max()};

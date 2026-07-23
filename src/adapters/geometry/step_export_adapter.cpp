@@ -110,7 +110,7 @@ TopoDS_Compound buildSolidCompound(const model::Building& building) {
     // Die berührenden Box-Solids bleiben **getrennte** Compound-Member (kein Fuse).
     for (const model::Stair& s : building.stairs) {
         try {
-            for (const services::StepBox& box : services::stairStepBoxes(
+            for (const model::StepBox& box : services::stairStepBoxes(
                      s, storeyHeight(building, s.from_storey_id))) {
                 const TopoDS_Shape solid = makeBoxSolid(
                     box.x0_mm, box.y0_mm, box.z0_mm, box.x1_mm, box.y1_mm, box.z1_mm);
@@ -128,6 +128,7 @@ TopoDS_Compound buildSolidCompound(const model::Building& building) {
 }  // namespace
 
 void StepExportAdapter::write(const model::Building& building,
+                              const model::DerivedGeometry& /*derived*/,
                               const fs::path& path) const {
     try {
         const TopoDS_Compound compound = buildSolidCompound(building);

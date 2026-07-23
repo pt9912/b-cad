@@ -56,6 +56,7 @@ double fitScale(const PlanView& view) {
 }  // namespace
 
 void PngExportAdapter::write(const model::Building& building,
+                             const model::DerivedGeometry& /*derived*/,
                              const fs::path& path) const {
     const PlanView view = projectPlan(building);
     const double scale = fitScale(view);

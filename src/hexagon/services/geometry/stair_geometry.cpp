@@ -88,9 +88,9 @@ double stairRunLengthMm(const model::Stair& stair) {
     return stair.step_count * stair.tread_mm;
 }
 
-std::vector<StepBox> stairStepBoxes(const model::Stair& stair,
-                                    double from_storey_height_mm) {
-    std::vector<StepBox> boxes;
+std::vector<model::StepBox> stairStepBoxes(const model::Stair& stair,
+                                           double from_storey_height_mm) {
+    std::vector<model::StepBox> boxes;
 
     const double width = stair.width_mm;
     const double tread = stair.tread_mm;
@@ -122,11 +122,11 @@ model::TriangleMesh stairMesh(const model::Stair& stair,
 
     // Eine Box-Wahrheit: die Stufen-Quader aus `stairStepBoxes` (slice-024b);
     // leere Liste (degeneriert) → leeres Netz (Totalität unverändert).
-    const std::vector<StepBox> boxes = stairStepBoxes(stair, from_storey_height_mm);
+    const std::vector<model::StepBox> boxes = stairStepBoxes(stair, from_storey_height_mm);
     const double rail_t = std::min(kRailThicknessMm, stair.width_mm / 4.0);
     const double rail_h = model::kStairRailingHeightMm;
 
-    for (const StepBox& b : boxes) {
+    for (const model::StepBox& b : boxes) {
         // Solide Stufe.
         appendBox(mesh, b.x0_mm, b.x1_mm, b.y0_mm, b.y1_mm, b.z0_mm, b.z1_mm);
         // Geländer beidseitig: folgt der Stufenfolge bis rail_h über die Stufe

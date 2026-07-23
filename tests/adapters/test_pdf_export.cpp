@@ -277,7 +277,7 @@ TEST(PdfExport, ScaleFidelityKnownEdge) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {5000.0, 0.0}));
 
-    PdfExportAdapter().write(b, out.path);
+    PdfExportAdapter().write(b, model::DerivedGeometry{}, out.path);
     const std::string content = streamOfObject(readFile(out.path), 5);
     const Seg s = firstSegment(content);
     const double length = std::hypot(s.x2 - s.x1, s.y2 - s.y1);
@@ -291,7 +291,7 @@ TEST(PdfExport, ScaleFidelityKnownEdge) {
 // DRW-005 Happy (Export): sichtbare Hilfslinie → Segment zusätzlich zur Wand.
 TEST(PdfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
     const TempPath out("drw_vis");
-    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/true), out.path);
+    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/true), model::DerivedGeometry{}, out.path);
     const std::string page = streamOfObject(readFile(out.path), 5);
     EXPECT_EQ(countOccurrences(page, " l\n"), 2);  // Wand + Hilfslinie
 }
@@ -300,7 +300,7 @@ TEST(PdfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
 // keine Hilfslinie (nur die Wand).
 TEST(PdfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
     const TempPath out("drw_inv");
-    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/false), out.path);
+    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/false), model::DerivedGeometry{}, out.path);
     const std::string page = streamOfObject(readFile(out.path), 5);
     EXPECT_EQ(countOccurrences(page, " l\n"), 1);  // nur Wand
 }
@@ -309,7 +309,7 @@ TEST(PdfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
 
 TEST(PdfExport, EmptyBuildingProducesValidPdf) {
     const TempPath out("empty");
-    PdfExportAdapter().write(model::Building{}, out.path);
+    PdfExportAdapter().write(model::Building{}, model::DerivedGeometry{}, out.path);
     ASSERT_TRUE(fs::exists(out.path));
     const std::string pdf = readFile(out.path);
     EXPECT_EQ(pdf.compare(0, 7, "%PDF-1."), 0);
@@ -369,7 +369,7 @@ TEST(PdfExport, PreservesAxisOrientationNoYFlip) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {0.0, 3000.0}));
 
-    PdfExportAdapter().write(b, out.path);
+    PdfExportAdapter().write(b, model::DerivedGeometry{}, out.path);
     const Seg s = firstSegment(streamOfObject(readFile(out.path), 5));
     EXPECT_GT(s.y2, s.y1);           // +Y Modell -> +Y Seite (kein Flip)
     EXPECT_NEAR(s.x2, s.x1, 0.01);   // rein vertikal
@@ -384,7 +384,7 @@ TEST(PdfExport, StoreysWithoutWallsProduceFramedPages) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.storeys.push_back(model::Storey{model::StoreyId{2}, model::kDefaultStoreyHeightMm});
 
-    PdfExportAdapter().write(b, out.path);
+    PdfExportAdapter().write(b, model::DerivedGeometry{}, out.path);
     const std::string pdf = readFile(out.path);
     EXPECT_EQ(verifyXrefOffsets(pdf), 7);  // 2 Geschoss-Seiten
     ASSERT_EQ(pageObjects(pdf).size(), 2U);

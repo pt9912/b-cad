@@ -93,11 +93,4 @@ bool cutoutInsideSlab(const model::Slab& slab,
     });
 }
 
-model::TriangleMesh translateMeshZ(model::TriangleMesh mesh, double dz) {
-    for (std::size_t i = 2; i < mesh.positions.size(); i += 3) {
-        mesh.positions[i] += dz;
-    }
-    return mesh;
-}
-
 }  // namespace bcad::hexagon::services

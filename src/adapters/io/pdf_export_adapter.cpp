@@ -62,6 +62,7 @@ void drawPage(PdfWriter& writer, const StoreyPlan& plan, const PlanView& view) {
 }  // namespace
 
 void PdfExportAdapter::write(const model::Building& building,
+                             const model::DerivedGeometry& /*derived*/,
                              const fs::path& path) const {
     const PlanView view = projectPlan(building);
     PdfWriter writer(PdfPageSize{kPageWidthPt, kPageHeightPt});

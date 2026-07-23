@@ -19,9 +19,10 @@
 #include <vector>
 
 #include "hexagon/model/constants.h"
+#include "hexagon/model/mesh_ops.h"                       // translateMeshZ (ADR-0020: model/-Util)
 #include "hexagon/services/geometry/opening_geometry.h"   // wallCutPrisms
 #include "hexagon/services/geometry/roof_geometry.h"      // roofMesh
-#include "hexagon/services/geometry/slab_geometry.h"      // slabBaseZ/slabCutPrisms/translateMeshZ
+#include "hexagon/services/geometry/slab_geometry.h"      // slabBaseZ/slabCutPrisms
 #include "hexagon/services/geometry/stair_geometry.h"     // stairMesh
 #include "hexagon/services/geometry/wall_footprint.h"     // wallFootprint
 
@@ -71,7 +72,7 @@ void appendSlabMeshes(std::vector<model::TriangleMesh>& out,
         } catch (const std::exception&) {
             continue;  // degeneriertes Bauteil überspringen (Totalität)
         }
-        out.push_back(services::translateMeshZ(
+        out.push_back(model::translateMeshZ(
             std::move(mesh), services::slabBaseZ(s, storeyHeight(building, s.storey_id))));
     }
 }
@@ -212,6 +213,7 @@ StlExportAdapter::StlExportAdapter(const ports::GeometryKernelPort& geometry)
     : geometry_(geometry) {}
 
 void StlExportAdapter::write(const model::Building& building,
+                             const model::DerivedGeometry& /*derived*/,
                              const fs::path& path) const {
     std::vector<model::TriangleMesh> meshes;
     appendWallMeshes(meshes, building, geometry_);

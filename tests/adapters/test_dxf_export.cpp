@@ -115,7 +115,7 @@ model::Building drwBuilding(bool layer_visible) {
 // DRW-005 Happy (Export): sichtbare Hilfslinie erscheint als LINE auf STOREY_1.
 TEST(DxfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
     const TempPath out("drw_vis");
-    DxfExportAdapter().write(drwBuilding(/*layer_visible=*/true), out.path);
+    DxfExportAdapter().write(drwBuilding(/*layer_visible=*/true), model::DerivedGeometry{}, out.path);
     const DxfReader reader = DxfReader::parse(readFile(out.path));
     const auto lines = reader.sectionEntities("ENTITIES");
     ASSERT_EQ(lines.size(), 2U);  // 1 Wand + 1 Hilfslinie
@@ -136,7 +136,7 @@ TEST(DxfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
 // keine Hilfslinie im Artefakt (nur die Wand-LINE bleibt).
 TEST(DxfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
     const TempPath out("drw_inv");
-    DxfExportAdapter().write(drwBuilding(/*layer_visible=*/false), out.path);
+    DxfExportAdapter().write(drwBuilding(/*layer_visible=*/false), model::DerivedGeometry{}, out.path);
     const DxfReader reader = DxfReader::parse(readFile(out.path));
     const auto lines = reader.sectionEntities("ENTITIES");
     ASSERT_EQ(lines.size(), 1U);  // nur die Wand
@@ -147,7 +147,7 @@ TEST(DxfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
 
 TEST(DxfExport, RoundtripPreservesPerStoreyCountsAndAxes) {
     const TempPath out("rt");
-    DxfExportAdapter().write(sampleBuilding(), out.path);
+    DxfExportAdapter().write(sampleBuilding(), model::DerivedGeometry{}, out.path);
     ASSERT_TRUE(fs::exists(out.path));
 
     const model::Building back = DxfImportAdapter().read(out.path);
@@ -171,7 +171,7 @@ TEST(DxfExport, RoundtripPreservesPerStoreyCountsAndAxes) {
 
 TEST(DxfExport, EmptyBuildingRoundtripsToEmpty) {
     const TempPath out("empty");
-    DxfExportAdapter().write(model::Building{}, out.path);
+    DxfExportAdapter().write(model::Building{}, model::DerivedGeometry{}, out.path);
     EXPECT_TRUE(fs::exists(out.path));
     const model::Building back = DxfImportAdapter().read(out.path);
     EXPECT_TRUE(back.walls.empty());

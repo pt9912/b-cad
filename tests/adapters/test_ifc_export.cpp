@@ -64,7 +64,7 @@ struct TempPath {
 TEST(IfcExport, RoundtripPreservesCounts) {
     const TempPath out("counts");
     const IfcExportAdapter exporter;
-    exporter.write(sampleBuilding(), out.path);
+    exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
 
     const IfcImportAdapter importer;
     const model::Building back = importer.read(out.path);
@@ -75,7 +75,7 @@ TEST(IfcExport, RoundtripPreservesCounts) {
 TEST(IfcExport, RoundtripPreservesWallGeometry) {
     const TempPath out("geom");
     const IfcExportAdapter exporter;
-    exporter.write(sampleBuilding(), out.path);
+    exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
     const IfcImportAdapter importer;
     const model::Building b = importer.read(out.path);
 
@@ -116,7 +116,7 @@ TEST(IfcExport, RoundtripPreservesWallGeometry) {
 TEST(IfcExport, EmptyBuildingRoundtripsToEmpty) {
     const TempPath out("empty");
     const IfcExportAdapter exporter;
-    exporter.write(model::Building{}, out.path);
+    exporter.write(model::Building{}, model::DerivedGeometry{}, out.path);
     const IfcImportAdapter importer;
     const model::Building back = importer.read(out.path);
     EXPECT_TRUE(back.storeys.empty());
@@ -136,7 +136,7 @@ TEST(IfcExport, NonWritablePathRejectedWithEIo001) {
     const IfcExportAdapter exporter;
     std::string what;
     try {
-        exporter.write(sampleBuilding(), out.path);
+        exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
         FAIL() << "erwarteter E-IO-001-Wurf blieb aus";
     } catch (const std::runtime_error& e) {
         what = e.what();

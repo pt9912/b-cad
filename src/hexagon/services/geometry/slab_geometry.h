@@ -5,7 +5,6 @@
 #include "hexagon/model/cut_prism.h"
 #include "hexagon/model/footprint.h"
 #include "hexagon/model/slab.h"
-#include "hexagon/model/triangle_mesh.h"
 
 namespace bcad::hexagon::services {
 
@@ -40,9 +39,8 @@ std::vector<model::CutPrism> slabCutPrisms(const model::Slab& slab);
 // einfacher Footprint.
 bool cutoutInsideSlab(const model::Slab& slab, const model::Footprint& cutout);
 
-// Verschiebt ein Netz um `dz` in z (reine Operation auf dem
-// `TriangleMesh`-Wert) — platziert die bei z∈[0,Dicke] extrudierte Platte
-// auf ihre Aufstandshöhe, NACH dem Boolean.
-model::TriangleMesh translateMeshZ(model::TriangleMesh mesh, double dz);
+// `translateMeshZ` (die base_z-Aufstands-Verschiebung, §oben) lebt seit
+// ADR-0020 als reine Wert-Util in `model/mesh_ops.h` — adapter-erreichbar ohne
+// `services/geometry`-Import (die Slab-Mesh entsteht adapter-seitig).
 
 }  // namespace bcad::hexagon::services

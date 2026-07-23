@@ -8,6 +8,7 @@
 #include <string>
 
 #include "hexagon/model/constants.h"
+#include "hexagon/model/mesh_ops.h"
 #include "hexagon/services/geometry/opening_geometry.h"
 #include "hexagon/services/geometry/roof_geometry.h"
 #include "hexagon/services/room_detection.h"
@@ -814,8 +815,8 @@ std::vector<ports::driving::SlabMesh> StructureEditService::slabMeshes() const {
             // Translation nach dem Boolean).
             model::TriangleMesh mesh = geometry_.tessellateFootprint(
                 s.footprint, s.thickness_mm, slabCutPrisms(s));
-            mesh = translateMeshZ(std::move(mesh),
-                                  slabBaseZ(s, storeyHeight(s.storey_id)));
+            mesh = model::translateMeshZ(std::move(mesh),
+                                         slabBaseZ(s, storeyHeight(s.storey_id)));
             if (!mesh.empty()) {
                 meshes.push_back(ports::driving::SlabMesh{s.id, std::move(mesh)});
             }

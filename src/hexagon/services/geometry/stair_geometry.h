@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "hexagon/model/stair.h"
+#include "hexagon/model/step_box.h"
 #include "hexagon/model/triangle_mesh.h"
 
 namespace bcad::hexagon::services {
@@ -22,25 +23,14 @@ namespace bcad::hexagon::services {
 model::TriangleMesh stairMesh(const model::Stair& stair,
                               double from_storey_height_mm);
 
-// Achsen-paralleler Stufen-Quader (mm) — Extents einer soliden Stufe **ohne**
-// Geländer. Pure Geometrie-Daten (kein OCC/Framework).
-struct StepBox {
-    double x0_mm;
-    double x1_mm;
-    double y0_mm;
-    double y1_mm;
-    double z0_mm;
-    double z1_mm;
-};
-
 // Die soliden Stufen-Quader (ohne Geländer) als **eine Box-Wahrheit** (slice-024b):
 // Stufe `i` = `[start.x+i·tread, start.x+(i+1)·tread] × [start.y, start.y+width] ×
 // [0, (i+1)·rise]`. Konsumiert von **`stairMesh`** (Darstellung + STL) **und** dem
 // **STEP-Export** (B-Rep-Box-Solids) — kein Formel-Duplikat. **Total:** ungültige
 // Parameter (wie `stairMesh`) → **leere** Liste (kein Wurf). Das Geländer ist
 // **nicht** enthalten (render-only; STEP exportiert nur die Stufen, slice-024b).
-std::vector<StepBox> stairStepBoxes(const model::Stair& stair,
-                                    double from_storey_height_mm);
+std::vector<model::StepBox> stairStepBoxes(const model::Stair& stair,
+                                           double from_storey_height_mm);
 
 // Abgeleitete Steigung je Stufe (`from_storey_height_mm / step_count`); 0 bei
 // `step_count ≤ 0` (Division-Schutz). Pure Query.

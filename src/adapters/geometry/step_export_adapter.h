@@ -26,6 +26,7 @@ namespace bcad::adapters::geometry {
 class StepExportAdapter final : public hexagon::ports::driven::ModelExporterPort {
 public:
     void write(const hexagon::model::Building& building,
+               const hexagon::model::DerivedGeometry& derived,
                const std::filesystem::path& path) const override;
 };
 

@@ -311,8 +311,8 @@ int inkPixels(const std::string& png) {
 TEST(PngExport, LH_FA_DRW_005_SichtbareHilfslinieMehrTinte) {
     const TempPath vis("drw_vis");
     const TempPath inv("drw_inv");
-    PngExportAdapter().write(drwBuilding(/*layer_visible=*/true), vis.path);
-    PngExportAdapter().write(drwBuilding(/*layer_visible=*/false), inv.path);
+    PngExportAdapter().write(drwBuilding(/*layer_visible=*/true), model::DerivedGeometry{}, vis.path);
+    PngExportAdapter().write(drwBuilding(/*layer_visible=*/false), model::DerivedGeometry{}, inv.path);
     const int ink_visible = inkPixels(readFile(vis.path));
     const int ink_hidden = inkPixels(readFile(inv.path));
     EXPECT_GT(ink_visible, ink_hidden) << "sichtbare Hilfslinie fügt keine Tinte hinzu";
@@ -322,7 +322,7 @@ TEST(PngExport, LH_FA_DRW_005_SichtbareHilfslinieMehrTinte) {
 
 TEST(PngExport, EmptyBuildingProducesValidWhitePng) {
     const TempPath out("empty");
-    PngExportAdapter().write(model::Building{}, out.path);
+    PngExportAdapter().write(model::Building{}, model::DerivedGeometry{}, out.path);
     const std::string png = readFile(out.path);
     const std::vector<Chunk> chunks = parseChunks(png);
     ASSERT_GE(chunks.size(), 3U);
@@ -359,7 +359,7 @@ TEST(PngExport, DegenerateBBoxNoDivByZero) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.walls.push_back(makeWall(1, model::StoreyId{1}, {1000.0, 0.0}, {1000.0, 5000.0}));
 
-    PngExportAdapter().write(b, out.path);
+    PngExportAdapter().write(b, model::DerivedGeometry{}, out.path);
     const std::string png = readFile(out.path);
     const std::vector<Chunk> chunks = parseChunks(png);
     EXPECT_EQ(chunks.front().type, "IHDR");

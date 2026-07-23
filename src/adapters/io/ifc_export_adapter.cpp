@@ -236,6 +236,7 @@ void atomicWrite(const fs::path& path, const std::string& content) {
 }  // namespace
 
 void IfcExportAdapter::write(const model::Building& building,
+                             const model::DerivedGeometry& /*derived*/,
                              const fs::path& path) const {
     const std::string ifc = buildIfc(building);  // vollständig im Speicher …
     atomicWrite(path, ifc);                       // … dann atomar schreiben

@@ -3,13 +3,21 @@
 #include <filesystem>
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/derived_geometry.h"
 
 namespace bcad::hexagon::ports::driven {
 
 // Driven Port (ADR-0001, ADR-0013): schreibt ein Domänen-`Building` in ein
 // externes Format (IFC/DXF/STEP/…). Implementierungen kapseln das Dateiformat
-// vollständig im Adapter — dieser Vertrag kennt nur `model::Building` und
-// `std::filesystem::path`, keine Format-Typen (Spiegel von `ModelImporterPort`).
+// vollständig im Adapter — dieser Vertrag kennt nur `model::Building`, das
+// kern-berechnete `model::DerivedGeometry`-Bündel und `std::filesystem::path`,
+// keine Format-Typen (Spiegel von `ModelImporterPort`).
+//
+// **`DerivedGeometry` (ADR-0020):** driven Adapter serialisieren nur, sie leiten
+// **keine** Domänen-Geometrie ab — der Kern berechnet sie und reicht sie als
+// pures Werttyp-Bündel (format-selektiv befüllt; leer für Formate, die nichts
+// ableiten). Der Adapter tut nur Serialisierung + backend-nötige Montage
+// (OCC-B-Rep aus pre-OCC-Primitiven, Tessellation über den `GeometryKernelPort`).
 //
 // **Atomar** (ADR-0013 #3): die Implementierung schreibt in eine Temp-Datei und
 // ersetzt den Zielpfad erst nach Erfolg (Rename) — bei nicht beschreibbarem
@@ -21,9 +29,11 @@ class ModelExporterPort {
 public:
     virtual ~ModelExporterPort() = default;
 
-    // Schreibt das Modell **atomar** nach `path`. Wirft bei nicht
-    // beschreibbarem Zielpfad eine neutrale `std::runtime_error`.
+    // Schreibt das Modell **atomar** nach `path`, unter Nutzung der kern-
+    // gelieferten `derived`-Geometrie (format-selektiv; ggf. leer). Wirft bei
+    // nicht beschreibbarem Zielpfad eine neutrale `std::runtime_error`.
     virtual void write(const model::Building& building,
+                       const model::DerivedGeometry& derived,
                        const std::filesystem::path& path) const = 0;
 };
 

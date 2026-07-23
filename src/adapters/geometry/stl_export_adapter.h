@@ -23,6 +23,7 @@ public:
         const hexagon::ports::driven::GeometryKernelPort& geometry);
 
     void write(const hexagon::model::Building& building,
+               const hexagon::model::DerivedGeometry& derived,
                const std::filesystem::path& path) const override;
 
 private:

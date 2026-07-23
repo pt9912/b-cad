@@ -12,6 +12,7 @@
 
 #include "hexagon/model/constants.h"
 #include "hexagon/model/footprint.h"
+#include "hexagon/model/mesh_ops.h"
 #include "hexagon/model/slab.h"
 #include "hexagon/services/geometry/slab_geometry.h"
 #include "analytic_geometry_double.h"
@@ -98,7 +99,7 @@ TEST(SlabGeometry_LH_FA_SLB_001, NetzAufAufstandshoeheVerschoben) {
     ASSERT_DOUBLE_EQ(minZ(mesh), 0.0);  // vor Translation: Solid bei z=0
 
     const double base_z = services::slabBaseZ(slab, 2500.0);
-    mesh = services::translateMeshZ(std::move(mesh), base_z);
+    mesh = model::translateMeshZ(std::move(mesh), base_z);
 
     EXPECT_DOUBLE_EQ(minZ(mesh), 2500.0);  // Decke-Unterkante auf Geschoss-OK
 }

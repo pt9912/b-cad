@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include "hexagon/model/derived_geometry.h"
+
 namespace bcad::hexagon::services {
 
 ExchangeService::ExchangeService(ImporterMap importers, ExporterMap exporters)
@@ -40,9 +42,14 @@ void ExchangeService::exportModel(const model::Building& building,
             "E-IO-001: nicht unterstütztes/unverdrahtetes Export-Format; "
             "event=io_no_permission");
     }
+    // slice-042a (ADR-0020): der Kern reicht das abgeleitete-Geometrie-Bündel
+    // über den Port — driven Adapter serialisieren nur, sie leiten keine
+    // Geometrie ab. In dieser Stufe **leer** (accept-and-ignore); die
+    // format-selektive Berechnung folgt mit der STEP/STL-Body-Migration (042c).
+    const model::DerivedGeometry derived{};
     // Erfolg: vollständige Datei. Fehler: der Exporter wirft E-IO-001 (bzw.
     // E-IO-003) — propagiert, kein Teil-Export.
-    it->second->write(building, path);
+    it->second->write(building, derived, path);
 }
 
 }  // namespace bcad::hexagon::services

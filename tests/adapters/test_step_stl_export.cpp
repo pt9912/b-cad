@@ -134,7 +134,7 @@ TEST(StlExport, BuildingWithWallsYieldsNonEmptyMesh) {
     const OccGeometryAdapter geometry;
     const StlExportAdapter exporter(geometry);
     const TempPath out("walls");
-    exporter.write(sampleBuilding(), out.path);
+    exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
 
     const StlInfo info = readStl(out.path);
     ASSERT_TRUE(info.ok);
@@ -149,7 +149,7 @@ TEST(StlExport, EmptyBuildingYieldsValidEmptyStl) {
     const OccGeometryAdapter geometry;
     const StlExportAdapter exporter(geometry);
     const TempPath out("empty");
-    exporter.write(model::Building{}, out.path);
+    exporter.write(model::Building{}, model::DerivedGeometry{}, out.path);
 
     const StlInfo info = readStl(out.path);
     ASSERT_TRUE(info.ok);
@@ -171,7 +171,7 @@ TEST(StlExport, NonWritablePathRejectedWithEIo001) {
 
     std::string what;
     try {
-        exporter.write(sampleBuilding(), out.path);
+        exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
         FAIL() << "erwarteter E-IO-001-Wurf blieb aus";
     } catch (const std::runtime_error& e) {
         what = e.what();
@@ -234,7 +234,7 @@ std::size_t countSubstr(const std::string& hay, const std::string& needle) {
 TEST(StepExport, BuildingWithWallsYieldsBRepSolids) {
     const StepExportAdapter exporter;
     const TempPath out("walls", ".step");
-    exporter.write(sampleBuilding(), out.path);
+    exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
 
     const std::string step = readText(out.path);
     // Gültige ISO-10303-21-Hülle.
@@ -255,7 +255,7 @@ TEST(StepExport, RoofYieldsClosedShellBRepSolid) {
     const StepExportAdapter exporter;
 
     const TempPath wallsOut("walls_baseline", ".step");
-    exporter.write(sampleBuilding(), wallsOut.path);
+    exporter.write(sampleBuilding(), model::DerivedGeometry{}, wallsOut.path);
     const std::size_t wallShells =
         countSubstr(readText(wallsOut.path), "CLOSED_SHELL");
     ASSERT_GT(wallShells, 0U) << "Basis-Erwartung: Wände sind geschlossene Solids";
@@ -275,7 +275,7 @@ TEST(StepExport, RoofYieldsClosedShellBRepSolid) {
     for (const RoofCase& c : cases) {
         const TempPath roofOut(std::string("roof_") + c.tag, ".step");
         exporter.write(buildingWithRoof(c.type, c.width_mm, c.depth_mm),
-                       roofOut.path);
+                       model::DerivedGeometry{}, roofOut.path);
         const std::string step = readText(roofOut.path);
 
         EXPECT_NE(step.find("MANIFOLD_SOLID_BREP"), std::string::npos)
@@ -294,14 +294,14 @@ TEST(StepExport, StairStepsYieldClosedShellBRepSolids) {
     const StepExportAdapter exporter;
 
     const TempPath wallsOut("walls_baseline_stair", ".step");
-    exporter.write(sampleBuilding(), wallsOut.path);
+    exporter.write(sampleBuilding(), model::DerivedGeometry{}, wallsOut.path);
     const std::size_t wallShells =
         countSubstr(readText(wallsOut.path), "CLOSED_SHELL");
     ASSERT_GT(wallShells, 0U) << "Basis-Erwartung: Wände sind geschlossene Solids";
 
     const int steps = 12;
     const TempPath stairOut("with_stair", ".step");
-    exporter.write(buildingWithStair(steps), stairOut.path);
+    exporter.write(buildingWithStair(steps), model::DerivedGeometry{}, stairOut.path);
     const std::string step = readText(stairOut.path);
 
     EXPECT_NE(step.find("MANIFOLD_SOLID_BREP"), std::string::npos)
@@ -315,7 +315,7 @@ TEST(StepExport, StairStepsYieldClosedShellBRepSolids) {
 TEST(StepExport, EmptyBuildingYieldsValidStepEnvelope) {
     const StepExportAdapter exporter;
     const TempPath out("empty", ".step");
-    exporter.write(model::Building{}, out.path);  // 3D-leer -> kein Wurf
+    exporter.write(model::Building{}, model::DerivedGeometry{}, out.path);  // 3D-leer -> kein Wurf
 
     const std::string step = readText(out.path);
     EXPECT_NE(step.find("ISO-10303-21"), std::string::npos);
@@ -331,7 +331,7 @@ TEST(StepExport, NonWritablePathRejectedWithEIo001) {
 
     std::string what;
     try {
-        exporter.write(sampleBuilding(), out.path);
+        exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
         FAIL() << "erwarteter E-IO-001-Wurf blieb aus";
     } catch (const std::runtime_error& e) {
         what = e.what();
