@@ -671,6 +671,17 @@ je-Chunk-CRC-32). Der `ModelExporterPort` ist die Naht; der Composition Root ver
 je Format. Der einzige Kern-Touch ist die **additive** Erweiterung des Format-Aufzählers
 um PDF/PNG (Export-Registry; **kein** Import-Dispatch).
 
+**2D-Projektions-Bereitstellung (Kern-Naht).** Die maßstäbliche 2D-Grundriss-Projektion
+(`PlanView`: Wand-Achsen + sichtbare Hilfslinien je Geschoss + gemeinsame Bounding-Box) ist
+**kern-berechnet** (`services::projectPlan`, framework-frei) und wird PDF/PNG als `PlanView` im
+`DerivedGeometry`-Bündel über den `ModelExporterPort` gereicht — die Writer **serialisieren nur**,
+sie projizieren nicht mehr selbst (Prinzip: driven Adapter serialisieren, der Kern liefert die
+abgeleitete Geometrie). Dieselbe Kern-Projektion speist über den Driving-Read-Port `PlanViewPort`
+die (künftige) interaktive 2D-Zeichenfläche — **eine Quelle** für Bildschirm und Export. **DXF**
+iteriert weiter direkt und nutzt nur den Ebenen-Sichtbarkeits-**Filter** (`visibleLayerIds`), der
+als reiner Nicht-Geometrie-Filter kern-nah (`model/`) liegt und von Kern-Projektion **und** DXF
+geteilt wird — **kein** Adapter leitet 2D-Geometrie ab, **keine** neue Schicht-Kante.
+
 **Repräsentation (maßstäblicher 2D-Grundriss).** Gezeichnet werden die **geraden
 Wand-Achsen je Geschoss** (Datenquelle wie DXF: Geschosse + gerade Wände). **PDF** ist ein
 **maßstäblicher** Plan — Modell-Längen (mm) werden über einen **definierten, dokumentierten
@@ -827,7 +838,9 @@ damit geschlossen.
   **pullt** den Read-Port; die 2D-Exporter beziehen dieselbe Projektion vom Kern (**kein** Adapter
   leitet 2D-Geometrie selbst ab). Die GUI zieht die Projektion damit **aus dem Kern**, nicht lateral
   aus dem IO-Adapter (Regel B gewahrt); die Hebung ist ein **eigener, vorgelagerter Refactor-Slice**
-  (reiner Umzug, die 2D-Export-Decode-Orakel als Netz).
+  (reiner Umzug, die 2D-Export-Decode-Orakel als Netz). **Inzwischen realisiert:** `projectPlan`/`PlanView`
+  liegen im Kern (`services/geometry` bzw. `model/`), der `PlanViewPort` ist implementiert, PDF/PNG beziehen
+  die `PlanView` aus dem `DerivedGeometry`-Bündel — das **Canvas-Widget** selbst folgt als eigener Impl-Slice.
 - **Bildschirm→Modell-Abbildung.** Der Canvas trägt eine **invertierbare** 2D-Sicht-Transformation
   (Pan/Zoom) mit einer **display-frei testbaren** Naht Bildschirm-Punkt → Modell-mm.
 - **Refresh = Selbst-Refresh, kein neuer `op`.** Der Canvas ist Treiber und Betrachter derselben

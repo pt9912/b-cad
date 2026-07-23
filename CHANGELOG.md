@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-042b — **Export-Refactor 2D-Projektion: `plan_geometry` in den Kern + `PlanViewPort`** (welle-5;
+  zweite von fünf ADR-0020-Folgepflichten; zugleich ADR-0019-Lese-Naht-Refactor; **intern, verhaltens-
+  invariant**). Die reine 2D-Grundriss-Projektion (`projectPlan`/`PlanView`) ist aus dem io-Adapter in den
+  Kern gehoben (`hexagon/services/geometry/plan_projection` bzw. `hexagon/model/plan_view.h`); der neue
+  Driving-Read-Port **`PlanViewPort`** (2D-Analog zum `ViewModelPort`, vom `StructureEditService` implementiert)
+  liefert sie — **entsperrt** den DRW-Canvas (Konsument = späterer Canvas-Slice). PDF/PNG beziehen die
+  `PlanView` kern-berechnet im `DerivedGeometry`-Bündel (`ExchangeService` befüllt sie format-selektiv, Writer
+  serialisieren nur); **DXF unberührt** (`visibleLayerIds` als reiner Filter nach `hexagon/model/`, geteilt von
+  Kern-Projektion und DXF — **keine** `io → services_geo`-Kante). `io/plan_geometry` entfernt (Tombstone in
+  `.d-check.yml` für die historische Referenz der immutablen ADR-0018 + slice-032c). Export-Decode-Orakel
+  (DXF/PDF/PNG) **unverändert grün** = Invarianz-Beweis; 249 Tests, Coverage 90,7 %. **MR-006 0 HIGH; MR-009
+  Code-Review (042a+042b) 0 HIGH** (Byte-Identität Zeile-für-Zeile verifiziert). Keine `.a-check.yml`-Kante
+  entfernt (Folge-Slices 042c–e).
 - slice-042a — **Export-Refactor Kern-Naht: `DerivedGeometry`-Vertrag** (welle-5; erste von fünf
   ADR-0020-Folgepflichten; **intern, verhaltens-invariant**). Der `ModelExporterPort::write`-Vertrag
   trägt jetzt ein kern-berechnetes `DerivedGeometry`-Bündel (pre-OCC-Primitive je Bauteil, format-selektiv)

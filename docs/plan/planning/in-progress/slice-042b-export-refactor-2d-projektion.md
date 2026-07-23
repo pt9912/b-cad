@@ -1,7 +1,7 @@
 ---
 id: slice-042b
 titel: Export-Refactor 2D-Projektion — plan_geometry in den Kern + PlanViewPort (entsperrt Canvas)
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[OBJ-003](../../../../spec/lastenheft.md#3-projektziele), [OBJ-005](../../../../spec/lastenheft.md#3-projektziele), [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005)]
 adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0001](../../adr/0001-hexagonale-architektur.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-g
 
 # Slice 042b: Export-Refactor 2D-Projektion — Kern-Hebung + `PlanViewPort`
 
-**Status:** open (Plan — **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review 2026-07-23: 0 HIGH / 0 MED / 2 LOW → startbar**; LOW-1 [CMake-Gegenstücke] + LOW-2 [Test aus echter `projectPlan`-Quelle] eingearbeitet; [Report](../../../reviews/2026-07-23-slice-042b-plan.md). Start auf Projektinhaber-Wort).
+**Status:** done (2026-07-23 — Impl geliefert, `make gates` grün [249 Tests, Coverage 90,7 %], 2D-Export-Orakel unverändert grün = Invarianz-Beweis). **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)** 0 HIGH / 0 MED / 2 LOW ([Plan-Report](../../../reviews/2026-07-23-slice-042b-plan.md)) + **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) Code-Review** (042a+042b) 0 HIGH ([Report](../../../reviews/2026-07-23-slice-042a-042b-code-review.md)).
 
 **Welle:** welle-5-erweiterung. **Zweiter** der fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Refactor-Slices
 (Familie 042a…e). **Vorgänger:** slice-042a (Kern-Naht, done). **Deckt zugleich [ADR-0019](../../adr/0019-drw-2d-canvas.md)s
@@ -42,46 +42,46 @@ invarianter Umzug** — die 2D-Export-Decode-Orakel bleiben byte-/struktur-ident
 
 ## 2. Definition of Done
 
-- [ ] **`PlanView`-Werttypen → `model/`.** `PlanSegment`/`StoreyPlan`/`PlanView` (heute `bcad::adapters::io`,
+- [x] **`PlanView`-Werttypen → `model/`.** `PlanSegment`/`StoreyPlan`/`PlanView` (heute `bcad::adapters::io`,
       `plan_geometry.h`) → neuer header-only `src/hexagon/model/{plan_view}.h` (Namespace `bcad::hexagon::model`,
       reine Structs — Muster der übrigen `model/`-Werttypen). Nötig, damit `DerivedGeometry` (ein `model/`-Typ)
       die `PlanView` referenzieren darf.
-- [ ] **`projectPlan` → Kern.** Die Projektions-Funktion (`plan_geometry.cpp` `projectPlan` + Helfer `accumulate`)
+- [x] **`projectPlan` → Kern.** Die Projektions-Funktion (`plan_geometry.cpp` `projectPlan` + Helfer `accumulate`)
       → neuer `src/hexagon/services/geometry/{plan_projection}.{h,cpp}` (`bcad::hexagon::services`,
       `PlanView projectPlan(const model::Building&)`; Muster `wall_footprint`). Registrieren in
       `src/hexagon/CMakeLists.txt`. **Reiner Umzug** (Logik unverändert). a-check: `services_geo → model` deckt es
       — **keine** neue Kante.
-- [ ] **`visibleLayerIds` → `model/` (geteilt, kein Duplikat).** Der reine Ebenen-Sichtbarkeits-**Filter** (kein
+- [x] **`visibleLayerIds` → `model/` (geteilt, kein Duplikat).** Der reine Ebenen-Sichtbarkeits-**Filter** (kein
       Geometrie-Wert) → header-only `src/hexagon/model/{layer_visibility}.h` (`visibleLayerIds(const Building&) →
       set<int>`), damit **beide** ihn ziehen dürfen: Kern-`projectPlan` (`services_geo → model`) **und** io-**DXF**
       (`io → model`). **Empfehlung** gegen die Alternativen (io-lokal + Kern-Duplikat / in `services_geo` [dann
       dürfte DXF ihn nicht mehr rufen → `io → services_geo` verboten]); das Review entscheidet. **DXF bleibt
       sonst unberührt.**
-- [ ] **`adapters/io/plan_geometry` reduziert.** Nur noch `visibleLayerIds`-Nutzung (jetzt aus `model/`);
+- [x] **`adapters/io/plan_geometry` reduziert.** Nur noch `visibleLayerIds`-Nutzung (jetzt aus `model/`);
       `projectPlan`/`PlanView`-Typen daraus entfernt. Falls danach leer → Datei entfernen + DXF-Include auf
       `model/{layer_visibility}.h` umziehen.
-- [ ] **`PlanViewPort` (Driving-Read-Port).** Neuer `src/hexagon/ports/driving/{plan_view_port}.h` (abstrakte
+- [x] **`PlanViewPort` (Driving-Read-Port).** Neuer `src/hexagon/ports/driving/{plan_view_port}.h` (abstrakte
       const-Query, nur `model/`-Includes; Muster `ViewModelPort`/`EvaluatePort`) — liefert die `PlanView` (bzw.
       je Geschoss). Vom `StructureEditService` implementiert (`building_` vorhanden; ruft `services::projectPlan`).
       **Composition-Root (`main.cpp`) noch NICHT an einen Konsumenten verdrahtet** — der Canvas (eigener
       [ADR-0019](../../adr/0019-drw-2d-canvas.md)-Impl-Slice) zieht ihn später über eine `ui/command/`-Source
       (Muster `ViewModelMeshSource`). Ein kleiner Kern-Test belegt Port → `projectPlan`.
-- [ ] **`DerivedGeometry` um die `PlanView`.** `src/hexagon/model/derived_geometry.h` bekommt ein `PlanView`-Feld
+- [x] **`DerivedGeometry` um die `PlanView`.** `src/hexagon/model/derived_geometry.h` bekommt ein `PlanView`-Feld
       (format-selektiv befüllt; leer für Nicht-2D-Formate).
-- [ ] **`ExchangeService` berechnet die `PlanView` (Pdf/Png).** In `exportModel` (nach der 042a-Stelle) für
+- [x] **`ExchangeService` berechnet die `PlanView` (Pdf/Png).** In `exportModel` (nach der 042a-Stelle) für
       `ExchangeFormat::Pdf`/`Png` `derived.plan = projectPlan(building)` setzen (per-Format-Selektion; STEP/STL
       bleiben leer → 042c; IFC/DXF leer). `services → services_geo` deckt den Aufruf. **Anders als der 042a-MED-1-
       Fall wird die Berechnung hier KONSUMIERT und von den PDF/PNG-Decode-Orakeln VERIFIZIERT** — kein
       un-genetzter Prüf-Verlust; `projectPlan` ist total (kein fail-closed-Wurf-Risiko wie STEP/STL).
-- [ ] **PDF/PNG konsumieren das Bündel.** `pdf_export_adapter.cpp`/`png_export_adapter.cpp`: statt
+- [x] **PDF/PNG konsumieren das Bündel.** `pdf_export_adapter.cpp`/`png_export_adapter.cpp`: statt
       `projectPlan(building)` das `derived.plan` lesen (Parameter `derived` aktivieren). **Byte-identische Ausgabe.**
-- [ ] **Verhaltens-Invarianz maschinell.** `make gates` grün; die 2D-Export-Decode-Orakel (`test_plan_geometry`
+- [x] **Verhaltens-Invarianz maschinell.** `make gates` grün; die 2D-Export-Decode-Orakel (`test_plan_geometry`
       [→ ggf. `test_plan_projection` umbenannt/Namespace], `test_pdf_export` `" l\n"`-Zählung, `test_png_export`
       Tinte, `test_dxf_export` roher Reader) bleiben **unverändert grün**. Tests der gehobenen Typen/Funktion auf
       die neuen Namespaces/Pfade nachziehen; PDF/PNG-Tests, die `write` **direkt** rufen, übergeben ein **befülltes**
       `DerivedGeometry` (oder gehen über den `ExchangeService`) — sonst zeichnen sie leer. `make schema-check`
       unberührt.
-- [ ] **Doku.** `spec/spezifikation.md` §1 (2D-Export-Datenfluss-Umfeld) um die Kern-Projektion
+- [x] **Doku.** `spec/spezifikation.md` §1 (2D-Export-Datenfluss-Umfeld) um die Kern-Projektion
       + `PlanViewPort`-Lese-Naht (token-frei, [MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[MR-014](../../../../harness/conventions.md)
       vor Gate greppen); `spezifikation-historie` + Header. **architecture** §1.1 hatte `PlanViewPort` schon in
       slice-041a eingetragen — mit diesem Slice **real**; **kein architecture-Edit nötig** (die §1.1-Prosa ist
@@ -170,7 +170,35 @@ Persistenz (042d); `.a-check.yml`/architecture-§2-Abschluss (042e).
 
 ## 8. Closure-Notiz
 
-*(bei Closure ausgefüllt: gehobene Typen/Funktion + Ziel-Namespaces, `visibleLayerIds`-Heimat-Entscheidung,
-`PlanViewPort` + Impl, `DerivedGeometry.plan` + `ExchangeService`-Berechnung, PDF/PNG-Bündel-Konsum, 2D-Export-
-Orakel-Invarianz-Beleg, Review-Ergebnisse [[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-+ Code-Review], Lerneintrag, Folge = Slice 042c.)*
+**Closure 2026-07-23.** `make gates` grün (249/249 Tests, Coverage 90,7 %); die 2D-Export-Decode-Orakel
+(DXF/PDF/PNG Erscheint/Fehlt) **unverändert grün** = Invarianz-Beweis. `make schema-check` unberührt.
+
+- **Gehobene Typen/Funktion (verhaltens-invariant, Byte-Identität im [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+  Zeile-für-Zeile verifiziert):** `PlanView`/`StoreyPlan`/`PlanSegment` → `model/plan_view.h`; `projectPlan` →
+  `services/geometry/plan_projection.{h,cpp}`; `visibleLayerIds` → `model/layer_visibility.h`. Das io-`plan_geometry`
+  **entfernt**.
+- **`visibleLayerIds`-Heimat = `model/`** (Rest-Risiko-#1-Entscheidung): geteilt von Kern-`projectPlan`
+  (`services_geo → model`) **und** io-DXF (`io → model`) — **kein Duplikat, keine `io → services_geo`-Kante**.
+- **Naht:** neuer `PlanViewPort` (`ports/driving`), vom `StructureEditService` implementiert
+  (`planView() → projectPlan(building_)`; 6. Driving-Port) — **DRW-Canvas architektonisch entsperrt** (Konsument =
+  späterer Canvas-Impl-Slice; `main.cpp` noch nicht verdrahtet). `DerivedGeometry.plan`-Feld; der `ExchangeService`
+  befüllt die `PlanView` **format-selektiv** für PDF/PNG; PDF/PNG lesen `derived.plan` (Writer serialisieren nur,
+  `building` folgenlos ungenutzt). **DXF unberührt.**
+- **`ExchangeService`-Berechnung ohne 042a-MED-1-Wiederholung:** `projectPlan` ist **total** (kein Wurf) und die
+  `PlanView` wird **konsumiert + von den PDF/PNG-Decode-Orakeln verifiziert** → Prüfgewinn, keine un-genetzte
+  Wurf-Fläche.
+- **Immutabilitäts-Konflikt (Lerneintrag):** die Accepted/immutable **[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)** (+ done-slice-032c) referenzieren
+  das entfernte io-`plan_geometry` historisch. **Kein** Edit am immutablen ADR-Core (§2.5) — stattdessen
+  `codepaths.ignore-refs`-**Tombstone** in `.d-check.yml` (Präzedenz `tools/Dockerfile`; keine Schwellen-Lockerung,
+  [§2.6](../../../../AGENTS.md) n/a). Der [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Reviewer
+  bestätigte: keine funktionale Code-Referenz wird verdeckt.
+- **Doku:** Spec §1 PDF/PNG-„Encoding & Schicht" um die 2D-Projektions-Bereitstellung + die DRW-Canvas-2D-Lese-Naht
+  „inzwischen realisiert" (token-frei) + `spezifikation-historie`; CHANGELOG; ADR-Index 2D-Projektions-
+  Zeile „erfüllt". architecture §1.1 trug `PlanViewPort` bereits (slice-041a) → jetzt real, **kein Edit** ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-INFO-4);
+  §2-Tabelle unberührt (zieht 042e).
+- **Reviews:** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  0 HIGH / 2 LOW (CMake-Gegenstücke + Test aus echter `projectPlan`-Quelle) + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+  (042a+042b) 0 HIGH / 1 LOW (Kommentar-Drift, behoben) / 1 INFO (Negativ-Test → 042c).
+- **Folge:** **slice-042c** (STEP/STL-Body auf das Bündel + `ExchangeService`-Berechnung [von 042a, MED-1] +
+  `geometry → services_geo`-Kante raus; Skelett in `open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  beim Start) — [MR-020](../../../../harness/conventions.md) Closure-Disziplin erfüllt (042c existiert).
