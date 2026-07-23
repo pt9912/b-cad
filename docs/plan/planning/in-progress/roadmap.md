@@ -19,15 +19,15 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel; beim Öffnen
-des nächsten Slice entfernen). `slice-042b` **done** (2026-07-23): Export-Refactor **2D-Projektion** geliefert
-(`projectPlan`/`PlanView`→Kern + `PlanViewPort`, `visibleLayerIds`→`model/`, PDF/PNG über das Bündel, DXF
-unberührt, `io/plan_geometry` entfernt; verhaltens-invariant, 249 Tests; **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
-Code-Review 042a+042b 0 HIGH**) — **DRW-Canvas architektonisch entsperrt**. **Zweite** der fünf
-[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten erledigt.
-**Nächster Startkandidat: `slice-042c`** (STEP/STL-Body auf das Bündel + `ExchangeService`-Berechnung +
-`geometry→services_geo`-Kante raus; Skelett in `open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-beim Start). **042d–e** als Skelette in `open/`.
+**In Arbeit:** `slice-042c` — Export-Refactor **STEP/STL** (Bodies auf das `DerivedGeometry`-Bündel +
+`ExchangeService`-Berechnung [von 042a, MED-1] + `storeyHeight`-Konsolidierung + `geometry→services_geo`-Kante
+raus), gestartet 2026-07-23 ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+0 HIGH/2 MED/2 LOW → startbar; MED-1 [Voll-Modell-Service-Integrationstest] eingearbeitet). **Dritter** der fünf
+[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Slices.
+
+`slice-042a` + `slice-042b` **done** (2026-07-23): Kern-Naht (`DerivedGeometry`-Vertrag) + 2D-Projektion
+(`PlanViewPort`, **DRW-Canvas entsperrt**); [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+Code-Review 042a+042b 0 HIGH. **042d–e** als Skelette in `open/` ([MR-020](../../../../harness/conventions.md)).
 
 `slice-042a` **done** (2026-07-23): Export-Refactor **Kern-Naht** (`DerivedGeometry`-Vertrag +
 `StepBox`/`translateMeshZ`→`model/`, accept-and-ignore über die 6 Exporter; verhaltens-invariant, 248 Tests) —
