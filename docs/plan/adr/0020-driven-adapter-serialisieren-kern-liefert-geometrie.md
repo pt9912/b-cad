@@ -1,6 +1,6 @@
 # ADR-0020: Driven-Adapter serialisieren, der Kern liefert abgeleitete Geometrie (Geometrie-Bereitstellung statt Adapter-Ableitung)
 
-**Status:** Proposed
+**Status:** Accepted
 
 **Datum:** 2026-07-22
 
@@ -79,3 +79,4 @@ Diese Kanten wurden bei der Einführung der Sub-Schicht **hinzugefügt, um eine 
 | Datum | Ereignis | Verweis |
 |---|---|---|
 | 2026-07-22 | Proposed (Architektur-Reinheit — driven Adapter serialisieren, Kern liefert abgeleitete Geometrie als pures `DerivedGeometry`-Bündel über den Port; `services/geometry` kern-privat; `StepBox` → `model/`; alle Adapter→Kernel-`.a-check.yml`-Kanten entfernt; `architecture.md` §1-Diagramm + §2-Tabelle werden wahr; löst das »Regel-lockern-statt-fixen«-Anti-Muster der Berechnungs-Kern-Sub-Schicht-Einführung auf; entsperrt den sauberen 2D-Lese-Weg für den DRW-Canvas) | Architektur-Reinheit / DRW-Interaktiv-Strang-Vorlauf |
+| 2026-07-23 | **Accepted** — unabhängiges Text-Review 1 HIGH / 2 MED / 3 LOW, alle eingearbeitet (HIGH-1 `translateMeshZ → model/`; MED-1 DXF iteriert direkt und braucht nur `visibleLayerIds`, keine `io → services_geo`-Kante; MED-2 Bedarfs-Ableitung als per-Format-Berechnung im `ExchangeService` statt Pull-Provider). [Report](../../reviews/2026-07-22-adr-0020-text-review.md) | Text-Review + Projektinhaber-Accept |
