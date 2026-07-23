@@ -670,6 +670,31 @@ sie.
   `--require-complete`/`versions` verschoben, `diagrams`/`external` passt nicht; keine offenen Kandidaten.
 - **Auflösungs-Trigger:** permanent; `--require-complete` re-evaluiert an der Vollständigkeits-Zusage.
 
+### MR-020 — ADR-Folgepflicht-Sichtbarkeit (Closure-Disziplin)
+
+- **Datum:** 2026-07-23
+- **Geltungsbereich:** [ADR-Index](../docs/plan/adr/README.md) (Folgepflicht-Zeilen) + Slice-Lifecycle
+  (`docs/plan/planning/`). **Prozess-Disziplin, KEIN Gate** — kein d-check-Modul; getragen von der
+  [MR-006](#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-/Closure-Review-Linse, **nicht**
+  computational (ehrlich benannt: nichts wird maschinell rot).
+- **Anlass:** Der ADR-Index-Folgepflicht-Block ist die kanonische „nicht-vergessen"-Liste der Refactor-/
+  Impl-Folgeschritte einer Accepted-ADR, aber rein **dokumentarisch** — nichts failt, wenn Zeilen ewig
+  „offen" bleiben; ein **nicht-meilenstein-bindender** Refactor (z. B. [ADR-0020](../docs/plan/adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md),
+  M5 = nur PLG) würde von der Welle-Closure nicht zwangsläufig als Lücke gefangen.
+- **Regel:** (1) Eine Slice, deren ADR **offene** Folgepflicht-Zeilen trägt, wird nur `in-progress → done`
+  bewegt, wenn **entweder** die nächste Folge-Slice als **Plan-Datei existiert** (`open/`/`next/`/
+  `in-progress/`) **oder** eine **explizite Deferral-Entscheidung** in Roadmap/ADR-Index notiert ist. (2) Eine
+  **Welle** wird nicht geschlossen, solange eine Accepted-ADR **offene** Folgepflicht-Zeilen **ohne** Deferral
+  trägt. (3) Folge-Slices dürfen als **Skelett** (Scope-Reservierung + ADR-Ref, klar als solches markiert)
+  vorab in `open/` geparkt werden — MR-006-Plan-Review + Detail-Schnitt folgen **beim Start** (Präzedenz: die
+  [ADR-0020](../docs/plan/adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Familie 042b…e als
+  Skelette).
+- **Warum keine Regel-Lockerung:** reine **Verschärfung** der Closure-Disziplin ([§2.6](../AGENTS.md) n/a);
+  kein Gate gesenkt, keine Schwelle bewegt.
+- **Auflösungs-Trigger:** permanent; kandidiert für ein computational Gate (Accepted-ADR mit „offen"-
+  Folgepflicht **ohne** korrespondierende Slice-Datei/Deferral) als späteres `harness-steering`-Quergewerk,
+  falls die Disziplin reißt.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·
