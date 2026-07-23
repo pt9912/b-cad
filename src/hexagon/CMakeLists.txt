@@ -9,6 +9,7 @@ add_library(bcad_hexagon
     services/exchange_service.cpp
     services/greeting_service.cpp
     services/geometry/opening_geometry.cpp
+    services/geometry/plan_projection.cpp
     services/geometry/roof_geometry.cpp
     services/room_detection.cpp
     services/geometry/slab_geometry.cpp

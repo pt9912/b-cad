@@ -60,16 +60,16 @@ add_library(bcad_adapters
     io/dxf_export_adapter.cpp
     # slice-025b: PDF-Export (ADR-0016 Option D) — hand-gerollter Vektor-PDF-
     # Writer + Domänen→Plan-Mapping (maßstäblicher 2D-Grundriss), export-only,
-    # io-resident. Geteilte Helfer plan_geometry (2D-Projektion) + io_atomic_write
-    # (atomarer binär-treuer Writer, von 025c/PNG wiederverwendbar). KEINE neue
-    # Dependency (reines C++/STL); a-check Regel A/B isolieren sie.
+    # io-resident. Geteilter Helfer io_atomic_write (atomarer binär-treuer Writer,
+    # von 025c/PNG wiederverwendbar). Die 2D-Projektion (`projectPlan`/`PlanView`)
+    # ist mit slice-042b in den Kern gehoben (ADR-0019/ADR-0020); PDF/PNG erhalten
+    # sie im `DerivedGeometry`-Bündel. KEINE neue Dependency (reines C++/STL).
     io/io_atomic_write.cpp
-    io/plan_geometry.cpp
     io/pdf_writer.cpp
     io/pdf_export_adapter.cpp
     # slice-025c: PNG-Export (ADR-0016 Option D) — hand-gerollter Raster-PNG-
     # Encoder (Bitmap + Chunks + CRC-32/Adler-32/stored-DEFLATE) + Domänen→Raster-
-    # Mapping (Fit-to-Canvas, Geschoss-Farben; Reuse plan_geometry/io_atomic_write),
+    # Mapping (Fit-to-Canvas, Geschoss-Farben; PlanView aus dem Bündel, Reuse io_atomic_write),
     # export-only. KEINE neue Dependency (kein zlib/libpng); a-check Regel A/B.
     io/png_writer.cpp
     io/png_export_adapter.cpp

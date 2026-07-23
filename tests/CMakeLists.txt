@@ -17,6 +17,7 @@ add_executable(bcad_tests
     hexagon/test_material.cpp
     hexagon/test_model_change_notification.cpp
     hexagon/test_openings.cpp
+    hexagon/test_plan_projection.cpp   # slice-042b: 2D-Projektion in den Kern gehoben
     hexagon/test_roof_geometry.cpp
     hexagon/test_room_detection.cpp
     hexagon/test_slab_geometry.cpp
@@ -32,7 +33,6 @@ target_link_libraries(bcad_tests PRIVATE bcad_hexagon GTest::gtest_main)
 add_executable(bcad_adapter_tests
     adapters/test_probes.cpp
     adapters/test_occ_geometry_adapter.cpp
-    adapters/test_plan_geometry.cpp   # slice-032c: DRW-Projektions-Filter + BBox-Erweiterung
     adapters/test_sqlite_project_repository.cpp
     adapters/test_sqlite_crash_recovery.cpp
     adapters/test_viewer_scene.cpp

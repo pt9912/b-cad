@@ -13,6 +13,7 @@
 #include "hexagon/services/geometry/roof_geometry.h"
 #include "hexagon/services/room_detection.h"
 #include "hexagon/services/geometry/slab_geometry.h"
+#include "hexagon/services/geometry/plan_projection.h"
 #include "hexagon/services/geometry/stair_geometry.h"
 #include "hexagon/services/volume_geometry.h"
 #include "hexagon/services/geometry/wall_footprint.h"
@@ -931,6 +932,12 @@ std::vector<ports::driving::StairMesh> StructureEditService::stairMeshes() const
         }
     }
     return meshes;
+}
+
+model::PlanView StructureEditService::planView() const {
+    // 2D-Lese-Naht (ADR-0019): die kern-residente 2D-Projektion über das
+    // committete Modell — eine Quelle für Canvas (Port) und Export (Bündel).
+    return projectPlan(building_);
 }
 
 std::optional<model::StairId> StructureEditService::addStair(

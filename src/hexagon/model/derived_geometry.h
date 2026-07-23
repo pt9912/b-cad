@@ -4,6 +4,7 @@
 
 #include "hexagon/model/cut_prism.h"
 #include "hexagon/model/footprint.h"
+#include "hexagon/model/plan_view.h"
 #include "hexagon/model/step_box.h"
 #include "hexagon/model/triangle_mesh.h"
 
@@ -59,6 +60,11 @@ struct DerivedGeometry {
     std::vector<DerivedSlab> slabs;
     std::vector<DerivedRoof> roofs;
     std::vector<DerivedStair> stairs;
+
+    // 2D-Grundriss-Projektion für die 2D-Export-Formate (PDF/PNG); kern-berechnet
+    // (`services::projectPlan`), format-selektiv befüllt — leer für Formate, die
+    // sie nicht brauchen (STEP/STL/IFC; DXF iteriert direkt). ADR-0019/ADR-0020.
+    PlanView plan;
 };
 
 }  // namespace bcad::hexagon::model

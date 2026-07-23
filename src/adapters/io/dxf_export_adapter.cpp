@@ -23,8 +23,8 @@
 #include <unordered_set>
 
 #include "adapters/io/dxf_writer.h"
-#include "adapters/io/plan_geometry.h"  // visibleLayerIds (geteilter Filter)
 #include "hexagon/model/building.h"
+#include "hexagon/model/layer_visibility.h"  // visibleLayerIds (geteilter model/-Filter)
 #include "hexagon/model/guide_line.h"
 #include "hexagon/model/layer.h"
 #include "hexagon/model/storey.h"
@@ -83,8 +83,9 @@ void writeEntities(DxfWriter& writer, const model::Building& building) {
     // auf ihrem Geschoss-LAYER (STOREY_n bleibt unverändert — der Benutzer-Layer
     // `visible` ist reiner Export-Filter, KEIN neuer DXF-Layer, ADR-0018 §3).
     // Unsichtbare Ebene → keine LINE (DRW-005-Negative). Derselbe
-    // visibleLayerIds-Filter wie PDF/PNG (plan_geometry) — kein Format-Drift.
-    const std::unordered_set<int> visible = visibleLayerIds(building);
+    // visibleLayerIds-Filter wie die Kern-Projektion (model/, ADR-0020) — kein
+    // Format-Drift, keine io→services_geo-Kante.
+    const std::unordered_set<int> visible = model::visibleLayerIds(building);
     for (const model::GuideLine& guide : building.guide_lines) {
         if (!visible.contains(static_cast<int>(guide.layer_id))) {
             continue;

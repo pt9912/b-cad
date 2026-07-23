@@ -10,13 +10,20 @@
 
 #include "adapters/io/io_atomic_write.h"
 #include "adapters/io/pdf_writer.h"
-#include "adapters/io/plan_geometry.h"
 #include "hexagon/model/building.h"
+#include "hexagon/model/plan_view.h"
 
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;
 
 namespace bcad::adapters::io {
+
+// ADR-0019/ADR-0020: die 2D-Projektions-Werttypen liegen im `model/`-Kern; der
+// PDF-Adapter serialisiert die kern-gelieferte `PlanView` aus dem Bündel.
+using model::PlanSegment;
+using model::PlanView;
+using model::StoreyPlan;
+
 namespace {
 
 // A4-Seite + Layout-Konstanten (PDF-Punkte). Fester Maßstab 1:100 (dokumentiert
@@ -61,10 +68,12 @@ void drawPage(PdfWriter& writer, const StoreyPlan& plan, const PlanView& view) {
 
 }  // namespace
 
-void PdfExportAdapter::write(const model::Building& building,
-                             const model::DerivedGeometry& /*derived*/,
+void PdfExportAdapter::write(const model::Building& /*building*/,
+                             const model::DerivedGeometry& derived,
                              const fs::path& path) const {
-    const PlanView view = projectPlan(building);
+    // ADR-0020: der Kern liefert die 2D-Projektion im Bündel; der Adapter
+    // serialisiert nur (kein Eigen-`projectPlan` mehr).
+    const PlanView& view = derived.plan;
     PdfWriter writer(PdfPageSize{kPageWidthPt, kPageHeightPt});
 
     if (view.storeys.empty()) {

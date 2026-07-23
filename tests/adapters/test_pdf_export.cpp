@@ -32,11 +32,23 @@
 #include "hexagon/model/wall_type.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
 #include "hexagon/services/exchange_service.h"
+#include "hexagon/services/geometry/plan_projection.h"
 
 namespace {
 
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;
+
+// slice-042b: PDF serialisiert die kern-gelieferte `PlanView` aus dem
+// `DerivedGeometry`-Bündel. Die Direkt-Tests speisen sie aus DERSELBEN
+// `projectPlan`-Quelle (byte-identisch zum früheren adapter-lokalen Aufruf; kein
+// hand-gerolltes View — MR-006-LOW-2), damit das Decode-Orakel den Adapter gegen
+// die Kern-Rechnung verifiziert.
+void writePdf(const model::Building& b, const fs::path& path) {
+    model::DerivedGeometry derived;
+    derived.plan = bcad::hexagon::services::projectPlan(b);
+    bcad::adapters::io::PdfExportAdapter().write(b, derived, path);
+}
 using bcad::adapters::io::PdfExportAdapter;
 using bcad::hexagon::ports::driving::ExchangeFormat;
 using bcad::hexagon::services::ExchangeService;
@@ -277,7 +289,7 @@ TEST(PdfExport, ScaleFidelityKnownEdge) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {5000.0, 0.0}));
 
-    PdfExportAdapter().write(b, model::DerivedGeometry{}, out.path);
+    writePdf(b, out.path);
     const std::string content = streamOfObject(readFile(out.path), 5);
     const Seg s = firstSegment(content);
     const double length = std::hypot(s.x2 - s.x1, s.y2 - s.y1);
@@ -291,7 +303,7 @@ TEST(PdfExport, ScaleFidelityKnownEdge) {
 // DRW-005 Happy (Export): sichtbare Hilfslinie → Segment zusätzlich zur Wand.
 TEST(PdfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
     const TempPath out("drw_vis");
-    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/true), model::DerivedGeometry{}, out.path);
+    writePdf(drwBuilding(/*layer_visible=*/true), out.path);
     const std::string page = streamOfObject(readFile(out.path), 5);
     EXPECT_EQ(countOccurrences(page, " l\n"), 2);  // Wand + Hilfslinie
 }
@@ -300,7 +312,7 @@ TEST(PdfExport, LH_FA_DRW_005_SichtbareHilfslinieErscheint) {
 // keine Hilfslinie (nur die Wand).
 TEST(PdfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
     const TempPath out("drw_inv");
-    PdfExportAdapter().write(drwBuilding(/*layer_visible=*/false), model::DerivedGeometry{}, out.path);
+    writePdf(drwBuilding(/*layer_visible=*/false), out.path);
     const std::string page = streamOfObject(readFile(out.path), 5);
     EXPECT_EQ(countOccurrences(page, " l\n"), 1);  // nur Wand
 }
@@ -309,7 +321,7 @@ TEST(PdfExport, LH_FA_DRW_005_UnsichtbareEbeneKeineHilfslinie) {
 
 TEST(PdfExport, EmptyBuildingProducesValidPdf) {
     const TempPath out("empty");
-    PdfExportAdapter().write(model::Building{}, model::DerivedGeometry{}, out.path);
+    writePdf(model::Building{}, out.path);
     ASSERT_TRUE(fs::exists(out.path));
     const std::string pdf = readFile(out.path);
     EXPECT_EQ(pdf.compare(0, 7, "%PDF-1."), 0);
@@ -369,7 +381,7 @@ TEST(PdfExport, PreservesAxisOrientationNoYFlip) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.walls.push_back(makeWall(1, model::StoreyId{1}, {0.0, 0.0}, {0.0, 3000.0}));
 
-    PdfExportAdapter().write(b, model::DerivedGeometry{}, out.path);
+    writePdf(b, out.path);
     const Seg s = firstSegment(streamOfObject(readFile(out.path), 5));
     EXPECT_GT(s.y2, s.y1);           // +Y Modell -> +Y Seite (kein Flip)
     EXPECT_NEAR(s.x2, s.x1, 0.01);   // rein vertikal
@@ -384,7 +396,7 @@ TEST(PdfExport, StoreysWithoutWallsProduceFramedPages) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.storeys.push_back(model::Storey{model::StoreyId{2}, model::kDefaultStoreyHeightMm});
 
-    PdfExportAdapter().write(b, model::DerivedGeometry{}, out.path);
+    writePdf(b, out.path);
     const std::string pdf = readFile(out.path);
     EXPECT_EQ(verifyXrefOffsets(pdf), 7);  // 2 Geschoss-Seiten
     ASSERT_EQ(pageObjects(pdf).size(), 2U);

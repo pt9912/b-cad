@@ -18,7 +18,14 @@ codepaths:
   # von docs-check auf d-check.mk (Bind-Mount); slice-004 (done-archive,
   # eingefroren) nennt die Datei noch als Verifikations-Zeiger — Tombstone statt
   # Bruch (codepaths.ignore-refs, d-check-v0.34-Feature).
-  ignore-refs: ["tools/Dockerfile"]
+  # slice-042b: das io-`plan_geometry` entfiel mit der Hebung der 2D-Projektion in
+  # den Kern (ADR-0019/ADR-0020: `projectPlan` → `hexagon/services/geometry`,
+  # `PlanView`-Typen + `visibleLayerIds` → `model/`); ADR-0018 (Accepted/immutabel,
+  # AGENTS §2.5) + slice-032c (done) nennen die entfernte Datei noch als
+  # historischen Zeiger — Tombstone, kein Bruch (keine Schwellen-Lockerung, §2.6 n/a).
+  ignore-refs:
+    ["tools/Dockerfile", "src/adapters/io/plan_geometry.h",
+     "src/adapters/io/plan_geometry.cpp"]
 
 # Referenz-Richtung: Spec-Straten verweisen nie abwärts auf ADRs/Planning-Slices
 # (Markdown-Link-Form). Maßgeblich — NICHT dieser Kommentar — sind das gepinnte

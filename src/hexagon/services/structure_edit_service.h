@@ -14,6 +14,7 @@
 #include "hexagon/ports/driving/edit_drawing_port.h"
 #include "hexagon/ports/driving/edit_structure_port.h"
 #include "hexagon/ports/driving/evaluate_port.h"
+#include "hexagon/ports/driving/plan_view_port.h"
 #include "hexagon/ports/driving/view_model_port.h"
 
 namespace bcad::hexagon::services {
@@ -33,7 +34,8 @@ class StructureEditService final : public ports::driving::EditStructurePort,
                                    public ports::driving::DetectRoomsPort,
                                    public ports::driving::ViewModelPort,
                                    public ports::driving::EvaluatePort,
-                                   public ports::driving::EditDrawingPort {
+                                   public ports::driving::EditDrawingPort,
+                                   public ports::driving::PlanViewPort {
 public:
     explicit StructureEditService(const ports::driven::GeometryKernelPort& geometry);
 
@@ -181,6 +183,11 @@ public:
     // ViewModelPort (LH-FA-STR-*): Treppen-Netze (analytisch, `stair_geometry`;
     // rise aus der `from_storey`-Höhe abgeleitet).
     std::vector<ports::driving::StairMesh> stairMeshes() const override;
+
+    // PlanViewPort (LH-FA-DRW-005, ADR-0019): 2D-Grundriss-Projektion —
+    // 2D-Analog zu den ViewModel-Netzen; ruft die kern-residente
+    // `services::projectPlan` über das committete Modell. Total.
+    model::PlanView planView() const override;
 
     // ADR-0008 (LH-FA-D3-002): Beobachter-Registrierung — mehrfach,
     // nicht-besitzend; Beobachter melden sich vor ihrer Zerstörung ab.

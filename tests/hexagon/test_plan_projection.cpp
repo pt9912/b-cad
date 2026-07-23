@@ -1,25 +1,28 @@
-// Unit-Tests der geteilten 2D-Plan-Projektion (`plan_geometry`, slice-032c):
-// der Sichtbarkeits-Filter (`visibleLayerIds`) + die **Bounding-Box-Erweiterung**
-// um sichtbare Hilfslinien (LH-FA-DRW-005/006, ADR-0018). Das ist der von PDF/PNG
-// GETEILTE Projektions-Pfad; die format-Decode-Orakel prüfen ihn nur indirekt.
-// Hier direkt: (a) eine Hilfslinie AUSSERHALB der Wand-Ausdehnung erweitert die
-// BBox (sonst würde sie in PDF/PNG abgeschnitten — Code-Review-MED-1); (b) die
-// Koordinaten sind exakt (distinkte Werte fangen einen start/end- oder x/y-Swap
-// — Lehre slice-032b-MED-1, Code-Review-LOW-1).
+// Unit-Tests der geteilten 2D-Plan-Projektion (`services::projectPlan`, seit
+// slice-042b im Kern; ADR-0019/ADR-0020): der Sichtbarkeits-Filter
+// (`model::visibleLayerIds`) + die **Bounding-Box-Erweiterung** um sichtbare
+// Hilfslinien (LH-FA-DRW-005/006, ADR-0018). Das ist die von PDF/PNG GETEILTE
+// Kern-Projektion (über das `DerivedGeometry`-Bündel); die format-Decode-Orakel
+// prüfen sie nur indirekt. Hier direkt: (a) eine Hilfslinie AUSSERHALB der
+// Wand-Ausdehnung erweitert die BBox (sonst würde sie in PDF/PNG abgeschnitten —
+// Code-Review-MED-1); (b) die Koordinaten sind exakt (distinkte Werte fangen einen
+// start/end- oder x/y-Swap — Lehre slice-032b-MED-1, Code-Review-LOW-1).
 
-#include "adapters/io/plan_geometry.h"
+#include "hexagon/services/geometry/plan_projection.h"
 
 #include <gtest/gtest.h>
 
 #include "hexagon/model/building.h"
 #include "hexagon/model/constants.h"
+#include "hexagon/model/layer_visibility.h"
+#include "hexagon/model/plan_view.h"
 
 namespace {
 
 namespace model = bcad::hexagon::model;
-using bcad::adapters::io::PlanView;
-using bcad::adapters::io::projectPlan;
-using bcad::adapters::io::visibleLayerIds;
+using bcad::hexagon::model::PlanView;
+using bcad::hexagon::model::visibleLayerIds;
+using bcad::hexagon::services::projectPlan;
 
 // 1 Geschoss, 1 kurze Wand bei y=0 (x≤1000); 1 Ebene; 1 Hilfslinie WEIT
 // AUSSERHALB der Wand-Ausdehnung, mit distinkten Koordinaten (x≠y, start≠end).

@@ -12,14 +12,20 @@
 #include <string>
 
 #include "adapters/io/io_atomic_write.h"
-#include "adapters/io/plan_geometry.h"
 #include "adapters/io/png_writer.h"
 #include "hexagon/model/building.h"
+#include "hexagon/model/plan_view.h"
 
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;
 
 namespace bcad::adapters::io {
+
+// ADR-0019/ADR-0020: die 2D-Projektions-Werttypen liegen im `model/`-Kern; der
+// PNG-Adapter serialisiert die kern-gelieferte `PlanView` aus dem Bündel.
+using model::PlanSegment;
+using model::PlanView;
+
 namespace {
 
 constexpr int kCanvasWidthPx = 800;
@@ -55,10 +61,12 @@ double fitScale(const PlanView& view) {
 
 }  // namespace
 
-void PngExportAdapter::write(const model::Building& building,
-                             const model::DerivedGeometry& /*derived*/,
+void PngExportAdapter::write(const model::Building& /*building*/,
+                             const model::DerivedGeometry& derived,
                              const fs::path& path) const {
-    const PlanView view = projectPlan(building);
+    // ADR-0020: der Kern liefert die 2D-Projektion im Bündel; der Adapter
+    // serialisiert nur (kein Eigen-`projectPlan` mehr).
+    const PlanView& view = derived.plan;
     const double scale = fitScale(view);
     const double origin_x = (kCanvasWidthPx - ((view.max_x_mm - view.min_x_mm) * scale)) / 2.0;
     const double origin_y = (kCanvasHeightPx - ((view.max_y_mm - view.min_y_mm) * scale)) / 2.0;

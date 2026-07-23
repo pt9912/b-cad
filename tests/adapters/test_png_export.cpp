@@ -33,6 +33,7 @@
 #include "hexagon/model/wall_type.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
 #include "hexagon/services/exchange_service.h"
+#include "hexagon/services/geometry/plan_projection.h"
 
 namespace {
 
@@ -41,6 +42,15 @@ namespace model = bcad::hexagon::model;
 using bcad::adapters::io::PngExportAdapter;
 using bcad::hexagon::ports::driving::ExchangeFormat;
 using bcad::hexagon::services::ExchangeService;
+
+// slice-042b: PNG serialisiert die kern-gelieferte `PlanView` aus dem Bündel; die
+// Direkt-Tests speisen sie aus DERSELBEN `projectPlan`-Quelle (byte-identisch;
+// MR-006-LOW-2).
+void writePng(const model::Building& b, const fs::path& path) {
+    model::DerivedGeometry derived;
+    derived.plan = bcad::hexagon::services::projectPlan(b);
+    PngExportAdapter().write(b, derived, path);
+}
 
 constexpr int kCanvasWidthPx = 800;   // Spiegel der Adapter-Konstante
 constexpr int kCanvasHeightPx = 600;
@@ -311,8 +321,8 @@ int inkPixels(const std::string& png) {
 TEST(PngExport, LH_FA_DRW_005_SichtbareHilfslinieMehrTinte) {
     const TempPath vis("drw_vis");
     const TempPath inv("drw_inv");
-    PngExportAdapter().write(drwBuilding(/*layer_visible=*/true), model::DerivedGeometry{}, vis.path);
-    PngExportAdapter().write(drwBuilding(/*layer_visible=*/false), model::DerivedGeometry{}, inv.path);
+    writePng(drwBuilding(/*layer_visible=*/true), vis.path);
+    writePng(drwBuilding(/*layer_visible=*/false), inv.path);
     const int ink_visible = inkPixels(readFile(vis.path));
     const int ink_hidden = inkPixels(readFile(inv.path));
     EXPECT_GT(ink_visible, ink_hidden) << "sichtbare Hilfslinie fügt keine Tinte hinzu";
@@ -322,7 +332,7 @@ TEST(PngExport, LH_FA_DRW_005_SichtbareHilfslinieMehrTinte) {
 
 TEST(PngExport, EmptyBuildingProducesValidWhitePng) {
     const TempPath out("empty");
-    PngExportAdapter().write(model::Building{}, model::DerivedGeometry{}, out.path);
+    writePng(model::Building{}, out.path);
     const std::string png = readFile(out.path);
     const std::vector<Chunk> chunks = parseChunks(png);
     ASSERT_GE(chunks.size(), 3U);
@@ -359,7 +369,7 @@ TEST(PngExport, DegenerateBBoxNoDivByZero) {
     b.storeys.push_back(model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
     b.walls.push_back(makeWall(1, model::StoreyId{1}, {1000.0, 0.0}, {1000.0, 5000.0}));
 
-    PngExportAdapter().write(b, model::DerivedGeometry{}, out.path);
+    writePng(b, out.path);
     const std::string png = readFile(out.path);
     const std::vector<Chunk> chunks = parseChunks(png);
     EXPECT_EQ(chunks.front().type, "IHDR");

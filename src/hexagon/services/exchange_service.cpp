@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "hexagon/model/derived_geometry.h"
+#include "hexagon/services/geometry/plan_projection.h"
 
 namespace bcad::hexagon::services {
 
@@ -42,11 +43,17 @@ void ExchangeService::exportModel(const model::Building& building,
             "E-IO-001: nicht unterstütztes/unverdrahtetes Export-Format; "
             "event=io_no_permission");
     }
-    // slice-042a (ADR-0020): der Kern reicht das abgeleitete-Geometrie-Bündel
-    // über den Port — driven Adapter serialisieren nur, sie leiten keine
-    // Geometrie ab. In dieser Stufe **leer** (accept-and-ignore); die
-    // format-selektive Berechnung folgt mit der STEP/STL-Body-Migration (042c).
-    const model::DerivedGeometry derived{};
+    // slice-042a/042b (ADR-0020): der Kern reicht das abgeleitete-Geometrie-Bündel
+    // über den Port — driven Adapter serialisieren nur, sie leiten keine Geometrie
+    // ab. **Format-selektiv befüllt:** die 2D-Grundriss-Projektion (`PlanView`) für
+    // die 2D-Formate PDF/PNG (042b); die 3D-Ableitung (Wände/Decken/Dächer/Treppen)
+    // für STEP/STL folgt mit der Body-Migration (042c); IFC/DXF leiten nichts ab
+    // (leeres Bündel — IFC ist reiner Serialisierer, DXF iteriert direkt).
+    model::DerivedGeometry derived;
+    if (format == ports::driving::ExchangeFormat::Pdf ||
+        format == ports::driving::ExchangeFormat::Png) {
+        derived.plan = projectPlan(building);
+    }
     // Erfolg: vollständige Datei. Fehler: der Exporter wirft E-IO-001 (bzw.
     // E-IO-003) — propagiert, kein Teil-Export.
     it->second->write(building, derived, path);

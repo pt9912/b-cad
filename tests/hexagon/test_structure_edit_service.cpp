@@ -13,11 +13,13 @@
 
 #include "analytic_geometry_double.h"
 #include "hexagon/model/constants.h"
+#include "hexagon/model/plan_view.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/model/solid.h"
 #include "hexagon/model/wall.h"
 #include "hexagon/ports/driven/geometry_kernel_port.h"
 #include "hexagon/ports/driving/edit_structure_port.h"  // ParamStatus
+#include "hexagon/services/geometry/plan_projection.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
@@ -274,4 +276,26 @@ TEST(StructureEditService_LH_FA_WAL_006, NachbarRebuildFehlerTransaktional) {
     EXPECT_DOUBLE_EQ(svc.wallSolid(b).volume_mm3, volB);
     EXPECT_EQ(listener.calls, 0);  // keine Meldung (ADR-0008: nur Committetes)
     svc.unsubscribe(listener);
+}
+
+// slice-042b (ADR-0019): der PlanViewPort ist die 2D-Lese-Naht — `planView()`
+// delegiert an die kern-residente `projectPlan` über das committete Modell
+// (2D-Analog zum ViewModelPort). Belegt die Port-Naht (eine Quelle für Canvas + Export).
+TEST(StructureEditService, PlanViewPortDelegiertAnKernProjektion) {
+    ControllableGeometry geometry;
+    services::StructureEditService svc(geometry);
+    svc.addWall(kGroundStorey, kWall1000);
+
+    const model::PlanView via_port = svc.planView();
+    const model::PlanView direct = services::projectPlan(svc.building());
+
+    EXPECT_TRUE(via_port.has_geometry);
+    ASSERT_EQ(via_port.storeys.size(), direct.storeys.size());
+    ASSERT_FALSE(via_port.storeys.empty());
+    ASSERT_EQ(via_port.storeys[0].segments.size(), 1U);  // die eine Wand
+    EXPECT_EQ(via_port.storeys[0].segments.size(),
+              direct.storeys[0].segments.size());
+    EXPECT_DOUBLE_EQ(via_port.storeys[0].segments[0].x2_mm, 1000.0);
+    EXPECT_DOUBLE_EQ(via_port.max_x_mm, direct.max_x_mm);
+    EXPECT_DOUBLE_EQ(via_port.min_x_mm, direct.min_x_mm);
 }
