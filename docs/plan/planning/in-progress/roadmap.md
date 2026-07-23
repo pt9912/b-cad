@@ -51,6 +51,30 @@ verhaltens-invariant (254 Tests, Coverage 91,5 %).
 **Schritt 5 (Canvas-Impl) = der ursprüngliche Roadmap-Endpunkt** — **erreicht** (s. o.,
 [`slice-043`](../done/slice-043-drw-canvas-impl.md) done).
 
+---
+
+### ▶ STARTBAR (nächste Sitzung): [`slice-044`](../open/slice-044-golden-files-austauschformate.md) — Golden files für alle Austauschformate
+
+**Plan geschärft + [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+durch: 0 HIGH / 2 MED / 3 LOW / 2 INFO → startbar** ([Report](../../../reviews/2026-07-23-slice-044-plan.md)),
+in `open/`. Ziel: byte-genaue Golden files als Netz gegen **Encoder-Drift bei unveränderter Semantik** (komplementär
+zu den vorhandenen Decode-Orakeln).
+
+**Empfohlener Schnitt (Reviewer): Split — morgen mit der 044a-Naht starten:**
+- **044a (jetzt startbar):** Export-Golden **alle 6** (byte-exakt: IFC/DXF/PDF/PNG sofort; **STEP** via Adapter-
+  `FILE_NAME`-Header-Fix [OCC `APIHeaderSection_MakeHeader`, deterministisch]; **STL** OCC-versions-gebunden, Caveat)
+  + `BCAD_TEST_GOLDEN_DIR`-Compile-Def + `.gitattributes` (binär) + `make golden-regen`/`golden-check` (Muster
+  `schema-regen`/`schema-check`, CI-only). **Voll in-Repo, deterministisch.** Vor Code: MED-2 (dedizierter Generator
+  + geteilte `goldenModel()`-TU, NICHT über das Binary) + LOW-3.
+- **044b (danach):** Import-Golden-**fremd** (nur IFC+DXF haben Import): IFC aus [buildingSMART](https://github.com/buildingSMART/Sample-Test-Files)
+  (CC-BY-4.0), DXF aus [ezdxf](https://github.com/mozman/ezdxf)/[ixmilia](https://github.com/ixmilia/dxf) (MIT).
+  **MED-1 blockiert 044b-Start:** b-cads IFC-Import **wirft [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)**
+  (Ganzdatei-Ablehnung), wenn *einer* Wand die 'Axis'-Polyline **oder** Spatial-Containment fehlt → Fixture je Wand
+  **kuratieren** (ggf. minimale konforme IFC erzeugen); DXF **2D-`LINE`** (nicht 3D — b-cad ist 2D-only).
+
+**Nächste Aktion:** „**slice-044a implementieren**" (Lifecycle open→in-progress + Sentinel, dann Export-Golden +
+Infra + STEP-Fix). Danach 044b. — Alternativ ein anderer Strang aus der freien Menü unten.
+
 `slice-041a` **done** (2026-07-23): die **DRW-Canvas-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
 (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel; alle
 `adapter→services_geo`-`.a-check.yml`-Kanten entfallen; `architecture.md` §2/§1 werden wahr) und
