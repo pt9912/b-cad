@@ -71,8 +71,12 @@ private:
     ViewTransform transform_{};
     bool fitted_{false};  // Fit-to-Bounds beim nächsten Paint nötig?
     bool dragging_{false};
-    QPoint drag_start_px_{};
+    QPoint drag_start_px_{};   // nur für die visuelle in-Arbeit-Linie
     QPoint drag_current_px_{};
+    // Der Zug-Startpunkt in Modell-mm (bei Press gemappt) — überlebt eine
+    // Transformations-Änderung (Zoom/Resize) mitten im Zug; die committete
+    // Hilfslinie nutzt IHN, nicht die Neu-Abbildung des alten Pixels (MR-009-LOW-2).
+    hexagon::model::Point2D drag_start_mm_{};
 };
 
 }  // namespace bcad::adapters::ui::view

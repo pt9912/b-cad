@@ -1,7 +1,7 @@
 ---
 id: slice-043
 titel: DRW-2D-Canvas-Impl — interaktives Zeichenwidget, screenToModel, Kommando-Naht, Composition-Root-Umschaltung
-status: in-progress
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), [LH-FA-DRW-006](../../../../spec/lastenheft.md#lh-fa-drw-006), [OBJ-003](../../../../spec/lastenheft.md#3-projektziele)]
 adr_refs: [[ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)]
@@ -9,7 +9,11 @@ adr_refs: [[ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0009](../../adr/000
 
 # Slice 043: DRW-2D-Canvas-Impl — der interaktive Erzeugungs-Weg
 
-**Status:** open (Plan — **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review 2026-07-23: 1 HIGH / 1 MED / 2 LOW / 6 INFO; MED-1/LOW-1/LOW-2 eingearbeitet, [Report](../../../reviews/2026-07-23-slice-043-plan.md). HIGH-1 gelöst durch Projektinhaber-Entscheidung: Option A (`std::function`-Verdrahtung — null `.a-check.yml`-Änderung, ehrlich, kein ADR-Konflikt; s. §0). → startbar**; Start auf Projektinhaber-Wort).
+**Status:** **done (2026-07-23)** — implementiert (Option A), `make gates` grün (256 Tests, a-check 0 =
+**kein `ui_view → ports_driving`**, Coverage 91,2 %). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+1 HIGH (gelöst: Option A) / 1 MED / 2 LOW + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+Code-Review 0 HIGH / 0 MED / 2 LOW / 3 INFO — alle eingearbeitet bzw. eingeordnet. **DRW-Interaktiv-Strang v1
+fertig.** Siehe [§8 Closure-Notiz](#8-closure-notiz-2026-07-23).
 
 **Welle:** welle-5-erweiterung (Ziel M5 „Erweiterbar"). **Konsequenz (c)** aus [ADR-0019](../../adr/0019-drw-2d-canvas.md)
 (Canvas-Impl-Slice); die vorgelagerten Folgepflichten sind erledigt: **(a) AK-Schärfung** = slice-041a done
@@ -242,10 +246,53 @@ Selektion/Picking/Bemaßung; ein DRW-`op` / 2D-Change-Signal für konkurrierende
 
 - **Modus:** GF; **Dichte:** niedrig–mittel (planned→realisiert, token-frei; ADR-Index/CHANGELOG). **Risiko:** niedrig.
 
-## 8. Closure-Notiz
+## 8. Closure-Notiz (2026-07-23)
 
-*(bei Closure ausgefüllt: Widget-/Naht-Form [Read + Schreib-Novum], `screenToModel`-Heimat, aktives Geschoss/
-Ebene-Auflösung, Root-Umschaltung + [ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)-Erhalt, Headless-AK-Ergebnisse [Happy/Boundary/Einheit],
-a-check/arch-check-Gegenprobe [kein `ui_view → ports_driving`], Review-Ergebnisse
-[[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review],
-Lerneintrag, Folge = Fang/Raster/Winkel + Selektion als benannte Slices.)*
+**Umgesetzt (Option A).** Der interaktive Erzeugungs-Weg steht — der Nutzer zeichnet eine Hilfslinie per
+Links-Zug auf der 2D-Zeichenfläche, sie erscheint sofort und geht in denselben durablen/exportierten Zustand.
+
+- **Widget:** `view/canvas_widget.{h,cpp}` — `CanvasWidget : QWidget, ModelChangedPort`; `paintEvent`/`QPainter`
+  zeichnet die `PlanView`-Segmente des **aktiven Geschosses** (`static_cast<int>`-Vergleich gegen den plain-int
+  `StoreyPlan.storey_id`) + die in-Arbeit-Linie; Links-Zug legt die Hilfslinie an, Rad zoomt (geklemmt).
+- **`screenToModel`-Naht:** reiner Werttyp `view/view_transform.h` (Pan/Zoom, Modell-+y-oben, invertierbar,
+  `fit()` Div-0-fest) — **ohne** Widget/GL unit-testbar (die AK-Testbarkeits-Achse).
+- **Read/Schreib port-frei (Option A):** der Canvas hält zwei `std::function`-Callables; die Ports leben in
+  `command/plan_view_plan_source.h` (Read über `PlanViewPort`) + `command/edit_drawing_guide_line_sink.h`
+  (Schreib über `EditDrawingPort` — **der erste UI-Mutator**, baut das `GuideLine`-Prototyp aus aktivem
+  Geschoss/Ebene). Der Composition-Root verdrahtet die Lambdas → **kein** `command/ → view/`-Include, das Widget
+  hält **keinen** Driving-Port.
+- **Aktives Geschoss/Ebene:** Root injiziert das erste Geschoss + die **zurückgegebene** `LayerId` der
+  Demo-Hilfslinien-Ebene (Fallback: eigene Ebene). v1 fix; interaktive Auswahl = Re-Eval.
+- **Refresh:** Selbst-Refresh nach eigenem `addGuideLine` (kein `op`) + Beobachter-Refresh (`onModelChanged` →
+  neu einrahmen + queued `update()`) nach `op`-Mutationen.
+- **Root-Umschaltung:** `QTabWidget` 3D/2D; **[ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)-Erhalt** via `tabs->setCurrentWidget(viewer)` vor `show()`
+  (der gated Viewer-Smoke ist standalone → ohnehin unberührt). Zweites subscribe/unsubscribe; `command/`-Objekte
+  vor `window` deklariert (Referenz-Lebensdauer).
+
+**Gegenprobe (die Fitness-Function).** `make a-check` **0 Befunde** — **kein `ui_view → ports_driving`**, keine
+neue Kante, `adapter_sink` unverändert; `make arch-check` grün (Qt nur `ui/`+`main`). `make gates` **EXIT=0**,
+**256 Tests**, Coverage 91,2 %.
+
+**Netz.** Headless-`QMouseEvent`-AK: (Happy) Zug A→B → `guide_lines` +1 mit den `screenToModel`-gemappten mm
+(Geschoss/Ebene geprüft); (Boundary) entarteter Zug → **keine** Hilfslinie (echte Ablehnung, nicht „kein Crash");
+plus der reine `ViewTransform`-Roundtrip-/+y-oben-Test (pinnt die Transform-Mathematik unabhängig).
+
+**Reviews.** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+1 HIGH / 1 MED / 2 LOW (HIGH-1 = skalarer `adapter_sink` → **Option A** gewählt; MED-1/LOW-1/LOW-2 eingearbeitet).
+Code-Review ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure))
+**0 HIGH / 0 MED / 2 LOW / 3 INFO** — LOW-1 (Wheel-Zoom **geklemmt**, wie der 3D-Viewer) + LOW-2 (Zug-Startpunkt in
+**Modell-mm** gehalten → überlebt Resize/Zoom mitten im Zug) eingearbeitet; INFO-1 (Koordinaten-Assertion
+gegen dieselbe Transform — unabhängig durch den Roundtrip-Test #1 gepinnt) + INFO-2 (`pull_` defensiv ungeprüft,
+Root liefert es immer) + INFO-3 (`event->pos()`-Deprecation, konsistent mit `viewer_widget`) bewusst belassen.
+
+**Lerneintrag.** Der `.a-check.yml`-`adapter_sink` ist ein **skalarer** Präfix (nur `mesh_source` von Regel B
+ausgenommen) — neue port-freie `view/`-Sink-Interfaces brauchen entweder eine §2.6-Lockerung **oder** die
+`std::function`-Verdrahtung (Option A: Root wiring, kein `command/ → view/`-Include). Die Callable-Naht ist der
+ehrliche Nullkosten-Weg für weitere UI-Mutatoren.
+
+**Folge.** Der **DRW-Interaktiv-Strang ist v1 fertig** (der ursprüngliche Roadmap-Endpunkt). Benannte
+[ADR-0019](../../adr/0019-drw-2d-canvas.md)-Re-Eval-Trigger als **eigene spätere Slices** (kein Skelett nötig, im
+ADR + [ADR-Index](../../adr/README.md) verankert): Fang/Raster/Winkel ([LH-FA-DRW-001](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)/002/003,
+AK-Schärfung [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei) zuerst),
+interaktive Geschoss-/Ebenen-Auswahl, Bauteile zeichnen, Selektion/Picking/Bemaßung, ein DRW-`op`/2D-Change-Signal
+für konkurrierende Schreiber.

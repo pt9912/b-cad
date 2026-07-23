@@ -1,5 +1,6 @@
 #include "adapters/ui/view/canvas_widget.h"
 
+#include <algorithm>
 #include <cmath>
 #include <utility>
 
@@ -71,6 +72,7 @@ void CanvasWidget::mousePressEvent(QMouseEvent* event) {
     dragging_ = true;
     drag_start_px_ = event->pos();
     drag_current_px_ = event->pos();
+    drag_start_mm_ = transform_.screenToModel(event->pos());  // stabil (LOW-2)
     update();
 }
 
@@ -89,8 +91,7 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent* event) {
         return;
     }
     dragging_ = false;
-    const hexagon::model::Point2D start =
-        transform_.screenToModel(drag_start_px_);
+    const hexagon::model::Point2D start = drag_start_mm_;  // bei Press gemappt
     const hexagon::model::Point2D end = transform_.screenToModel(event->pos());
     // Der Kern lehnt den entarteten Zug (Anfang == Ende) ab (kein Wert, Modell
     // unverändert) — der Canvas verlässt sich darauf, klemmt nichts selbst
@@ -106,7 +107,12 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent* event) {
 void CanvasWidget::wheelEvent(QWheelEvent* event) {
     const double steps = event->angleDelta().y() / 120.0;
     if (steps != 0.0) {
-        transform_.zoom *= std::pow(1.15, steps);  // Zoom um den Viewport-Mittelpunkt
+        // Zoom um den Viewport-Mittelpunkt, geklemmt (px/mm; wie der 3D-Viewer
+        // seinen Zoom klemmt — MR-009-LOW-1: verhindert Zoom→0 → absurde mm).
+        constexpr double kMinZoom = 1e-4;
+        constexpr double kMaxZoom = 100.0;
+        transform_.zoom =
+            std::clamp(transform_.zoom * std::pow(1.15, steps), kMinZoom, kMaxZoom);
         update();
     }
     event->accept();

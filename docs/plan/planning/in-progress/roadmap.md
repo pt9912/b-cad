@@ -19,10 +19,20 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**In Arbeit:** [`slice-043`](slice-043-drw-canvas-impl.md) — DRW-2D-Canvas-Impl (Schritt 5 der Roadmap;
-[ADR-0019](../../adr/0019-drw-2d-canvas.md)-Konsequenz (c)): neues 2D-`view/`-`QWidget` + `screenToModel` +
-Read/Schreib-Naht via `std::function` (Option A, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-HIGH-1 gelöst) + Composition-Root-Umschaltung + Headless-`QMouseEvent`-AK. Gestartet 2026-07-23.
+**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (Ruhe-Sentinel; beim Öffnen des nächsten
+Slice im selben `git mv`-Commit entfernen).
+
+**Der DRW-Interaktiv-Strang ist v1 FERTIG** — [`slice-043`](../done/slice-043-drw-canvas-impl.md) **done**
+(2026-07-23; Schritt 5 der Roadmap, der ursprüngliche Endpunkt): interaktiver 2D-Zeichen-Canvas
+([ADR-0019](../../adr/0019-drw-2d-canvas.md)). Neues 2D-`view/`-`CanvasWidget` (`QWidget`/`QPainter`) + reiner
+`ViewTransform`-`screenToModel`-Werttyp + Read/Schreib **port-frei** über `ui/command/` (Option A: `std::function`-
+Verdrahtung, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-HIGH-1
+gelöst → **kein** `ui_view → ports_driving`, `.a-check.yml` unverändert) + `QTabWidget`-3D/2D-Umschaltung +
+Headless-`QMouseEvent`-AK. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+1 HIGH (gelöst) + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+0 HIGH; 256 Tests, Coverage 91,2 %. **Benannte [ADR-0019](../../adr/0019-drw-2d-canvas.md)-Re-Eval-Trigger**
+(Fang/Raster/Winkel, interaktive Geschoss-/Ebenen-Auswahl, Bauteile zeichnen, Selektion/Picking/Bemaßung, DRW-`op`)
+= **eigene spätere Slices** (kein Skelett — im ADR + ADR-Index verankert).
 
 **Die [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Export-Refactor-Familie
 ist KOMPLETT** (`slice-042a…042d` **done** 2026-07-23; das reservierte `slice-042e` in die 042d-Closure
@@ -38,8 +48,8 @@ Je Slice [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-
 + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH**;
 verhaltens-invariant (254 Tests, Coverage 91,5 %).
 
-**Schritt 5 (Canvas-Impl) = der ursprüngliche Roadmap-Endpunkt** — jetzt in Arbeit als
-[`slice-043`](slice-043-drw-canvas-impl.md) (s. o.).
+**Schritt 5 (Canvas-Impl) = der ursprüngliche Roadmap-Endpunkt** — **erreicht** (s. o.,
+[`slice-043`](../done/slice-043-drw-canvas-impl.md) done).
 
 `slice-041a` **done** (2026-07-23): die **DRW-Canvas-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
 (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel; alle
