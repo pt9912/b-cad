@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-042d — **Export-Refactor Persistenz: `rise` kern-geliefert + letzte Adapter→Kern-Kante entfernt**
+  (welle-5; vierte von fünf ADR-0020-Folgepflichten; **intern, verhaltens-invariant**). Der SQLite-Persistenz-
+  Adapter **berechnet** die write-derived Treppen-Steigung (`rise`) **nicht mehr selbst** (kein `services::stairRiseMm`),
+  sondern **bindet** den kern-gelieferten Skalar aus dem neuen puren Aggregat **`model::PersistedDerivations`**
+  (`map<StairId,double>`), das der Aufrufer über den geweiteten `ProjectRepositoryPort::save`-Vertrag reicht — der
+  Adapter **serialisiert nur**. Fehlt der Skalar zu einer `stair.id`, bindet er **fail-closed** (`.at()` → Rollback,
+  kein stilles `rise_mm=0`). Die Geschoss-Höhen-Auflösung ist als **ein** geteilter Kern-Helfer
+  **`model::resolveStoreyHeight`** (`optional`) konsolidiert (Export nutzt Default, Save wirft neutral E-IO bei
+  danglendem `from_storey` — kein Teil-Speichern, Zieldatei unverändert); das verwaiste `DerivedStair.rise_mm`
+  (in 042a vorpositioniert) ist **retired**. **Die Schicht-Kante `persistence → services_geo` ist aus `.a-check.yml`
+  + `architecture.md` §2 entfernt — damit sind ALLE Adapter→Kern-Kanten weg** (`services_geo` behält nur
+  `services → services_geo`; der ADR-0020-Kernanspruch, maschinell belegt). Die Persistenz-Round-Trip- + Crash-
+  Recovery-Orakel (`kill -9`) bleiben **unverändert grün** (Invarianz-Beweis; 25 `save`-Aufrufer auf einen
+  `saveProject`-Helfer migriert, inkl. Fork-Kinder); neu: ein **`rise_mm`-Direkt-SQL-Verifikations-Test** (die Spalte
+  wird write-derived nie zurückgelesen → sonst un-genetzt) und ein **Danglender-Storey-E-IO-Test**. 254 Tests.
+  **MR-006 0 HIGH / 2 MED / 1 LOW + MR-009 Code-Review 0 HIGH / 0 MED / 1 LOW / 1 INFO** (alle eingearbeitet
+  bzw. eingeordnet). Damit ist die **ADR-0020-Export-Refactor-Familie komplett** (042a–042d; das reservierte
+  042e wurde in diese Closure gefaltet, da das §1-Diagramm bereits reines Hexagonal war und die Kanten/§2-Zeilen
+  schon in-slice fielen — kein struktureller Diff verblieb).
 - slice-042c — **Export-Refactor STEP/STL: Body-Migration auf das `DerivedGeometry`-Bündel** (welle-5;
   dritte von fünf ADR-0020-Folgepflichten; **intern, verhaltens-invariant**). Der `ExchangeService` berechnet
   die 3D-Bauteil-Ableitung (pre-OCC-Primitive) format-selektiv für STEP/STL und reicht sie im Bündel; die

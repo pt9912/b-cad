@@ -30,7 +30,9 @@ TEST(DerivedGeometry, CarriesPurePrePrimitives) {
     derived.walls.push_back(wall);
 
     model::DerivedStair stair;
-    stair.rise_mm = 180.0;
+    // Der `rise`-Persistenz-Skalar liegt seit slice-042d NICHT mehr im
+    // Bündel (eigene `model::PersistedDerivations`-Naht) — die Treppe im
+    // Export-Bündel trägt nur Boxen + Netz.
     stair.boxes.push_back(model::StepBox{0.0, 300.0, 0.0, 1000.0, 0.0, 180.0});
     derived.stairs.push_back(stair);
 
@@ -39,7 +41,6 @@ TEST(DerivedGeometry, CarriesPurePrePrimitives) {
     ASSERT_EQ(derived.stairs.size(), 1U);
     ASSERT_EQ(derived.stairs.front().boxes.size(), 1U);
     EXPECT_DOUBLE_EQ(derived.stairs.front().boxes.front().z1_mm, 180.0);
-    EXPECT_DOUBLE_EQ(derived.stairs.front().rise_mm, 180.0);
 }
 
 // `translateMeshZ` ist mit ADR-0020 eine reine `model/`-Util (adapter-erreichbar

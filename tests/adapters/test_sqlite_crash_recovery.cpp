@@ -19,12 +19,14 @@
 
 #include <gtest/gtest.h>
 
+#include "save_project_test_helper.h"  // saveProject (kern-gelieferter rise, 042d)
 #include "hexagon/model/building.h"
 
 namespace {
 
 namespace fs = std::filesystem;
 using bcad::adapters::persistence::SqliteProjectRepository;
+using bcad::adapters::persistence::test::saveProject;
 using bcad::hexagon::model::Building;
 using bcad::hexagon::model::StoreyId;
 using bcad::hexagon::model::WallId;
@@ -98,7 +100,7 @@ TEST(SqliteCrashRecovery_LH_QA_005, KillMidSaveLaesstZielKonsistent) {
     const fs::path path = fs::temp_directory_path() / "bcad_crash.bcad";
     cleanup(path);
 
-    repo.save(standA(), path);  // vollständiges A: Ziel existiert immer
+    saveProject(repo, standA(), path);  // vollständiges A: Ziel existiert immer
     const Building b = standB();
 
     constexpr int kTrials = 60;
@@ -110,7 +112,7 @@ TEST(SqliteCrashRecovery_LH_QA_005, KillMidSaveLaesstZielKonsistent) {
             // kein normales Ende (wird gekillt). Fehler ignorieren.
             for (;;) {
                 try {
-                    repo.save(b, path);
+                    saveProject(repo, b, path);
                 } catch (...) {
                     continue;  // Fehler ignorieren, weiter speichern
                 }
@@ -142,7 +144,7 @@ TEST(SqliteCrashRecovery_LH_QA_005, OpenFehlerWirftEIO001UndLaesstStandIntakt) {
     const fs::path path = fs::temp_directory_path() / "bcad_eio001.bcad";
     cleanup(path);
 
-    repo.save(standA(), path);
+    saveProject(repo, standA(), path);
     const auto size_before = fs::file_size(path);
 
     const fs::path tmp = path.string() + ".tmp";
@@ -151,7 +153,7 @@ TEST(SqliteCrashRecovery_LH_QA_005, OpenFehlerWirftEIO001UndLaesstStandIntakt) {
 
     std::string what;
     try {
-        repo.save(standB(), path);
+        saveProject(repo, standB(), path);
         ADD_FAILURE() << "save haette werfen muessen";
     } catch (const std::runtime_error& e) {
         what = e.what();
@@ -172,7 +174,7 @@ TEST(SqliteCrashRecovery_LH_QA_005, WriteVollWirftEIO002UndLaesstStandIntakt) {
     const fs::path path = fs::temp_directory_path() / "bcad_eio002.bcad";
     cleanup(path);
 
-    repo.save(standA(), path);
+    saveProject(repo, standA(), path);
     const auto size_before = fs::file_size(path);
 
     std::string what;
@@ -182,7 +184,7 @@ TEST(SqliteCrashRecovery_LH_QA_005, WriteVollWirftEIO002UndLaesstStandIntakt) {
         // → EXPECT_TRUE(threw) schlägt LAUT fehl, kein stiller False-Pass).
         const FileSizeLimit limit(8192);
         try {
-            repo.save(standB(), path);
+            saveProject(repo, standB(), path);
         } catch (const std::runtime_error& e) {
             threw = true;
             what = e.what();
@@ -213,7 +215,7 @@ TEST(SqliteCrashRecovery_LH_QA_005, RenameFehlerWirftNeutralenEIOCode) {
 
     std::string what;
     try {
-        repo.save(standA(), path);
+        saveProject(repo, standA(), path);
         ADD_FAILURE() << "save haette werfen muessen";
     } catch (const std::runtime_error& e) {
         what = e.what();

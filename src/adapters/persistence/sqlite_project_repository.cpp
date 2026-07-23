@@ -28,7 +28,6 @@
 #include <sqlite3.h>
 
 #include "adapters/persistence/schema_sql.h"  // kSchemaSql (generiert)
-#include "hexagon/services/geometry/stair_geometry.h"  // stairRiseMm (rise write-derived)
 
 namespace fs = std::filesystem;
 
@@ -715,32 +714,24 @@ void insertSlabs(Db& db, const hexagon::model::Building& building) {
     }
 }
 
-// from_storey-Höhe für die abgeleitete `rise` (MED-1: **total** — fehlt das
-// Geschoss in `building.storeys`, neutraler `E-IO`-Wurf statt stillem `rise=0`;
-// rollt in der Transaktion zurück).
-double fromStoreyHeight(const hexagon::model::Building& building,
-                        hexagon::model::StoreyId id) {
-    for (const auto& storey : building.storeys) {
-        if (storey.id == id) {
-            return storey.height_mm;
-        }
-    }
-    throw std::runtime_error("E-IO: stairs from_storey unbekannt");
-}
-
 // Treppen (LH-FA-STR-*, ADR-0011/0006): NACH `insertStoreys` (FK
 // `stairs.from/to_storey_id → storeys.id`, RESTRICT). `name` bleibt `NULL`
-// (welle-2-Scope). `rise_mm` ist **abgeleitet** (Geschosshöhe/step_count, via
-// Kern-Helfer `stairRiseMm`) → write-derived; beim Laden NICHT zurückgelesen
-// (der Kern leitet es neu ab — Muster roofs-`height_mm`). Geländer render-only.
-void insertStairs(Db& db, const hexagon::model::Building& building) {
+// (welle-2-Scope). `rise_mm` ist **abgeleitet** (Geschosshöhe/step_count) →
+// write-derived; beim Laden NICHT zurückgelesen (der Kern leitet es neu ab —
+// Muster roofs-`height_mm`). Geländer render-only. **Kern-geliefert** (ADR-0020,
+// slice-042d): der Adapter **berechnet** den `rise` nicht mehr, er **bindet** den
+// vom Aufrufer gereichten Skalar aus `derived.stairRiseMm`. **Fail-closed**
+// (datenverlust-nah): fehlt der Skalar zu einer `stair.id`, wirft `.at()`
+// `std::out_of_range` → landet im `catch(...)` von `save` → Temp entfernt,
+// Zieldatei intakt (kein stilles `rise_mm=0`).
+void insertStairs(Db& db, const hexagon::model::Building& building,
+                  const hexagon::model::PersistedDerivations& derived) {
     Stmt stmt(db,
               "INSERT INTO stairs (id,project_id,from_storey_id,to_storey_id,"
               "stair_type,start_x_mm,start_y_mm,width_mm,step_count,rise_mm,"
               "tread_mm) VALUES (?,1,?,?,?,?,?,?,?,?,?);");
     for (const auto& stair : building.stairs) {
-        const double rise = hexagon::services::stairRiseMm(
-            stair, fromStoreyHeight(building, stair.from_storey_id));
+        const double rise = derived.stairRiseMm.at(stair.id);  // fail-closed
         sqlite3_bind_int(stmt.get(), 1, static_cast<int>(stair.id));
         sqlite3_bind_int(stmt.get(), 2, static_cast<int>(stair.from_storey_id));
         sqlite3_bind_int(stmt.get(), 3, static_cast<int>(stair.to_storey_id));
@@ -981,8 +972,10 @@ void fsyncPath(const fs::path& path, bool is_dir) {
 
 }  // namespace
 
-void SqliteProjectRepository::save(const hexagon::model::Building& building,
-                                   const fs::path& path) const {
+void SqliteProjectRepository::save(
+    const hexagon::model::Building& building,
+    const hexagon::model::PersistedDerivations& derived,
+    const fs::path& path) const {
     const fs::path tmp = path.string() + ".tmp";
     removeTempArtifacts(tmp);
 
@@ -1001,7 +994,7 @@ void SqliteProjectRepository::save(const hexagon::model::Building& building,
             insertOpenings(*db, building);  // nach Wänden (FK wall_id)
             insertRoofs(*db, building);      // nach Geschossen (FK storey_id)
             insertSlabs(*db, building);      // nach Geschossen (FK storey_id)
-            insertStairs(*db, building);     // nach Geschossen (FK from/to_storey)
+            insertStairs(*db, building, derived);  // nach Geschossen (FK from/to_storey)
             insertGuideLines(*db, building);  // nach storeys (FK storey_id) + layers (FK layer_id)
             db->exec("COMMIT;");
             db.reset();  // schließen vor fsync/rename

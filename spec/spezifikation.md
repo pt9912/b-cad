@@ -290,6 +290,13 @@ Geschosshöhe / step_count`** (flächenbündiger Anschluss an die obere Ebene; d
 gespeicherte `rise_mm` spiegelt diese Ableitung). Eingabe sind `step_count`
 (STR-002), `width` (STR-003) und `tread` (Auftritt). Das Muster „abgeleitete
 Größe statt Doppel-Eingabe" entspricht der Dach-Firsthöhe ([LH-FA-ROF-001](lastenheft.md#lh-fa-rof-001--satteldach).a).
+Die write-derived `rise` **berechnet der Persistenz-Adapter nicht selbst**: sie
+wird ihm — wie die abgeleitete Export-Geometrie den Export-Adaptern — als
+**kern-gelieferter Skalar** über den Speicher-Vertrag gereicht; der Adapter
+**serialisiert nur** und bindet den Wert an `rise_mm` (beim Laden wird er nicht
+zurückgelesen, der Kern leitet ihn neu ab). Fehlt die Geschosshöhe (danglendes
+`from_storey`), wirft der Kern-Aufrufer neutral — kein Teil-Speichern, Zieldatei
+unverändert.
 
 **Stufen-Konstruktion (analytisches Polyeder im Kern):** die Treppe entsteht
 **analytisch im Kern** (Präzedenz `roof_geometry`/`slab_geometry`), **nicht** über

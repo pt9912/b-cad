@@ -10,31 +10,21 @@
 #include "hexagon/model/building.h"
 #include "hexagon/model/constants.h"
 #include "hexagon/model/derived_geometry.h"
+#include "hexagon/model/storey_query.h"                   // resolveStoreyHeight (geteilt, 042d)
 #include "hexagon/services/geometry/opening_geometry.h"   // wallCutPrisms
 #include "hexagon/services/geometry/plan_projection.h"    // projectPlan (2D, 042b)
 #include "hexagon/services/geometry/roof_geometry.h"      // roofMesh
 #include "hexagon/services/geometry/slab_geometry.h"      // slabBaseZ/slabCutPrisms
-#include "hexagon/services/geometry/stair_geometry.h"     // stairStepBoxes/stairMesh/stairRiseMm
+#include "hexagon/services/geometry/stair_geometry.h"     // stairStepBoxes/stairMesh
 #include "hexagon/services/geometry/wall_footprint.h"     // wallFootprint
 
 namespace bcad::hexagon::services {
-namespace {
 
-// Totale Höhen-Auflösung (ADR-0020, slice-042c-Konsolidierung): der Kern berechnet
-// die STEP/STL-Ableitung, die je Bauteil die Geschoss-Höhe braucht. Die früher in
-// **beiden** Geometrie-Adaptern duplizierte Auflösung liegt jetzt als **eine**
-// Wahrheit hier (die Adapter konsumieren die pre-resolved `baseZ`/`boxes`/`mesh`).
-// Total: unbekanntes/danglendes Geschoss → Default (kein Wurf).
-double storeyHeight(const model::Building& building, model::StoreyId id) {
-    for (const model::Storey& s : building.storeys) {
-        if (s.id == id) {
-            return s.height_mm;
-        }
-    }
-    return model::kDefaultStoreyHeightMm;
-}
-
-}  // namespace
+// Höhen-Auflösung für die STEP/STL-Ableitung: der geteilte Kern-Helfer
+// `model::resolveStoreyHeight` liefert die Roh-Höhe; der Export-Pfad ist
+// **total** (unbekanntes/danglendes Geschoss → Default, kein Wurf) via
+// `.value_or` (slice-042d-Konsolidierung — dieselbe Wahrheit nutzt der
+// Save-Pfad, dort mit werfender Semantik).
 
 ExchangeService::ExchangeService(ImporterMap importers, ExporterMap exporters)
     : importers_(std::move(importers)), exporters_(std::move(exporters)) {}
@@ -92,7 +82,8 @@ void ExchangeService::exportModel(const model::Building& building,
         for (const model::Slab& s : building.slabs) {
             derived.slabs.push_back(
                 {s.footprint, s.thickness_mm, slabCutPrisms(s),
-                 slabBaseZ(s, storeyHeight(building, s.storey_id))});
+                 slabBaseZ(s, model::resolveStoreyHeight(building, s.storey_id)
+                                  .value_or(model::kDefaultStoreyHeightMm))});
         }
         derived.roofs.reserve(building.roofs.size());
         for (const model::Roof& r : building.roofs) {
@@ -100,9 +91,9 @@ void ExchangeService::exportModel(const model::Building& building,
         }
         derived.stairs.reserve(building.stairs.size());
         for (const model::Stair& s : building.stairs) {
-            const double h = storeyHeight(building, s.from_storey_id);
-            derived.stairs.push_back(
-                {stairStepBoxes(s, h), stairMesh(s, h), stairRiseMm(s, h)});
+            const double h = model::resolveStoreyHeight(building, s.from_storey_id)
+                                 .value_or(model::kDefaultStoreyHeightMm);
+            derived.stairs.push_back({stairStepBoxes(s, h), stairMesh(s, h)});
         }
     }
     // Erfolg: vollständige Datei. Fehler: der Exporter wirft E-IO-001 (bzw.

@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/persisted_derivations.h"
 #include "hexagon/ports/driven/project_repository_port.h"
 
 namespace bcad::adapters::persistence {
@@ -16,6 +17,7 @@ class SqliteProjectRepository final
     : public hexagon::ports::driven::ProjectRepositoryPort {
 public:
     void save(const hexagon::model::Building& building,
+              const hexagon::model::PersistedDerivations& derived,
               const std::filesystem::path& path) const override;
 
     hexagon::model::Building load(

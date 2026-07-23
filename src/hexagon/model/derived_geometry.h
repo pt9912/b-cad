@@ -47,12 +47,12 @@ struct DerivedRoof {
 };
 
 // Treppe: solide Stufen-Boxen (STEP: `makeBoxSolid`) **und** das render-fertige
-// Netz inkl. Geländer (STL) — jeder Exporter liest sein Feld; plus die
-// abgeleitete Steigung `rise` (Persistenz-Skalar, Slice 042d).
+// Netz inkl. Geländer (STL) — jeder Exporter liest sein Feld. (Der abgeleitete
+// `rise`-Persistenz-Skalar liegt **nicht** hier: die Persistenz hat eine eigene
+// `model::PersistedDerivations`-Naht — slice-042d, ADR-0020.)
 struct DerivedStair {
     std::vector<StepBox> boxes;
     TriangleMesh mesh;
-    double rise_mm{};
 };
 
 struct DerivedGeometry {

@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/persisted_derivations.h"
 
 namespace bcad::hexagon::ports::driven {
 
@@ -18,7 +19,11 @@ public:
     // Speichert das vollständige Modell **atomar** (LH-FA-BLD-002). Bei
     // Schreibfehler bleibt der vorherige Dateistand unverändert (Temp +
     // Rename); geworfen wird eine neutrale `std::runtime_error`.
+    // Die **kern-abgeleiteten** write-derived Skalare (`rise` je Treppe) reicht
+    // der Aufrufer als `PersistedDerivations` mit — der Adapter **serialisiert
+    // nur**, er leitet nichts mehr aus `services/geometry` ab (ADR-0020).
     virtual void save(const model::Building& building,
+                      const model::PersistedDerivations& derived,
                       const std::filesystem::path& path) const = 0;
 
     // Lädt das vollständige Modell wieder (LH-FA-BLD-003). Wirft bei

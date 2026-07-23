@@ -1,7 +1,7 @@
 ---
 id: slice-042d
 titel: Export-Refactor Persistenz — rise kern-seitig + persistence→services_geo-Kante raus
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[OBJ-005](../../../../spec/lastenheft.md#3-projektziele), [LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)]
 adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md), [ADR-0003](../../adr/0003-persistenz-sqlite.md), [ADR-0006](../../adr/0006-relationales-schema-design.md)]
@@ -9,7 +9,11 @@ adr_refs: [[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-g
 
 # Slice 042d: Export-Refactor Persistenz — `rise` kern-seitig geliefert
 
-**Status:** open (Plan — **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review 2026-07-23: 0 HIGH / 2 MED / 1 LOW → startbar**; MED-1 [architecture §2-persistence-Zeile **in 042d** ziehen — 042d entfernt die Kante] + MED-2 [Map-Lookup **fail-closed**] + LOW-1 [verwaistes `DerivedStair.rise_mm` retiren] + INFO eingearbeitet; [Report](../../../reviews/2026-07-23-slice-042d-plan.md). Start auf Projektinhaber-Wort).
+**Status:** **done (2026-07-23)** — implementiert, `make gates` grün (254 Tests, a-check 0, docs-check 221/0,
+Coverage 91,5 %). [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+Plan-Review 0 HIGH / 2 MED / 1 LOW + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+Code-Review 0 HIGH / 0 MED / 1 LOW / 1 INFO — alle eingearbeitet bzw. bewusst eingeordnet. **slice-042e in diese
+Closure gefaltet + retired** (kein struktureller Diff verblieb). Siehe [§8 Closure-Notiz](#8-closure-notiz-2026-07-23).
 
 **Welle:** welle-5-erweiterung. **Vierter** der fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Refactor-Slices
 (Familie 042a…e). **Vorgänger:** slice-042c (done).
@@ -178,10 +182,60 @@ späterer Slice) — 042d schneidet nur die Naht. (Die §2-persistence-**Zeile**
 
 - **Modus:** GF; **Dichte:** mittel (Persistenz-Datenfluss token-frei; ADR-Index/CHANGELOG). **Risiko:** niedrig.
 
-## 8. Closure-Notiz
+## 8. Closure-Notiz (2026-07-23)
 
-*(bei Closure ausgefüllt: Naht-Form + Höhen-Helfer-Konsolidierung, Adapter-Serialisierung [rise gebunden statt
-berechnet], entfernte `persistence → services_geo`-Kante + a-check-Gegenprobe [alle Adapter→Kern-Kanten weg],
-rise_mm-Verifikations- + Dangling-E-IO-Test, Fehler-Timing-Einordnung, Review-Ergebnisse
-[[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review],
-Lerneintrag, Folge = Slice 042e.)*
+**Umgesetzt.** Der SQLite-Persistenz-Adapter berechnet den `rise` nicht mehr selbst, sondern **bindet** den
+kern-gelieferten Skalar:
+
+- **Naht-Form:** neues pures Aggregat `model::PersistedDerivations { std::map<StairId,double> stairRiseMm; }`
+  (order-unabhängig, **eigene** Naht — nicht die Export-`DerivedGeometry`); `ProjectRepositoryPort::save` +
+  `SqliteProjectRepository::save` um den Parameter geweitet. Port bleibt `model`-only.
+- **Adapter serialisiert nur:** `insertStairs` bindet `derived.stairRiseMm.at(stair.id)` **fail-closed**
+  (`.at()` → `catch(...)` → Temp entfernt, Ziel intakt; kein stilles `rise_mm=0`). `stair_geometry.h`-Include +
+  `stairRiseMm`/`fromStoreyHeight` entfernt.
+- **Höhen-Helfer konsolidiert:** neuer geteilter Kern-Helfer `model::resolveStoreyHeight → optional<double>`
+  (`storey_query.h`); Export nutzt `.value_or(kDefaultStoreyHeightMm)` (total, für slab **und** stair), Save-
+  Aufrufer wirft E-IO bei `nullopt`. Löst das 042a-LOW-2-/042c-Duplikat endgültig auf. Die 042c-anon-`storeyHeight`
+  ist retired.
+- **Verwaistes `DerivedStair.rise_mm` retired** (LOW-1): Feld + Export-Befüllung + Kommentar weg; kein Verhaltens-
+  Effekt (war tot).
+- **Aufrufer:** Test-Helfer `saveProject` (`tests/adapters/save_project_test_helper.h`) berechnet die Skalare aus
+  **derselben** Quelle (`stairRiseMm` + `resolveStoreyHeight`) → Byte-Identität; steht für den künftigen
+  `ManageProjectPort`-Save-Use-Case-Service (existiert noch nicht — hohle Naht ehrlich benannt).
+
+**Kanten-Abschluss (die 042e-Faltung).** `.a-check.yml`-Kante `persistence → services_geo` entfernt +
+`architecture.md` §2-persistence-Zeile mitgezogen. **Audit-Ergebnis: ALLE Adapter→Kern-Kanten sind weg** —
+`services_geo` trägt nur noch `services → services_geo` (`make a-check` = 0 Befunde als Gegenprobe). Das
+`architecture.md` **§1-Diagramm ist bereits reines Hexagonal** (die Driven-Adapter tragen nur
+`implementiert von`-Kanten zu den Driven Ports, keinen Adapter→Kernel-Pfeil; `services/geometry` ist dort kein
+eigener Knoten) → **kein struktureller Diff verbleibt für den ursprünglich reservierten slice-042e**. Daher ist
+**042e in diese Closure gefaltet und retired** (Skelett aus `open/` entfernt; [ADR-Index](../../adr/README.md)
+entsprechend). Der [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-
+Block ist damit **komplett** (042a…042d).
+
+**Netz + Gates.** 25 `save`-Aufrufer (18 project-repo + 7 crash-recovery, inkl. Fork-Kinder) auf `saveProject`
+migriert; neu: `rise_mm`-**Direkt-SQL-Verifikations-Test** (`RiseMmKernGeliefertByteGleich` — die Spalte wird
+write-derived nie zurückgelesen) + **Danglender-Storey-E-IO-Test** (`DanglendesGeschossWirftEIOKeinTeilSave`,
+`!exists(path) && !exists(tmp)`). Round-Trip- + `kill -9`-Recovery-Orakel **unverändert grün**. `make gates`
+**EXIT 0** · 254 Tests · a-check 0 · docs-check 221/0 · Coverage 91,5 %.
+
+**Fehler-Timing (Verhaltens-Invarianz-Feinheit).** Der dangling-Wurf wandert von *mitten in der Transaktion*
+(alt: `fromStoreyHeight` → Rollback) nach *vor `save`* (neu: Aufrufer). **Beobachtbar identisch** (E-IO, kein
+Temp, Ziel unberührt — der neue Test pinnt es); es entsteht sogar **ein** Temp-Pfad weniger.
+
+**Reviews.** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+Plan-Review 0 HIGH / 2 MED / 1 LOW (alle eingearbeitet); [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+Code-Review **0 HIGH / 0 MED / 1 LOW / 1 INFO** — LOW-1 (fehlender Direkt-Include in `sqlite_project_repository.h`)
+eingearbeitet; INFO-1 (die fail-closed-`.at()` entkommt als `std::out_of_range` statt `runtime_error`) **bewusst
+belassen**: nur bei Aufrufer-Programmierfehler (unvollständige Map) erreichbar, nie durch Daten — Defense-in-depth
+([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-MED-2),
+der reale Aufrufer füllt die Map aus `building.stairs` oder wirft vorab E-IO.
+
+**Lerneintrag.** Test-lokale Helfer-Header (`tests/…`) liegen **nicht** unter dem `src/`-Include-Root → sibling-
+relativ inkludieren (`#include "save_project_test_helper.h"`), nicht `adapters/…`. Und: ein Feld „für einen
+Folge-Slice" vorpositionieren (042a `DerivedStair.rise_mm`) verwaist, wenn der Folge-Slice eine **eigene** Naht
+bekommt — besser erst schneiden, wenn der Konsument feststeht.
+
+**Folge.** [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Refactor-Familie
+**abgeschlossen** (042a…042d; 042e gefaltet). Nächster Schritt der Roadmap: **Canvas-Impl** (DRW-2D-Widget, jetzt
+architektonisch entsperrt).

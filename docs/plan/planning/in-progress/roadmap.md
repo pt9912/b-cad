@@ -19,25 +19,24 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel; beim Öffnen
-des nächsten Slice entfernen). `slice-042c` **done** (2026-07-23): Export-Refactor **STEP/STL** geliefert
-(Bodies iterieren das `DerivedGeometry`-Bündel, `ExchangeService`-Berechnung, `storeyHeight` konsolidiert;
-**`geometry → services_geo`-Kante entfernt** — a-check-Gegenprobe grün; verhaltens-invariant, 252 Tests;
-**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) Code-Review 0 HIGH**).
-**Drei** der fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten
-erledigt. **Nächster Startkandidat: `slice-042d`** (Persistenz-`rise` kern-seitig + `persistence → services_geo`-
-Kante raus; Skelett in `open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-beim Start). **042e** (`.a-check.yml`+architecture-Abschluss) als Skelett in `open/`.
+**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (Ruhe-Sentinel; beim Öffnen des nächsten
+Slice im selben `git mv`-Commit entfernen).
 
-`slice-042a` + `slice-042b` **done** (2026-07-23): Kern-Naht (`DerivedGeometry`-Vertrag) + 2D-Projektion
-(`PlanViewPort`, **DRW-Canvas entsperrt**); [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
-Code-Review 042a+042b 0 HIGH. **042d–e** als Skelette in `open/` ([MR-020](../../../../harness/conventions.md)).
+**Die [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Export-Refactor-Familie
+ist KOMPLETT** (`slice-042a…042d` **done** 2026-07-23; das reservierte `slice-042e` in die 042d-Closure
+**gefaltet + retired**, da kein struktureller Diff verblieb):
+- **042a** Kern-Naht (`DerivedGeometry`-Vertrag + `StepBox`/`translateMeshZ`→`model/`).
+- **042b** 2D-Projektion in den Kern + `PlanViewPort` — **DRW-Canvas architektonisch entsperrt**.
+- **042c** STEP/STL-Body-Migration; `geometry → services_geo`-Kante weg.
+- **042d** Persistenz-`rise` kern-geliefert (`PersistedDerivations`); `persistence → services_geo`-Kante weg.
 
-`slice-042a` **done** (2026-07-23): Export-Refactor **Kern-Naht** (`DerivedGeometry`-Vertrag +
-`StepBox`/`translateMeshZ`→`model/`, accept-and-ignore über die 6 Exporter; verhaltens-invariant, 248 Tests) —
-**erste** der [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten
-erledigt. **042c–e** als Skelette in `open/` ([MR-020](../../../../harness/conventions.md) Closure-Disziplin —
-getrackt, nicht vergessen).
+**Ergebnis (maschinell belegt):** **alle** Adapter→Kern-Kanten sind weg — `services_geo` trägt nur noch
+`services → services_geo` (`make a-check` = 0 Befunde); `architecture.md` §2-Tabelle + §1-Diagramm doku-wahr.
+Je Slice [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
++ [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) **0 HIGH**;
+verhaltens-invariant (254 Tests, Coverage 91,5 %).
+
+**Nächster Schritt:** **Canvas-Impl** (DRW-2D-Widget) — der ursprüngliche Roadmap-Endpunkt, jetzt entsperrt.
 
 `slice-041a` **done** (2026-07-23): die **DRW-Canvas-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
 (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel; alle

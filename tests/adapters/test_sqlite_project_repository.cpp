@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 #include <sqlite3.h>
 
+#include "save_project_test_helper.h"  // saveProject (kern-gelieferter rise, 042d)
 #include "hexagon/model/building.h"
 #include "hexagon/model/constants.h"
 
@@ -20,6 +21,7 @@ namespace {
 
 namespace fs = std::filesystem;
 using bcad::adapters::persistence::SqliteProjectRepository;
+using bcad::adapters::persistence::test::saveProject;
 using bcad::hexagon::model::Building;
 using bcad::hexagon::model::Storey;
 using bcad::hexagon::model::StoreyId;
@@ -127,7 +129,7 @@ TEST(SqliteProjectRepository_LH_FA_BLD_002_003, RoundTripErhaeltModell) {
     const fs::path path = tempPath("bcad_roundtrip.bcad");
     fs::remove(path);
 
-    repo.save(original, path);
+    saveProject(repo, original, path);
     const Building loaded = repo.load(path);
 
     ASSERT_EQ(loaded.storeys.size(), original.storeys.size());
@@ -161,7 +163,7 @@ TEST(SqliteProjectRepository_LH_FA_BLD_002_003, LeeresProjektRoundTrip) {
     const fs::path path = tempPath("bcad_empty.bcad");
     fs::remove(path);
 
-    repo.save(Building{}, path);
+    saveProject(repo, Building{}, path);
     const Building loaded = repo.load(path);
 
     EXPECT_TRUE(loaded.storeys.empty());
@@ -176,10 +178,10 @@ TEST(SqliteProjectRepository_LH_FA_BLD_002_003, SaveErsetztSauberOhneTempRest) {
     const fs::path path = tempPath("bcad_overwrite.bcad");
     fs::remove(path);
 
-    repo.save(sampleBuilding(), path);
+    saveProject(repo, sampleBuilding(), path);
     Building second;
     second.storeys.push_back({StoreyId{7}, 2750.0});
-    repo.save(second, path);
+    saveProject(repo, second, path);
 
     const Building loaded = repo.load(path);
     ASSERT_EQ(loaded.storeys.size(), 1U);
@@ -197,7 +199,7 @@ TEST(SqliteProjectRepository_LH_FA_MAT, RoundTripErhaeltBibliothekUndZuweisung) 
     const fs::path path = tempPath("bcad_material.bcad");
     fs::remove(path);
 
-    repo.save(original, path);
+    saveProject(repo, original, path);
     const Building loaded = repo.load(path);
 
     // (a) Bibliothek feldgleich (volles Material).
@@ -256,7 +258,7 @@ TEST(SqliteProjectRepository_LH_FA_MAT, LeereBibliothekUndUnzugewiesen) {
     const fs::path path = tempPath("bcad_material_empty.bcad");
     fs::remove(path);
 
-    repo.save(sampleBuilding(), path);  // Wände, keine Materialien
+    saveProject(repo, sampleBuilding(), path);  // Wände, keine Materialien
     const Building loaded = repo.load(path);
 
     EXPECT_TRUE(loaded.materials.empty());
@@ -304,7 +306,7 @@ TEST(SqliteProjectRepository_LH_FA_DRW, RoundTripErhaeltEbeneUndHilfslinie) {
     const fs::path path = tempPath("bcad_drawing.bcad");
     fs::remove(path);
 
-    repo.save(original, path);
+    saveProject(repo, original, path);
     const Building loaded = repo.load(path);
 
     // Ebenen feldgleich (inkl. NULL-Farbe der zweiten Ebene).
@@ -349,7 +351,7 @@ TEST(SqliteProjectRepository_LH_FA_DRW, LeereEbenenUndHilfslinien) {
     const fs::path path = tempPath("bcad_drawing_empty.bcad");
     fs::remove(path);
 
-    repo.save(sampleBuilding(), path);  // Wände, keine DRW-Daten
+    saveProject(repo, sampleBuilding(), path);  // Wände, keine DRW-Daten
     const Building loaded = repo.load(path);
 
     EXPECT_TRUE(loaded.layers.empty());
@@ -386,7 +388,7 @@ TEST(SqliteProjectRepository_LH_FA_DOR_WIN, RoundTripErhaeltOeffnungen) {
 
     const fs::path path = tempPath("bcad_openings.bcad");
     fs::remove(path);
-    repo.save(original, path);
+    saveProject(repo, original, path);
     const Building loaded = repo.load(path);
 
     ASSERT_EQ(loaded.openings.size(), original.openings.size());
@@ -445,7 +447,7 @@ TEST(SqliteProjectRepository_LH_FA_ROF_001, RoundTripErhaeltDaecher) {
 
     const fs::path path = tempPath("bcad_roofs.bcad");
     fs::remove(path);
-    repo.save(original, path);
+    saveProject(repo, original, path);
     const Building loaded = repo.load(path);
 
     ASSERT_EQ(loaded.roofs.size(), original.roofs.size());
@@ -512,7 +514,7 @@ TEST(SqliteProjectRepository_LH_FA_SLB_FND, RoundTripErhaeltPlatten) {
 
     const fs::path path = tempPath("bcad_slabs.bcad");
     fs::remove(path);
-    repo.save(original, path);
+    saveProject(repo, original, path);
     const Building loaded = repo.load(path);
 
     ASSERT_EQ(loaded.slabs.size(), original.slabs.size());
@@ -559,6 +561,24 @@ void corruptColumn(const fs::path& path, const char* sql) {
     sqlite3_close(db);
 }
 
+// Liest einen einzelnen DOUBLE-Skalar direkt per SQL (Regel-D-frei in `tests/`,
+// s. corruptColumn). Für die Verifikation **write-derived** Spalten, die `load`
+// bewusst NICHT zurückliest (`rise_mm`, slice-042d) — der einzige Weg, den
+// kern-gelieferten Wert zu prüfen.
+double readDoubleScalar(const fs::path& path, const char* sql) {
+    sqlite3* db = nullptr;
+    sqlite3_open(path.string().c_str(), &db);
+    sqlite3_stmt* stmt = nullptr;
+    sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
+    double value = 0.0;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        value = sqlite3_column_double(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+    return value;
+}
+
 // LH-FA-SLB-001 (slice-015c, Code-Review MED-2): der polygon_json-/slab_type-
 // Parser ist total nach außen — verfälschter DB-Inhalt führt zu neutralem
 // E-IO (`std::runtime_error`), nicht zu Crash/UB/stillem Falschwert. Genau die
@@ -579,22 +599,22 @@ TEST(SqliteProjectRepository_LH_FA_SLB_FND, MalformedSpaltenWerfenNeutral) {
 
     // (a) ungerade Wertzahl im Ring → parseRing wirft.
     fs::remove(path);
-    repo.save(original, path);
+    saveProject(repo, original, path);
     corruptColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3]]';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
     // (b) unbalancierte Klammern → parseSlabPolygonJson wirft.
-    repo.save(original, path);
+    saveProject(repo, original, path);
     corruptColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3,4]';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
     // (c) Müll-Suffix im Zahl-Token → Vollständig-Verbrauch-Check wirft (MED-1).
-    repo.save(original, path);
+    saveProject(repo, original, path);
     corruptColumn(path, "UPDATE slabs SET polygon_json='[[1,2,3x,4]]';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
     // (d) unbekannter slab_type (Schema ohne CHECK) → textToSlabType wirft.
-    repo.save(original, path);
+    saveProject(repo, original, path);
     corruptColumn(path, "UPDATE slabs SET slab_type='xyz';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
 
@@ -626,7 +646,7 @@ TEST(SqliteProjectRepository_LH_FA_ROF_006, FehlendeDickeLaedtAlsDefault) {
 
     const fs::path path = tempPath("bcad_roof_thickness_default.bcad");
     fs::remove(path);
-    repo.save(original, path);
+    saveProject(repo, original, path);
     // Zeile ohne thickness_mm einfügen → SQL-DEFAULT 200 feuert (FK: storey 1).
     corruptColumn(path,
                   "INSERT INTO roofs (id,project_id,storey_id,roof_type,"
@@ -667,7 +687,7 @@ TEST(SqliteProjectRepository_LH_FA_STR_001, RoundTripErhaeltTreppen) {
 
     const fs::path path = tempPath("bcad_stairs.bcad");
     fs::remove(path);
-    repo.save(original, path);
+    saveProject(repo, original, path);
     const Building loaded = repo.load(path);
 
     ASSERT_EQ(loaded.stairs.size(), original.stairs.size());
@@ -684,6 +704,75 @@ TEST(SqliteProjectRepository_LH_FA_STR_001, RoundTripErhaeltTreppen) {
     EXPECT_DOUBLE_EQ(got.width_mm, want.width_mm);
     EXPECT_EQ(got.step_count, want.step_count);
     EXPECT_DOUBLE_EQ(got.tread_mm, want.tread_mm);
+    fs::remove(path);
+}
+
+// slice-042d (ADR-0020): der `rise`-Skalar wird jetzt **kern-geliefert** (der
+// Adapter **bindet** ihn statt ihn via `services/geometry` zu berechnen). Weil
+// `load` `rise_mm` bewusst NIE zurückliest (write-derived), pinnt dieser Test die
+// Spalte **direkt per SQL** `== stairRiseMm` gegen die bekannte Geschosshöhe —
+// Beleg der Byte-Identität zum früher adapter-berechneten Wert (sonst bliebe der
+// Berechnungs-Umzug un-genetzt; das Netz-Loch des Plan-Reviews).
+TEST(SqliteProjectRepository_LH_FA_STR_001, RiseMmKernGeliefertByteGleich) {
+    const SqliteProjectRepository repo;
+    Building original;
+    original.storeys.push_back({StoreyId{1}, 2500.0});  // from_storey liefert Höhe
+    original.storeys.push_back({StoreyId{2}, 3000.0});
+    Stair stair{};
+    stair.id = StairId{1};
+    stair.from_storey_id = StoreyId{1};
+    stair.to_storey_id = StoreyId{2};
+    stair.type = StairType::Gerade;
+    stair.start = {0.0, 0.0};
+    stair.width_mm = 1000.0;
+    stair.step_count = 16;  // 2500/16 = 156.25 → nicht-glatt, exakter bind_double
+    stair.tread_mm = 280.0;
+    original.stairs = {stair};
+
+    const fs::path path = tempPath("bcad_stair_rise.bcad");
+    fs::remove(path);
+    saveProject(repo, original, path);
+
+    const double expected = bcad::hexagon::services::stairRiseMm(stair, 2500.0);
+    const double stored =
+        readDoubleScalar(path, "SELECT rise_mm FROM stairs WHERE id=1;");
+    EXPECT_DOUBLE_EQ(stored, expected);
+    EXPECT_DOUBLE_EQ(stored, 2500.0 / 16.0);  // Verankerung: bekannte Höhe/step
+    fs::remove(path);
+}
+
+// slice-042d: danglendes `from_storey_id` → der (kern-seitige) Aufrufer wirft
+// **E-IO vor** `save` (die throw-Semantik des früheren adapter-lokalen
+// `fromStoreyHeight` überlebt den Umzug); **kein Teil-Save**, Zieldatei + Temp
+// unberührt (beobachtbar identisch zum früheren Rollback-mitten-in-der-Transaktion).
+TEST(SqliteProjectRepository_LH_FA_STR_001, DanglendesGeschossWirftEIOKeinTeilSave) {
+    const SqliteProjectRepository repo;
+    Building original;
+    original.storeys.push_back({StoreyId{1}, 2500.0});
+    Stair stair{};
+    stair.id = StairId{1};
+    stair.from_storey_id = StoreyId{99};  // existiert NICHT in storeys → dangling
+    stair.to_storey_id = StoreyId{1};
+    stair.type = StairType::Gerade;
+    stair.start = {0.0, 0.0};
+    stair.width_mm = 1000.0;
+    stair.step_count = 15;
+    stair.tread_mm = 280.0;
+    original.stairs = {stair};
+
+    const fs::path path = tempPath("bcad_stair_dangling.bcad");
+    fs::remove(path);
+
+    std::string what;
+    try {
+        saveProject(repo, original, path);
+        ADD_FAILURE() << "saveProject haette werfen muessen";
+    } catch (const std::runtime_error& e) {
+        what = e.what();
+    }
+    EXPECT_NE(what.find("E-IO"), std::string::npos) << what;
+    EXPECT_FALSE(fs::exists(path));                            // kein Teil-Save
+    EXPECT_FALSE(fs::exists(fs::path(path.string() + ".tmp")));
     fs::remove(path);
 }
 
@@ -707,7 +796,7 @@ TEST(SqliteProjectRepository_LH_FA_STR_001, MalformedStairTypeWirftNeutral) {
 
     const fs::path path = tempPath("bcad_stair_malformed.bcad");
     fs::remove(path);
-    repo.save(original, path);
+    saveProject(repo, original, path);
     corruptColumn(path, "UPDATE stairs SET stair_type='wendel';");
     EXPECT_THROW(repo.load(path), std::runtime_error);
     fs::remove(path);

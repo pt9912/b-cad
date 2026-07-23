@@ -41,7 +41,10 @@ edges:
   # Adapter ruft mehr services/geometry (Verschärfung, AGENTS §2.6 n/a).
   - {from: persistence, to: model}
   - {from: persistence, to: ports_driven}
-  - {from: persistence, to: services_geo}
+  # slice-042d (ADR-0020): persistence → services_geo ENTFERNT — der SQLite-Adapter
+  # bindet den kern-gelieferten rise-Skalar (model::PersistedDerivations) statt ihn
+  # via services/geometry zu berechnen. Damit sind ALLE Adapter→Kern-Kanten weg
+  # (services_geo hat nur noch services → services_geo; Verschärfung, AGENTS §2.6 n/a).
   - {from: pluginhost, to: ports_driving}
   - {from: pluginhost, to: plugin_api}
   - {from: plugins, to: plugin_api}
