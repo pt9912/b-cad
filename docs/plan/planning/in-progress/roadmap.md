@@ -37,6 +37,9 @@ Je Slice [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-
 verhaltens-invariant (254 Tests, Coverage 91,5 %).
 
 **Nächster Schritt:** **Canvas-Impl** (DRW-2D-Widget) — der ursprüngliche Roadmap-Endpunkt, jetzt entsperrt.
+**Plan geschrieben + [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+durch** als [`slice-043`](../open/slice-043-drw-canvas-impl.md) (1 HIGH/1 MED/2 LOW → HIGH-1 gelöst: Option A
+`std::function`-Verdrahtung, null `.a-check.yml`-Änderung; **startbar** in `open/`). Impl auf Projektinhaber-Wort.
 
 `slice-041a` **done** (2026-07-23): die **DRW-Canvas-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
 (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel; alle
