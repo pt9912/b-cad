@@ -8,6 +8,7 @@
 
 #include "adapters/geometry/stl_export_adapter.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
@@ -128,13 +129,94 @@ StlInfo readStl(const fs::path& path) {
     return {true, count, bytes.size()};
 }
 
+// slice-042c (ADR-0020, MR-006-042c-MED-1): STEP/STL serialisieren das
+// KERN-berechnete `DerivedGeometry`-Bündel. Die Tests fahren über den **echten**
+// `ExchangeService` (nicht adapter-direkt mit leerem Bündel), damit die starken
+// Orakel (CLOSED_SHELL-Zählung, STL-Größe/-Z-Ausdehnung) die format-selektive
+// Service-Berechnung **mit-verifizieren** — sonst prüften sie nur die Serialisierung
+// eines vorgefertigten Bündels.
+void writeStl(const model::Building& b, const fs::path& path) {
+    const OccGeometryAdapter geometry;
+    const StlExportAdapter stl(geometry);
+    const ExchangeService service({}, {{ExchangeFormat::Stl, &stl}});
+    service.exportModel(b, path, ExchangeFormat::Stl);
+}
+void writeStep(const model::Building& b, const fs::path& path) {
+    const StepExportAdapter step;
+    const ExchangeService service({}, {{ExchangeFormat::Step, &step}});
+    service.exportModel(b, path, ExchangeFormat::Step);
+}
+
+// sampleBuilding + eine rechteckige Decke (Aufstandshöhe baseZ = Geschoss-Oberkante).
+model::Building buildingWithSlab() {
+    model::Building b = sampleBuilding();
+    model::Slab slab;
+    slab.id = model::SlabId{1};
+    slab.storey_id = model::StoreyId{1};
+    slab.type = model::SlabType::Decke;
+    slab.footprint.points = {{0.0, 0.0}, {5000.0, 0.0}, {5000.0, 4000.0}, {0.0, 4000.0}};
+    slab.thickness_mm = 200.0;
+    b.slabs.push_back(slab);
+    return b;
+}
+
+// Voll-Modell: Wände + Decke + Dach + Treppe (MR-006-042c-MED-1: prüft, dass der
+// Service JEDES Bauteil mit den richtigen Parametern ableitet).
+model::Building buildingFull(int step_count) {
+    model::Building b = buildingWithRoof(model::RoofType::Sattel, 5000.0, 4000.0);
+    model::Slab slab;
+    slab.id = model::SlabId{1};
+    slab.storey_id = model::StoreyId{1};
+    slab.type = model::SlabType::Decke;
+    slab.footprint.points = {{0.0, 0.0}, {5000.0, 0.0}, {5000.0, 4000.0}, {0.0, 4000.0}};
+    slab.thickness_mm = 200.0;
+    b.slabs.push_back(slab);
+    model::Stair stair;
+    stair.id = model::StairId{1};
+    stair.from_storey_id = model::StoreyId{1};
+    stair.to_storey_id = model::StoreyId{2};
+    stair.type = model::StairType::Gerade;
+    stair.start = {0.0, 0.0};
+    stair.width_mm = 1000.0;
+    stair.step_count = step_count;
+    stair.tread_mm = 280.0;
+    b.stairs.push_back(stair);
+    return b;
+}
+
+// Max-Z aller STL-Dreiecks-Vertices (MR-006-042c-LOW-1: Koordinaten-/Extent-Sonde
+// gegen die positions-blinden Zähl-Orakel — fängt einen verlorenen baseZ-Lift oder
+// ein vertauschtes Storey-Feld, die 042c in die Service-Rechnung verlagert).
+double stlMaxZ(const fs::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    const std::vector<char> bytes((std::istreambuf_iterator<char>(in)),
+                                  std::istreambuf_iterator<char>());
+    double maxz = 0.0;
+    if (bytes.size() < 84) {
+        return maxz;
+    }
+    std::uint32_t count = 0;
+    std::memcpy(&count, bytes.data() + 80, sizeof(count));
+    for (std::uint32_t t = 0; t < count; ++t) {
+        const std::size_t base = 84 + (50ULL * t);
+        if (base + 50 > bytes.size()) {
+            break;
+        }
+        // 12 Byte Normale, dann 3 Vertices je 3 float32; z = 3./6./9. float.
+        for (int v = 0; v < 3; ++v) {
+            float z = 0.0F;
+            std::memcpy(&z, bytes.data() + base + 12 + (12 * v) + 8, sizeof(z));
+            maxz = std::max(maxz, static_cast<double>(z));
+        }
+    }
+    return maxz;
+}
+
 // --- Happy (LH-FA-IO-006): valide STL mit Dreiecksnetz der Bauteile ----------
 
 TEST(StlExport, BuildingWithWallsYieldsNonEmptyMesh) {
-    const OccGeometryAdapter geometry;
-    const StlExportAdapter exporter(geometry);
     const TempPath out("walls");
-    exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
+    writeStl(sampleBuilding(), out.path);
 
     const StlInfo info = readStl(out.path);
     ASSERT_TRUE(info.ok);
@@ -146,10 +228,8 @@ TEST(StlExport, BuildingWithWallsYieldsNonEmptyMesh) {
 // --- Boundary: 3D-leeres Modell -> gültige leere STL (Totalität) -------------
 
 TEST(StlExport, EmptyBuildingYieldsValidEmptyStl) {
-    const OccGeometryAdapter geometry;
-    const StlExportAdapter exporter(geometry);
     const TempPath out("empty");
-    exporter.write(model::Building{}, model::DerivedGeometry{}, out.path);
+    writeStl(model::Building{}, out.path);
 
     const StlInfo info = readStl(out.path);
     ASSERT_TRUE(info.ok);
@@ -160,8 +240,6 @@ TEST(StlExport, EmptyBuildingYieldsValidEmptyStl) {
 // --- Negative (LH-FA-IO-006): nicht beschreibbarer Zielpfad -> E-IO-001 ------
 
 TEST(StlExport, NonWritablePathRejectedWithEIo001) {
-    const OccGeometryAdapter geometry;
-    const StlExportAdapter exporter(geometry);
     const TempPath out("eio001");
     // Temp-Pfad mit nicht-leerem Verzeichnis besetzen -> open scheitert (EISDIR,
     // root-fest; Muster IFC-/Persistenz-E-IO-001-Test).
@@ -171,7 +249,7 @@ TEST(StlExport, NonWritablePathRejectedWithEIo001) {
 
     std::string what;
     try {
-        exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
+        writeStl(sampleBuilding(), out.path);
         FAIL() << "erwarteter E-IO-001-Wurf blieb aus";
     } catch (const std::runtime_error& e) {
         what = e.what();
@@ -232,9 +310,8 @@ std::size_t countSubstr(const std::string& hay, const std::string& needle) {
 }
 
 TEST(StepExport, BuildingWithWallsYieldsBRepSolids) {
-    const StepExportAdapter exporter;
     const TempPath out("walls", ".step");
-    exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
+    writeStep(sampleBuilding(), out.path);
 
     const std::string step = readText(out.path);
     // Gültige ISO-10303-21-Hülle.
@@ -252,10 +329,8 @@ TEST(StepExport, BuildingWithWallsYieldsBRepSolids) {
 // (BRepCheck) überspringen → kein Zuwachs → Test schlägt fehl. Über alle Typen
 // + den Walm-Zeltdach-Apex (MR-009 LOW-2); zugleich Kein-Zuwachs-Regression.
 TEST(StepExport, RoofYieldsClosedShellBRepSolid) {
-    const StepExportAdapter exporter;
-
     const TempPath wallsOut("walls_baseline", ".step");
-    exporter.write(sampleBuilding(), model::DerivedGeometry{}, wallsOut.path);
+    writeStep(sampleBuilding(), wallsOut.path);
     const std::size_t wallShells =
         countSubstr(readText(wallsOut.path), "CLOSED_SHELL");
     ASSERT_GT(wallShells, 0U) << "Basis-Erwartung: Wände sind geschlossene Solids";
@@ -274,8 +349,7 @@ TEST(StepExport, RoofYieldsClosedShellBRepSolid) {
     };
     for (const RoofCase& c : cases) {
         const TempPath roofOut(std::string("roof_") + c.tag, ".step");
-        exporter.write(buildingWithRoof(c.type, c.width_mm, c.depth_mm),
-                       model::DerivedGeometry{}, roofOut.path);
+        writeStep(buildingWithRoof(c.type, c.width_mm, c.depth_mm), roofOut.path);
         const std::string step = readText(roofOut.path);
 
         EXPECT_NE(step.find("MANIFOLD_SOLID_BREP"), std::string::npos)
@@ -291,17 +365,15 @@ TEST(StepExport, RoofYieldsClosedShellBRepSolid) {
 // CLOSED_SHELL ggü. dem Wand-only-Modell — die exakte Anzahl belegt zugleich, dass
 // das **Geländer ausgelassen** ist (DoD-3; mit Geländer wären es 3·step_count).
 TEST(StepExport, StairStepsYieldClosedShellBRepSolids) {
-    const StepExportAdapter exporter;
-
     const TempPath wallsOut("walls_baseline_stair", ".step");
-    exporter.write(sampleBuilding(), model::DerivedGeometry{}, wallsOut.path);
+    writeStep(sampleBuilding(), wallsOut.path);
     const std::size_t wallShells =
         countSubstr(readText(wallsOut.path), "CLOSED_SHELL");
     ASSERT_GT(wallShells, 0U) << "Basis-Erwartung: Wände sind geschlossene Solids";
 
     const int steps = 12;
     const TempPath stairOut("with_stair", ".step");
-    exporter.write(buildingWithStair(steps), model::DerivedGeometry{}, stairOut.path);
+    writeStep(buildingWithStair(steps), stairOut.path);
     const std::string step = readText(stairOut.path);
 
     EXPECT_NE(step.find("MANIFOLD_SOLID_BREP"), std::string::npos)
@@ -313,9 +385,8 @@ TEST(StepExport, StairStepsYieldClosedShellBRepSolids) {
 }
 
 TEST(StepExport, EmptyBuildingYieldsValidStepEnvelope) {
-    const StepExportAdapter exporter;
     const TempPath out("empty", ".step");
-    exporter.write(model::Building{}, model::DerivedGeometry{}, out.path);  // 3D-leer -> kein Wurf
+    writeStep(model::Building{}, out.path);  // 3D-leer -> kein Wurf
 
     const std::string step = readText(out.path);
     EXPECT_NE(step.find("ISO-10303-21"), std::string::npos);
@@ -323,7 +394,6 @@ TEST(StepExport, EmptyBuildingYieldsValidStepEnvelope) {
 }
 
 TEST(StepExport, NonWritablePathRejectedWithEIo001) {
-    const StepExportAdapter exporter;
     const TempPath out("eio001", ".step");
     const fs::path tmp(out.path.string() + ".tmp");
     fs::create_directory(tmp);
@@ -331,7 +401,7 @@ TEST(StepExport, NonWritablePathRejectedWithEIo001) {
 
     std::string what;
     try {
-        exporter.write(sampleBuilding(), model::DerivedGeometry{}, out.path);
+        writeStep(sampleBuilding(), out.path);
         FAIL() << "erwarteter E-IO-001-Wurf blieb aus";
     } catch (const std::runtime_error& e) {
         what = e.what();
@@ -351,6 +421,71 @@ TEST(StepExportIntegration, ExchangeServiceWritesStepThroughRealAdapter) {
     const std::string text = readText(out.path);
     EXPECT_NE(text.find("ISO-10303-21"), std::string::npos);
     EXPECT_NE(text.find("BREP"), std::string::npos);
+}
+
+// slice-042c (MR-006-042c-MED-1): das Voll-Modell (Wände + Decke + Dach + Treppe)
+// über den ECHTEN Service — verifiziert, dass die format-selektive Service-Berechnung
+// JEDES Bauteil mit den richtigen Parametern ableitet (nicht nur die Adapter-
+// Serialisierung eines vorgefertigten Bündels). Fehlt eine Bauteil-Ableitung, weicht
+// die geschlossene-Solid-Zahl ab.
+TEST(StepExportIntegration, FullModelYieldsAllComponentBRepSolids) {
+    const TempPath wallsOut("full_baseline", ".step");
+    writeStep(sampleBuilding(), wallsOut.path);
+    const std::size_t wallShells =
+        countSubstr(readText(wallsOut.path), "CLOSED_SHELL");
+    ASSERT_GT(wallShells, 0U);
+
+    const int steps = 12;
+    const TempPath fullOut("full_model", ".step");
+    writeStep(buildingFull(steps), fullOut.path);
+    const std::string step = readText(fullOut.path);
+    // Wände + 1 Decke + 1 Dach + step_count Treppen-Stufen, alle als geschlossene Solids.
+    EXPECT_EQ(countSubstr(step, "CLOSED_SHELL"),
+              wallShells + 1 + 1 + static_cast<std::size_t>(steps))
+        << "Service leitet nicht jedes Bauteil (Decke/Dach/Treppe) korrekt ab";
+}
+
+// slice-042c (MR-006-042c-LOW-1): Koordinaten-Sonde — die Decke (baseZ =
+// Geschoss-Oberkante 2500) muss im STL auf ihre Aufstandshöhe gehoben sein. Ein
+// verlorener baseZ-Lift / vertauschtes Storey-Feld (in der 042c-Service-Rechnung)
+// bliebe von den positions-blinden Zähl-Orakeln unentdeckt.
+TEST(StlExportIntegration, SlabLiftedToBaseZ) {
+    const TempPath wallsOut("z_walls");
+    writeStl(sampleBuilding(), wallsOut.path);
+    EXPECT_LT(stlMaxZ(wallsOut.path), 2600.0);  // Wände bis zur Geschoss-Höhe 2500
+
+    const TempPath slabOut("z_slab");
+    writeStl(buildingWithSlab(), slabOut.path);
+    // Decke: baseZ = 2500 (Oberkante) + Dicke 200 → Netz reicht über 2600 hinaus.
+    EXPECT_GT(stlMaxZ(slabOut.path), 2600.0)
+        << "Decke nicht auf ihre baseZ-Aufstandshöhe gehoben (baseZ-Lift verloren?)";
+}
+
+// slice-042c (MR-006-042c-LOW-2, MR-009-042a+042b-INFO-1): Totalität über den ECHTEN
+// Service — weder ein danglender from_storey_id (→ storeyHeight-Fallback, Bauteil wird
+// exportiert) noch ein degeneriertes Bauteil (→ leere/degenerierte Ableitung → OCC-Skip
+// im Adapter) darf werfen. STEP und STL.
+TEST(ExportTotality, DanglingStoreyAndDegenerateDoNotThrow) {
+    // (a) danglender from_storey_id: eine zweite Treppe an ein NICHT existierendes
+    // Geschoss (→ storeyHeight-Fallback kDefaultStoreyHeightMm).
+    model::Building dangling = buildingWithStair(10);
+    model::Stair orphan = dangling.stairs.front();
+    orphan.id = model::StairId{2};
+    orphan.from_storey_id = model::StoreyId{99};  // existiert nicht → Fallback
+    dangling.stairs.push_back(orphan);
+
+    // (b) degeneriertes Bauteil: eine Wand der Länge 0 → wallFootprint degeneriert →
+    // makeNetSolid/tessellateFootprint werfen (OCC) → per-Bauteil-Skip im Adapter.
+    model::Building degenerate = sampleBuilding();
+    degenerate.walls.push_back({model::WallId{99}, model::StoreyId{1}, {1000.0, 1000.0},
+                                {1000.0, 1000.0}, 240.0, 2500.0, model::WallType::Aussen});
+
+    for (const model::Building& b : {dangling, degenerate}) {
+        const TempPath step("total", ".step");
+        const TempPath stl("total");
+        EXPECT_NO_THROW(writeStep(b, step.path));
+        EXPECT_NO_THROW(writeStl(b, stl.path));
+    }
 }
 
 }  // namespace

@@ -7,10 +7,34 @@
 #include <stdexcept>
 #include <utility>
 
+#include "hexagon/model/building.h"
+#include "hexagon/model/constants.h"
 #include "hexagon/model/derived_geometry.h"
-#include "hexagon/services/geometry/plan_projection.h"
+#include "hexagon/services/geometry/opening_geometry.h"   // wallCutPrisms
+#include "hexagon/services/geometry/plan_projection.h"    // projectPlan (2D, 042b)
+#include "hexagon/services/geometry/roof_geometry.h"      // roofMesh
+#include "hexagon/services/geometry/slab_geometry.h"      // slabBaseZ/slabCutPrisms
+#include "hexagon/services/geometry/stair_geometry.h"     // stairStepBoxes/stairMesh/stairRiseMm
+#include "hexagon/services/geometry/wall_footprint.h"     // wallFootprint
 
 namespace bcad::hexagon::services {
+namespace {
+
+// Totale Höhen-Auflösung (ADR-0020, slice-042c-Konsolidierung): der Kern berechnet
+// die STEP/STL-Ableitung, die je Bauteil die Geschoss-Höhe braucht. Die früher in
+// **beiden** Geometrie-Adaptern duplizierte Auflösung liegt jetzt als **eine**
+// Wahrheit hier (die Adapter konsumieren die pre-resolved `baseZ`/`boxes`/`mesh`).
+// Total: unbekanntes/danglendes Geschoss → Default (kein Wurf).
+double storeyHeight(const model::Building& building, model::StoreyId id) {
+    for (const model::Storey& s : building.storeys) {
+        if (s.id == id) {
+            return s.height_mm;
+        }
+    }
+    return model::kDefaultStoreyHeightMm;
+}
+
+}  // namespace
 
 ExchangeService::ExchangeService(ImporterMap importers, ExporterMap exporters)
     : importers_(std::move(importers)), exporters_(std::move(exporters)) {}
@@ -43,16 +67,43 @@ void ExchangeService::exportModel(const model::Building& building,
             "E-IO-001: nicht unterstütztes/unverdrahtetes Export-Format; "
             "event=io_no_permission");
     }
-    // slice-042a/042b (ADR-0020): der Kern reicht das abgeleitete-Geometrie-Bündel
-    // über den Port — driven Adapter serialisieren nur, sie leiten keine Geometrie
-    // ab. **Format-selektiv befüllt:** die 2D-Grundriss-Projektion (`PlanView`) für
-    // die 2D-Formate PDF/PNG (042b); die 3D-Ableitung (Wände/Decken/Dächer/Treppen)
-    // für STEP/STL folgt mit der Body-Migration (042c); IFC/DXF leiten nichts ab
-    // (leeres Bündel — IFC ist reiner Serialisierer, DXF iteriert direkt).
+    // slice-042a/042b/042c (ADR-0020): der Kern reicht das abgeleitete-Geometrie-
+    // Bündel über den Port — driven Adapter serialisieren nur, sie leiten keine
+    // Geometrie ab. **Format-selektiv befüllt:** die 2D-Grundriss-Projektion
+    // (`PlanView`) für PDF/PNG (042b); die 3D-Bauteil-Ableitung als pre-OCC-Primitive
+    // für STEP/STL (042c); IFC/DXF leiten nichts ab (leeres Bündel — IFC serialisiert
+    // `model → SPF`, DXF iteriert direkt).
+    using ports::driving::ExchangeFormat;
     model::DerivedGeometry derived;
-    if (format == ports::driving::ExchangeFormat::Pdf ||
-        format == ports::driving::ExchangeFormat::Png) {
+    if (format == ExchangeFormat::Pdf || format == ExchangeFormat::Png) {
         derived.plan = projectPlan(building);
+    } else if (format == ExchangeFormat::Step || format == ExchangeFormat::Stl) {
+        // **Ein Eintrag je Bauteil in Modell-Reihenfolge** (Compound-/Netz-Reihenfolge
+        // deterministisch); die reine Ableitung ist **total** (wirft nie). Den
+        // fail-closed-Skip degenerierter Bauteile besorgt der Adapter **beim OCC-/
+        // Tessellations-Bau** (Regel C) — hier **kein** Vor-Filtern, sonst verschöbe
+        // sich, welches Bauteil im Export fehlt.
+        derived.walls.reserve(building.walls.size());
+        for (const model::Wall& w : building.walls) {
+            derived.walls.push_back({wallFootprint(w, building.walls), w.height_mm,
+                                     wallCutPrisms(w, building.openings)});
+        }
+        derived.slabs.reserve(building.slabs.size());
+        for (const model::Slab& s : building.slabs) {
+            derived.slabs.push_back(
+                {s.footprint, s.thickness_mm, slabCutPrisms(s),
+                 slabBaseZ(s, storeyHeight(building, s.storey_id))});
+        }
+        derived.roofs.reserve(building.roofs.size());
+        for (const model::Roof& r : building.roofs) {
+            derived.roofs.push_back({roofMesh(r)});
+        }
+        derived.stairs.reserve(building.stairs.size());
+        for (const model::Stair& s : building.stairs) {
+            const double h = storeyHeight(building, s.from_storey_id);
+            derived.stairs.push_back(
+                {stairStepBoxes(s, h), stairMesh(s, h), stairRiseMm(s, h)});
+        }
     }
     // Erfolg: vollständige Datei. Fehler: der Exporter wirft E-IO-001 (bzw.
     // E-IO-003) — propagiert, kein Teil-Export.

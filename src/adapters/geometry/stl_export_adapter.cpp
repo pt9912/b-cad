@@ -18,42 +18,29 @@
 #include <utility>
 #include <vector>
 
-#include "hexagon/model/constants.h"
+#include "hexagon/model/derived_geometry.h"               // DerivedGeometry (ADR-0020, slice-042c)
 #include "hexagon/model/mesh_ops.h"                       // translateMeshZ (ADR-0020: model/-Util)
-#include "hexagon/services/geometry/opening_geometry.h"   // wallCutPrisms
-#include "hexagon/services/geometry/roof_geometry.h"      // roofMesh
-#include "hexagon/services/geometry/slab_geometry.h"      // slabBaseZ/slabCutPrisms
-#include "hexagon/services/geometry/stair_geometry.h"     // stairMesh
-#include "hexagon/services/geometry/wall_footprint.h"     // wallFootprint
 
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;
-namespace services = bcad::hexagon::services;
 namespace ports = bcad::hexagon::ports::driven;
 
 namespace bcad::adapters::geometry {
 namespace {
 
-double storeyHeight(const model::Building& building, model::StoreyId id) {
-    for (const model::Storey& s : building.storeys) {
-        if (s.id == id) {
-            return s.height_mm;
-        }
-    }
-    return model::kDefaultStoreyHeightMm;
-}
-
-// --- Bauteil-Netze sammeln (über die Kern-Geometrie wiederverwendet) ---------
+// --- Bauteil-Netze aus dem kern-berechneten `DerivedGeometry`-Bündel sammeln -----
+// Wände/Decken werden **adapter-seitig tessellert** (über den `GeometryKernelPort`,
+// OCC-resident, Regel C) aus den kern-gelieferten Primitiven; Dach/Treppe tragen
+// bereits das fertige, kern-berechnete Netz. Der try/catch-Skip bleibt hier, weil
+// nur die Tessellation (OCC) werfen kann — die Ableitung ist kern-seitig + total.
 
 void appendWallMeshes(std::vector<model::TriangleMesh>& out,
-                      const model::Building& building,
+                      const model::DerivedGeometry& derived,
                       const ports::GeometryKernelPort& geometry) {
-    for (const model::Wall& w : building.walls) {
+    for (const model::DerivedWall& w : derived.walls) {
         model::TriangleMesh mesh;
         try {
-            mesh = geometry.tessellateFootprint(
-                services::wallFootprint(w, building.walls), w.height_mm,
-                services::wallCutPrisms(w, building.openings));
+            mesh = geometry.tessellateFootprint(w.footprint, w.height_mm, w.cutPrisms);
         } catch (const std::exception&) {
             continue;  // degeneriertes Bauteil überspringen (Totalität, kein Abbruch)
         }
@@ -62,38 +49,34 @@ void appendWallMeshes(std::vector<model::TriangleMesh>& out,
 }
 
 void appendSlabMeshes(std::vector<model::TriangleMesh>& out,
-                      const model::Building& building,
+                      const model::DerivedGeometry& derived,
                       const ports::GeometryKernelPort& geometry) {
-    for (const model::Slab& s : building.slabs) {
+    for (const model::DerivedSlab& s : derived.slabs) {
         model::TriangleMesh mesh;
         try {
-            mesh = geometry.tessellateFootprint(s.footprint, s.thickness_mm,
-                                                services::slabCutPrisms(s));
+            mesh = geometry.tessellateFootprint(s.footprint, s.thickness_mm, s.cutPrisms);
         } catch (const std::exception&) {
             continue;  // degeneriertes Bauteil überspringen (Totalität)
         }
-        out.push_back(model::translateMeshZ(
-            std::move(mesh), services::slabBaseZ(s, storeyHeight(building, s.storey_id))));
+        // Auf die kern-gelieferte Aufstandshöhe verschieben (nach der Tessellation).
+        out.push_back(model::translateMeshZ(std::move(mesh), s.baseZ_mm));
     }
 }
 
 void appendRoofMeshes(std::vector<model::TriangleMesh>& out,
-                      const model::Building& building) {
-    for (const model::Roof& r : building.roofs) {
-        model::TriangleMesh mesh = services::roofMesh(r);  // analytisch, total
-        if (!mesh.empty()) {
-            out.push_back(std::move(mesh));
+                      const model::DerivedGeometry& derived) {
+    for (const model::DerivedRoof& r : derived.roofs) {
+        if (!r.mesh.empty()) {
+            out.push_back(r.mesh);  // kern-berechnetes Netz (analytisch, total)
         }
     }
 }
 
 void appendStairMeshes(std::vector<model::TriangleMesh>& out,
-                       const model::Building& building) {
-    for (const model::Stair& s : building.stairs) {
-        model::TriangleMesh mesh =
-            services::stairMesh(s, storeyHeight(building, s.from_storey_id));
-        if (!mesh.empty()) {
-            out.push_back(std::move(mesh));
+                       const model::DerivedGeometry& derived) {
+    for (const model::DerivedStair& s : derived.stairs) {
+        if (!s.mesh.empty()) {
+            out.push_back(s.mesh);  // kern-berechnetes Netz inkl. Geländer
         }
     }
 }
@@ -212,14 +195,14 @@ void atomicWrite(const fs::path& path, const std::string& content) {
 StlExportAdapter::StlExportAdapter(const ports::GeometryKernelPort& geometry)
     : geometry_(geometry) {}
 
-void StlExportAdapter::write(const model::Building& building,
-                             const model::DerivedGeometry& /*derived*/,
+void StlExportAdapter::write(const model::Building& /*building*/,
+                             const model::DerivedGeometry& derived,
                              const fs::path& path) const {
     std::vector<model::TriangleMesh> meshes;
-    appendWallMeshes(meshes, building, geometry_);
-    appendSlabMeshes(meshes, building, geometry_);
-    appendRoofMeshes(meshes, building);
-    appendStairMeshes(meshes, building);
+    appendWallMeshes(meshes, derived, geometry_);
+    appendSlabMeshes(meshes, derived, geometry_);
+    appendRoofMeshes(meshes, derived);
+    appendStairMeshes(meshes, derived);
     atomicWrite(path, buildStl(meshes));  // vollständig im Speicher, dann atomar
 }
 

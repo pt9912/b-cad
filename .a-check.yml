@@ -36,7 +36,9 @@ edges:
   - {from: io, to: ports_driven}
   - {from: geometry, to: model}
   - {from: geometry, to: ports_driven}
-  - {from: geometry, to: services_geo}
+  # slice-042c (ADR-0020): geometry → services_geo ENTFERNT — STEP/STL beziehen die
+  # abgeleitete Geometrie kern-berechnet im DerivedGeometry-Bündel, kein Geometrie-
+  # Adapter ruft mehr services/geometry (Verschärfung, AGENTS §2.6 n/a).
   - {from: persistence, to: model}
   - {from: persistence, to: ports_driven}
   - {from: persistence, to: services_geo}

@@ -24,75 +24,58 @@
 #include <gp_Vec.hxx>
 
 #include "adapters/geometry/occ_solids.h"
-#include "hexagon/model/constants.h"
-#include "hexagon/services/geometry/opening_geometry.h"  // wallCutPrisms
-#include "hexagon/services/geometry/roof_geometry.h"     // roofMesh (slice-024a)
-#include "hexagon/services/geometry/slab_geometry.h"     // slabBaseZ/slabCutPrisms
-#include "hexagon/services/geometry/stair_geometry.h"    // stairStepBoxes (slice-024b)
-#include "hexagon/services/geometry/wall_footprint.h"    // wallFootprint
+#include "hexagon/model/derived_geometry.h"  // DerivedGeometry (ADR-0020, slice-042c)
 
 namespace fs = std::filesystem;
 namespace model = bcad::hexagon::model;
-namespace services = bcad::hexagon::services;
 
 namespace bcad::adapters::geometry {
 namespace {
 
-double storeyHeight(const model::Building& building, model::StoreyId id) {
-    for (const model::Storey& s : building.storeys) {
-        if (s.id == id) {
-            return s.height_mm;
-        }
-    }
-    return model::kDefaultStoreyHeightMm;
-}
-
-// B-Rep-Solids der OCC-Solid-Bauteile (Wände + Decken) sowie der Dächer (seit
-// slice-024a: das wasserdichte Dach-Netz wird zu einem Solid vernäht) als ein
-// Compound. Degenerierte/nicht-wasserdichte Bauteile werden übersprungen
-// (Totalität, fail-closed). **Treppen** bleiben die benannte STEP-Lücke
-// (analytische Box-Union, kein OCC-Solid) bis slice-024b.
-TopoDS_Compound buildSolidCompound(const model::Building& building) {
+// B-Rep-Solids der **pre-OCC-Primitive** aus dem kern-berechneten `DerivedGeometry`-
+// Bündel (ADR-0020: der Kern liefert die Ableitung, der Adapter serialisiert + baut
+// das B-Rep — die OCC-Montage bleibt adapter-resident, Regel C). Wände/Decken via
+// `makeNetSolid`, Decken auf die kern-gelieferte `baseZ` gehoben; Dächer via
+// `meshToSolid` (vernäht); Treppen als analytische Box-Solids je `StepBox` (Geländer
+// render-only, nicht im STEP). Degenerierte Bauteile werden **beim OCC-Bau**
+// übersprungen (Totalität, fail-closed) — der per-Bauteil-try/catch bleibt hier, weil
+// die reine Ableitung (kern-seitig, total) schon geschehen ist und nur die OCC-
+// Konstruktion werfen kann.
+TopoDS_Compound buildSolidCompound(const model::DerivedGeometry& derived) {
     TopoDS_Compound compound;
     const BRep_Builder builder;
     builder.MakeCompound(compound);
 
-    for (const model::Wall& w : building.walls) {
+    for (const model::DerivedWall& w : derived.walls) {
         TopoDS_Shape solid;
         try {
-            solid = makeNetSolid(services::wallFootprint(w, building.walls),
-                                 w.height_mm,
-                                 services::wallCutPrisms(w, building.openings));
+            solid = makeNetSolid(w.footprint, w.height_mm, w.cutPrisms);
         } catch (const std::exception&) {
             continue;  // degeneriertes Bauteil überspringen (Totalität)
         }
         builder.Add(compound, solid);
     }
 
-    for (const model::Slab& s : building.slabs) {
+    for (const model::DerivedSlab& s : derived.slabs) {
         TopoDS_Shape solid;
         try {
-            solid = makeNetSolid(s.footprint, s.thickness_mm,
-                                 services::slabCutPrisms(s));
+            solid = makeNetSolid(s.footprint, s.thickness_mm, s.cutPrisms);
         } catch (const std::exception&) {
             continue;
         }
-        // Platte auf ihre Aufstandshöhe heben (base_z, wie das Darstellungsnetz).
+        // Platte auf ihre kern-gelieferte Aufstandshöhe heben (base_z).
         gp_Trsf lift;
-        lift.SetTranslation(
-            gp_Vec(0.0, 0.0, services::slabBaseZ(s, storeyHeight(building, s.storey_id))));
+        lift.SetTranslation(gp_Vec(0.0, 0.0, s.baseZ_mm));
         builder.Add(compound, BRepBuilderAPI_Transform(solid, lift, true).Shape());
     }
 
-    // Dächer (slice-024a): das seit 023b wasserdichte `roofMesh` wird zu einem
-    // B-Rep-Solid vernäht. `meshToSolid` ist fail-closed → ein leeres Shape
-    // (degeneriert / nicht geschlossen) wird übersprungen (Totalität). Der
-    // try/catch spiegelt die Wand-/Decken-Schleifen (MR-009 MED-2): ein einzelnes
-    // problematisches Dach wird übersprungen, nicht der ganze Export abgebrochen.
-    for (const model::Roof& r : building.roofs) {
+    // Dächer: das wasserdichte Netz wird zu einem B-Rep-Solid vernäht. `meshToSolid`
+    // ist fail-closed → ein leeres Shape (degeneriert / nicht geschlossen) wird
+    // übersprungen (Totalität); der try/catch spiegelt die Wand-/Decken-Schleifen.
+    for (const model::DerivedRoof& r : derived.roofs) {
         TopoDS_Shape solid;
         try {
-            solid = meshToSolid(services::roofMesh(r));
+            solid = meshToSolid(r.mesh);
         } catch (const std::exception&) {
             continue;  // degeneriertes/fehlschlagendes Dach überspringen (Totalität)
         }
@@ -101,17 +84,13 @@ TopoDS_Compound buildSolidCompound(const model::Building& building) {
         }
     }
 
-    // Treppen (slice-024b): die Stufen als **analytische** OCC-Box-Solids — das
-    // flache `stairMesh` ist eine **nicht-manifolde** Box-Union (x-benachbarte
-    // Stufen-Quader, die sich an gemeinsamen x-Ebenen mit **partiell koinzidenten
-    // Flächen** berühren → nicht zu *einem* gültigen Solid vernähbar).
-    // `stairStepBoxes` ist die geteilte Box-Wahrheit; das **Geländer** (render-only)
-    // bleibt **ausgelassen** (nur im STL). Per-Bauteil-try/catch wie oben (Totalität).
+    // Treppen: die Stufen als **analytische** OCC-Box-Solids — das flache Treppen-Netz
+    // ist eine **nicht-manifolde** Box-Union (nicht zu *einem* gültigen Solid
+    // vernähbar). Das **Geländer** (render-only) bleibt **ausgelassen** (nur im STL).
     // Die berührenden Box-Solids bleiben **getrennte** Compound-Member (kein Fuse).
-    for (const model::Stair& s : building.stairs) {
+    for (const model::DerivedStair& s : derived.stairs) {
         try {
-            for (const model::StepBox& box : services::stairStepBoxes(
-                     s, storeyHeight(building, s.from_storey_id))) {
+            for (const model::StepBox& box : s.boxes) {
                 const TopoDS_Shape solid = makeBoxSolid(
                     box.x0_mm, box.y0_mm, box.z0_mm, box.x1_mm, box.y1_mm, box.z1_mm);
                 if (!solid.IsNull()) {
@@ -127,11 +106,11 @@ TopoDS_Compound buildSolidCompound(const model::Building& building) {
 
 }  // namespace
 
-void StepExportAdapter::write(const model::Building& building,
-                              const model::DerivedGeometry& /*derived*/,
+void StepExportAdapter::write(const model::Building& /*building*/,
+                              const model::DerivedGeometry& derived,
                               const fs::path& path) const {
     try {
-        const TopoDS_Compound compound = buildSolidCompound(building);
+        const TopoDS_Compound compound = buildSolidCompound(derived);
 
         STEPControl_Writer writer;
         Interface_Static::SetCVal("write.step.schema", "AP214CD");  // §1 LH-FA-IO-005.a
