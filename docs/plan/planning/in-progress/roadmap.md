@@ -19,11 +19,15 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**In Arbeit:** `slice-042c` — Export-Refactor **STEP/STL** (Bodies auf das `DerivedGeometry`-Bündel +
-`ExchangeService`-Berechnung [von 042a, MED-1] + `storeyHeight`-Konsolidierung + `geometry→services_geo`-Kante
-raus), gestartet 2026-07-23 ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-0 HIGH/2 MED/2 LOW → startbar; MED-1 [Voll-Modell-Service-Integrationstest] eingearbeitet). **Dritter** der fünf
-[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Slices.
+**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel; beim Öffnen
+des nächsten Slice entfernen). `slice-042c` **done** (2026-07-23): Export-Refactor **STEP/STL** geliefert
+(Bodies iterieren das `DerivedGeometry`-Bündel, `ExchangeService`-Berechnung, `storeyHeight` konsolidiert;
+**`geometry → services_geo`-Kante entfernt** — a-check-Gegenprobe grün; verhaltens-invariant, 252 Tests;
+**[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) Code-Review 0 HIGH**).
+**Drei** der fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten
+erledigt. **Nächster Startkandidat: `slice-042d`** (Persistenz-`rise` kern-seitig + `persistence → services_geo`-
+Kante raus; Skelett in `open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+beim Start). **042e** (`.a-check.yml`+architecture-Abschluss) als Skelett in `open/`.
 
 `slice-042a` + `slice-042b` **done** (2026-07-23): Kern-Naht (`DerivedGeometry`-Vertrag) + 2D-Projektion
 (`PlanViewPort`, **DRW-Canvas entsperrt**); [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
