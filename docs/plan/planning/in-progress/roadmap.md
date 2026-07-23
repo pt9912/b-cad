@@ -19,10 +19,15 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**In Arbeit:** `slice-042b` — Export-Refactor **2D-Projektion** (`projectPlan`/`PlanView` → Kern +
-`PlanViewPort`; `visibleLayerIds`→`model/`; PDF/PNG über das Bündel, DXF unberührt; **entsperrt Canvas**),
-gestartet 2026-07-23 ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-0 HIGH/0 MED/2 LOW → startbar). **Zweiter** der fünf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflicht-Slices.
+**Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (planning-Gate-Ruhe-Sentinel; beim Öffnen
+des nächsten Slice entfernen). `slice-042b` **done** (2026-07-23): Export-Refactor **2D-Projektion** geliefert
+(`projectPlan`/`PlanView`→Kern + `PlanViewPort`, `visibleLayerIds`→`model/`, PDF/PNG über das Bündel, DXF
+unberührt, `io/plan_geometry` entfernt; verhaltens-invariant, 249 Tests; **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+Code-Review 042a+042b 0 HIGH**) — **DRW-Canvas architektonisch entsperrt**. **Zweite** der fünf
+[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten erledigt.
+**Nächster Startkandidat: `slice-042c`** (STEP/STL-Body auf das Bündel + `ExchangeService`-Berechnung +
+`geometry→services_geo`-Kante raus; Skelett in `open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+beim Start). **042d–e** als Skelette in `open/`.
 
 `slice-042a` **done** (2026-07-23): Export-Refactor **Kern-Naht** (`DerivedGeometry`-Vertrag +
 `StepBox`/`translateMeshZ`→`model/`, accept-and-ignore über die 6 Exporter; verhaltens-invariant, 248 Tests) —
