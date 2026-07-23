@@ -13,8 +13,9 @@ namespace bcad::adapters::io {
 // 2D-Grundriss** ab: je Geschoss eine A4-Seite mit Rahmen, den bei **festem
 // Maßstab 1:100** transformierten Wand-Achsen und einem sichtbaren „M 1:100"-Label
 // (Standard-Font Helvetica); serialisiert über den hand-gerollten `PdfWriter` und
-// schreibt **atomar** ([`E-IO-001`], `io_atomic_write`). Der PDF-Code lebt
-// ausschließlich hier + in `pdf_writer`/`plan_geometry` (a-check Regel A/B —
+// schreibt **atomar** ([`E-IO-001`], `io_atomic_write`). Die 2D-`PlanView` kommt
+// seit slice-042b kern-berechnet im `DerivedGeometry`-Bündel (ADR-0019/ADR-0020);
+// der PDF-Code lebt ausschließlich hier + in `pdf_writer` (a-check Regel A/B —
 // kein OCC/Qt, keine externe Bibliothek).
 //
 // Export-only: kein Import-Adapter (aus einem PDF wird kein Modell gelesen); ein

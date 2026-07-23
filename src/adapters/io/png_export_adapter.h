@@ -13,8 +13,8 @@ namespace bcad::adapters::io {
 // Rasterbild ab: feste Leinwand, **Fit-to-Canvas** (seitenverhältnis-erhaltend,
 // zentriert, geguardet gegen degenerierte Bounding-Box), **je Geschoss eine Farbe**
 // (Palette zyklisch) auf weißem Grund; serialisiert über den hand-gerollten
-// `png_writer` (Reuse `plan_geometry`) und schreibt **atomar** ([`E-IO-001`], Reuse
-// `io_atomic_write`). Der PNG-Code lebt ausschließlich hier + in `png_writer`
+// `png_writer` (PlanView aus dem `DerivedGeometry`-Bündel, ADR-0020) und schreibt
+// **atomar** ([`E-IO-001`], Reuse `io_atomic_write`). Der PNG-Code lebt ausschließlich hier + in `png_writer`
 // (a-check Regel A/B — kein OCC/Qt, keine externe Bibliothek).
 //
 // Export-only: kein Import-Adapter; ein Import-Request → `E-IO-003` (Lookup-Miss).

@@ -1,5 +1,6 @@
-// PNG-Export-Mapping (ADR-0016 Option D, slice-025c). Projiziert den Grundriss
-// (Reuse plan_geometry), rechnet die Fit-to-Canvas-Transformation (geguardet gegen
+// PNG-Export-Mapping (ADR-0016 Option D, slice-025c). Nutzt die kern-gelieferte
+// 2D-`PlanView` aus dem `DerivedGeometry`-Bündel (seit slice-042b, ADR-0019/0020),
+// rechnet die Fit-to-Canvas-Transformation (geguardet gegen
 // degenerierte Bounding-Box), zeichnet je Geschoss die Wand-Achsen in der
 // Geschoss-Farbe in eine feste Leinwand, encodiert via png_writer und schreibt
 // atomar (E-IO-001, Reuse io_atomic_write). Export-only.

@@ -52,3 +52,5 @@ Die STEP-B-Rep-Zählung (`CLOSED_SHELL`) + das binäre STL-Netz-Orakel + die Int
 `ExchangeService` bleiben **unverändert grün** — **hier** verifizieren sie die kern-seitige Berechnung
 (der eigentliche Prüfgewinn, wegen dessen die Berechnung von 042a hierher gezogen wurde). Zusätzlich ein
 Total-Orakel (danglender `from_storey_id`/degeneriertes Bauteil → `exportModel` wirft **nicht**).
+**Netz-Vormerkung (042a+042b-Code-Review INFO-1):** ein Negativ-Test, dass der `ExchangeService` STEP/STL das
+**korrekt befüllte** (bzw. IFC/DXF das leere) Bündel reicht — ab hier konsum-relevant.
