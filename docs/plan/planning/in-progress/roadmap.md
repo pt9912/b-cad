@@ -1,6 +1,6 @@
 # Roadmap — b-cad
 
-**Status:** Aktiv. **Letzte Änderung:** 2026-07-03.
+**Status:** Aktiv. **Letzte Änderung:** 2026-07-23.
 
 **Format-Regel:** Reihenfolge von **Wellen**, keine Reihenfolge von
 Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
@@ -60,13 +60,21 @@ verhaltens-invariant (254 Tests, Coverage 91,5 %).
 [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005) interaktive Erzeugungs-AK (Lastenheft 0.1.15)
 + Spec §1/§6 + architecture §1.1 nachgezogen. **DRW-Fundament 032a→b→c komplett** (durabel + sichtbar).
 
-**Nächste Schritte** (Reihenfolge, je eigenes [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) davor):
-**Refactor-Slices** ([ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten,
-[ADR-Index](../../adr/README.md)): Kern-Naht/Vertrag (`DerivedGeometry` + `model::StepBox` +
-`ModelExporterPort::write`) → 2D-Projektion (`plan_geometry`→Kern + `PlanViewPort`; **entsperrt Canvas**) →
-STEP/STL → Persistenz (`rise` kern-seitig) → `.a-check.yml`+`architecture.md`-Abschluss (§2-Tabelle +
-§1-Diagramm wahr) → **dann Canvas-Impl** (2D-`view/`-Widget + `command/`-Naht + `screenToModel` +
-Headless-`QMouseEvent`-AK). **Commits lokal — Push nur auf explizites Wort.**
+**Nächste Schritte** (je eigenes [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+davor; Reihenfolge = **Projektinhaber-Wahl**, keine offene Pflicht mehr). Der **M5-Trigger**
+([OBJ-004](../../../../spec/lastenheft.md#3-projektziele) »Erweiterung durch Plugins«) ist mit slice-026b
+**geliefert**; die [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Refactor-
+Familie (042a–d) + der **DRW-Interaktiv-Strang v1** (slice-043) sind **done** (s. o.). Verbleibender
+welle-5-Inhalt (ohne Meilenstein-Bindung, frei wählbar):
+- **DRW-Zeichen-Aids + weitere Canvas-Funktionen** — [ADR-0019](../../adr/0019-drw-2d-canvas.md)-Re-Eval-Trigger:
+  Fang/Raster/Winkel ([LH-FA-DRW-001](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)..003, je
+  AK-Schärfung [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei) zuerst),
+  interaktive Geschoss-/Ebenen-Auswahl, Bauteile zeichnen, Selektion/Picking/Bemaßung, DRW-`op`.
+- **UI-Themes/Docking** ([LH-FA-UI-001](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)..003-Teilumfang).
+- **Mehrsprachigkeit** ([LH-QA-006](../../../../spec/lastenheft.md#lh-qa-006--mehrsprachigkeit)).
+- **oder** welle-5-Closure + Meilenstein-**M5**-Buchung (Verifikation + Carveout-Audit + `done/welle-5-results.md`).
+
+**Commits lokal — Push nur auf explizites Wort.**
 
 **Vorgänger-Trigger (beide erfüllt):** welle-4-austausch done (2026-07-01,
 [`../done/welle-4-results.md`](../done/welle-4-results.md)) + Plugin-API-/ABI-ADR accepted
@@ -108,7 +116,10 @@ Wellen-Inhalt ohne Meilenstein-Bindung — bei Umfangs-Druck entscheidet der Pro
 - Unabhängige Welle-Verifikation + Carveout-Audit + `done/welle-5-results.md`;
   [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) erfüllt → **Meilenstein M5**.
 
-**Fortschritt (Stand 2026-07-05):**
+**Fortschritt (eingefrorener Snapshot 2026-07-05 — der AKTUELLE Stand steht oben in §Aktuelle Welle;
+seither geliefert: DRW-032b/c, die d-check-Gate-Slices 033–038, slice-041a, die
+[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Familie 042a–d und der
+2D-Canvas slice-043 — Details in `done/` + `CHANGELOG.md`):**
 - ✓ **slice-032a — DRW-Strang eröffnet, Fundament AK-geschärft** (2026-07-05;
   [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) Accepted, Text-Review 0 HIGH): 2D-Zeichen-Daten
   (Hilfslinien + Ebenen) als **Kern-Werttypen** auf `Building`, neuer **`EditDrawingPort`** (Driving),
