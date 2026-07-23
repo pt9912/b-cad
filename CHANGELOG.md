@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-041a — **DRW interaktiver 2D-Canvas: Grundsatz-ADRs accepted + interaktive Erzeugungs-AK**
+  (welle-5 DRW-Interaktiv-Strang; ADR-0019/ADR-0020; reine Doku/Entscheidung, kein Code). **ADR-0020**
+  (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel;
+  alle Adapter→Kernel-`.a-check.yml`-Kanten entfallen; `architecture.md` §2/§1 werden wahr) und
+  **ADR-0019** (2D-Canvas: neues `view/`-Widget, 2D-Lese-Naht = Projektion in den Kern + neuer
+  `PlanViewPort`, `screenToModel`, Selbst-Refresh ohne `op`, Kommando via `command/`, Fang/Raster =
+  UI-Aids) beide **Accepted** (je unabhängiges Text-Review 0 HIGH). ADR-0019 wurde **auf ADR-0020 neu
+  geschnitten** → die 2D-Projektion wird kern-geliefert, **keine** `io → services_geo`-Kante (die
+  frühere Kanten-Autorisierung entfällt, §2.6 n/a). `LH-FA-DRW-005` um die **interaktive Erzeugungs-AK**
+  ergänzt (Nutzer zieht eine Hilfslinie mit der Maus auf einer 2D-Zeichenfläche → erscheint sofort,
+  ebenen-zugeordnet, überlebt Speichern/Laden + Export; Boundary Anfang=Ende → keine Hilfslinie;
+  Negative ohne sichtbare/aktive Ebene → nichts bzw. Verweis; Lastenheft **0.1.15**). Spec §1
+  `LH-FA-DRW-005.a` Canvas-Naht-Mapping (7 Entscheidungen) + §6 Grenzzeile; `architecture.md` §1.1
+  (`PlanViewPort` + `EditDrawingPort`-Canvas-Klausel) + Provenance. MR-006 0 HIGH; ADR-Text-Reviews 0 HIGH.
 - slice-032c — **DRW-Export: Hilfslinien im 2D-Grundriss sichtbar** (welle-5 DRW-Strang; ADR-0018;
   schließt die DRW-Fundament-Sequenz 032a→b→c). Der 2D-Grundriss-Export zeichnet jede Hilfslinie auf
   **sichtbarer** Ebene (DXF `LINE` auf dem Geschoss-`LAYER`, PDF/PNG als 2D-Segment); eine **unsichtbare**

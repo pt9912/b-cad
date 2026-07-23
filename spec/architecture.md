@@ -1,6 +1,6 @@
 # Architektur — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-06-08.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-23.
 
 **Hard Rule:** Diese Datei ist **meilensteinfrei** — sie enthält *keine*
 Wellen, Slices, Commit-Hashes oder Closure-Daten (die zeitliche Schicht
@@ -79,7 +79,8 @@ nur dort werden Adapter-Instanzen injiziert.
 | `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten; **Material-Auflösung/-Liste** (Override-Auflösung je Bauteil als Quelle der Material-/Kostenlisten) | [LH-FA-EVL-001](lastenheft.md#lh-fa-evl-001--flächenberechnung)..006, [LH-FA-MAT-002](lastenheft.md#lh-fa-mat-002--materialbibliothek)/003 |
 | `ViewModelPort` | 3D-Extrusion und Ansichten (Perspektive, ortho, Schnitt, Explosion) aus dem Modell ableiten; liefert der Darstellung **framework-freie Dreiecksnetze** je `element_id` (Tessellation) | [LH-FA-D3-001](lastenheft.md#modul-3d-modellierung-d3)..006, [ACC-002](lastenheft.md#7-abnahmekriterien) |
 | `ExchangeModelPort` | Import/Export anstoßen (Format-neutral) | [LH-FA-IO-001](lastenheft.md#lh-fa-io-001--ifc-import)..008, [ACC-003](lastenheft.md#7-abnahmekriterien), [ACC-004](lastenheft.md#7-abnahmekriterien) |
-| `EditDrawingPort` | 2D-Zeichen-Daten bearbeiten: Hilfslinien + Ebenen (Layer) anlegen/ändern/löschen — **eigene Use-Case-Familie** (Annotation, **nicht** Bauteil-Eigenschaft; Muster `EvaluatePort` als eigener Port), von Persistenz + 2D-Grundriss-Export beobachtbar; kein interaktiver 2D-Canvas in v1 | [LH-FA-DRW-005](lastenheft.md#lh-fa-drw-005)/006, [OBJ-003](lastenheft.md#3-projektziele) |
+| `EditDrawingPort` | 2D-Zeichen-Daten bearbeiten: Hilfslinien + Ebenen (Layer) anlegen/ändern/löschen — **eigene Use-Case-Familie** (Annotation, **nicht** Bauteil-Eigenschaft; Muster `EvaluatePort` als eigener Port), von Persistenz + 2D-Grundriss-Export beobachtbar; der **interaktive 2D-Canvas** mutiert über diesen Port (GUI-`command/`-Naht) | [LH-FA-DRW-005](lastenheft.md#lh-fa-drw-005)/006, [OBJ-003](lastenheft.md#3-projektziele) |
+| `PlanViewPort` | **2D-Lese-Naht:** 2D-Grundriss-Projektion je Geschoss (2D-Segmente inkl. sichtbarer Hilfslinien + Bounding-Box) aus dem Modell ableiten — Analog zum `ViewModelPort`; **eine Quelle** für die interaktive 2D-Zeichenfläche (pull) und den 2D-Export (kern-geliefert) | [LH-FA-DRW-005](lastenheft.md#lh-fa-drw-005), [OBJ-003](lastenheft.md#3-projektziele) |
 
 ### 1.2 Driven Ports (sekundär — der Kern steuert die Außenwelt)
 
@@ -270,3 +271,4 @@ Tabelle trägt keine eigene Anforderung und keine zeitliche Schicht
 | Austauschformate: PDF-/PNG-Export über `ModelExporterPort` (selbst getragene Vektor-PDF-/Raster-PNG-Writer **io-resident**, kein OCC, kein Qt — Export-only, 2D-Maßstabsplan) | [ADR-0016](../docs/plan/adr/0016-pdf-png-backend.md) |
 | Plugin-Host/Plugin-API als zweiter Driving Adapter (Plugins sehen model + Driving-Ports, versionierter Vertrag fail-closed; Sandbox = Port-Vermittlung + Fehler-Barriere, in-process) | [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md) |
 | 2D-Zeichen-Daten (Hilfslinien + Ebenen) im Modell über neuen `EditDrawingPort` (Driving); Datenheimat = Kern-Werttypen auf `Building`, Layer-Sichtbarkeit = Export-Filter, Beobachtung über Persistenz + 2D-Grundriss-Export (kein interaktiver Canvas v1) | [ADR-0018](../docs/plan/adr/0018-drw-2d-zeichen-daten.md) |
+| Interaktiver 2D-Zeichen-Canvas (Driving-Adapter, GUI-`view/`-Widget) + 2D-Lese-Naht `PlanViewPort` (reine 2D-Grundriss-Projektion in den Kern gehoben, Analog zu `ViewModelPort`, eine Quelle für Bildschirm + Export); Selbst-Refresh ohne `op`, Kommando/Read über GUI-`command/`, Fang/Raster/Winkel = UI-Interaktions-Aids (nicht persistiert) | [ADR-0019](../docs/plan/adr/0019-drw-2d-canvas.md) |

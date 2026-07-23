@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-22.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-23.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -776,9 +776,10 @@ Ebenen und Hilfslinien) plus ein zugehöriger Anwendungs-Service — **nicht** e
 Erweiterung des Bauteil-Editier-Ports (2D-Zeichnen ist eine **eigene Use-Case-Familie**,
 keine Bauteil-Eigenschaft; Muster `EvaluatePort` als eigener Port). Die Naht ist von den
 bestehenden Schicht-Kanten gedeckt (Services/GUI/Plugin-Host dürfen Driving-Ports
-importieren) — **keine** neue Gate-Regel. **Keine** neue Lese-/ViewModel-Naht in v1: der
-`ViewModelPort` bleibt strikt 3D-Tessellation; die Beobachtung läuft über Persistenz +
-Export. **Kein neuer `op`** in der Änderungs-Benachrichtigung (Material-Präzedenz).
+importieren) — **keine** neue Gate-Regel. Der `ViewModelPort` bleibt strikt 3D-Tessellation;
+für die 2D-Grundriss-Darstellung tritt mit der interaktiven Zeichenfläche eine **eigene
+2D-Lese-Naht** hinzu (s. u. »Interaktive 2D-Zeichenfläche«). **Kein neuer `op`** in der
+Änderungs-Benachrichtigung (Material-Präzedenz).
 
 **Repräsentation.** Eine **Hilfslinie** ist ein **2D-Segment** (Anfangs-/Endpunkt in mm)
 auf einem Geschoss, einer Ebene zugeordnet; eine **Ebene** trägt Namen, Sichtbarkeits- und
@@ -796,12 +797,41 @@ die Hilfslinie auf den Geschoss-`LAYER` ab und trägt die Benutzer-Ebene **nicht
 Austauschformat (kein Hilfslinien-DXF-Re-Import). Eine Abbildung Benutzer-Ebene → eigener
 DXF-Layer-Name/-Farbe ist ein benannter Re-Eval.
 
-**Beobachtbarkeit (ohne 2D-Canvas).** b-cad kennt 2D heute nur als **Export-Sicht**; die
-Fundament-Stufe ist daher über **Persistenz-Round-Trip + Export-Artefakt** beobachtbar
-(Hilfslinie überlebt Speichern/Laden; erscheint im DXF/PDF/PNG-Grundriss; unsichtbare Ebene
-→ fehlt im Artefakt). Die **interaktive 2D-Zeichenfläche** ist deferiert (UI-Strang,
-Re-Eval). In dieser Stufe kann der Nutzer eine Hilfslinie **nicht zeichnen**; ihr Wert ist
-zunächst datenseitig (persistiert, exportierbar, ebenen-organisiert) — offen benannt.
+**Beobachtbarkeit — Fundament + interaktive Zeichenfläche.** Die Fundament-Stufe ist über
+**Persistenz-Round-Trip + Export-Artefakt** beobachtbar (Hilfslinie überlebt Speichern/Laden;
+erscheint im DXF/PDF/PNG-Grundriss; unsichtbare Ebene → fehlt im Artefakt). Darauf setzt der
+**interaktive Erzeugungs-Nutzerweg** auf: der Nutzer **zeichnet** eine Hilfslinie auf einer
+2D-Zeichenfläche, sie **erscheint sofort** und geht in denselben durablen/exportierten Zustand
+über — die durchgängig benannte Fundament-Lücke »der Nutzer kann noch nicht zeichnen« wird
+damit geschlossen.
+
+**Interaktive 2D-Zeichenfläche (Canvas-Naht).** Der Erzeugungs-Weg ist als **Design entschieden**
+(Implementierung folgt in einem eigenen Impl-Slice, sequenziert **nach** der 2D-Lese-Naht-Hebung):
+
+- **Zeichenfläche = Driving-Adapter.** Ein **eigenes 2D-Canvas-Widget** in der GUI-`view/`-Zone
+  (neben dem 3D-Viewer; **nicht** der orbit-verdrahtete 3D-Viewer), 2D-Zeichnung einer mm-Ebene.
+- **2D-Lese-Naht (Kern).** Die reine 2D-Grundriss-Projektion (`Building` → 2D-Segmente je Geschoss
+  inkl. sichtbarer Hilfslinien + Bounding-Box) wird aus dem IO-Adapter **in den framework-freien
+  Kern gehoben** (Berechnungs-Kern-Sub-Schicht) und über einen **neuen Driving-Read-Port** gelesen
+  — das 2D-Analog zum `ViewModelPort`. **Eine Quelle** für Bildschirm **und** Export: der Canvas
+  **pullt** den Read-Port; die 2D-Exporter beziehen dieselbe Projektion vom Kern (**kein** Adapter
+  leitet 2D-Geometrie selbst ab). Die GUI zieht die Projektion damit **aus dem Kern**, nicht lateral
+  aus dem IO-Adapter (Regel B gewahrt); die Hebung ist ein **eigener, vorgelagerter Refactor-Slice**
+  (reiner Umzug, die 2D-Export-Decode-Orakel als Netz).
+- **Bildschirm→Modell-Abbildung.** Der Canvas trägt eine **invertierbare** 2D-Sicht-Transformation
+  (Pan/Zoom) mit einer **display-frei testbaren** Naht Bildschirm-Punkt → Modell-mm.
+- **Refresh = Selbst-Refresh, kein neuer `op`.** Der Canvas ist Treiber und Betrachter derselben
+  Sicht: nach dem eigenen erfolgreichen Zeichen-Kommando repaintet er selbst; die »kein op«-Regel
+  bleibt **unrevidiert**. Benannte Grenze: eine **von außen un-benachrichtigte** `guide_lines`-
+  Mutation (Plugin-Host / anderer Driving-Adapter / zweite 2D-Sicht) bliebe bei offenem Canvas ohne
+  `op` unentdeckt — in v1 verdrahtet die GUI keinen konkurrierenden Schreiber (Ehrlichkeits-Grenze,
+  Re-Eval).
+- **Kommando-Naht.** Der mutierende Zeichen-Aufruf (`EditDrawingPort`) läuft über ein
+  GUI-`command/`-Objekt (Richtungs-Trennung: Driving-Port nur unter `command/`), **nicht** direkt im
+  `view/`-Widget; ebenso der Read-Port-Pull.
+- **Fang/Raster/Winkel = UI-Aids.** Fangpunkte, Raster und Winkelvorgaben quantisieren die
+  **Eingabe** zu Modell-mm; sie sind **UI-Interaktions-Zustand des Canvas**, **nicht** persistierte
+  Modell-Daten. v1 zeichnet **frei**; ihre AK schärfen eigene spätere Slices.
 
 **Totalität & Ablehnung.** Drei Fälle werden **hart abgelehnt** (Modell **unverändert** —
 **keine** Klemmung): eine Hilfslinie **ohne Ausdehnung** (Anfang = Ende), ein **leerer**
@@ -819,8 +849,9 @@ spätere Entscheidungen).
 round-trippt `layers` und `guide_lines` in der bestehenden atomaren Speicher-Transaktion
 (Ebenen **vor** Hilfslinien — FK `layer_id`; Hilfslinien **nach** Geschossen — FK
 `storey_id`), ID- und feld-erhaltend. Das `locked`-Flag ist **daten-durabel, aber (noch)
-nicht verhaltenswirksam** — es gibt in dieser Stufe keinen Editier-Pfad, den eine Sperre
-schützen könnte (kein interaktiver 2D-Canvas); benannte Lücke. Die **Export-Sichtbarkeit ist
+nicht verhaltenswirksam** — die interaktive Zeichenfläche ist **entschieden, aber noch nicht
+implementiert**; ein Editier-Pfad, den eine Sperre schützen könnte, entsteht erst mit dem
+Canvas-Impl-Slice; benannte Lücke. Die **Export-Sichtbarkeit ist
 aktiv**: eine Hilfslinie auf **sichtbarer** Ebene wird in den 2D-Grundriss-Export gezeichnet
 (DXF `LINE` auf dem Geschoss-`LAYER`; PDF/PNG als schlichtes 2D-Segment); eine **unsichtbare**
 Ebene wirkt als **Export-Filter** — ihre Hilfslinien werden nicht gezeichnet. Der Filter
@@ -1016,6 +1047,7 @@ nicht im Bootstrap.
 | PNG | Raster-PNG, **2D-Plan-Rasterbild** (selbst getragener Writer, unkomprimiert) | `ModelExporterPort` **io-resident** (Export-only; Rasterbild desselben Achsen-Plans, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
 | Plugin-API | **versionierter Vertrag**, exakte Versions-Gleichheit beim Laden (fail-closed) | Plugin-Host (Driving Adapter) vermittelt **Driving-Ports** an Plugins (kein Driven-Port, kein Qt/OCC/SQLite in der Plugin-API); Plugins = Shared Libraries (REQ-TEC-008), §1 [`LH-FA-PLG-001.a`](lastenheft.md#lh-fa-plg-001) |
 | 2D-Zeichnen (DRW) | **intern** (kein Fremdsystem) | neuer **Driving-Port** fürs 2D-Zeichnen (Hilfslinien + Ebenen) am bestehenden Hexagon — kern-resident, keine neue Technologie; Beobachtung über Persistenz + 2D-Grundriss-Export, §1 [`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) |
+| 2D-Zeichenfläche (DRW-Canvas) | **intern** (kein Fremdsystem) | interaktive 2D-Zeichenfläche als **Driving-Adapter** (GUI-`view/`-Widget) über einer **2D-Lese-Naht** (reine Grundriss-Projektion in den Kern gehoben, neuer Driving-Read-Port — 2D-Analog zum `ViewModelPort`; eine Quelle für Bildschirm **und** Export); invertierbare Bildschirm→Modell-Abbildung, Selbst-Refresh ohne `op`, Kommando/Read über GUI-`command/`; Fang/Raster/Winkel = UI-Aids (nicht persistiert); keine neue Technologie/Gate-Regel, §1 [`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) |
 
 ## 7. Offene Punkte
 

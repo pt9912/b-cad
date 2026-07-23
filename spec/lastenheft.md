@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.14
+**Version:** 0.1.15
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -594,17 +594,32 @@ Endpunkt) auf einem Geschoss, einer **Ebene** ([LH-FA-DRW-006](#lh-fa-drw-006))
 zugeordnet. Sie überlebt Speichern/Laden und erscheint im maßstäblichen 2D-Grundriss-
 Export (Muster [LH-FA-IO-007](#lh-fa-io-007)/008).
 
-**Teilumfang (welle-5, Fundament):** in dieser Ausbaustufe wird eine Hilfslinie **nicht
-interaktiv gezeichnet** — es gibt (noch) **keine 2D-Zeichenfläche** in der Oberfläche;
-die Beobachtung ruht auf dem **persistierten und exportierten Artefakt** (Muster
-[LH-FA-IO-007](#lh-fa-io-007)/008 »Export-only«; das Materialsystem ist ebenso ohne
-Zeichenfläche nur über Persistenz/Auswertung beobachtbar). Das interaktive Setzen/Ziehen
-mit der Maus (samt Fangen/Raster) ist **ausdrücklich offen** (späterer UI-Umfang), kein
-stiller Vollumfang. Die **Ebenen-Zuordnung** einer Hilfslinie bleibt nur im **nativen
-Projektformat** erhalten; der 2D-Export zeichnet die Hilfslinie in die Geschoss-Ausgabe-
-Gruppierung, überträgt die Benutzer-Ebene aber **nicht** ins Austauschformat.
+**Teilumfang (welle-5):** Eine Hilfslinie wird auf einer **2D-Zeichenfläche** der Oberfläche
+**interaktiv mit der Maus** erzeugt (Anfang setzen, Ende setzen); zusätzlich bleibt das
+**persistierte und exportierte Artefakt** der durable/sichtbare Nachweis (Muster
+[LH-FA-IO-007](#lh-fa-io-007)/008). In dieser Ausbaustufe wird **frei** gezeichnet — **Fangen,
+Raster und Winkelvorgaben** ([LH-FA-DRW-001](#modul-zeichnungsfunktionen-drw)/002/003), das
+**interaktive Zeichnen von Bauteilen**, ein **Ebenen-Bedien-Panel** und **Selektion** bleiben
+**ausdrücklich offen** (späterer UI-Umfang), kein stiller Vollumfang. Die **Ebenen-Zuordnung**
+einer Hilfslinie bleibt nur im **nativen Projektformat** erhalten; der 2D-Export zeichnet die
+Hilfslinie in die Geschoss-Ausgabe-Gruppierung, überträgt die Benutzer-Ebene aber **nicht** ins
+Austauschformat.
 
 **Akzeptanzkriterien:**
+
+*Interaktive Erzeugung (2D-Zeichenfläche):*
+
+- **Happy Path:** Given ein Projekt mit einer **sichtbaren** Ebene, when der Nutzer auf der
+  2D-Zeichenfläche eine Hilfslinie zieht (Anfang setzen, Ende setzen bzw. loslassen), then
+  **erscheint sie sofort** auf der Fläche, ist der Ebene zugeordnet und **überlebt** Speichern/
+  Laden sowie den 2D-Grundriss-Export.
+- **Boundary:** Given einen begonnenen Zug mit **Anfang = Ende** (kein Zug), when er
+  abgeschlossen wird, then **entsteht keine** Hilfslinie und das Modell bleibt **unverändert**.
+- **Negative:** Given **keine sichtbare/aktive** Ebene, when der Nutzer eine Hilfslinie zu
+  zeichnen versucht, then **erzeugt** das Werkzeug **nichts** bzw. der Nutzer wird auf die
+  fehlende Ebene **verwiesen** (kein stiller Verlust).
+
+*Persistenz & Export (Fundament):*
 
 - **Happy Path:** Given ein Projekt, dessen Geschoss auf einer **sichtbaren** Ebene eine
   Hilfslinie trägt, when das Projekt gespeichert und neu geladen wird, then ist die

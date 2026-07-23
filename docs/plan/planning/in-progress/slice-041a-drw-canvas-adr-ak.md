@@ -1,7 +1,7 @@
 ---
 id: slice-041a
 titel: DRW interaktiver 2D-Canvas — Grundsatz-ADR (2D-Zeichenfläche + 2D-Lese-Naht) + AK-Schärfung
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), [LH-FA-DRW-006](../../../../spec/lastenheft.md#lh-fa-drw-006)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 041a: DRW interaktiver 2D-Canvas — Grundsatz-ADR + AK-Schärfung
 
-**Status:** open (Plan **startbar** nach Review-Einarbeitung — Start auf Projektinhaber-Wort).
+**Status:** done (2026-07-23 — [ADR-0019](../../adr/0019-drw-2d-canvas.md) + [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) **Accepted**, AK/Spec/architecture finalisiert, `make gates` grün).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review**
 2026-07-22 (Reviewer ≠ Autor): **0 HIGH / 2 MED / 2 LOW / 2 INFO → startbar**
 ([Report](../../../reviews/2026-07-22-slice-041a-plan.md); MED-1 [Lese-Naht-Hebung = eigener Slice vor
@@ -119,7 +119,7 @@ Pro/Contra + benannter Empfehlung; Projektinhaber wählt wie [ADR-0009](../../ad
 
 ## 2. Definition of Done
 
-- [ ] **Grundsatz-ADR** (`docs/plan/adr/{0019-drw-2d-canvas}.md`, Nummer beim Anlegen fortlaufend;
+- [x] **Grundsatz-ADR** (`docs/plan/adr/{0019-drw-2d-canvas}.md`, Nummer beim Anlegen fortlaufend;
       Muster [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-Struktur): entscheidet die **sieben
       Fragen** (§1) je mit Pro/Contra + verglichenen Alternativen + Fitness-Function + Re-Eval-Triggern;
       **keine** bestehende Regel gelockert (Regel A/B/E bleiben; falls die 2D-Lese-Naht-Wahl (a) den
@@ -129,12 +129,12 @@ Pro/Contra + benannter Empfehlung; Projektinhaber wählt wie [ADR-0009](../../ad
       VOR** dem Canvas-Widget-Slice (§6). **Status Proposed → unabhängiges Text-Review (0 HIGH) +
       Projektinhaber-Accept.** [ADR-Index](../../adr/README.md) + `architecture.md` §1.1/§Geschichte
       nachgezogen (Präzedenz [ADR-0009](../../adr/0009-gui-framework-qt6.md)/[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)).
-- [ ] **Sequenz innerhalb des Slice (Review-MED-2, 011a-Bündelung):** die **sieben ADR-Entscheidungen
+- [x] **Sequenz innerhalb des Slice (Review-MED-2, 011a-Bündelung):** die **sieben ADR-Entscheidungen
       werden zuerst stabilisiert** (Text-Review 0 HIGH + Projektinhaber-Accept), **dann** der Lastenheft-/
       Spec-Text finalisiert — ein Text-Review-Entscheidungs-Flip (z. B. Lese-Naht a→c) löst eine
       **kontrollierte AK-Nachschärfung** aus, keine stille Inkonsistenz. (Anders als [slice-032a](../done/slice-032a-drw-fundament-ak-spec.md),
       das auf ein **fertiges** ADR aufsetzte.)
-- [ ] **Lastenheft [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005) interaktive Erzeugungs-AK**
+- [x] **Lastenheft [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005) interaktive Erzeugungs-AK**
       (lösungsfrei, benutzer-beobachtbar — **kein** Widget-/Port-/Koordinaten-Mechanik-Vokabular, das
       gehört in §1; [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)):
       die 032a-Teilumfang-Klausel »interaktives Setzen offen« wird **eingelöst**. Mindestens:
@@ -146,17 +146,17 @@ Pro/Contra + benannter Empfehlung; Projektinhaber wählt wie [ADR-0009](../../ad
       die fehlende Ebene verwiesen (kein stiller Verlust; genaue UX = §1/ADR). + Header-Nachzug
       `lastenheft.md` `**Version:**` == oberste `lastenheft-historie.md`-Zeile
       ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)/[MR-012](../../../../harness/conventions.md#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie)).
-- [ ] **`spec/spezifikation.md` §1** [`LH-FA-DRW-005.a`](../../../../spec/spezifikation.md) um die
+- [x] **`spec/spezifikation.md` §1** [`LH-FA-DRW-005.a`](../../../../spec/spezifikation.md) um die
       **interaktive Erzeugungs-/Canvas-Naht** ergänzt (im ADR-Rahmen, **ohne** ADR-/Slice-Token im
       Körper — [MR-011](../../../../harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)/[MR-014](../../../../harness/conventions.md#mr-014--referenz-richtungs-verschärfung-adr-nennt-keine-slice-d-check-v0371),
       vor dem Gate greppen): 2D-Zeichenfläche als Driving-Adapter, 2D-Lese-Naht (Kern-Port), Bildschirm→
       Modell-Abbildung, Selbst-Refresh (kein `op`), Fang/Raster als UI-Aids (Heimat benannt). **§6**
       interne Grenz-Vertragszeile 2D-Canvas (Muster DRW-Zeile 032a). **`spezifikation-historie.md`** +
       Header. **Architektur §2**-Regel-E-Nachzug (Qt-Include-Zone unverändert; der Canvas ist UI-Adapter).
-- [ ] **[ADR-Index](../../adr/README.md)-Folgepflicht** der neuen ADR (AK-Schärfung + Spec-Nachzug +
+- [x] **[ADR-Index](../../adr/README.md)-Folgepflicht** der neuen ADR (AK-Schärfung + Spec-Nachzug +
       Impl-Folge-Zeilen »offen«, Muster [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)). **CHANGELOG**
       ([MR-004](../../../../harness/conventions.md#mr-004--top-level-changelogmd-keep-a-changelog)).
-- [ ] **Reine Doku/Entscheidung — kein Code, keine Tests, kein Schema.** `make gates` grün;
+- [x] **Reine Doku/Entscheidung — kein Code, keine Tests, kein Schema.** `make gates` grün;
       `make schema-check` unberührt. Closure-Notiz. **Nicht Teil:** Impl (Widget/Port/Koordinaten/
       Maus/AK-Tests) = Folge-Slice(s); Fang/Raster/Winkel-AK = eigene Slices.
 
@@ -243,6 +243,38 @@ Pro/Contra + benannter Empfehlung; Projektinhaber wählt wie [ADR-0009](../../ad
 
 ## 8. Closure-Notiz
 
-*(bei Closure ausgefüllt: ADR-Nummer + Accept-Stand, Lastenheft-Version, Spec-Nachzüge, Review-Ergebnisse
-[[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-+ ADR-Text-Review], Lerneintrag, Folge = Impl-Slice(s) + Fang/Raster/Winkel.)*
+**Closure 2026-07-23.** Reine Doku/Entscheidung, kein Code — `make gates` grün, `make schema-check`
+unberührt.
+
+- **Grundsatz-ADRs Accepted.** **[ADR-0019](../../adr/0019-drw-2d-canvas.md)** (DRW-2D-Canvas, 7
+  Entscheidungen) — Erst-Text-Review 1 HIGH (io→services_geo-Kante autorisiert) eingearbeitet, dann
+  **auf [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) neu
+  geschnitten** (2D-Projektion kern-geliefert → **keine** `io → services_geo`-Kante; die frühere
+  Kanten-Autorisierung entfällt, §2.6 n/a) + **frisches** unabhängiges Text-Review des Neuschnitts
+  **0 HIGH** ([Report](../../../reviews/2026-07-23-adr-0019-recut-text-review.md)).
+  **[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)**
+  (driven Adapter serialisieren, Kern liefert `DerivedGeometry`-Bündel) Text-Review 1 HIGH/2 MED/3 LOW
+  eingearbeitet, **Accepted** ([Report](../../../reviews/2026-07-22-adr-0020-text-review.md)).
+  **Reihenfolge-Präzedenz bestätigt:** ADR stabil (accepted) **vor** AK-Finalisierung (Review-MED-2).
+- **Lastenheft 0.1.15.** [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005) um die **interaktive
+  Erzeugungs-AK** (Happy/Boundary/Negative, lösungsfrei/benutzer-beobachtbar; 032a-Deferral
+  »interaktives Setzen offen« **eingelöst**); Fundament-AK als eigene Gruppe erhalten. Header +
+  `lastenheft-historie.md` nachgezogen ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)).
+- **Spec-Nachzug.** §1 [`LH-FA-DRW-005.a`](../../../../spec/spezifikation.md) um die **Canvas-Naht**
+  (7 Entscheidungen token-frei: Zeichenfläche=Driving-Adapter, 2D-Lese-Naht Kern+`PlanViewPort`,
+  Bildschirm→Modell, Selbst-Refresh ohne `op`, `command/`-Kommando, Fang/Raster=UI-Aids); **§6**
+  Grenz-Vertragszeile 2D-Zeichenfläche; `spezifikation-historie.md` + Header. **architecture** §1.1
+  (`PlanViewPort` + `EditDrawingPort`-Canvas-Klausel) + Provenance ([ADR-0019](../../adr/0019-drw-2d-canvas.md));
+  **§2-Tabelle + §1-Diagramm unberührt** (die zieht [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)s Abschluss-Slice nach — Neuschnitt-Grenze).
+- **Reviews:** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+  0 HIGH (Plan) + zwei ADR-Text-Reviews 0 HIGH (Reviewer ≠ Autor).
+- **Lerneintrag:** Der Canvas-ADR deckte einen Architektur-Debt auf (`services/geometry`-Adapter-Zugriff
+  per »Regel-lockern-statt-fixen« legalisiert) → [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) (voll). Ein **Text-Review-Entscheidungs-Flip**
+  (io→services_geo autorisiert → entfällt) wurde als **kontrollierter Neuschnitt vor Accept** (ADR noch
+  Proposed) sauber aufgelöst — kein stiller Widerspruch; frisches Review verifizierte die Umkehr
+  maschinell gegen `.a-check.yml`.
+- **Folge (Impl, je eigenes [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)):**
+  **Refactor-Slices** ([ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Folgepflichten, [ADR-Index](../../adr/README.md)): Kern-Naht/Vertrag →
+  2D-Projektion (`plan_geometry`→Kern + `PlanViewPort`, **entsperrt Canvas**) → STEP/STL → Persistenz →
+  `.a-check.yml`+`architecture.md`-Abschluss → **dann Canvas-Impl** (2D-`view/`-Widget + `command/`-Naht +
+  `screenToModel` + Headless-`QMouseEvent`-AK); danach Fang/Raster/Winkel je eigene Slices.
