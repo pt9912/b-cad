@@ -35,6 +35,13 @@ std::string escapePdfString(const std::string& in) {
     return out;
 }
 
+// Statische Dokument-Metadaten (slice-045): konstante Erzeuger-/Titel-Strings im
+// /Info-Dict. BEWUSST kein /CreationDate//ID (dynamisch → nicht-reproduzierbar);
+// die Werte sind byte-stabil → der Export bleibt byte-deterministisch (Byte-Golden
+// tragfähig). Konsistent mit STEP (originating_system 'b-cad') + IFC (FILE_NAME 'b-cad').
+constexpr const char* kInfoProducer = "b-cad";
+constexpr const char* kInfoTitle = "b-cad Plan-Export";
+
 }  // namespace
 
 std::string pdfReal(double value) {
@@ -92,6 +99,9 @@ std::string PdfWriter::build() const {
     // Objektnummern: 1 Katalog, 2 Seitenbaum, 3 Font; je Seite 2 (Page +
     // Content), Page = 4+2k, Content = 5+2k.
     const int object_count = 3 + (2 * page_count);
+    // /Info wird als zusätzliches, nach den Seiten angehängtes Objekt geschrieben
+    // (keine Umnummerierung von Katalog/Seitenbaum/Font/Seiten) — slice-045.
+    const int info_obj = object_count + 1;
 
     std::string out = "%PDF-1.7\n";
     out += '%';  // Binär-Marker-Kommentar (Reader-Robustheit), byte-explizit
@@ -101,8 +111,7 @@ std::string PdfWriter::build() const {
     out += static_cast<char>(0xD3);
     out += '\n';
 
-    std::vector<std::size_t> offset(static_cast<std::size_t>(object_count) + 1,
-                                    0);
+    std::vector<std::size_t> offset(static_cast<std::size_t>(info_obj) + 1, 0);
     const auto emit = [&](int number, const std::string& body) {
         offset[static_cast<std::size_t>(number)] = out.size();
         out += std::to_string(number) + " 0 obj\n" + body + "\nendobj\n";
@@ -144,16 +153,23 @@ std::string PdfWriter::build() const {
         out += "\nendstream\nendobj\n";
     }
 
+    // /Info-Dokumentinfo (slice-045): statische Metadaten, nur konstante Strings —
+    // kein /CreationDate//ID (Determinismus). Referenziert aus dem Trailer.
+    emit(info_obj, "<< /Producer (" + escapePdfString(kInfoProducer) +
+                       ") /Creator (" + escapePdfString(kInfoProducer) +
+                       ") /Title (" + escapePdfString(kInfoTitle) + ") >>");
+
     const std::size_t xref_offset = out.size();
     out += "xref\n";
-    out += "0 " + std::to_string(object_count + 1) + "\n";
+    out += "0 " + std::to_string(info_obj + 1) + "\n";
     out += "0000000000 65535 f\r\n";
-    for (int i = 1; i <= object_count; ++i) {
+    for (int i = 1; i <= info_obj; ++i) {
         out += pad10(offset[static_cast<std::size_t>(i)]) + " 00000 n\r\n";
     }
 
     out += "trailer\n";
-    out += "<< /Size " + std::to_string(object_count + 1) + " /Root 1 0 R >>\n";
+    out += "<< /Size " + std::to_string(info_obj + 1) + " /Root 1 0 R /Info " +
+           std::to_string(info_obj) + " 0 R >>\n";
     out += "startxref\n";
     out += std::to_string(xref_offset) + "\n";
     out += "%%EOF\n";

@@ -49,7 +49,8 @@ model::Building ExchangeService::importModel(
 
 void ExchangeService::exportModel(const model::Building& building,
                                   const std::filesystem::path& path,
-                                  ports::driving::ExchangeFormat format) const {
+                                  ports::driving::ExchangeFormat format,
+                                  const model::ExportProvenance& provenance) const {
     const auto it = exporters_.find(format);
     if (it == exporters_.end() || it->second == nullptr) {
         // Format nicht verdrahtet → wie nicht beschreibbar behandelt.
@@ -98,7 +99,7 @@ void ExchangeService::exportModel(const model::Building& building,
     }
     // Erfolg: vollständige Datei. Fehler: der Exporter wirft E-IO-001 (bzw.
     // E-IO-003) — propagiert, kein Teil-Export.
-    it->second->write(building, derived, path);
+    it->second->write(building, derived, path, provenance);
 }
 
 }  // namespace bcad::hexagon::services

@@ -43,7 +43,8 @@ public:
 
     void exportModel(const model::Building& building,
                      const std::filesystem::path& path,
-                     ports::driving::ExchangeFormat format) const override;
+                     ports::driving::ExchangeFormat format,
+                     const model::ExportProvenance& provenance = {}) const override;
 
 private:
     ImporterMap importers_;

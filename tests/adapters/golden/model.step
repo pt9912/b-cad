@@ -1,7 +1,8 @@
 ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('b-cad STEP export subset'),'2;1');
-FILE_NAME('','1970-01-01T00:00:00',(''),(''),'b-cad','b-cad','');
+FILE_NAME('golden.bcad','1970-01-01 00:00',(''),(''),'b-cad test',
+  'b-cad test','');
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN_CC2 { 1 2 10303 214 -1 1 5 4 }'));
 ENDSEC;
 DATA;

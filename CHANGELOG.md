@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-046a — **Export-Herkunft: Datum/Quelle/Version, injizierbar + sichtbar** (welle-5; [ADR-0016](docs/plan/adr/0016-pdf-png-backend.md)/[ADR-0014](docs/plan/adr/0014-step-stl-export-backend.md)
+  konkretisiert; **faltet slice-045** ein). Behebt, dass Exporte verschiedener Modellstände **byte-identisch** und
+  damit **nicht unterscheidbar** waren (Folge der Determinismus-Optimierung in slice-044a/045). Ein neuer, framework-
+  freier `model::ExportProvenance` (Datum/Quelle/Version) wird durch den Export-Port (`exportModel`/`write`, optionaler
+  Parameter) gereicht; die **Writer rufen nie die Uhr** — der Composition-Root (`main.cpp`) füllt echte Werte (Datum
+  aus der Systemuhr = einzige Uhr-Berührung, Version aus `application_banner()`, Quelle noch leer bis slice-047),
+  **Tests/Golden feste** Werte → **byte-deterministisch** (SOURCE_DATE_EPOCH-Muster; leere Herkunft → Sentinels, alt-
+  verhalten unverändert). **Sichtbar** im PDF (Fußzeile „&lt;version&gt; | &lt;quelle&gt; | &lt;datum&gt;“) + eingebettet in
+  STEP (`FILE_NAME`) und STL (80-Byte-Header, auf ≤80 geklemmt). Aus slice-045 gefaltet: statische PDF-`/Info` +
+  PNG-`tEXt`. **AK:** Unterscheidbarkeit (verschiedene Herkunft → verschiedene Datei; gleiche → byte-identisch) über
+  PDF/STEP/STL; Golden re-baseliniert (264 Tests). **Zwei unabhängige MR-006 (046: 1 HIGH → Option A, 2 MED behoben).**
+  **Nachzug (046-Familie):** sichtbarer PNG-Titelblock (Bitmap-Font) = slice-046b; IFC-`FILE_NAME`/PNG-`tEXt`-Injektion
+  + DXF folgen. **Prozess-Fix (aus 045):** `make golden-regen` mount-frei (`tar`-Stream statt writable Bind-Mount →
+  Golden gehören dem User, nicht root; Dir-Perms via files-only-`tar`).
 - slice-044a — **Byte-genaue Golden files (Export) für alle sechs Austauschformate** (welle-5; QA-/Test-
   Infrastruktur, die 044a-Naht des gesplitteten slice-044). Ein festes `goldenModel()` (Wände + Decke + Dach +
   Treppe + sichtbare Hilfslinie) wird je Format über den echten `ExchangeService` exportiert und **byte-genau**

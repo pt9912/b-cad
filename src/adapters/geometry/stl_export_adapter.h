@@ -24,7 +24,8 @@ public:
 
     void write(const hexagon::model::Building& building,
                const hexagon::model::DerivedGeometry& derived,
-               const std::filesystem::path& path) const override;
+               const std::filesystem::path& path,
+               const hexagon::model::ExportProvenance& provenance = {}) const override;
 
 private:
     const hexagon::ports::driven::GeometryKernelPort& geometry_;

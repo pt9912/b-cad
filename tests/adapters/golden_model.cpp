@@ -74,4 +74,10 @@ model::Building goldenModel() {
     return b;
 }
 
+model::ExportProvenance goldenProvenance() {
+    // Fest + deterministisch: Epoch-Datum, fester Quelle-/Versionsstring (keine
+    // Uhr, keine BCAD_VERSION-Kopplung) — sichtbar/eingebettet in allen Formaten.
+    return {"1970-01-01 00:00", "golden.bcad", "b-cad test"};
+}
+
 }  // namespace bcad::golden

@@ -117,15 +117,24 @@ TopoDS_Compound buildSolidCompound(const model::DerivedGeometry& derived) {
 // Die DATA-Section (B-Rep-Topologie) bleibt OCC-versions-abhängig (ADR-0004, benannt).
 constexpr const char* kStepSentinelTimestamp = "1970-01-01T00:00:00";
 
-void fixDeterministicHeader(STEPControl_Writer& writer) {
+void fixDeterministicHeader(STEPControl_Writer& writer,
+                            const model::ExportProvenance& provenance) {
     const Handle(StepData_StepModel) model = writer.Model();
     APIHeaderSection_MakeHeader header(model);
-    header.SetName(new TCollection_HAsciiString(""));
-    header.SetTimeStamp(new TCollection_HAsciiString(kStepSentinelTimestamp));
+    // slice-046: injizierte Herkunft — Name = Quelle, Zeitstempel = Datum, System =
+    // Version. Leere Felder fallen auf das 044a-Sentinel (`b-cad`/Epoch) zurück →
+    // byte-determiniert; gefüllt macht den STEP-HEADER unterscheidbar.
+    const std::string timestamp = provenance.date.empty()
+                                      ? std::string(kStepSentinelTimestamp)
+                                      : provenance.date;
+    const std::string system =
+        provenance.version.empty() ? std::string("b-cad") : provenance.version;
+    header.SetName(new TCollection_HAsciiString(provenance.source.c_str()));
+    header.SetTimeStamp(new TCollection_HAsciiString(timestamp.c_str()));
     header.SetAuthorValue(1, new TCollection_HAsciiString(""));
     header.SetOrganizationValue(1, new TCollection_HAsciiString(""));
-    header.SetPreprocessorVersion(new TCollection_HAsciiString("b-cad"));
-    header.SetOriginatingSystem(new TCollection_HAsciiString("b-cad"));
+    header.SetPreprocessorVersion(new TCollection_HAsciiString(system.c_str()));
+    header.SetOriginatingSystem(new TCollection_HAsciiString(system.c_str()));
     header.SetAuthorisation(new TCollection_HAsciiString(""));
     header.SetDescriptionValue(1, new TCollection_HAsciiString("b-cad STEP export subset"));
     header.Apply(model);
@@ -135,7 +144,8 @@ void fixDeterministicHeader(STEPControl_Writer& writer) {
 
 void StepExportAdapter::write(const model::Building& /*building*/,
                               const model::DerivedGeometry& derived,
-                              const fs::path& path) const {
+                              const fs::path& path,
+                              const model::ExportProvenance& provenance) const {
     try {
         const TopoDS_Compound compound = buildSolidCompound(derived);
 
@@ -145,8 +155,8 @@ void StepExportAdapter::write(const model::Building& /*building*/,
             throw std::runtime_error(
                 "E-IO-002: STEP-Transfer fehlgeschlagen; event=persist_error");
         }
-        // Byte-Determinismus vor dem Write: Sentinel-HEADER statt Wall-Clock/OCC-Version.
-        fixDeterministicHeader(writer);
+        // slice-046: injizierte Herkunft im HEADER (leer → 044a-Sentinel).
+        fixDeterministicHeader(writer, provenance);
 
         // Atomar: in Temp schreiben, dann umbenennen. Ein nicht beschreibbarer
         // Zielpfad lässt Write scheitern → E-IO-001 (kein Teil-Export).

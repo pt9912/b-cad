@@ -69,9 +69,11 @@ int main(int argc, char** argv) {
     };
 
     const bcad::hexagon::model::Building model = bcad::golden::goldenModel();
+    const bcad::hexagon::model::ExportProvenance provenance =
+        bcad::golden::goldenProvenance();  // slice-046: feste Herkunft im Golden
     for (const Target& target : targets) {
         try {
-            service.exportModel(model, out_dir / target.name, target.format);
+            service.exportModel(model, out_dir / target.name, target.format, provenance);
             std::fprintf(stderr, "golden_gen: wrote %s\n", target.name);
         } catch (const std::exception& e) {
             std::fprintf(stderr, "golden_gen: FAILED %s: %s\n", target.name,

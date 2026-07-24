@@ -13,7 +13,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595.000 842.000] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
 endobj
 5 0 obj
-<< /Length 198 >>
+<< /Length 283 >>
 stream
 0.500 w
 20.000 20.000 555.000 802.000 re
@@ -32,19 +32,28 @@ BT
 28.000 28.000 Td
 (M 1:100) Tj
 ET
+BT
+/F1 8.000 Tf
+28.000 40.800 Td
+(b-cad test | golden.bcad | 1970-01-01 00:00) Tj
+ET
 
 endstream
 endobj
+6 0 obj
+<< /Producer (b-cad) /Creator (b-cad) /Title (b-cad Plan-Export) >>
+endobj
 xref
-0 6
+0 7
 0000000000 65535 f
 0000000015 00000 n
 0000000064 00000 n
 0000000121 00000 n
 0000000191 00000 n
 0000000325 00000 n
+0000000659 00000 n
 trailer
-<< /Size 6 /Root 1 0 R >>
+<< /Size 7 /Root 1 0 R /Info 6 0 R >>
 startxref
-574
+742
 %%EOF

@@ -173,7 +173,8 @@ void atomicWrite(const fs::path& path, const std::string& content) {
 
 void DxfExportAdapter::write(const model::Building& building,
                              const model::DerivedGeometry& /*derived*/,
-                             const fs::path& path) const {
+                             const fs::path& path,
+                             const model::ExportProvenance& /*provenance*/) const {
     const std::string dxf = buildDxf(building);  // vollständig im Speicher …
     atomicWrite(path, dxf);                       // … dann atomar schreiben
 }

@@ -51,8 +51,30 @@ double toPageY(double y_mm, const PlanView& view) {
     return kMarginPt + ((y_mm - view.min_y_mm) * kMmToPt);
 }
 
-// Eine Seite: Rahmen + (maßstäbliche) Wand-Achsen des Geschosses + Label.
-void drawPage(PdfWriter& writer, const StoreyPlan& plan, const PlanView& view) {
+// Provenance-Fußzeile (slice-046): "<version> | <quelle> | <datum>", nur die
+// nicht-leeren Teile (ASCII-Separator, Helvetica-sicher). Leer → keine Fußzeile
+// (Sentinel-Fall — Export ohne injizierte Herkunft bleibt byte-identisch zu vorher).
+std::string provenanceFooter(const model::ExportProvenance& provenance) {
+    std::string out;
+    const auto add = [&out](const std::string& part) {
+        if (part.empty()) {
+            return;
+        }
+        if (!out.empty()) {
+            out += " | ";
+        }
+        out += part;
+    };
+    add(provenance.version);
+    add(provenance.source);
+    add(provenance.date);
+    return out;
+}
+
+// Eine Seite: Rahmen + (maßstäbliche) Wand-Achsen des Geschosses + Label + (bei
+// injizierter Herkunft) die sichtbare Provenance-Fußzeile über dem Maßstabs-Label.
+void drawPage(PdfWriter& writer, const StoreyPlan& plan, const PlanView& view,
+              const std::string& footer) {
     writer.beginPage();
     writer.setLineWidth(kLineWidthPt);
     writer.rect(kFramePt, kFramePt, kPageWidthPt - (2.0 * kFramePt),
@@ -63,6 +85,10 @@ void drawPage(PdfWriter& writer, const StoreyPlan& plan, const PlanView& view) {
     }
     writer.text(kFramePt + kLabelFontPt, kFramePt + kLabelFontPt, kLabelFontPt,
                 scaleLabel());
+    if (!footer.empty()) {
+        writer.text(kFramePt + kLabelFontPt, kFramePt + (kLabelFontPt * 2.6),
+                    kLabelFontPt, footer);
+    }
     writer.endPage();
 }
 
@@ -70,18 +96,20 @@ void drawPage(PdfWriter& writer, const StoreyPlan& plan, const PlanView& view) {
 
 void PdfExportAdapter::write(const model::Building& /*building*/,
                              const model::DerivedGeometry& derived,
-                             const fs::path& path) const {
+                             const fs::path& path,
+                             const model::ExportProvenance& provenance) const {
     // ADR-0020: der Kern liefert die 2D-Projektion im Bündel; der Adapter
     // serialisiert nur (kein Eigen-`projectPlan` mehr).
     const PlanView& view = derived.plan;
     PdfWriter writer(PdfPageSize{kPageWidthPt, kPageHeightPt});
+    const std::string footer = provenanceFooter(provenance);  // slice-046
 
     if (view.storeys.empty()) {
         // Totalität: leeres Modell → eine gültige, (annähernd) leere Seite.
-        drawPage(writer, StoreyPlan{}, view);
+        drawPage(writer, StoreyPlan{}, view, footer);
     } else {
         for (const StoreyPlan& plan : view.storeys) {  // eine Seite je Geschoss
-            drawPage(writer, plan, view);
+            drawPage(writer, plan, view, footer);
         }
     }
 

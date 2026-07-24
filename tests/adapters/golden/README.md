@@ -15,8 +15,8 @@ Decode-Orakel = Semantik. Golden ersetzt die Orakel **nicht**.
 | `model.dxf` | DXF R12 | Text | byte-exakt (nur `$ACADVER`, keine Handles/Datum) |
 | `model.step` | STEP AP214 | Text | byte-exakt **seit slice-044a** (HEADER auf Sentinel fixiert; s. u.) |
 | `model.stl` | STL | binär | byte-exakt **nur im gepinnten OCC-Image** (s. Caveat) |
-| `model.pdf` | PDF | binär | byte-exakt (self-rolled, kein `/CreationDate`/`/ID`) |
-| `model.png` | PNG | binär | byte-exakt (self-rolled, kein `tIME`-Chunk) |
+| `model.pdf` | PDF | binär | byte-exakt (self-rolled; statisches `/Info` [`/Producer`/`/Title`], **kein** `/CreationDate`/`/ID`) |
+| `model.png` | PNG | binär | byte-exakt (self-rolled; statische `tEXt` [`Software`/`Title`], **kein** `tIME`-Chunk) |
 
 Die binären Golden (`*.stl`/`*.png`/`*.pdf`) sind in `.gitattributes` als
 `binary` markiert (kein CRLF-Mangling, kein Text-Diff).
@@ -32,6 +32,16 @@ Die binären Golden (`*.stl`/`*.png`/`*.pdf`) sind in `.gitattributes` als
 - Der eigentliche **Byte-Vergleich** läuft als GoogleTest (`GoldenExport.*` in
   `test_golden_export.cpp`) **in `make test`/`make gates`** — er liest die
   committeten Golden und braucht `golden-regen` nicht.
+
+## Export-Herkunft (slice-046)
+
+Die Golden tragen eine **feste** `goldenProvenance()` (Datum `1970-01-01 00:00`, Quelle
+`golden.bcad`, Version `b-cad test`) — injiziert über den Export-Port. `golden_gen` und der
+Byte-Test linken dieselbe Quelle. Sichtbar in `model.pdf` (Fußzeile), eingebettet in
+`model.step` (`FILE_NAME`) und `model.stl` (80-Byte-Header). In Produktion füllt der
+Composition-Root echte Werte (Systemuhr/Version); im Golden bleibt sie **fix** →
+byte-deterministisch (SOURCE_DATE_EPOCH-Muster). Ein Export **ohne** Herkunft (leer) fällt
+auf die deterministischen Sentinels zurück.
 
 ## STEP-HEADER (slice-044a)
 

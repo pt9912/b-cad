@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/export_provenance.h"
 
 namespace bcad::hexagon::ports::driving {
 
@@ -31,7 +32,8 @@ public:
     // (`LH-FA-IO-002` Negative; slice-019c).
     virtual void exportModel(const model::Building& building,
                              const std::filesystem::path& path,
-                             ExchangeFormat format) const = 0;
+                             ExchangeFormat format,
+                             const model::ExportProvenance& provenance = {}) const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driving

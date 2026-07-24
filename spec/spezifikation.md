@@ -720,6 +720,19 @@ Teil-Export, Zielpfad unverändert.
 **Totalität.** Ein Modell ohne Geschosse/Wände → eine **gültige, (annähernd) leere**
 PDF-Seite / PNG-Bild (kein Wurf). Reihenfolge deterministisch aus der Modell-Reihenfolge.
 
+**Export-Herkunft (injiziert, determinismus-erhaltend).** Jeder Export trägt eine vom
+Aufrufer **injizierte** Herkunft — **Datum**, **Quelle** (Projektdatei-Name), **Version** —,
+damit ein Benutzer erkennt, aus welchem **Stand** ein Artefakt stammt und Exporte
+verschiedener Stände **unterscheidbar** sind. Sie erscheint **sichtbar** (PDF-Fußzeile)
+und/oder im **Format-Header** (STEP `FILE_NAME`, STL-80-Byte-Header; weitere Formate
+folgen). Die Writer rufen **nie** die Uhr — der Composition-Root reicht die
+vorformatierten Werte (einzige Uhr-Berührung); **Tests/Golden reichen feste Werte** → die
+Ausgabe bleibt **byte-deterministisch** (das „SOURCE_DATE_EPOCH"-Muster; leere Herkunft →
+deterministische Sentinels). Zusätzlich tragen PDF/PNG **statische** Erzeuger-/Titel-
+Metadaten (PDF `/Info`, PNG `tEXt` `Software`/`Title`); **nie** ein dynamisches
+`/CreationDate`/`/ID` bzw. `tIME` (Wall-Clock) — Datum kommt ausschließlich über die
+injizierte, im Test fixierte Herkunft.
+
 ### LH-FA-PLG-001.a — Plugin-System (Host-Mapping, Teilumfang)
 
 Bezug: [`LH-FA-PLG-001`](lastenheft.md#lh-fa-plg-001) (Dynamische Plugins),

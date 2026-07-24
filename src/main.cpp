@@ -13,6 +13,8 @@
 // kein Gate (ADR-0009 (f)).
 
 #include <array>
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -98,6 +100,22 @@ std::optional<model::LayerId> buildAcc001KernDemo(
 // Headless-Export: bei gesetztem `flag <pfad>` das Demo-Modell exportieren und
 // einen Exit-Code liefern; sonst `nullopt` (GUI-Pfad). Faltet die je Format
 // identische CLI-Mechanik zusammen (hält `main` schlank).
+// Export-Herkunft aus der Laufzeit (slice-046): die **einzige** Uhr-/Umgebungs-
+// Berührung — der Kern/die Adapter bleiben clock-frei (Determinismus). Datum aus
+// der Systemuhr, Version aus `application_banner()`; `source` bleibt leer, bis
+// slice-047 ein geladenes Projekt (Basename) liefert.
+model::ExportProvenance currentProvenance() {
+    const std::time_t now =
+        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::array<char, 32> buf{};
+    std::tm tm_buf{};
+    if (::localtime_r(&now, &tm_buf) != nullptr) {
+        std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M", &tm_buf);
+    }
+    return {std::string(buf.data()), std::string{},
+            bcad::hexagon::services::application_banner()};
+}
+
 std::optional<int> runExportIfRequested(
     const QStringList& cli, const char* flag,
     bcad::hexagon::ports::driving::ExchangeModelPort& exchange,
@@ -110,7 +128,7 @@ std::optional<int> runExportIfRequested(
     const std::string path = cli.at(index + 1).toStdString();
     buildAcc001KernDemo(service);  // Demo-Modell als Export-Quelle
     try {
-        exchange.exportModel(service.building(), path, format);
+        exchange.exportModel(service.building(), path, format, currentProvenance());
         std::cout << label << " exportiert -> " << path << '\n';
         return 0;
     } catch (const std::exception& e) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/export_provenance.h"
 
 namespace bcad::golden {
 
@@ -18,5 +19,11 @@ namespace bcad::golden {
 // Byte-Vergleich. Bewusst NICHT `buildAcc001KernDemo` (main-resident,
 // änderungsanfällig, ohne Decke/Dach/Treppe — MR-006-044-MED-2).
 hexagon::model::Building goldenModel();
+
+// Feste Export-Provenance fürs Golden (slice-046): deterministisch — **kein**
+// Wall-Clock, **keine** `BCAD_VERSION`-Kopplung (fester Versionsstring) → das
+// Byte-Golden bleibt stabil, zeigt aber die **injizierte** Herkunft (Unterscheidbarkeit
+// sichtbar im Golden). Test + `golden_gen` linken diese eine Quelle (kein Drift).
+hexagon::model::ExportProvenance goldenProvenance();
 
 }  // namespace bcad::golden

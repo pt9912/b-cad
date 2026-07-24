@@ -64,7 +64,8 @@ double fitScale(const PlanView& view) {
 
 void PngExportAdapter::write(const model::Building& /*building*/,
                              const model::DerivedGeometry& derived,
-                             const fs::path& path) const {
+                             const fs::path& path,
+                             const model::ExportProvenance& /*provenance*/) const {
     // ADR-0020: der Kern liefert die 2D-Projektion im Bündel; der Adapter
     // serialisiert nur (kein Eigen-`projectPlan` mehr).
     const PlanView& view = derived.plan;

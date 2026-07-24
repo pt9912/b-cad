@@ -250,7 +250,7 @@ TEST(PdfExport, StructureObjectGraphAndPerStoreyContent) {
     EXPECT_EQ(pdf.compare(0, 7, "%PDF-1."), 0);
     EXPECT_NE(pdf.find("%%EOF"), std::string::npos);
     const int objects = verifyXrefOffsets(pdf);
-    EXPECT_EQ(objects, 7);  // Katalog+Seitenbaum+Font + 2 Seiten * 2
+    EXPECT_EQ(objects, 8);  // Katalog+Seitenbaum+Font + 2 Seiten * 2 + /Info (slice-045)
     const std::size_t size_pos = pdf.find("/Size ");  // trailer /Size == Objektzahl+1
     ASSERT_NE(size_pos, std::string::npos);
     EXPECT_EQ(std::stoi(pdf.substr(size_pos + 6)), objects + 1);
@@ -282,6 +282,32 @@ TEST(PdfExport, StructureObjectGraphAndPerStoreyContent) {
 }
 
 // --- LH-FA-IO-007 Maßstabs-Sonde: maßstäblich (ACC-004) ---------------------
+
+// slice-045 (LH-FA-IO-007): statische /Info-Metadaten (Erzeuger + Titel) —
+// benutzer-sichtbar im PDF-Viewer, konsistent mit STEP/IFC ('b-cad'). BEWUSST
+// keine dynamischen Felder (/CreationDate//ID) → der Export bleibt byte-
+// deterministisch (Byte-Golden tragfähig). Der Titel trägt HIGH-1, daher direkt
+// asserted (nicht nur indirekt über den Golden).
+TEST(PdfExport, StaticInfoMetadataNoDynamicFields) {
+    const TempPath out("info");
+    writePdf(sampleBuilding(), out.path);
+    const std::string pdf = readFile(out.path);
+
+    EXPECT_NE(pdf.find("/Producer (b-cad)"), std::string::npos);
+    EXPECT_NE(pdf.find("/Creator (b-cad)"), std::string::npos);
+    EXPECT_NE(pdf.find("/Title (b-cad Plan-Export)"), std::string::npos);
+    EXPECT_NE(pdf.find("/Info "), std::string::npos) << "Trailer referenziert kein /Info-Objekt";
+
+    // Negative-Determinismus-Sonde: kein dynamisches Feld (fail-closed).
+    EXPECT_EQ(pdf.find("/CreationDate"), std::string::npos) << "dynamisches /CreationDate verboten";
+    EXPECT_EQ(pdf.find("/ModDate"), std::string::npos) << "dynamisches /ModDate verboten";
+    EXPECT_EQ(pdf.find("/ID"), std::string::npos) << "dynamisches /ID verboten";
+
+    // Zwei Läufe byte-identisch (Determinismus des statischen /Info).
+    const TempPath out2("info2");
+    writePdf(sampleBuilding(), out2.path);
+    EXPECT_EQ(readFile(out2.path), pdf);
+}
 
 TEST(PdfExport, ScaleFidelityKnownEdge) {
     const TempPath out("scale");
@@ -326,7 +352,7 @@ TEST(PdfExport, EmptyBuildingProducesValidPdf) {
     const std::string pdf = readFile(out.path);
     EXPECT_EQ(pdf.compare(0, 7, "%PDF-1."), 0);
     EXPECT_NE(pdf.find("%%EOF"), std::string::npos);
-    EXPECT_EQ(verifyXrefOffsets(pdf), 5);  // eine leere Seite (3 + 2*1)
+    EXPECT_EQ(verifyXrefOffsets(pdf), 6);  // eine leere Seite (3 + 2*1) + /Info (slice-045)
     ASSERT_EQ(pageObjects(pdf).size(), 1U);
     const std::string page = streamOfObject(pdf, 5);
     EXPECT_EQ(countOccurrences(page, " l\n"), 0);  // keine Wände
@@ -398,7 +424,7 @@ TEST(PdfExport, StoreysWithoutWallsProduceFramedPages) {
 
     writePdf(b, out.path);
     const std::string pdf = readFile(out.path);
-    EXPECT_EQ(verifyXrefOffsets(pdf), 7);  // 2 Geschoss-Seiten
+    EXPECT_EQ(verifyXrefOffsets(pdf), 8);  // 2 Geschoss-Seiten + /Info (slice-045)
     ASSERT_EQ(pageObjects(pdf).size(), 2U);
     for (const int obj : {5, 7}) {
         const std::string page = streamOfObject(pdf, obj);

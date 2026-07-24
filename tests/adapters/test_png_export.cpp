@@ -330,6 +330,50 @@ TEST(PngExport, LH_FA_DRW_005_SichtbareHilfslinieMehrTinte) {
 
 // --- LH-FA-IO-008 Boundary (leer): weißes, valides PNG ----------------------
 
+// slice-045 (LH-FA-IO-008): statische tEXt-Metadaten (Software + Title) —
+// benutzer-sichtbar, konsistent mit STEP/IFC/PDF ('b-cad'). BEWUSST kein
+// tIME-Chunk (dynamisch) → byte-deterministisch (Byte-Golden tragfähig). Der
+// Titel trägt HIGH-1, daher direkt asserted; das Voll-Decode-Orakel oben bleibt
+// unberührt (parseChunks ist positions-agnostisch, front==IHDR/back==IEND).
+TEST(PngExport, StaticTextMetadataNoTime) {
+    const TempPath out("text");
+    writePng(sampleBuilding(), out.path);
+    const std::string png = readFile(out.path);
+    const std::vector<Chunk> chunks = parseChunks(png);  // CRC-prüft jeden Chunk
+
+    bool software = false;
+    bool title = false;
+    bool text_before_idat = true;
+    bool seen_idat = false;
+    for (const Chunk& c : chunks) {
+        if (c.type == "IDAT") {
+            seen_idat = true;
+        }
+        if (c.type == "tEXt") {
+            if (seen_idat) {
+                text_before_idat = false;  // tEXt nach IDAT wäre falsch platziert
+            }
+            if (c.data == std::string("Software").append(1, '\0').append("b-cad")) {
+                software = true;
+            }
+            if (c.data ==
+                std::string("Title").append(1, '\0').append("b-cad Plan-Export")) {
+                title = true;
+            }
+        }
+        // Negative-Determinismus-Sonde: kein dynamischer tIME-Chunk.
+        EXPECT_NE(c.type, "tIME") << "dynamischer tIME-Chunk verboten (Determinismus)";
+    }
+    EXPECT_TRUE(software) << "tEXt Software=b-cad fehlt";
+    EXPECT_TRUE(title) << "tEXt Title=b-cad Plan-Export fehlt";
+    EXPECT_TRUE(text_before_idat) << "tEXt muss vor IDAT stehen";
+
+    // Zwei Läufe byte-identisch (Determinismus der statischen tEXt).
+    const TempPath out2("text2");
+    writePng(sampleBuilding(), out2.path);
+    EXPECT_EQ(readFile(out2.path), png);
+}
+
 TEST(PngExport, EmptyBuildingProducesValidWhitePng) {
     const TempPath out("empty");
     writePng(model::Building{}, out.path);

@@ -71,7 +71,10 @@ void expectGoldenByteIdentical(ExchangeFormat format, const std::string& name) {
     const fs::path out = fs::temp_directory_path() / ("bcad_golden_" + name);
     std::error_code ec;
     fs::remove(out, ec);
-    service.exportModel(bcad::golden::goldenModel(), out, format);
+    // slice-046: dieselbe feste Provenance wie golden_gen → das Golden trägt die
+    // injizierte Herkunft und bleibt byte-deterministisch.
+    service.exportModel(bcad::golden::goldenModel(), out, format,
+                        bcad::golden::goldenProvenance());
 
     const std::vector<char> got = readBytes(out);
     const std::vector<char> want =
@@ -115,6 +118,45 @@ TEST(GoldenExport, PdfByteIdentical) {
 }
 TEST(GoldenExport, PngByteIdentical) {
     expectGoldenByteIdentical(ExchangeFormat::Png, "model.png");
+}
+
+// slice-046 (der Produkt-Kernwert): **verschiedene** Export-Herkunft → **verschiedene**
+// Datei (unterscheidbar), **gleiche** Herkunft → byte-identisch (deterministisch). Über
+// die drei Formate, die in 046a Herkunft tragen: PDF (sichtbarer Footer), STEP (FILE_NAME),
+// STL (80-Byte-Header). PNG (sichtbar = 046b) / IFC / DXF tragen sie hier noch nicht.
+TEST(GoldenExport, DistinctProvenanceYieldsDistinctOutput) {
+    const geo::OccGeometryAdapter geometry;
+    const geo::StlExportAdapter stl(geometry);
+    const geo::StepExportAdapter step;
+    const io::PdfExportAdapter pdf;
+    const ExchangeService service({}, {{ExchangeFormat::Step, &step},
+                                       {ExchangeFormat::Stl, &stl},
+                                       {ExchangeFormat::Pdf, &pdf}});
+
+    const bcad::hexagon::model::ExportProvenance prov_a{"2020-01-01 08:00",
+                                                        "haus-a.bcad", "b-cad 0.1.0"};
+    const bcad::hexagon::model::ExportProvenance prov_b{"2026-07-24 14:32",
+                                                        "haus-b.bcad", "b-cad 0.1.0"};
+
+    // Nur die Unterscheidbarkeit (die neue Aussage): verschiedene Herkunft →
+    // verschiedene Datei. Die Determinismus-Seite (gleiche Herkunft → byte-identisch)
+    // deckt `make golden-check` (cross-Prozess) + `GoldenExport.*` ab — NICHT hier
+    // in-Prozess: OCC hält für STEP globalen Entity-Zähler-State zwischen Exporten,
+    // sodass zwei STEP-Exporte im selben Prozess byte-abweichen (cross-Prozess nicht).
+    for (const ExchangeFormat fmt :
+         {ExchangeFormat::Pdf, ExchangeFormat::Step, ExchangeFormat::Stl}) {
+        const fs::path pa = fs::temp_directory_path() / "bcad_prov_a";
+        const fs::path pb = fs::temp_directory_path() / "bcad_prov_b";
+        std::error_code ec;
+        service.exportModel(bcad::golden::goldenModel(), pa, fmt, prov_a);
+        service.exportModel(bcad::golden::goldenModel(), pb, fmt, prov_b);
+        const std::vector<char> ba = readBytes(pa);
+        const std::vector<char> bb = readBytes(pb);
+        fs::remove(pa, ec);
+        fs::remove(pb, ec);
+        EXPECT_NE(ba, bb) << "verschiedene Herkunft muss unterscheidbare Datei ergeben (fmt "
+                          << static_cast<int>(fmt) << ")";
+    }
 }
 
 }  // namespace

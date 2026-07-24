@@ -164,10 +164,21 @@ schema-regen: ## ADR-0006 — schema.sql aus data-model.yaml neu erzeugen (danac
 # kein xvfb nötig). Beide gehören in die CI-Befehlsliste (Muster schema-check).
 golden-regen: ## slice-044a — Export-Golden (6 Formate) neu erzeugen (danach golden-check); KEIN Gate
 	$(GATE) --target build -t $(IMAGE):build .
-	$(DOCKER) run --rm \
-		-v $(CURDIR)/tests/adapters/golden:/out \
-		$(IMAGE):build ./build/tests/golden_gen /out
+	@t=$$(mktemp) && \
+	$(DOCKER) run --rm $(IMAGE):build bash -c \
+		'd=$$(mktemp -d) && ./build/tests/golden_gen "$$d" >&2 && tar -cf - -C "$$d" $$(ls "$$d")' > $$t && \
+	tar -xf $$t -C $(CURDIR)/tests/adapters/golden && rm -f $$t
 	@echo "golden-regen ok: tests/adapters/golden/model.* neu erzeugt — jetzt 'make golden-check'"
+# KEIN writable Bind-Mount (Container read-only, keine Schreibrechte am Repo): der
+# Generator schreibt in ein Container-Temp-Dir und streamt die 6 Dateien als tar
+# nach stdout; der HOST-`tar -x` entpackt sie als aufrufender User → die committeten
+# Golden gehören DIR, nicht root (slice-045-Prozess-Fix). golden_gens Stdout
+# (OCC-Statistik) geht via `>&2` auf stderr, damit NUR der tar-Stream auf stdout
+# liegt (binaer-sicher, kein `-t`); Host-mktemp-Datei statt Pipe → docker-Exit-Code
+# wird via `&&` propagiert (kein maskiertes Pipe-Versagen). NUR die Dateien (`ls "$$d"`),
+# NICHT der `.`-Dir-Eintrag archivieren — sonst überschriebe `tar -x` die Ziel-
+# Verzeichnis-Perms mit den Container-Temp-Dir-Rechten (700) und bräche das
+# read-only d-check-Gate (permission denied).
 
 # golden-check: Regen-Drift — die committeten Golden (ins Image gebacken, COPY . .)
 # müssen byte-genau dem entsprechen, was `golden_gen` frisch erzeugt. Fängt ein

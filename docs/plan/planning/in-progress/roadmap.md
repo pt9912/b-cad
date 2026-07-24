@@ -22,12 +22,20 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (Ruhe-Sentinel; beim Öffnen des nächsten
 Slice im selben `git mv`-Commit entfernen).
 
+**[`slice-046a`](../done/slice-046a-export-provenance.md) done** (2026-07-24): **Export-Herkunft** (Datum/Version
+injizierbar + sichtbar im PDF-Footer, in STEP/STL-Header) — Exporte verschiedener Stände sind nun **unterscheidbar**
+(SOURCE_DATE_EPOCH-Muster: Writer clock-frei, Root injiziert echt, Golden fix). **[`slice-045`](../done/slice-045-pdf-info-metadaten.md)**
+(statische PDF/PNG-Metadaten) darin **gefaltet-retired**. Zwei unabhängige [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+(046: 1 HIGH → Option A). **Offen (Deferral, [MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)):**
+**slice-046b** (sichtbarer PNG-Titelblock, Bitmap-Font) + IFC-`FILE_NAME`/PNG-`tEXt`-Injektion; **echte „Quelle"** via
+[`slice-047`](../open/slice-047-projekt-oeffnen.md) („Projekt öffnen"). `make gates` grün (265 Tests). **Prozess-Fix:**
+`make golden-regen` mount-frei (`tar`-Stream → Golden gehören dem User, nicht root).
+
 **[`slice-044a`](../done/slice-044a-golden-export-infra.md) done** (2026-07-24): Byte-Golden aller 6 Export-Formate
 + STEP-Header-Fix (byte-deterministisch), [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 0 HIGH + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) 0 HIGH,
-`make gates` grün (262 Tests). Folge-Naht [`slice-044b`](../open/slice-044b-golden-import-fremd.md) (Import-Golden-fremd)
-offen; [`slice-045`](../open/slice-045-pdf-info-metadaten.md) (statische PDF/PNG-Metadaten, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH) **nach dieser
-044a-Closure startbar**.
+`make gates` grün (262 Tests). Folge-Naht [`slice-044b`](../open/slice-044b-golden-import-fremd.md)
+(Import-Golden-fremd) offen.
 
 **Der DRW-Interaktiv-Strang ist v1 FERTIG** — [`slice-043`](../done/slice-043-drw-canvas-impl.md) **done**
 (2026-07-23; Schritt 5 der Roadmap, der ursprüngliche Endpunkt): interaktiver 2D-Zeichen-Canvas
@@ -60,7 +68,7 @@ verhaltens-invariant (254 Tests, Coverage 91,5 %).
 
 ---
 
-### ▶ Golden files: [`slice-044a`](../done/slice-044a-golden-export-infra.md) **done** · [`slice-044b`](../open/slice-044b-golden-import-fremd.md) + [`slice-045`](../open/slice-045-pdf-info-metadaten.md) **offen**
+### ▶ Golden files: [`slice-044a`](../done/slice-044a-golden-export-infra.md) **done** · [`slice-044b`](../open/slice-044b-golden-import-fremd.md) **offen** (045/046a s. oben)
 
 **Split ausgeführt** (Reviewer-Empfehlung, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 0 HIGH, [Report](../../../reviews/2026-07-23-slice-044-plan.md)). Ziel: byte-genaue Golden files als Netz gegen
@@ -77,14 +85,12 @@ verhaltens-invariant (254 Tests, Coverage 91,5 %).
   **MED-1 blockiert 044b-Start:** b-cads IFC-Import **wirft [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)**
   (Ganzdatei-Ablehnung), wenn *einer* Wand die 'Axis'-Polyline **oder** Spatial-Containment fehlt → Fixture je Wand
   **kuratieren** (ggf. minimale konforme IFC erzeugen); DXF **2D-`LINE`** (nicht 3D — b-cad ist 2D-only).
-- **045 — offen (`open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 2× 0 HIGH):**
-  PDF-`/Info` + PNG-`tEXt` statische Erzeuger-/Titel-Metadaten (determinismus-neutral, kein Datum/`/ID`/`tIME`);
-  re-baseliniert PDF/PNG-Golden — war bis zur 044a-Closure blockiert, **jetzt startbar**.
+- **045 → done, gefaltet in [`slice-046a`](../done/slice-046a-export-provenance.md)** (statische PDF-`/Info`/PNG-`tEXt`
+  gingen in die injizierbare Export-Herkunft auf — s. den 046a-Block oben).
 
-**Nächste Aktion:** `slice-045` (statische PDF/PNG-Metadaten) **oder** `slice-044b` (Fremd-Import-Golden) starten —
-je eigenes [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-bereits durch (045) bzw. beim Start (044b). Reihenfolge = Projektinhaber-Wahl.
-— Alternativ ein anderer Strang aus dem freien Menü unten.
+**Nächste Aktion:** `slice-045` schließen (Closure/Commit) **oder** `slice-044b` (Fremd-Import-Golden) starten —
+044b-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) beim
+Start. Reihenfolge = Projektinhaber-Wahl. — Alternativ ein anderer Strang aus dem freien Menü unten.
 
 `slice-041a` **done** (2026-07-23): die **DRW-Canvas-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
 (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel; alle

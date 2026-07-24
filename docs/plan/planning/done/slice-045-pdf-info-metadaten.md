@@ -1,7 +1,7 @@
 ---
 id: slice-045
 titel: PDF- und PNG-Export tragen statische Erzeuger-/Titel-Metadaten — determinismus-neutral
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-IO-007](../../../../spec/lastenheft.md#lh-fa-io-007), [LH-FA-IO-008](../../../../spec/lastenheft.md#lh-fa-io-008)]
 adr_refs: [[ADR-0016](../../adr/0016-pdf-png-backend.md)]
@@ -9,13 +9,17 @@ adr_refs: [[ADR-0016](../../adr/0016-pdf-png-backend.md)]
 
 # Slice 045: PDF- und PNG-Export tragen statische Metadaten
 
-**Status:** open (Plan — **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
-2026-07-24: 1 HIGH / 1 MED / 1 LOW / 3 INFO → HIGH in-Plan aufgelöst, startbar**). Der HIGH-1 (dateinamen-abgeleiteter
+**Status:** **done — gefaltet in [`slice-046a`](slice-046a-export-provenance.md) (2026-07-24).** Nicht separat committet: die
+statische PDF-`/Info` + PNG-`tEXt`-Mechanik ist in 046a aufgegangen (dort mit **injizierten** statt statischen Werten +
+sichtbarer Provenance). Ursprünglich implementiert 2026-07-24 (`make gates` grün, 264 Tests). **Umgesetzt:** PDF-`/Info` (`/Producer`/`/Creator`/`/Title (b-cad Plan-Export)`) als angehängtes Objekt (xref/trailer nachgezogen) + PNG zwei `tEXt` (`Software=b-cad`, `Title=b-cad Plan-Export`) nach IHDR; **keine** dynamischen Felder (`test_{pdf,png}_export`-Negative-Sonde + direkter Titel-Assert). PDF/PNG-Golden re-baseliniert. **Prozess-Fix (aus Projektinhaber-Fund):** `make golden-regen` schreibt die Golden **ohne writable Bind-Mount** (`tar`-Stream, host-seitig als User entpackt) — die committeten Golden gehören dem User, nicht mehr root.
+
+**Review-Historie:** **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review
+2026-07-24: 1 HIGH / 1 MED / 1 LOW / 3 INFO → HIGH in-Plan aufgelöst, startbar**. Der HIGH-1 (dateinamen-abgeleiteter
 Titel bräche den 044a-Byte-Golden) ist durch die Festlegung auf einen **festen statischen Titel** behoben; MED-1
 (PDF-Test-Objektzahl-Konstanten), LOW-1 (Golden-README) + INFO-3 (Spec-Notiz) eingearbeitet. **Zweites unabhängiges
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) (2026-07-24): 0 HIGH → startbar bestätigt**; dessen MED-1 (Sequenzierung — s. §6 R4), LOW-1 (PNG zwei `tEXt`
 verbindlich), LOW-2 (Titel direkt asserten), LOW-3 (Escape-Pfad un-getestet) + die „/Info-nicht-XMP"-Begründung
-eingearbeitet. **START BLOCKIERT bis [`slice-044a`](../done/slice-044a-golden-export-infra.md)-Closure** (§6 R4).
+eingearbeitet. **START BLOCKIERT bis [`slice-044a`](slice-044a-golden-export-infra.md)-Closure** (§6 R4).
 Kleiner Produktions-Slice.
 
 **Welle:** welle-5-erweiterung. **Vorgeschichte:** slice-025b/025c (self-rolled Vektor-PDF `pdf_writer` +
@@ -133,7 +137,7 @@ DXF/STL-Metadaten (Formate ohne Erzeuger-Feld-Konvention im b-cad-Subset).
   (Reader-Öffenbarkeits-Test 025b-MED-1 = Netz); der PNG-`tEXt`-Chunk braucht korrekte Länge + CRC-32 an gültiger
   Position (der PNG-Voll-Decode-Test 025c = Netz).
 - **R3 — Golden-Churn:** nur PDF- und PNG-Golden ändern sich; die übrigen vier bleiben byte-gleich.
-- **R4 — Sequenzierung: BLOCKIERT bis [`slice-044a`](../done/slice-044a-golden-export-infra.md)-Closure**
+- **R4 — Sequenzierung: BLOCKIERT bis [`slice-044a`](slice-044a-golden-export-infra.md)-Closure**
   (2te-Review-MED-1). slice-045 re-baseliniert `model.pdf`/`model.png` **auf den 044a-Golden auf**; solange 044a
   implementiert-aber-nicht-committet/geschlossen ist ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) 0 HIGH, aber nicht abgenommen), würde 045 frisch
   erzeugte, noch nicht abgenommene Golden re-baselinieren. **Start erst nach 044a → `done`.**

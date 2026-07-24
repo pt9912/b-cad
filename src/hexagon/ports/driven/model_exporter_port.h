@@ -4,6 +4,7 @@
 
 #include "hexagon/model/building.h"
 #include "hexagon/model/derived_geometry.h"
+#include "hexagon/model/export_provenance.h"
 
 namespace bcad::hexagon::ports::driven {
 
@@ -32,9 +33,13 @@ public:
     // Schreibt das Modell **atomar** nach `path`, unter Nutzung der kern-
     // gelieferten `derived`-Geometrie (format-selektiv; ggf. leer). Wirft bei
     // nicht beschreibbarem Zielpfad eine neutrale `std::runtime_error`.
+    // `provenance` (slice-046): injizierte Export-Herkunft (Datum/Quelle/Version),
+    // sichtbar/eingebettet gerendert. **Optional** — leer lässt den Adapter auf sein
+    // deterministisches Sentinel-Verhalten (044a/045) zurückfallen.
     virtual void write(const model::Building& building,
                        const model::DerivedGeometry& derived,
-                       const std::filesystem::path& path) const = 0;
+                       const std::filesystem::path& path,
+                       const model::ExportProvenance& provenance = {}) const = 0;
 };
 
 }  // namespace bcad::hexagon::ports::driven

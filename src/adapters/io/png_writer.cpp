@@ -167,6 +167,14 @@ std::string encodePng(const Bitmap& bitmap) {
         out += static_cast<char>(c);
     }
     emitChunk(out, "IHDR", ihdr);
+    // Statische Text-Metadaten (slice-045): tEXt-Chunks (keyword \0 text, Latin-1)
+    // direkt nach IHDR, vor IDAT. BEWUSST kein tIME-Chunk (dynamisch →
+    // nicht-reproduzierbar); die Werte sind konstant → byte-deterministisch (der
+    // Byte-Golden bleibt tragfähig). Konsistent mit STEP/IFC ('b-cad').
+    emitChunk(out, "tEXt",
+              std::string("Software").append(1, '\0').append("b-cad"));
+    emitChunk(out, "tEXt",
+              std::string("Title").append(1, '\0').append("b-cad Plan-Export"));
     emitChunk(out, "IDAT", zlibStored(raw));
     emitChunk(out, "IEND", "");
     return out;

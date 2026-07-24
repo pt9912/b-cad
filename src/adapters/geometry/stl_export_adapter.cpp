@@ -117,10 +117,21 @@ void appendMeshTriangles(std::string& out, const model::TriangleMesh& mesh) {
     }
 }
 
-std::string buildStl(const std::vector<model::TriangleMesh>& meshes) {
+std::string buildStl(const std::vector<model::TriangleMesh>& meshes,
+                     const model::ExportProvenance& provenance) {
     std::string out;
-    // 80-Byte-Header — NICHT mit "solid" beginnen (sonst ASCII-Heuristik).
-    const std::string banner = "b-cad binary STL export";
+    // 80-Byte-Header — NICHT mit "solid" beginnen (sonst ASCII-Heuristik). Bei
+    // injizierter Herkunft (slice-046) trägt er sie, sonst den festen Banner; in
+    // JEDEM Fall auf ≤80 Byte geklemmt — das rohe `80 - size` würde bei > 80 Byte
+    // `size_t`-underflowen (OOM/Crash, MR-006-046-MED-2).
+    std::string banner =
+        provenance.empty()
+            ? std::string("b-cad binary STL export")
+            : ("b-cad STL " + provenance.version + " " + provenance.source + " " +
+               provenance.date);
+    if (banner.size() > 80) {
+        banner.resize(80);
+    }
     out.append(banner);
     out.append(80 - banner.size(), '\0');
     std::uint32_t triangles = 0;
@@ -197,13 +208,14 @@ StlExportAdapter::StlExportAdapter(const ports::GeometryKernelPort& geometry)
 
 void StlExportAdapter::write(const model::Building& /*building*/,
                              const model::DerivedGeometry& derived,
-                             const fs::path& path) const {
+                             const fs::path& path,
+                             const model::ExportProvenance& provenance) const {
     std::vector<model::TriangleMesh> meshes;
     appendWallMeshes(meshes, derived, geometry_);
     appendSlabMeshes(meshes, derived, geometry_);
     appendRoofMeshes(meshes, derived);
     appendStairMeshes(meshes, derived);
-    atomicWrite(path, buildStl(meshes));  // vollständig im Speicher, dann atomar
+    atomicWrite(path, buildStl(meshes, provenance));  // im Speicher, dann atomar
 }
 
 }  // namespace bcad::adapters::geometry
