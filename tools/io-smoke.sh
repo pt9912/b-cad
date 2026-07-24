@@ -69,4 +69,20 @@ expect_export --export-pdf "$OUT/s.pdf"
 echo "io-smoke: PNG (Export-only, ADR-0016 — self-rolled Raster-Grundriss)"
 expect_export --export-png "$OUT/s.png"
 
-echo "io-smoke ok: IFC/DXF Export+Re-Import + STEP/STL/PDF/PNG Export — alle exit 0, Dateien nicht leer"
+# slice-047a: Projekt-Persistenz-CLI (--save/--open) + echte Provenance-Quelle.
+echo "io-smoke: Persistenz-Roundtrip (--save -> --open -> --export-pdf, echte Quelle)"
+PROJ="$OUT/haus.bcad"
+"$BIN" --save "$PROJ" || fail "--save exit!=0"
+test -s "$PROJ" || fail "--save erzeugte keine/leere .bcad ($PROJ)"
+"$BIN" --open "$PROJ" --export-pdf "$OUT/open.pdf" || fail "--open --export-pdf exit!=0"
+test -s "$OUT/open.pdf" || fail "--open --export-pdf erzeugte keine Datei"
+grep -aq "haus.bcad" "$OUT/open.pdf" || fail "PDF-Provenance traegt die echte Quelle (haus.bcad) nicht"
+echo "  ok: save->open->export-pdf, Provenance-Quelle = haus.bcad"
+
+echo "io-smoke: --open einer nicht existenten Datei -> exit!=0 (kein Crash)"
+if "$BIN" --open "$OUT/does-not-exist.bcad" --export-pdf "$OUT/x.pdf"; then
+    fail "--open einer fehlenden Datei muss exit!=0 liefern"
+fi
+echo "  ok: --open fehlend -> exit!=0"
+
+echo "io-smoke ok: IFC/DXF Export+Re-Import + STEP/STL/PDF/PNG Export + Persistenz-Roundtrip — alle exit 0"

@@ -14,6 +14,7 @@
 #include <sqlite3.h>
 
 #include "save_project_test_helper.h"  // saveProject (kern-gelieferter rise, 042d)
+#include "hexagon/services/geometry/stair_geometry.h"  // stairRiseMm (direkt genutzt, 047a)
 #include "hexagon/model/building.h"
 #include "hexagon/model/constants.h"
 

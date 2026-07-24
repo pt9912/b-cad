@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-047a — **Projekt-Persistenz-CLI verdrahtet (`--save`/`--open`) + echte Export-Quelle** (welle-5;
+  [ADR-0003](docs/plan/adr/0003-persistenz-sqlite.md)/[ADR-0006](docs/plan/adr/0006-relationales-schema-design.md);
+  die CLI-Naht des Umbrella-slice-047 „BLD-002/003 benutzer-erfüllbar"). Der bereits existierende, getestete
+  `SqliteProjectRepository` war **nirgends verdrahtet** — b-cad konnte per CLI/GUI **weder speichern noch öffnen**
+  (die AK-Klausel „when Speichern" war nicht demonstrierbar; **die welle-1-`done`-Markierung von LH-FA-BLD-002/003
+  war verfrüht** — Mechanik ≠ ganze Anforderung). 047a schließt die CLI-Hälfte: **`--save <pfad>`** speichert über
+  einen **promoteten, testbaren Save-Use-Case** (`services::saveProject` — baut `PersistedDerivations` fail-closed:
+  danglendes `from_storey` → neutraler `E-IO`-Wurf **vor** dem Save; aus dem Test-Helfer in die Produktion gehoben,
+  von CLI **und** künftiger GUI geteilt); **`--open <pfad>`** lädt ein Projekt → es wird die **Export-Quelle**, und
+  sein **Basename** füllt die [slice-046a](docs/plan/planning/done/slice-046a-export-provenance.md)-Provenance-
+  **„Quelle"** (statt leer) → Exporte tragen die echte Herkunft. Lade-/Speicherfehler werden gefangen (stderr +
+  Exit ≠ 0, kein Crash). AK: io-smoke-Roundtrip (`--save` → `--open` → `--export-pdf` mit grep-barer Quelle im
+  Footer; `--open` fehlend → Exit ≠ 0); Unit-Test des Save-Use-Case (Fake-Repo, Ableitung + fail-closed). MR-006
+  0 HIGH (2 MED [3-arg `save` + Ableitungs-Naht] + LOW eingearbeitet). **Offen (047b):** GUI „Datei → Speichern/
+  Öffnen" (Menü + Dialog + `StructureEditService`-Modell-Ersetzung) macht BLD-002/003 benutzer-vollständig.
 - slice-046b — **Sichtbarer PNG-Provenance-Titelblock (5×7-Bitmap-Font) + injizierte PNG-`tEXt`** (welle-5;
   [ADR-0016](docs/plan/adr/0016-pdf-png-backend.md)). Vervollständigt „Herkunft **sichtbar in PDF *und* PNG**": ein
   self-rolled 5×7-ASCII-Font (`png_font.h`, kein Qt/keine externe Datei) + `Bitmap::drawText` rendern die Fußzeile

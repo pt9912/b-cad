@@ -15,6 +15,7 @@
 #include <array>
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -33,6 +34,7 @@
 #include "adapters/io/png_export_adapter.h"
 #include "adapters/io/ifc_export_adapter.h"
 #include "adapters/io/ifc_import_adapter.h"
+#include "adapters/persistence/sqlite_project_repository.h"
 #include "adapters/plugin/plugin_host.h"
 #include "adapters/ui/command/edit_drawing_guide_line_sink.h"
 #include "adapters/ui/command/plan_view_plan_source.h"
@@ -43,6 +45,7 @@
 #include "hexagon/ports/driving/exchange_model_port.h"
 #include "hexagon/services/bootstrap_info.h"
 #include "hexagon/services/exchange_service.h"
+#include "hexagon/services/manage_project.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
@@ -104,7 +107,7 @@ std::optional<model::LayerId> buildAcc001KernDemo(
 // Berührung — der Kern/die Adapter bleiben clock-frei (Determinismus). Datum aus
 // der Systemuhr, Version aus `application_banner()`; `source` bleibt leer, bis
 // slice-047 ein geladenes Projekt (Basename) liefert.
-model::ExportProvenance currentProvenance() {
+model::ExportProvenance currentProvenance(const std::string& source) {
     const std::time_t now =
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::array<char, 32> buf{};
@@ -112,23 +115,26 @@ model::ExportProvenance currentProvenance() {
     if (::localtime_r(&now, &tm_buf) != nullptr) {
         std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M", &tm_buf);
     }
-    return {std::string(buf.data()), std::string{},
+    // slice-047a: `source` = Basename der geöffneten Projektdatei (leer ohne --open).
+    return {std::string(buf.data()), source,
             bcad::hexagon::services::application_banner()};
 }
 
+// slice-047a: exportiert ein **übergebenes** `Building` + `ExportProvenance` (das
+// Modell — Demo oder via --open geladen — und die Herkunft bestimmt `main` einmal).
 std::optional<int> runExportIfRequested(
     const QStringList& cli, const char* flag,
     bcad::hexagon::ports::driving::ExchangeModelPort& exchange,
-    services::StructureEditService& service,
+    const model::Building& model,
+    const model::ExportProvenance& provenance,
     bcad::hexagon::ports::driving::ExchangeFormat format, const char* label) {
     const int index = static_cast<int>(cli.indexOf(QString::fromLatin1(flag)));
     if (index < 0 || index + 1 >= cli.size()) {
         return std::nullopt;
     }
     const std::string path = cli.at(index + 1).toStdString();
-    buildAcc001KernDemo(service);  // Demo-Modell als Export-Quelle
     try {
-        exchange.exportModel(service.building(), path, format, currentProvenance());
+        exchange.exportModel(model, path, format, provenance);
         std::cout << label << " exportiert -> " << path << '\n';
         return 0;
     } catch (const std::exception& e) {
@@ -155,6 +161,81 @@ void loadPluginsFromCli(const QStringList& cli,
         const auto result = host.load(cli.at(i + 1).toStdString());
         (result.ok ? std::cout : std::cerr) << result.message << '\n';
     }
+}
+
+// slice-047a: headless CLI-Modus. Verarbeitet Projekt-Persistenz (`--save`/`--open`)
+// und Export (`--export-*`) und liefert den Exit-Code; **nullopt** → kein CLI-Op → GUI.
+// Ausgelagert aus `main` (Kognitive-Komplexität, lint-Gate). Das via `--open` geladene
+// (oder Demo-)`Building` ist die Quelle; sein Basename füllt die Provenance-Quelle.
+std::optional<int> runHeadlessCli(
+    const QStringList& cli,
+    bcad::hexagon::ports::driving::ExchangeModelPort& exchange,
+    services::StructureEditService& service) {
+    using bcad::hexagon::ports::driving::ExchangeFormat;
+    struct ExportOption {
+        const char* flag;
+        ExchangeFormat format;
+        const char* label;
+    };
+    const std::array<ExportOption, 6> export_options = {{
+        {"--export-ifc", ExchangeFormat::Ifc, "IFC"},
+        {"--export-stl", ExchangeFormat::Stl, "STL"},
+        {"--export-step", ExchangeFormat::Step, "STEP"},
+        {"--export-dxf", ExchangeFormat::Dxf, "DXF"},
+        {"--export-pdf", ExchangeFormat::Pdf, "PDF"},
+        {"--export-png", ExchangeFormat::Png, "PNG"},
+    }};
+    const int open_index = static_cast<int>(cli.indexOf(QStringLiteral("--open")));
+    const int save_index = static_cast<int>(cli.indexOf(QStringLiteral("--save")));
+    const bool have_open = open_index >= 0 && open_index + 1 < cli.size();
+    const bool have_save = save_index >= 0 && save_index + 1 < cli.size();
+    bool have_export = false;
+    for (const ExportOption& opt : export_options) {
+        if (cli.indexOf(QString::fromLatin1(opt.flag)) >= 0) {
+            have_export = true;
+        }
+    }
+    if (!(have_open || have_save || have_export)) {
+        return std::nullopt;  // kein CLI-Op → GUI
+    }
+
+    const bcad::adapters::persistence::SqliteProjectRepository repository;
+    model::Building work_model;
+    std::string source;
+    if (have_open) {
+        const std::string open_path = cli.at(open_index + 1).toStdString();
+        try {
+            work_model = repository.load(open_path);
+            source = std::filesystem::path(open_path).filename().string();
+            std::cout << "Projekt geöffnet <- " << open_path << '\n';
+        } catch (const std::exception& e) {
+            std::cerr << "Öffnen fehlgeschlagen: " << e.what() << '\n';
+            return 1;
+        }
+    } else {
+        buildAcc001KernDemo(service);  // Demo als Export-/Save-Quelle (kein --open)
+        work_model = service.building();
+    }
+    const model::ExportProvenance provenance = currentProvenance(source);
+
+    if (have_save) {
+        const std::string save_path = cli.at(save_index + 1).toStdString();
+        try {
+            bcad::hexagon::services::saveProject(repository, work_model, save_path);
+            std::cout << "Projekt gespeichert -> " << save_path << '\n';
+        } catch (const std::exception& e) {
+            std::cerr << "Speichern fehlgeschlagen: " << e.what() << '\n';
+            return 1;
+        }
+    }
+
+    for (const ExportOption& opt : export_options) {
+        if (const auto rc = runExportIfRequested(cli, opt.flag, exchange, work_model,
+                                                 provenance, opt.format, opt.label)) {
+            return rc;  // optional direkt zurück (kein int-Round-Trip, bugprone-*)
+        }
+    }
+    return 0;  // headless: Persistenz/Export erledigt, keine GUI
 }
 
 }  // namespace
@@ -240,27 +321,10 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Headless-Export je Format (IFC io-resident, STEP/STL geometrie-resident,
-    // DXF/PDF/PNG io-resident) — Tabelle statt wiederholter if-Blöcke.
-    using bcad::hexagon::ports::driving::ExchangeFormat;
-    struct ExportOption {
-        const char* flag;
-        ExchangeFormat format;
-        const char* label;
-    };
-    const std::array<ExportOption, 6> export_options = {{
-        {"--export-ifc", ExchangeFormat::Ifc, "IFC"},
-        {"--export-stl", ExchangeFormat::Stl, "STL"},
-        {"--export-step", ExchangeFormat::Step, "STEP"},
-        {"--export-dxf", ExchangeFormat::Dxf, "DXF"},
-        {"--export-pdf", ExchangeFormat::Pdf, "PDF"},
-        {"--export-png", ExchangeFormat::Png, "PNG"},
-    }};
-    for (const ExportOption& opt : export_options) {
-        if (const auto rc = runExportIfRequested(cli, opt.flag, exchange, service,
-                                                 opt.format, opt.label)) {
-            return *rc;
-        }
+    // slice-047a: headless CLI (--open/--save/--export) — ausgelagert (hält die
+    // main-Kognitive-Komplexität unter der lint-Schwelle). nullopt → GUI unten.
+    if (const auto rc = runHeadlessCli(cli, exchange, service)) {
+        return *rc;
     }
 
     // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz, dann
