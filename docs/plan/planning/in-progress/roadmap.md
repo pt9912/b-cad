@@ -22,6 +22,43 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (Ruhe-Sentinel; beim Öffnen des nächsten
 Slice im selben `git mv`-Commit entfernen).
 
+---
+
+### ▶ Tagesabschluss 2026-07-24 — Stand & nächste Sitzung
+
+**Heute geliefert (alles auf `main`, `make gates` grün, Arbeitsbaum sauber):**
+
+- **`slice-047a` done** (`70a30f1`) — Projekt-Persistenz-CLI (`--save`/`--open`) + echte Export-Quelle.
+- **Benutzerhandbuch v0.1.0** (`f202249`).
+- **`slice-048a` done** (`855fe7a`) — DRW-001 Fangpunkte **AK-Schärfung** (Lastenheft 0.1.16, spez. §1); erste
+  Anforderung der **DRW-Aids-Kampagne** (alle offenen `DRW-*` durcharbeiten: 001→002→003→004→007).
+- **`slice-049` GEPLANT** (`145ae20`) — **Spec-Straten prozess-rein**: »welle-N«-Purge (3 Straten, 58 Stellen) +
+  `matrix`-Gate-Härtung (`temporal`-Klasse `token '[Ww]elle-\d'`; Mechanik fixture-bestätigt).
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**.
+- **`slice-050` GEPLANT** (`746cfc9`) — **Tooling-Konsolidierung**: `gate-consistency.sh` → d-check-Modul
+  `targets`; `idlink.py` → `d-check --repair` (`make doc-repair`); `arch-check.sh` bleibt.
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **3 HIGH
+  eingearbeitet** (Ausführung baseline-getrieben).
+
+**Kontext-Erkenntnis (Tooling-Audit):** d-check (gepinnt v0.51.1) ist fähiger als die Konfig-Kommentare
+vermuten lassen — Fähigkeiten IMMER am gepinnten Handbuch (`d-check`-Repo `docs/user/benutzerhandbuch.md`)
+prüfen, nicht inferieren.
+
+**▶ NÄCHSTE SITZUNG — drei startbare Fäden (freie Wahl, je eigenes Impl-`git mv` open→in-progress):**
+
+1. **`slice-050`** ausführen (Tooling-Konsolidierung) — zuerst `targets`-Baseline-Lauf (volle
+   `gate-phantom`/`gate-undocumented`-Menge), dann Doku entschärfen/`exempt-targets`, Negativprobe, dann Retire.
+2. **`slice-049`** ausführen (welle-Purge + `matrix`-Härtung) — Purge + `.d-check.yml`-`temporal`-Klasse + neue
+   MR im **selben Commit** (Regel darf nicht vor der Bereinigung grün sein).
+3. **`slice-048b`** (DRW-001-**Impl**: Fangen im Canvas — `PlanView`-Fang-Punkte + Bildschirm-Schwellwert +
+   Maus-Auswahl + `QMouseEvent`-AK; [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) einschlägig), dann DRW-002/003/004/007.
+
+*Empfehlung:* 049 + 050 sind kleine, in sich geschlossene Gate-/Hygiene-Slices (beide berühren `.d-check.yml`,
+aber unabhängig); 048b ist der eigentliche Feature-Fortschritt der DRW-Kampagne. Reihenfolge nach Priorität des
+Projektinhabers.
+
+---
+
 **[`slice-048a`](../done/slice-048a-drw-001-fangpunkte-ak-spec.md) done** (2026-07-24): **DRW-001 Fangpunkte —
 AK-Schärfung** (DRW-Aids-Strang, erste offene DRW-Anforderung der Kampagne). Lastenheft **0.1.16**
 ([`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001) Outline → AK: die gezeichnete Position rastet
