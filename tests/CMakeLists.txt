@@ -48,6 +48,8 @@ add_executable(bcad_adapter_tests
     adapters/test_pdf_export.cpp       # slice-025b: PDF-Export-AK + voll-Decode-Orakel + Maßstabs-Sonde + E-IO-001 + export-only
     adapters/test_png_export.cpp       # slice-025c: PNG-Export-AK + voll-Decode-Orakel (Inflate/Adler/CRC/Filter) + degenerierte BBox + E-IO-001 + export-only
     adapters/test_plugin_host.cpp      # slice-026b: Plugin-Host-AK (reale .so durch echten Host: Happy/werfend/ABI-Mismatch/defekt/symbollos) + Kontext-Invalidierung
+    adapters/test_golden_export.cpp    # slice-044a: byte-genaues Golden-Netz aller 6 Austauschformate (Encoder-Drift-Fang, komplementär zu den Struktur-Orakeln)
+    adapters/golden_model.cpp          # slice-044a: geteiltes goldenModel() (auch von golden_gen gelinkt — kein Copy-Drift)
 )
 target_link_libraries(bcad_adapter_tests
     PRIVATE bcad_adapters bcad_hexagon GTest::gtest_main)
@@ -57,9 +59,23 @@ target_link_libraries(bcad_adapter_tests
 set_target_properties(bcad_adapter_tests PROPERTIES ENABLE_EXPORTS ON)
 target_compile_definitions(bcad_adapter_tests
     PRIVATE BCAD_TEST_PLUGIN_DIR="${CMAKE_BINARY_DIR}/plugins")
+# slice-044a: der Golden-Byte-Vergleich liest die QUELL-Golden (committet), nicht
+# das Build-Dir — Muster BCAD_TEST_PLUGIN_DIR, aber auf den Quellbaum gerichtet.
+# Das Docker-Build-Image trägt den Quellbaum (COPY . .) → zur Testlaufzeit lesbar.
+target_compile_definitions(bcad_adapter_tests
+    PRIVATE BCAD_TEST_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/adapters/golden")
 add_dependencies(bcad_adapter_tests
     bcad_example_plugin bcad_throwing_plugin bcad_unload_throwing_plugin
     bcad_abi_mismatch_plugin bcad_no_symbols_plugin)
+
+# slice-044a: dedizierter Golden-Generator (KEIN Test — kein gtest_discover).
+# Linkt dieselbe goldenModel()-TU wie der Byte-Vergleich (kein Copy-Drift) +
+# bcad_adapters (die echten Export-Adapter). `make golden-regen` ruft ihn mit
+# einem writable Ausgabe-Verzeichnis; er läuft im `build`-Image (BUILD_TESTING).
+add_executable(golden_gen
+    adapters/golden_gen.cpp
+    adapters/golden_model.cpp)
+target_link_libraries(golden_gen PRIVATE bcad_adapters bcad_hexagon)
 
 include(GoogleTest)
 gtest_discover_tests(bcad_tests)

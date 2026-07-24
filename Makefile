@@ -29,7 +29,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check schema-regen acc-002-beleg run io-smoke
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check schema-regen acc-002-beleg run io-smoke golden-regen golden-check
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -151,6 +151,36 @@ schema-regen: ## ADR-0006 — schema.sql aus data-model.yaml neu erzeugen (danac
 		--deterministic --report=/dev/null \
 		> src/adapters/persistence/schema.sql
 	@echo "schema-regen ok: schema.sql neu erzeugt — jetzt 'make schema-check' zur Verifikation"
+
+# slice-044a — Export-Golden aller sechs Austauschformate (Muster ADR-0006
+# schema-regen/schema-check). Beide BEWUSST NICHT in `make gates`: der Generator
+# ist ein GUI-freies, aber OCC-/Adapter-schweres Binary im build-Image (die
+# Byte-Golden-Tests selbst laufen als GoogleTests IN `make test`/`gates` — sie
+# lesen die committeten Golden, brauchen die Regen nicht). golden-regen schreibt
+# über einen writable Mount (Muster acc-002-beleg), NICHT den schema-regen-stdout-
+# Redirect (untauglich für 6 Dateien inkl. binärer STL/PNG/PDF). Der dedizierte
+# `golden_gen` baut dasselbe goldenModel() wie der Test (kein buildAcc001-Drift,
+# MR-006-044-MED-2). Läuft display-frei (PDF/PNG self-rolled, STEP/STL OCC —
+# kein xvfb nötig). Beide gehören in die CI-Befehlsliste (Muster schema-check).
+golden-regen: ## slice-044a — Export-Golden (6 Formate) neu erzeugen (danach golden-check); KEIN Gate
+	$(GATE) --target build -t $(IMAGE):build .
+	$(DOCKER) run --rm \
+		-v $(CURDIR)/tests/adapters/golden:/out \
+		$(IMAGE):build ./build/tests/golden_gen /out
+	@echo "golden-regen ok: tests/adapters/golden/model.* neu erzeugt — jetzt 'make golden-check'"
+
+# golden-check: Regen-Drift — die committeten Golden (ins Image gebacken, COPY . .)
+# müssen byte-genau dem entsprechen, was `golden_gen` frisch erzeugt. Fängt ein
+# vergessenes golden-regen nach einer Encoder-Änderung. Zwei Läufe im selben Image
+# müssen zudem run-zu-run identisch sein (Determinismus, u. a. der STEP-HEADER-Fix).
+golden-check: ## slice-044a — Drift: committete Golden == golden_gen (NICHT in gates; in CI)
+	$(GATE) --target build -t $(IMAGE):build .
+	$(DOCKER) run --rm $(IMAGE):build bash -c '\
+		mkdir -p /tmp/golden && ./build/tests/golden_gen /tmp/golden \
+		&& for f in model.ifc model.dxf model.step model.stl model.pdf model.png; do \
+			diff -q tests/adapters/golden/$$f /tmp/golden/$$f || exit 1; \
+		done \
+		&& echo "golden-check ok: committete Golden == golden_gen (byte-genau)"'
 
 # `build` ist NICHT separat gelistet: test/lint/coverage-gate sind
 # Dockerfile-Stages FROM build und kompilieren die Target-Kette bereits

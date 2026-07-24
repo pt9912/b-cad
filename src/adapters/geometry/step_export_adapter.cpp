@@ -12,12 +12,15 @@
 #include <string>
 #include <system_error>
 
+#include <APIHeaderSection_MakeHeader.hxx>
 #include <BRepBuilderAPI_Transform.hxx>
 #include <BRep_Builder.hxx>
 #include <IFSelect_ReturnStatus.hxx>
 #include <Interface_Static.hxx>
 #include <STEPControl_Writer.hxx>
 #include <Standard_Failure.hxx>
+#include <StepData_StepModel.hxx>
+#include <TCollection_HAsciiString.hxx>
 #include <TopoDS_Compound.hxx>
 #include <TopoDS_Shape.hxx>
 #include <gp_Trsf.hxx>
@@ -104,6 +107,30 @@ TopoDS_Compound buildSolidCompound(const model::DerivedGeometry& derived) {
     return compound;
 }
 
+// STEP-HEADER byte-deterministisch machen (slice-044a, Muster `ifc_spf_writer`
+// `kSentinelTs`). Der OCC-`STEPControl_Writer` brennt sonst die **Wall-Clock**
+// (FILE_NAME.time_stamp) **und die OCC-Version** (preprocessor_version /
+// originating_system, z. B. "Open CASCADE STEP processor 7.x") in den ISO-10303-21-
+// HEADER — beides nicht-deterministisch bzw. versions-gebunden. Feste Sentinel-Werte
+// (leerer Name/Autor, Epoch-Zeitstempel, "b-cad" statt OCC-Versions-String) machen
+// den Export byte-reproduzierbar (Golden-file-Netz) und verbessern den echten Export.
+// Die DATA-Section (B-Rep-Topologie) bleibt OCC-versions-abhängig (ADR-0004, benannt).
+constexpr const char* kStepSentinelTimestamp = "1970-01-01T00:00:00";
+
+void fixDeterministicHeader(STEPControl_Writer& writer) {
+    const Handle(StepData_StepModel) model = writer.Model();
+    APIHeaderSection_MakeHeader header(model);
+    header.SetName(new TCollection_HAsciiString(""));
+    header.SetTimeStamp(new TCollection_HAsciiString(kStepSentinelTimestamp));
+    header.SetAuthorValue(1, new TCollection_HAsciiString(""));
+    header.SetOrganizationValue(1, new TCollection_HAsciiString(""));
+    header.SetPreprocessorVersion(new TCollection_HAsciiString("b-cad"));
+    header.SetOriginatingSystem(new TCollection_HAsciiString("b-cad"));
+    header.SetAuthorisation(new TCollection_HAsciiString(""));
+    header.SetDescriptionValue(1, new TCollection_HAsciiString("b-cad STEP export subset"));
+    header.Apply(model);
+}
+
 }  // namespace
 
 void StepExportAdapter::write(const model::Building& /*building*/,
@@ -118,6 +145,8 @@ void StepExportAdapter::write(const model::Building& /*building*/,
             throw std::runtime_error(
                 "E-IO-002: STEP-Transfer fehlgeschlagen; event=persist_error");
         }
+        // Byte-Determinismus vor dem Write: Sentinel-HEADER statt Wall-Clock/OCC-Version.
+        fixDeterministicHeader(writer);
 
         // Atomar: in Temp schreiben, dann umbenennen. Ein nicht beschreibbarer
         // Zielpfad lässt Write scheitern → E-IO-001 (kein Teil-Export).

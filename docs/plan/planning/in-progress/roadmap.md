@@ -22,6 +22,13 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (Ruhe-Sentinel; beim Öffnen des nächsten
 Slice im selben `git mv`-Commit entfernen).
 
+**[`slice-044a`](../done/slice-044a-golden-export-infra.md) done** (2026-07-24): Byte-Golden aller 6 Export-Formate
++ STEP-Header-Fix (byte-deterministisch), [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+0 HIGH + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) 0 HIGH,
+`make gates` grün (262 Tests). Folge-Naht [`slice-044b`](../open/slice-044b-golden-import-fremd.md) (Import-Golden-fremd)
+offen; [`slice-045`](../open/slice-045-pdf-info-metadaten.md) (statische PDF/PNG-Metadaten, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH) **nach dieser
+044a-Closure startbar**.
+
 **Der DRW-Interaktiv-Strang ist v1 FERTIG** — [`slice-043`](../done/slice-043-drw-canvas-impl.md) **done**
 (2026-07-23; Schritt 5 der Roadmap, der ursprüngliche Endpunkt): interaktiver 2D-Zeichen-Canvas
 ([ADR-0019](../../adr/0019-drw-2d-canvas.md)). Neues 2D-`view/`-`CanvasWidget` (`QWidget`/`QPainter`) + reiner
@@ -53,27 +60,31 @@ verhaltens-invariant (254 Tests, Coverage 91,5 %).
 
 ---
 
-### ▶ STARTBAR (nächste Sitzung): [`slice-044`](../open/slice-044-golden-files-austauschformate.md) — Golden files für alle Austauschformate
+### ▶ Golden files: [`slice-044a`](../done/slice-044a-golden-export-infra.md) **done** · [`slice-044b`](../open/slice-044b-golden-import-fremd.md) + [`slice-045`](../open/slice-045-pdf-info-metadaten.md) **offen**
 
-**Plan geschärft + [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-durch: 0 HIGH / 2 MED / 3 LOW / 2 INFO → startbar** ([Report](../../../reviews/2026-07-23-slice-044-plan.md)),
-in `open/`. Ziel: byte-genaue Golden files als Netz gegen **Encoder-Drift bei unveränderter Semantik** (komplementär
-zu den vorhandenen Decode-Orakeln).
+**Split ausgeführt** (Reviewer-Empfehlung, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+0 HIGH, [Report](../../../reviews/2026-07-23-slice-044-plan.md)). Ziel: byte-genaue Golden files als Netz gegen
+**Encoder-Drift bei unveränderter Semantik** (komplementär zu den vorhandenen Decode-Orakeln).
 
-**Empfohlener Schnitt (Reviewer): Split — morgen mit der 044a-Naht starten:**
-- **044a (jetzt startbar):** Export-Golden **alle 6** (byte-exakt: IFC/DXF/PDF/PNG sofort; **STEP** via Adapter-
-  `FILE_NAME`-Header-Fix [OCC `APIHeaderSection_MakeHeader`, deterministisch]; **STL** OCC-versions-gebunden, Caveat)
-  + `BCAD_TEST_GOLDEN_DIR`-Compile-Def + `.gitattributes` (binär) + `make golden-regen`/`golden-check` (Muster
-  `schema-regen`/`schema-check`, CI-only). **Voll in-Repo, deterministisch.** Vor Code: MED-2 (dedizierter Generator
-  + geteilte `goldenModel()`-TU, NICHT über das Binary) + LOW-3.
-- **044b (danach):** Import-Golden-**fremd** (nur IFC+DXF haben Import): IFC aus [buildingSMART](https://github.com/buildingSMART/Sample-Test-Files)
+- **044a — done 2026-07-24:** Export-Golden **alle 6** (byte-exakt: IFC/DXF/PDF/PNG; **STEP** via Adapter-
+  `FILE_NAME`-Header-Fix [OCC `APIHeaderSection_MakeHeader`+`Apply`, byte-verifiziert]; **STL** OCC-versions-gebunden,
+  Caveat) + `BCAD_TEST_GOLDEN_DIR`-Compile-Def + `.gitattributes` (binär) + `make golden-regen`/`golden-check` (Muster
+  `schema-regen`/`schema-check`, CI-only) + dedizierter `golden_gen` mit geteilter `goldenModel()`-TU. **262 Tests**
+  (+6 `GoldenExport.*`), `golden-check` grün. [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+  0 HIGH (STEP-Fix header-only, DATA unberührt; Determinismus empirisch bestätigt).
+- **044b — offen (Skelett in `open/`):** Import-Golden-**fremd** (nur IFC+DXF haben Import): IFC aus [buildingSMART](https://github.com/buildingSMART/Sample-Test-Files)
   (CC-BY-4.0), DXF aus [ezdxf](https://github.com/mozman/ezdxf)/[ixmilia](https://github.com/ixmilia/dxf) (MIT).
   **MED-1 blockiert 044b-Start:** b-cads IFC-Import **wirft [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)**
   (Ganzdatei-Ablehnung), wenn *einer* Wand die 'Axis'-Polyline **oder** Spatial-Containment fehlt → Fixture je Wand
   **kuratieren** (ggf. minimale konforme IFC erzeugen); DXF **2D-`LINE`** (nicht 3D — b-cad ist 2D-only).
+- **045 — offen (`open/`, [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 2× 0 HIGH):**
+  PDF-`/Info` + PNG-`tEXt` statische Erzeuger-/Titel-Metadaten (determinismus-neutral, kein Datum/`/ID`/`tIME`);
+  re-baseliniert PDF/PNG-Golden — war bis zur 044a-Closure blockiert, **jetzt startbar**.
 
-**Nächste Aktion:** „**slice-044a implementieren**" (Lifecycle open→in-progress + Sentinel, dann Export-Golden +
-Infra + STEP-Fix). Danach 044b. — Alternativ ein anderer Strang aus der freien Menü unten.
+**Nächste Aktion:** `slice-045` (statische PDF/PNG-Metadaten) **oder** `slice-044b` (Fremd-Import-Golden) starten —
+je eigenes [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+bereits durch (045) bzw. beim Start (044b). Reihenfolge = Projektinhaber-Wahl.
+— Alternativ ein anderer Strang aus dem freien Menü unten.
 
 `slice-041a` **done** (2026-07-23): die **DRW-Canvas-Grundsatz-ADRs sind Accepted** — [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)
 (driven Adapter serialisieren, der Kern liefert abgeleitete Geometrie als `DerivedGeometry`-Bündel; alle

@@ -1,0 +1,16 @@
+# slice-044a: binäre Export-Golden als `binary` markieren — verhindert
+# CRLF-/Whitespace-Mangling und markiert sie als Nicht-Diff in der Review.
+# `**/` matcht null oder mehr Verzeichnisse (deckt `golden/model.*` und die
+# künftigen `golden/foreign/*` aus slice-044b). Text-Golden (IFC/DXF/STEP)
+# bleiben bewusst normal — sie sind im Review diff-bar.
+tests/adapters/golden/**/*.stl binary
+tests/adapters/golden/**/*.png binary
+tests/adapters/golden/**/*.pdf binary
+# Text-Golden (IFC/DXF/STEP): im Review diff-bar, aber NIE EOL-normalisieren
+# (MR-009-044a-Review LOW-MED). Unter `core.autocrlf=true` / globalem `* text=auto`
+# würde git sie auf CRLF normalisieren, während die Exporter LF schreiben → der
+# Byte-Vergleich `GoldenExport.{Ifc,Dxf,Step}ByteIdentical` bräche. `-text` hält
+# die Bytes exakt (LF), `diff` bleibt textuell.
+tests/adapters/golden/**/*.ifc -text
+tests/adapters/golden/**/*.dxf -text
+tests/adapters/golden/**/*.step -text

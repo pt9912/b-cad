@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-044a — **Byte-genaue Golden files (Export) für alle sechs Austauschformate** (welle-5; QA-/Test-
+  Infrastruktur, die 044a-Naht des gesplitteten slice-044). Ein festes `goldenModel()` (Wände + Decke + Dach +
+  Treppe + sichtbare Hilfslinie) wird je Format über den echten `ExchangeService` exportiert und **byte-genau**
+  gegen eine committete Referenz (`tests/adapters/golden/model.{ifc,dxf,step,stl,pdf,png}`) verglichen — fängt
+  **Encoder-Drift bei unveränderter Semantik**, **komplementär** zu den vorhandenen Decode-/Struktur-Orakeln (die
+  bleiben). Der Vergleich läuft als GoogleTest (`GoldenExport.*`) **in `make test`/`make gates`**; die Golden werden
+  über `make golden-regen` (dedizierter `golden_gen`, **dieselbe** `goldenModel()`-TU — **nicht** das Produktions-
+  Binary), `make golden-check` prüft Regen-Drift (byte-genau, CI-only wie `schema-check`). Neu: `BCAD_TEST_GOLDEN_DIR`-
+  Compile-Def (auf den Quellbaum) + `.gitattributes` (binäre Golden `*.stl`/`*.png`/`*.pdf`). **Produktionscode:**
+  `step_export_adapter.cpp` fixiert den ISO-10303-21-HEADER (OCC `APIHeaderSection_MakeHeader`+`Apply`) auf feste
+  Sentinel-Werte (Epoch-Zeitstempel, `b-cad` statt OCC-Versions-String, analog `ifc_spf_writer`) → STEP wird
+  **byte-deterministisch** (verbessert auch den echten Export); die Struktur-Orakel bleiben grün. STL/STEP-DATA-
+  Topologie bleiben OCC-versions-gebunden ([ADR-0004](docs/plan/adr/0004-toolchain-dependency-pinning.md); Caveat
+  dokumentiert). 262 Tests (+6). Die Import-Golden-fremd-Naht ist als slice-044b ausgegliedert.
 - slice-043 — **Interaktiver DRW-2D-Zeichen-Canvas** (welle-5; [ADR-0019](docs/plan/adr/0019-drw-2d-canvas.md)-Konsequenz;
   der ursprüngliche Roadmap-Endpunkt). Der Nutzer **zeichnet** eine Hilfslinie per Links-Zug auf einer neuen
   2D-Zeichenfläche (`CanvasWidget`, `QWidget`/`QPainter` — **nicht** der orbit-verdrahtete 3D-Viewer), sie

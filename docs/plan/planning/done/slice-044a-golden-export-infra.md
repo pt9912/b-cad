@@ -1,7 +1,7 @@
 ---
-id: slice-044
-titel: Golden files für alle Austauschformate — Export-Golden (6) + Import-Golden fremd (IFC/DXF)
-status: open
+id: slice-044a
+titel: Golden files — Export-Golden (6) + Infrastruktur + STEP-Header-Fix (die 044a-Naht)
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-IO-001](../../../../spec/lastenheft.md#lh-fa-io-001--ifc-import), [LH-FA-IO-006](../../../../spec/lastenheft.md#lh-fa-io-006)]
 adr_refs: [[ADR-0013](../../adr/0013-ifc-bibliothek.md), [ADR-0014](../../adr/0014-step-stl-export-backend.md), [ADR-0015](../../adr/0015-dxf-backend.md), [ADR-0016](../../adr/0016-pdf-png-backend.md), [ADR-0006](../../adr/0006-relationales-schema-design.md), [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)]
@@ -9,7 +9,9 @@ adr_refs: [[ADR-0013](../../adr/0013-ifc-bibliothek.md), [ADR-0014](../../adr/00
 
 # Slice 044: Golden files für alle Austausch-Formate
 
-**Status:** open (Plan — **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review 2026-07-23: 0 HIGH / 2 MED / 3 LOW / 2 INFO → startbar, Split empfohlen** ([Report](../../../reviews/2026-07-23-slice-044-plan.md)). Determinismus + Laufzeit-Mechanik am Code verifiziert. MED-1 [IFC-Import wirft [`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) bei fehlender 'Axis'/Containment — Fixture-Kriterium + Test-Erwartung korrigiert] + MED-2 [dedizierter Generator, geteilte `goldenModel()`-TU, writable-Mount] + LOW-1/2/3 + INFO eingearbeitet. **Empfohlener Schnitt: die 044a-Naht [Export-Golden + Infra + STEP-Fix] jetzt starten; die Import-Golden-fremd-Naht [044b] danach** (die IFC-Fixture braucht Kuratierung je MED-1). Start auf Projektinhaber-Wort).
+**Status:** done (2026-07-24 — implementiert + [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) 0 HIGH; `make gates` grün). Der **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review 2026-07-23** ([Report](../../../reviews/2026-07-23-slice-044-plan.md)) ging mit **0 HIGH / 2 MED / 3 LOW / 2 INFO** durch (Split empfohlen; MED-1 [IFC-[`E-IO-003`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)], MED-2 [dedizierter Generator + geteilte `goldenModel()`-TU + writable-Mount], LOW-1/2/3, INFO eingearbeitet).
+
+> **Split ausgeführt ([MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)(3)):** Dieser Plan ist die **044a-Naht** — **Export-Golden (alle 6) + Infrastruktur + STEP-Header-Fix**, voll in-Repo/deterministisch. Die **Import-Golden-fremd-Naht (IFC/DXF)** ist als eigener Plan **[`slice-044b`](../open/slice-044b-golden-import-fremd.md)** (in `open/`) ausgegliedert — sie hängt an externer Datei-Beschaffung + Kuratierung je MED-1 und nutzt die 044a-Infrastruktur. Die DoD-Abschnitte unten sind entsprechend markiert: **„Import-Golden fremd" gehört zu 044b** (hier nicht umgesetzt).
 
 **Welle:** welle-5-erweiterung. **QA-/Test-Infrastruktur-Slice** (Quergewerk-nah, Muster slice-022 io-smoke) — mit
 **einer** produktionscode-Änderung (STEP-Header-Fixierung, s. DoD). **Vorgänger:** slice-043 (done); baut auf den
@@ -216,9 +218,41 @@ ein `make gates`-Member (Golden-Check ist CI/manuell wie `schema-check`/`io-smok
 - **Modus:** GF; **Dichte:** niedrig (nur Header-Fixierung). **Risiko:** niedrig — Struktur-Orakel als Netz;
   **Code-Review** ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)) empfohlen.
 
-## 9. Closure-Notiz
+## 9. Closure-Notiz (044a — 2026-07-24)
 
-*(bei Closure ausgefüllt: Infrastruktur [`BCAD_TEST_GOLDEN_DIR`, `.gitattributes`, `golden-regen`/`golden-check`],
-STEP-Header-Fix + Byte-Determinismus, Export-Golden-6 [byte-exakt; STL-OCC-Caveat-Entscheidung], Import-Golden-
-fremd [gewählte IFC/DXF-Dateien + Vetting-Ergebnis + Provenance/Attribution], Split-Entscheidung [044 vs 044a/b],
-Review-Ergebnisse [[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) + Code-Review], Lerneintrag.)*
+**Umgesetzt (die 044a-Naht):**
+- **Infrastruktur:** `BCAD_TEST_GOLDEN_DIR`-Compile-Def (auf den **Quell**baum `tests/adapters/golden`), neues
+  `.gitattributes` (`*.stl`/`*.png`/`*.pdf` unter `tests/adapters/golden/**` als `binary`), `make golden-regen` +
+  `make golden-check` (Muster `schema-regen`/`schema-check`; **NICHT** in `make gates`, in der CI-Befehlsliste).
+- **STEP-Header-Fix (Produktionscode):** `step_export_adapter.cpp` fixiert den ISO-10303-21-HEADER
+  (`FILE_NAME`/`FILE_DESCRIPTION`) via OCC `APIHeaderSection_MakeHeader` + `Apply` auf Sentinel-Werte
+  (Epoch-Zeitstempel `1970-01-01T00:00:00`, `b-cad` statt OCC-Versions-String) — analog `ifc_spf_writer`. Ergebnis
+  byte-verifiziert: `FILE_NAME('','1970-01-01T00:00:00',(''),(''),'b-cad','b-cad','')`, keine Wall-Clock/OCC-Version.
+  Die STEP-Struktur-Orakel (`CLOSED_SHELL`) bleiben grün (nur Header geändert). Selbst-Reproduzierbarkeit
+  (LOW-2): `make golden-check` regeneriert run-zu-run byte-identisch (grün).
+- **Export-Golden (alle 6):** geteilte `goldenModel()`-TU (`tests/adapters/golden_model.{h,cpp}`; Wände + Decke +
+  Sattel-Dach + Treppe + sichtbare Ebene/Hilfslinie) — von **beiden** gelinkt: dem dedizierten Generator
+  `golden_gen` (`golden_gen.cpp`, **nicht** das Produktions-Binary, MED-2) und dem Byte-Vergleichs-Test
+  `test_golden_export.cpp` (6 `GoldenExport.*`-Tests, byte-genau gegen die committeten Golden, **komplementär** zu
+  den Struktur-Orakeln). Golden committet: `tests/adapters/golden/model.{ifc,dxf,step,stl,pdf,png}`.
+- **STL-Caveat** dokumentiert (`golden/README.md` + Test-Kommentar): STL/STEP-Topologie OCC-versions-gebunden
+  ([ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)); ein OCC-Upgrade bricht `golden-check`/`GoldenExport.Stl*`
+  **bewusst** → dann Regen + Diff-Review.
+
+**Gates:** `make build`/`make test` grün (**262 Tests**, +6 `GoldenExport.*`); `make golden-check` grün
+(committet == regen byte-genau); `make docs-check` grün. Voller `make gates` + `io-smoke`/`schema-check`: s. Report.
+
+**Split-Entscheidung:** 044 → **044a** (dieser Plan, done-Kandidat) + **[`slice-044b`](../open/slice-044b-golden-import-fremd.md)**
+(Import-Golden-fremd, `open/`, [MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)(3)-Skelett). **„Beides" bleibt erfüllt — zwei sequenzielle Slices.**
+
+**Review:** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH (Plan);
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review **0 HIGH**
+(unabhängig, adversarial): STEP-Header-Fix ist **header-only** (DATA/`CLOSED_SHELL` unberührt), OCC-API korrekt, kein
+Crash bei leerem Modell; Determinismus empirisch bestätigt (`golden-check` byte-exakt); Oracle-Soundness (kein
+empty-vs-empty, temp-Kollision, Modell-Identität). Nicht-blockierende Findings (`.gitattributes`-EOL-Härtung + IFC-
+Kommentar) eingearbeitet; Service-Wiring-Dedup als LOW bewusst zurückgestellt (Divergenz gate-gefangen).
+
+**Lerneintrag:** OCC-`STEPControl_Writer` brennt Wall-Clock **und** OCC-Version in den HEADER
+(`preprocessor_version`/`originating_system`) → beides über `APIHeaderSection_MakeHeader`+`Apply` neutralisieren, nicht
+nur den Zeitstempel. Byte-Golden in `tests/`-`.md` tripsen die `ids`-Linkpflicht **nicht** (empirisch, docs-check grün).
+Der Generator darf **nicht** das Produktions-Binary sein (`buildAcc001KernDemo` ≠ `goldenModel()`).
