@@ -22,6 +22,24 @@ Feature-Sequenz, kein Reconciliation-Plan.
 **Keine offenen Slices** — `in-progress/` trägt nur die Roadmap (Ruhe-Sentinel; beim Öffnen des nächsten
 Slice im selben `git mv`-Commit entfernen).
 
+**[`slice-048a`](../done/slice-048a-drw-001-fangpunkte-ak-spec.md) done** (2026-07-24): **DRW-001 Fangpunkte —
+AK-Schärfung** (DRW-Aids-Strang, erste offene DRW-Anforderung der Kampagne). Lastenheft **0.1.16**
+([`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001) Outline → AK: die gezeichnete Position rastet
+**exakt** auf einen **sichtbaren** Endpunkt [Wand-Achse/Hilfslinie] ein, sobald der Cursor nahe genug ist —
+interaktiv beobachtbar seit dem Canvas [slice-043]; Boundary außerhalb → frei, Anfang=Ende → bestehende
+Ablehnung; Negative kein sichtbarer Fang-Punkt) + spez. §1 [`LH-FA-DRW-001.a`](../../../../spec/lastenheft.md#lh-fa-drw-001) (Fang-Aid = **UI-Zustand**,
+Fang-Punkte aus der **bestehenden** `PlanView` → **kein** neues Schema/`op`/Port/Kante). Parametrisiert auf
+[ADR-0019](../../adr/0019-drw-2d-canvas.md) Entscheidung 6 (**kein** neuer Grundsatz-ADR);
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+**0 HIGH / 2 MED / 3 LOW / 2 INFO** ([Report](../../../reviews/2026-07-24-slice-048a-plan.md), MED/LOW
+eingearbeitet). `make gates` grün, `schema-check` byte-unberührt. **▶ Folge:** slice-048b (DRW-001-**Impl**:
+Fang-Punkte aus `PlanView` + Bildschirm-Schwellwert + Maus-Auswahl + `QMouseEvent`-AK), danach die Kampagne
+DRW-002 Raster → 003 Winkel → 004 Bemaßung → 007 Gruppen. **Quergewerk eingereiht (Projektinhaber 2026-07-24):**
+slice-049 **welle-Purge + `matrix`-Härtung** — Prozess-Vokabular »welle-N« aus den drei Spec-Straten
+(`lastenheft`/`spezifikation`/`architecture`, 58 Fundstellen) entfernen **und** das `matrix`-Gate so schärfen,
+dass »welle-\d« in Spec-Straten künftig als Fehler erkannt wird (heutige Lücke: `matrix` kennt nur
+`slice-\d{3}`).
+
 **[`slice-046a`](../done/slice-046a-export-provenance.md) done** (2026-07-24): **Export-Herkunft** (Datum/Version
 injizierbar + sichtbar im PDF-Footer, in STEP/STL-Header) — Exporte verschiedener Stände sind nun **unterscheidbar**
 (SOURCE_DATE_EPOCH-Muster: Writer clock-frei, Root injiziert echt, Golden fix). **[`slice-045`](../done/slice-045-pdf-info-metadaten.md)**

@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-048a — **DRW-001 Fangpunkte — AK-Schärfung (Outline → AK) + §1-Mapping** (welle-5, DRW-Aids-Strang;
+  [ADR-0019](docs/plan/adr/0019-drw-2d-canvas.md) Entscheidung 6 — **kein** neuer Grundsatz-ADR). Erste offene
+  DRW-Anforderung der Durcharbeiten-Kampagne (nach 005/006). Lastenheft **0.1.16**:
+  [`LH-FA-DRW-001`](spec/lastenheft.md#lh-fa-drw-001) von einem unbeschriebenen 0.1.0-Outline-Stichwort auf
+  **lösungsfreie, benutzer-beobachtbare AK** — die gezeichnete Position **rastet exakt** auf einen **sichtbaren**
+  Endpunkt (Wand-Achse/Hilfslinie) ein, sobald der Cursor nahe genug ist; nachweisbar über die **exakt
+  übernommene, persistierte/exportierte** Koordinate und **interaktiv** auf dem Canvas (slice-043); Boundary
+  außerhalb der Fang-Nähe → frei gezeichnet, Anfang=Ende gefangen → bestehende
+  [`LH-FA-DRW-005`](spec/lastenheft.md#lh-fa-drw-005)-Ablehnung; Negative kein sichtbarer Fang-Punkt / nur
+  unsichtbare Ebene → kein Fang. Spez. **§1** neuer Block `LH-FA-DRW-001.a`: Fangen ist **UI-Interaktions-Zustand
+  des Canvas** (kein Modell-Datum), die Fang-Punkte kommen aus der **bereits gepullten** `PlanView` (Wand-Achsen +
+  sichtbare Hilfslinien) → **keine** neue Naht/Port/Schicht-Kante, **kein** Schema/`op`/Entität
+  (`data-model.yaml`/`schema.sql` byte-unberührt); Auswahl = nächstgelegener mit ausgeschriebenem Tie-Break
+  (stabile `PlanView`-Iterationsreihenfolge); unsichtbare Ebenen sind **vor** der `PlanView` gefiltert → die
+  Sichtbarkeits-Negative ist **strukturell erzwungen**. **Reine Doku/Entscheidung — kein Code/Schema.**
+  [MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) 0 HIGH (2 MED
+  [„Kandidat" raus aus dem Lastenheft-Körper; §1-Bezug auf `#lh-fa-drw-001`] + 3 LOW eingearbeitet).
+  ADR-0019-Folgepflicht „Fang/Raster/Winkel" → **teilweise** (DRW-001-AK). **Offen:** slice-048b (DRW-001-Impl:
+  Fang-Punkte aus `PlanView` + Schwellwert + Maus-Auswahl + `QMouseEvent`-AK), dann DRW-002/003/004/007.
 - slice-047a — **Projekt-Persistenz-CLI verdrahtet (`--save`/`--open`) + echte Export-Quelle** (welle-5;
   [ADR-0003](docs/plan/adr/0003-persistenz-sqlite.md)/[ADR-0006](docs/plan/adr/0006-relationales-schema-design.md);
   die CLI-Naht des Umbrella-slice-047 „BLD-002/003 benutzer-erfüllbar"). Der bereits existierende, getestete

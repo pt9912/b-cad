@@ -1,6 +1,6 @@
 # Spezifikation — b-cad
 
-**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-23.
+**Status:** Outline (Phase 2). **Letzte Änderung:** 2026-07-24.
 
 **Bezug zum Lastenheft:** Diese Spezifikation präzisiert die in
 [`lastenheft.md`](lastenheft.md) formulierten Anforderungen (`LH-*`-IDs).
@@ -907,6 +907,61 @@ Ebene wirkt als **Export-Filter** — ihre Hilfslinien werden nicht gezeichnet. 
 die gemeinsame Plan-Projektion inkl. Bounding-Box, DXF über denselben Filter im Adapter) —
 kein Format-Drift. Der Geschoss-`LAYER` bleibt unverändert (der Benutzer-Layer ist reiner
 Filter, kein eigener DXF-Layer).
+
+### LH-FA-DRW-001.a — Fangpunkte (2D-Zeichnen-Aid, Mapping)
+
+Bezug: [`LH-FA-DRW-001`](lastenheft.md#lh-fa-drw-001) (Fangpunkte). Fangen ist ein
+**Zeichen-Aid der interaktiven 2D-Zeichenfläche**, **kein** Modell-Datum: es quantisiert die
+**Eingabe** vor dem bestehenden Zeichen-Aufruf und ändert die Zeichen-Daten-Struktur **nicht**.
+Backend-Provenance: § Historie.
+
+**Heimat & Schicht.** Fangen ist **UI-Interaktions-Zustand des Canvas** (Widget-Zustand),
+**nicht** persistierte Modell-Daten und **keine** §3-Bauteil-Konstante — dieselbe Verortung, die
+die Zeichen-Aids bereits als Familie tragen ([`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005),
+»Fang/Raster/Winkel = UI-Aids«). Kern, Persistenz und Export-Adapter bleiben **unberührt**: kein
+neuer Werttyp, keine `guide_lines`-/`layers`-Schema-Änderung — `data-model.yaml`/`schema.sql`
+sind **byte-unberührt**.
+
+**Wirkung.** Beim interaktiven Zeichnen einer Hilfslinie quantisiert der Canvas die geklickte
+**Bildschirmposition** zu Modell-mm; liegt sie **innerhalb eines Bildschirm-Schwellwerts**
+(»Fang-Nähe«, eine Widget-Konstante — der konkrete Default gehört in den Impl-Slice, **nicht** ins
+Lastenheft) um einen **Fang-Punkt**, so wird die **exakte mm-Position dieses Punktes** an den
+bestehenden `EditDrawingPort::addGuideLine` übergeben — statt der ungefähren Cursor-mm. Eine
+gefangene Hilfslinie ist damit eine **gewöhnliche** Hilfslinie, deren Endpunkt zufällig **exakt**
+einem vorhandenen Punkt gleicht; es entsteht **keine** neue Entität.
+
+**Fang-Punkte & Quelle.** Fang-Punkte sind die **Endpunkte der sichtbaren 2D-Grundriss-Projektion**:
+Endpunkte der Wand-Achsen je Geschoss **und** Endpunkte **sichtbarer** Hilfslinien. Der Canvas
+gewinnt sie aus **derselben `PlanView`**, die er ohnehin fürs Rendering **pullt** (`PlanViewPort`)
+— es entsteht **keine** neue Naht, **kein** neuer Port und **keine** neue Schicht-Kante. Weil
+`projectPlan` die unsichtbaren Ebenen **vor** der `PlanView` herausfiltert, ist ein Punkt auf
+unsichtbarer Ebene gar nicht Teil der Projektion und damit **strukturell nicht fangbar** — die
+benutzer-beobachtbare Negative (»nur unsichtbare Ebene → kein Fang«) ist so nicht nur zugesichert,
+sondern **erzwungen**.
+
+**Auswahl bei mehreren.** Liegen **mehrere** Fang-Punkte innerhalb der Fang-Nähe, gewinnt der
+**nächstgelegene** (kleinste Bildschirm-Distanz zum Cursor). Bei **exakt gleicher** Distanz
+entscheidet eine **stabile, ausgeschriebene** Regel: der in der **festen Iterations-Reihenfolge der
+`PlanView`** (Geschosse in Speicherreihenfolge; je Geschoss Wand-Achsen **vor** Hilfslinien; je
+Segment Anfang **vor** Ende) **zuerst** besuchte Punkt — deterministisch und reproduzierbar über
+Speichern/Laden (kein stiller 048b-Drift).
+
+**Benachrichtigung.** Fangen erzeugt **keinen** neuen `op` und **keine** zusätzliche
+`ModelChanged`-Meldung: es ist reine **Eingabe-Quantisierung vor** `addGuideLine`; der bestehende
+Selbst-Refresh des Canvas nach dem eigenen Kommando trägt die Anzeige (die »kein op«-Regel bleibt
+**unrevidiert**).
+
+**Totalität & Ablehnung.** Fangen fügt **keine** neue Ablehnung hinzu. Rastet Fangen Anfang **und**
+Ende auf **denselben** Punkt (Anfang = Ende), greift die **bestehende** Entartungs-Ablehnung aus
+[`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) — [`E-VAL-001`](#4-fehler-codes-und-logging-felder)
+in der Ablehnungs-Lesart (`Rejected`, Modell unverändert), **kein** neuer Fehler-Code.
+
+**Beobachtbarkeit.** Der harte Nachweis ist die **exakt übernommene Koordinate**: die gezogene
+Hilfslinie trägt nach Speichern/Laden **identische** mm mit dem Fang-Ziel (nicht »nahe«) und
+erscheint so im 2D-Grundriss-Export; der interaktive Zug ist **headless** über die display-freie
+Bildschirm→mm-Naht prüfbar (Surrogat-Zustand, Muster der Canvas-Interaktions-AK). Der **Umfang**
+(nur Endpunkt-Fang sichtbarer Achsen/Hilfslinien; Raster/Winkel/Schnittpunkt offen) ist eine
+benannte Reifephase-Grenze.
 
 ## 2. Datenstrukturen und Schemas
 

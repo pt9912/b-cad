@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.15
+**Version:** 0.1.16
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -582,7 +582,46 @@ mehrerer unabhängiger Ansichten (LH-FA-UI-004).
 
 ### Modul Zeichnungsfunktionen (`DRW`)
 
-- **LH-FA-DRW-001 — Fangpunkte.**
+#### <a id="lh-fa-drw-001"></a>LH-FA-DRW-001 — Fangpunkte
+
+**Beschreibung:** Ein **Fangpunkt** ist eine markante vorhandene Position auf der
+2D-Zeichenfläche — der **Endpunkt einer sichtbaren Wand-Achse oder einer sichtbaren
+Hilfslinie** ([LH-FA-DRW-005](#lh-fa-drw-005)) —, an die die Eingabe **einrastet**:
+Führt der Nutzer den Zeichen-Cursor **nahe genug** an einen solchen Punkt, übernimmt die
+gezeichnete Position **exakt** diesen Punkt statt der ungefähren Cursor-Position. Fangen
+wirkt auf das **interaktive Zeichnen von Hilfslinien**
+([LH-FA-DRW-005](#lh-fa-drw-005)) — Anfang wie Ende. Fangbar sind nur **sichtbare**
+Punkte; die Sichtbarkeit richtet sich nach der Ebene
+([LH-FA-DRW-006](#lh-fa-drw-006)).
+
+**Teilumfang (Reifephase §1/§4).** Gefangen wird auf **Endpunkte sichtbarer Wand-Achsen
+und sichtbarer Hilfslinien**. Raster-Fang
+([LH-FA-DRW-002](#modul-zeichnungsfunktionen-drw)), Winkelvorgaben
+([LH-FA-DRW-003](#modul-zeichnungsfunktionen-drw)),
+Schnittpunkt-/Mittelpunkt-/Lot-/Tangenten-Fang und Fangen beim Bauteil-Zeichnen bleiben
+**offen** (spätere Ausbaustufen).
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given eine **sichtbare** Wand-Achse (oder Hilfslinie) mit einem Endpunkt
+  P auf der Zeichenfläche, when der Nutzer eine Hilfslinie zieht und Anfang **oder** Ende
+  **in Fang-Nähe von P** setzt, then rastet der Punkt **exakt auf P** ein — die erzeugte
+  Hilfslinie trägt **genau** die Position von P (nicht die ungefähre Cursor-Position),
+  **sofort** sichtbar und **unverändert nach Speichern/Laden** sowie im
+  2D-Grundriss-Export.
+- **Boundary:** Given der Cursor wird **außerhalb** jeder Fang-Nähe losgelassen, when die
+  Hilfslinie abgeschlossen wird, then wird **nicht gefangen** — der Endpunkt ist die
+  geklickte Position (freies Zeichnen wie [LH-FA-DRW-005](#lh-fa-drw-005)).
+- **Boundary (Entartung):** Given Fangen würde Anfang **und** Ende auf **denselben** Punkt
+  setzen (Anfang = Ende), when die Hilfslinie ins Modell aufgenommen werden soll, then
+  greift die **bestehende Ablehnung** aus [LH-FA-DRW-005](#lh-fa-drw-005) (keine
+  Hilfslinie, Modell unverändert) — **kein** neuer Fehlerfall.
+- **Negative:** Given es gibt **keinen sichtbaren** fangbaren Punkt in Reichweite (leere
+  Zeichenfläche **oder** der einzige markante Punkt liegt auf einer **unsichtbaren**
+  Ebene), when der Nutzer zeichnet, then wird **nicht gefangen** und es entsteht **kein
+  zusätzlicher oder verfälschter** Punkt — die Hilfslinie trägt die geklickte Position, das
+  Modell bleibt konsistent.
+
 - **LH-FA-DRW-002 — Raster.**
 - **LH-FA-DRW-003 — Winkelvorgaben.**
 - **LH-FA-DRW-004 — Bemaßung.**
