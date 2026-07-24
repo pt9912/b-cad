@@ -122,16 +122,19 @@ TEST(GoldenExport, PngByteIdentical) {
 
 // slice-046 (der Produkt-Kernwert): **verschiedene** Export-Herkunft → **verschiedene**
 // Datei (unterscheidbar), **gleiche** Herkunft → byte-identisch (deterministisch). Über
-// die drei Formate, die in 046a Herkunft tragen: PDF (sichtbarer Footer), STEP (FILE_NAME),
-// STL (80-Byte-Header). PNG (sichtbar = 046b) / IFC / DXF tragen sie hier noch nicht.
+// die Formate, die Herkunft tragen: PDF (sichtbarer Footer), STEP (FILE_NAME),
+// STL (80-Byte-Header), PNG (sichtbarer Titelblock + tEXt, seit 046b). IFC/DXF
+// tragen sie noch nicht (eigener Nachzug).
 TEST(GoldenExport, DistinctProvenanceYieldsDistinctOutput) {
     const geo::OccGeometryAdapter geometry;
     const geo::StlExportAdapter stl(geometry);
     const geo::StepExportAdapter step;
     const io::PdfExportAdapter pdf;
+    const io::PngExportAdapter png;
     const ExchangeService service({}, {{ExchangeFormat::Step, &step},
                                        {ExchangeFormat::Stl, &stl},
-                                       {ExchangeFormat::Pdf, &pdf}});
+                                       {ExchangeFormat::Pdf, &pdf},
+                                       {ExchangeFormat::Png, &png}});
 
     const bcad::hexagon::model::ExportProvenance prov_a{"2020-01-01 08:00",
                                                         "haus-a.bcad", "b-cad 0.1.0"};
@@ -143,8 +146,8 @@ TEST(GoldenExport, DistinctProvenanceYieldsDistinctOutput) {
     // deckt `make golden-check` (cross-Prozess) + `GoldenExport.*` ab — NICHT hier
     // in-Prozess: OCC hält für STEP globalen Entity-Zähler-State zwischen Exporten,
     // sodass zwei STEP-Exporte im selben Prozess byte-abweichen (cross-Prozess nicht).
-    for (const ExchangeFormat fmt :
-         {ExchangeFormat::Pdf, ExchangeFormat::Step, ExchangeFormat::Stl}) {
+    for (const ExchangeFormat fmt : {ExchangeFormat::Pdf, ExchangeFormat::Step,
+                                     ExchangeFormat::Stl, ExchangeFormat::Png}) {
         const fs::path pa = fs::temp_directory_path() / "bcad_prov_a";
         const fs::path pb = fs::temp_directory_path() / "bcad_prov_b";
         std::error_code ec;

@@ -26,10 +26,12 @@ Slice im selben `git mv`-Commit entfernen).
 injizierbar + sichtbar im PDF-Footer, in STEP/STL-Header) — Exporte verschiedener Stände sind nun **unterscheidbar**
 (SOURCE_DATE_EPOCH-Muster: Writer clock-frei, Root injiziert echt, Golden fix). **[`slice-045`](../done/slice-045-pdf-info-metadaten.md)**
 (statische PDF/PNG-Metadaten) darin **gefaltet-retired**. Zwei unabhängige [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-(046: 1 HIGH → Option A). **Offen (Deferral, [MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)):**
-**slice-046b** (sichtbarer PNG-Titelblock, Bitmap-Font) + IFC-`FILE_NAME`/PNG-`tEXt`-Injektion; **echte „Quelle"** via
-[`slice-047`](../open/slice-047-projekt-oeffnen.md) („Projekt öffnen"). `make gates` grün (265 Tests). **Prozess-Fix:**
-`make golden-regen` mount-frei (`tar`-Stream → Golden gehören dem User, nicht root).
+(046: 1 HIGH → Option A). **[`slice-046b`](../done/slice-046b-png-titelblock.md) done** (2026-07-24): **sichtbarer
+PNG-Titelblock** (self-rolled 5×7-Font + `tEXt`) — Herkunft jetzt sichtbar in **PDF *und* PNG**; visuell verifiziert.
+Damit ist der Export-Provenance-Strang für **PDF/PNG/STEP/STL** komplett. **Offen (Deferral,
+[MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)):** IFC-`FILE_NAME`/DXF-Provenance-Nachzug;
+**echte „Quelle"** via [`slice-047`](../open/slice-047-projekt-oeffnen.md) („Projekt öffnen"). `make gates` grün
+(266 Tests). **Prozess-Fix:** `make golden-regen` mount-frei (`tar`-Stream → Golden gehören dem User, nicht root).
 
 **[`slice-044a`](../done/slice-044a-golden-export-infra.md) done** (2026-07-24): Byte-Golden aller 6 Export-Formate
 + STEP-Header-Fix (byte-deterministisch), [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)

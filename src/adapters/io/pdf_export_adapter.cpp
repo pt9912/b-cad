@@ -51,26 +51,6 @@ double toPageY(double y_mm, const PlanView& view) {
     return kMarginPt + ((y_mm - view.min_y_mm) * kMmToPt);
 }
 
-// Provenance-Fußzeile (slice-046): "<version> | <quelle> | <datum>", nur die
-// nicht-leeren Teile (ASCII-Separator, Helvetica-sicher). Leer → keine Fußzeile
-// (Sentinel-Fall — Export ohne injizierte Herkunft bleibt byte-identisch zu vorher).
-std::string provenanceFooter(const model::ExportProvenance& provenance) {
-    std::string out;
-    const auto add = [&out](const std::string& part) {
-        if (part.empty()) {
-            return;
-        }
-        if (!out.empty()) {
-            out += " | ";
-        }
-        out += part;
-    };
-    add(provenance.version);
-    add(provenance.source);
-    add(provenance.date);
-    return out;
-}
-
 // Eine Seite: Rahmen + (maßstäbliche) Wand-Achsen des Geschosses + Label + (bei
 // injizierter Herkunft) die sichtbare Provenance-Fußzeile über dem Maßstabs-Label.
 void drawPage(PdfWriter& writer, const StoreyPlan& plan, const PlanView& view,
@@ -102,7 +82,7 @@ void PdfExportAdapter::write(const model::Building& /*building*/,
     // serialisiert nur (kein Eigen-`projectPlan` mehr).
     const PlanView& view = derived.plan;
     PdfWriter writer(PdfPageSize{kPageWidthPt, kPageHeightPt});
-    const std::string footer = provenanceFooter(provenance);  // slice-046
+    const std::string footer = provenance.footerLine();  // slice-046 (geteilt)
 
     if (view.storeys.empty()) {
         // Totalität: leeres Modell → eine gültige, (annähernd) leere Seite.

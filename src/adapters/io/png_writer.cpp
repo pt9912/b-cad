@@ -8,7 +8,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "adapters/io/png_font.h"  // fontGlyph, kFont* (slice-046b)
 
 namespace bcad::adapters::io {
 namespace {
@@ -134,7 +137,26 @@ void Bitmap::drawLine(PixelSegment seg, Rgb color) {
     }
 }
 
-std::string encodePng(const Bitmap& bitmap) {
+void Bitmap::drawText(PixelPoint origin, const std::string& text, Rgb color) {
+    // slice-046b: fester 5×7-Font, links→rechts. `setPixel` klemmt off-canvas →
+    // out-of-bounds-sicher unabhängig von der Textlänge (kein Wurf, kein Clip-Code).
+    for (std::size_t ci = 0; ci < text.size(); ++ci) {
+        const std::array<unsigned char, 5>& glyph = fontGlyph(text[ci]);
+        const int char_x = origin.x + (static_cast<int>(ci) * kFontAdvance);
+        for (int col = 0; col < kFontWidth; ++col) {
+            const unsigned bits = glyph[static_cast<std::size_t>(col)];
+            for (int row = 0; row < kFontHeight; ++row) {
+                if ((bits & (1U << static_cast<unsigned>(row))) != 0U) {
+                    setPixel({char_x + col, origin.y + row}, color);
+                }
+            }
+        }
+    }
+}
+
+std::string encodePng(
+    const Bitmap& bitmap,
+    const std::vector<std::pair<std::string, std::string>>& text_chunks) {
     const int w = bitmap.width();
     const int h = bitmap.height();
     const std::vector<unsigned char>& px = bitmap.rgb();
@@ -175,6 +197,11 @@ std::string encodePng(const Bitmap& bitmap) {
               std::string("Software").append(1, '\0').append("b-cad"));
     emitChunk(out, "tEXt",
               std::string("Title").append(1, '\0').append("b-cad Plan-Export"));
+    // slice-046b: zusätzliche injizierte tEXt (Date/Source/Version) — vom Adapter
+    // komponiert (der Writer bleibt domänen-frei). Weiterhin kein tIME.
+    for (const auto& [keyword, text] : text_chunks) {
+        emitChunk(out, "tEXt", std::string(keyword).append(1, '\0').append(text));
+    }
     emitChunk(out, "IDAT", zlibStored(raw));
     emitChunk(out, "IEND", "");
     return out;

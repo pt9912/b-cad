@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-046b — **Sichtbarer PNG-Provenance-Titelblock (5×7-Bitmap-Font) + injizierte PNG-`tEXt`** (welle-5;
+  [ADR-0016](docs/plan/adr/0016-pdf-png-backend.md)). Vervollständigt „Herkunft **sichtbar in PDF *und* PNG**": ein
+  self-rolled 5×7-ASCII-Font (`png_font.h`, kein Qt/keine externe Datei) + `Bitmap::drawText` rendern die Fußzeile
+  „`<version> | <quelle> | <datum>`" in den weißen Unterrand des PNG-Grundrisses; `encodePng` nimmt zusätzlich eine
+  generische `(keyword,text)`-`tEXt`-Liste (`Date`/`Source`/`Version`, vom Adapter komponiert → `png_writer` bleibt
+  domänen-frei). Die PDF- und PNG-Fußzeile teilen `ExportProvenance::footerLine()` (kein Drift). Leere Herkunft →
+  keine Zeile (Sentinel, PNG byte-gleich zu vorher). **AK:** Ink-Sonde (mit-vs-leer), Unterscheidbarkeit,
+  `tEXt`-Präsenz + kein `tIME`, Langer-String out-of-bounds-sicher (`setPixel` klemmt); PNG-Golden re-baseliniert,
+  Voll-Decode-Orakel unberührt. MR-006 0 HIGH. Damit ist der Export-Provenance-Strang (046a+046b) für PDF/PNG/STEP/STL
+  komplett; **offen:** IFC-`FILE_NAME`/DXF-Nachzug, echte „Quelle" via slice-047.
 - slice-046a — **Export-Herkunft: Datum/Quelle/Version, injizierbar + sichtbar** (welle-5; [ADR-0016](docs/plan/adr/0016-pdf-png-backend.md)/[ADR-0014](docs/plan/adr/0014-step-stl-export-backend.md)
   konkretisiert; **faltet slice-045** ein). Behebt, dass Exporte verschiedener Modellstände **byte-identisch** und
   damit **nicht unterscheidbar** waren (Folge der Determinismus-Optimierung in slice-044a/045). Ein neuer, framework-

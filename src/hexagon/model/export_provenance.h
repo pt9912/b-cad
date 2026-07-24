@@ -23,6 +23,26 @@ struct ExportProvenance {
 
     // True, wenn keinerlei Provenance injiziert wurde (→ Sentinel-/Alt-Verhalten).
     bool empty() const { return date.empty() && source.empty() && version.empty(); }
+
+    // Sichtbare Titelblock-Zeile "<version> | <quelle> | <datum>" (nur nicht-leere
+    // Teile, ASCII-Separator) — von PDF- und PNG-Fußzeile **geteilt** genutzt, damit
+    // beide byte-gleich sind (slice-046b-LOW-3). Leer → leerer String (kein Block).
+    std::string footerLine() const {
+        std::string out;
+        const auto add = [&out](const std::string& part) {
+            if (part.empty()) {
+                return;
+            }
+            if (!out.empty()) {
+                out += " | ";
+            }
+            out += part;
+        };
+        add(version);
+        add(source);
+        add(date);
+        return out;
+    }
 };
 
 }  // namespace bcad::hexagon::model

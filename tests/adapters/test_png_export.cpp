@@ -328,6 +328,60 @@ TEST(PngExport, LH_FA_DRW_005_SichtbareHilfslinieMehrTinte) {
     EXPECT_GT(ink_visible, ink_hidden) << "sichtbare Hilfslinie fügt keine Tinte hinzu";
 }
 
+// slice-046b (LH-FA-IO-008): sichtbarer Provenance-Titelblock (5×7-Bitmap-Font) +
+// injizierte tEXt. Ink-Sonde (dasselbe Modell mit-vs-leer, Fußzeile im weißen
+// Unterrand → streng), Unterscheidbarkeit, tEXt-Präsenz, kein tIME, Langer-String
+// out-of-bounds-sicher. Das Voll-Decode-Orakel oben bleibt unberührt.
+TEST(PngExport, VisibleProvenanceFooterAndText) {
+    const model::ExportProvenance prov{"1970-01-01 00:00", "golden.bcad", "b-cad test"};
+    model::DerivedGeometry derived;
+    derived.plan = bcad::hexagon::services::projectPlan(sampleBuilding());
+
+    // (a) Ink-Sonde: Herkunft-Fußzeile fügt Tinte hinzu.
+    const TempPath with_prov("prov_with");
+    const TempPath without_prov("prov_without");
+    PngExportAdapter().write(sampleBuilding(), derived, with_prov.path, prov);
+    PngExportAdapter().write(sampleBuilding(), derived, without_prov.path);  // leer
+    EXPECT_GT(inkPixels(readFile(with_prov.path)), inkPixels(readFile(without_prov.path)))
+        << "sichtbare Provenance-Fußzeile fügt keine Tinte hinzu";
+
+    // (b) tEXt Date/Source/Version präsent, kein tIME.
+    const std::string png = readFile(with_prov.path);
+    bool date = false;
+    bool source = false;
+    bool version = false;
+    for (const Chunk& c : parseChunks(png)) {
+        if (c.type == "tEXt") {
+            if (c.data == std::string("Date").append(1, '\0').append("1970-01-01 00:00")) {
+                date = true;
+            }
+            if (c.data == std::string("Source").append(1, '\0').append("golden.bcad")) {
+                source = true;
+            }
+            if (c.data == std::string("Version").append(1, '\0').append("b-cad test")) {
+                version = true;
+            }
+        }
+        EXPECT_NE(c.type, "tIME") << "dynamischer tIME-Chunk verboten";
+    }
+    EXPECT_TRUE(date) << "tEXt Date fehlt";
+    EXPECT_TRUE(source) << "tEXt Source fehlt";
+    EXPECT_TRUE(version) << "tEXt Version fehlt";
+
+    // (c) Unterscheidbarkeit: verschiedene Herkunft → verschiedene Bytes.
+    const TempPath other("prov_other");
+    const model::ExportProvenance prov2{"2026-07-24 14:32", "haus.bcad", "b-cad test"};
+    PngExportAdapter().write(sampleBuilding(), derived, other.path, prov2);
+    EXPECT_NE(readFile(with_prov.path), readFile(other.path))
+        << "verschiedene Herkunft muss unterscheidbares PNG ergeben";
+
+    // (d) langer String → kein Wurf/OOB (drawText geklemmt, by construction).
+    const TempPath long_path("prov_long");
+    const model::ExportProvenance long_prov{std::string(500, 'X'), std::string{}, std::string{}};
+    EXPECT_NO_THROW(
+        PngExportAdapter().write(sampleBuilding(), derived, long_path.path, long_prov));
+}
+
 // --- LH-FA-IO-008 Boundary (leer): weißes, valides PNG ----------------------
 
 // slice-045 (LH-FA-IO-008): statische tEXt-Metadaten (Software + Title) —

@@ -16,7 +16,7 @@ Decode-Orakel = Semantik. Golden ersetzt die Orakel **nicht**.
 | `model.step` | STEP AP214 | Text | byte-exakt **seit slice-044a** (HEADER auf Sentinel fixiert; s. u.) |
 | `model.stl` | STL | binär | byte-exakt **nur im gepinnten OCC-Image** (s. Caveat) |
 | `model.pdf` | PDF | binär | byte-exakt (self-rolled; statisches `/Info` [`/Producer`/`/Title`], **kein** `/CreationDate`/`/ID`) |
-| `model.png` | PNG | binär | byte-exakt (self-rolled; statische `tEXt` [`Software`/`Title`], **kein** `tIME`-Chunk) |
+| `model.png` | PNG | binär | byte-exakt (self-rolled; **sichtbarer Provenance-Titelblock** [5×7-Font, 046b] + `tEXt` [`Software`/`Title` statisch, `Date`/`Source`/`Version` injiziert], **kein** `tIME`) |
 
 Die binären Golden (`*.stl`/`*.png`/`*.pdf`) sind in `.gitattributes` als
 `binary` markiert (kein CRLF-Mangling, kein Text-Diff).
@@ -37,8 +37,9 @@ Die binären Golden (`*.stl`/`*.png`/`*.pdf`) sind in `.gitattributes` als
 
 Die Golden tragen eine **feste** `goldenProvenance()` (Datum `1970-01-01 00:00`, Quelle
 `golden.bcad`, Version `b-cad test`) — injiziert über den Export-Port. `golden_gen` und der
-Byte-Test linken dieselbe Quelle. Sichtbar in `model.pdf` (Fußzeile), eingebettet in
-`model.step` (`FILE_NAME`) und `model.stl` (80-Byte-Header). In Produktion füllt der
+Byte-Test linken dieselbe Quelle. **Sichtbar** in `model.pdf` (Fußzeile) und `model.png`
+(Titelblock, 5×7-Font, 046b); eingebettet in `model.step` (`FILE_NAME`), `model.stl`
+(80-Byte-Header) und `model.png`-`tEXt`. In Produktion füllt der
 Composition-Root echte Werte (Systemuhr/Version); im Golden bleibt sie **fix** →
 byte-deterministisch (SOURCE_DATE_EPOCH-Muster). Ein Export **ohne** Herkunft (leer) fällt
 auf die deterministischen Sentinels zurück.

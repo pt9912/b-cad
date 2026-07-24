@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "adapters/io/io_atomic_write.h"
 #include "adapters/io/png_writer.h"
@@ -39,6 +41,13 @@ constexpr Rgb kBackground{255, 255, 255};
 constexpr std::array<Rgb, 4> kPalette = {{{0, 0, 0}, {0, 0, 200}, {200, 0, 0},
                                           {0, 150, 0}}};
 
+// Sichtbarer Provenance-Titelblock (slice-046b): schwarze Fußzeile im **weißen
+// Unterrand** — die Geometrie liegt innerhalb `kMarginPx`, das untere Band ist frei
+// (kein Überlappen mit Wand-Tinte → die Ink-Sonde ist streng).
+constexpr int kFooterX = 6;
+constexpr int kFooterY = kCanvasHeightPx - 15;
+constexpr Rgb kFooterColor{0, 0, 0};
+
 // Fit-to-Canvas-Skala (Modell-mm → Pixel), **geguardet**: Breite ODER Höhe 0
 // (einzelne vertikale/horizontale/Punkt-Wand, leeres Modell) → kein Div-durch-0.
 double fitScale(const PlanView& view) {
@@ -65,7 +74,7 @@ double fitScale(const PlanView& view) {
 void PngExportAdapter::write(const model::Building& /*building*/,
                              const model::DerivedGeometry& derived,
                              const fs::path& path,
-                             const model::ExportProvenance& /*provenance*/) const {
+                             const model::ExportProvenance& provenance) const {
     // ADR-0020: der Kern liefert die 2D-Projektion im Bündel; der Adapter
     // serialisiert nur (kein Eigen-`projectPlan` mehr).
     const PlanView& view = derived.plan;
@@ -92,7 +101,28 @@ void PngExportAdapter::write(const model::Building& /*building*/,
         }
     }
 
-    writeFileAtomically(path, encodePng(bitmap), "PNG");  // atomar, E-IO-001
+    // slice-046b: sichtbare Provenance-Fußzeile im weißen Unterrand (leer →
+    // keine Zeile, Sentinel-Fall → PNG byte-gleich zu vorher). Geteilte Zeichenkette
+    // mit dem PDF-Footer (`ExportProvenance::footerLine`, kein Drift).
+    const std::string footer = provenance.footerLine();
+    if (!footer.empty()) {
+        bitmap.drawText({kFooterX, kFooterY}, footer, kFooterColor);
+    }
+
+    // Injizierte tEXt-Metadaten (nur nicht-leere) — neben den statischen
+    // Software/Title; der Adapter komponiert, der Writer bleibt domänen-frei.
+    std::vector<std::pair<std::string, std::string>> texts;
+    if (!provenance.date.empty()) {
+        texts.emplace_back("Date", provenance.date);
+    }
+    if (!provenance.source.empty()) {
+        texts.emplace_back("Source", provenance.source);
+    }
+    if (!provenance.version.empty()) {
+        texts.emplace_back("Version", provenance.version);
+    }
+
+    writeFileAtomically(path, encodePng(bitmap, texts), "PNG");  // atomar, E-IO-001
 }
 
 }  // namespace bcad::adapters::io
