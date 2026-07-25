@@ -2,7 +2,10 @@
 # Makefile des konsumierenden Repos. Erzeugt von `a-check --print-mk`.
 #
 # A_CHECK_IMAGE wird beim Release auf `@sha256:…` digest-gepinnt.
-A_CHECK_IMAGE ?= ghcr.io/pt9912/a-check@sha256:203df7ab02ec68db5f77f77660fe12523dad9fd48a6c84b95aabb080ec30de24
+# ACHTUNG (slice-050): im b-cad-Makefile steht dieselbe Zuweisung VOR dem
+# `include` — dieses `?=` ist dort ein No-op. Maßgeblich ist die Makefile-Zeile;
+# beide werden gemeinsam gehoben, damit die Fassungen nicht divergieren.
+A_CHECK_IMAGE ?= ghcr.io/pt9912/a-check@sha256:aef28cfe25bb054b1b0eb28420222a45b9f6ce9425b7ffd0f55e6ae56f295b56
 
 .PHONY: a-check a-check-graph
 a-check: ## Architektur: Hexagon-Regeln via a-check (netzlos, read-only).

@@ -58,3 +58,17 @@ tech:
   - {pattern: "Q[A-Za-z]", adapter: adapters/ui, match: regex}
 resolution:
   cpp: {mode: fixed-root, roots: ["src"]}
+# slice-050 (ADR-0017 Regel P1, MR-021): das dynamische Laden ist ein AUFRUF,
+# keine Include-Kante — `tech`/`edges` sehen es nicht. `constructs` ist das
+# Roh-Text-Monopol dafür (a-check >= v0.16.0): das Muster darf NUR in der Zone
+# stehen, jedes Vorkommen ausserhalb ist `construct-leak`. Scan-weit, also auch
+# im plugins/-Baum (ein Plugin, das selbst laedt, unterliefe Lifecycle und
+# Fehler-Barriere) und — via composition_root: forbid — in main.cpp.
+# Der SCHRAEGSTRICH in `adapter` ist Pflicht: der Abgleich ist ein Teilstring-
+# Vergleich auf dem Pfad, ohne ihn entkaeme ein Geschwister-Verzeichnis mit
+# gleichem Praefix. Den dlfcn.h-INCLUDE deckt weiterhin die tech-Regel oben.
+constructs:
+  - pattern: '\bdl(m?open|sym|close)\s*\('
+    match: regex
+    adapter: src/adapters/plugin/
+    composition_root: forbid

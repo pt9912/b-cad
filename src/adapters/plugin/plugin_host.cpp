@@ -1,5 +1,5 @@
 // Plugin-Host-Implementierung (ADR-0017). Einziger Ort im Repo, der den
-// System-Lader anspricht (arch-check Regel P1).
+// System-Lader anspricht (Regel P1, gegatet von a-check `constructs` — MR-021).
 #include "adapters/plugin/plugin_host.h"
 
 #include <dlfcn.h>

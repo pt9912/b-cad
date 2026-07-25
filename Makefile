@@ -42,7 +42,12 @@ help: ## Targets anzeigen
 # Digest lebt bewusst hier, damit d-check.mk unverändert aus `--print-mk`
 # übernommen werden kann. Beide Includes nach
 # `help` eingebunden, damit `help` das Default-Goal bleibt.
-A_CHECK_IMAGE ?= ghcr.io/pt9912/a-check@sha256:24939a6b47bfbfcb9845813cd781a70fba161fb12c6593e188ac51ede5267a9c
+# WIRKSAMER a-check-Pin (slice-050): diese Zuweisung steht VOR `include
+# a-check.mk`, darum gewinnt sie — das `?=` im Include ist ein No-op. Wer den
+# Pin hebt, ändert DIESE Zeile (a-check.mk wird nur mitgezogen, damit die
+# Fassungen nicht auseinanderlaufen). `make -n a-check` zeigt den echten Digest.
+# v0.16.0 — ab hier trägt a-check `constructs`/`construct-leak` (Regel P1).
+A_CHECK_IMAGE ?= ghcr.io/pt9912/a-check@sha256:aef28cfe25bb054b1b0eb28420222a45b9f6ce9425b7ffd0f55e6ae56f295b56
 include a-check.mk
 DCHECK_DIGEST ?= sha256:fede3d027b2ebc1dd8534460853e57b67cc7a9a182cad2e2138c8eebf7a2d03c
 include d-check.mk

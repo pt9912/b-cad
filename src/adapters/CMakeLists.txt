@@ -77,8 +77,8 @@ add_library(bcad_adapters
     io/png_writer.cpp
     io/png_export_adapter.cpp
     # slice-026b: Plugin-Host (ADR-0017) — Driving Adapter, lädt Shared-
-    # Library-Plugins über den System-Lader (dlfcn-Monopol, arch-check
-    # Regel P1) und vermittelt den Plugin-Kontext (Port-Subset v1).
+    # Library-Plugins über den System-Lader (dlfcn-Monopol, Regel P1 — via
+    # a-check `constructs`) und vermittelt den Plugin-Kontext (Port-Subset v1).
     # KEINE neue Dependency (der dynamische Lader ist Teil der glibc).
     plugin/plugin_host.cpp
 )

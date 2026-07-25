@@ -7,8 +7,8 @@
 # die Kern-Symbole liefert zur Ladezeit die exportierte Symboltabelle
 # des ladenden Executables (ENABLE_EXPORTS, Symbol-Naht slice-026b).
 #
-# arch-check Regel P2 begrenzt die Includes dieses Baums; Regel P1
-# verbietet hier jedes eigene dynamische Laden.
+# arch-check Regel P2 begrenzt die Includes dieses Baums; Regel P1 (a-check
+# `constructs`, scan-weit) verbietet hier jedes eigene dynamische Laden.
 
 set(BCAD_PLUGIN_OUTPUT_DIR ${CMAKE_BINARY_DIR}/plugins)
 

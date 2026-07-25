@@ -1,50 +1,46 @@
 #!/usr/bin/env bash
-# arch-check — Plugin-System-P-Rest der hexagonalen Durchsetzung (ADR-0017).
+# arch-check — Plugin-Import-Allowlist (ADR-0017 Regel P2), der letzte lokale
+# Rest der hexagonalen Durchsetzung.
 # Computational feedback (Modul 13). Läuft als Dockerfile-Target-Stage über
 # die per COPY eingebackenen Quellen (kein Bind-Mount); rein textbasiert,
 # keine Toolchain nötig.
 #
 # SCOPE seit slice-030 / MR-013: Das primäre Architektur-Gate ist auf
 # a-check umgestellt (externes, digest-gepinntes Image, `.a-check.yml`,
-# `make a-check`). a-check trägt jetzt: Kern-Reinheit (vormals Regel A),
-# laterale Adapter (B), OCC-/SQLite-/Qt-Tech-Kapselung (C/D/E) — inkl. des
-# plugins/-Baums —, den dlfcn.h-INCLUDE, die Schicht-Kanten und die
-# driving/driven-Richtung. Dieses Skript hält nur noch den P-Rest, den
-# a-check strukturell NICHT sieht (a-check prüft ausschließlich Include-/
-# Import-KANTEN):
+# `make a-check`). a-check trägt: Kern-Reinheit (vormals Regel A), laterale
+# Adapter (B), OCC-/SQLite-/Qt-Tech-Kapselung (C/D/E) — inkl. des plugins/-
+# Baums —, den dlfcn.h-INCLUDE, die Schicht-Kanten und die driving/driven-
+# Richtung.
 #
-#   P1 (Aufruf): dlopen/dlsym/dlclose als FUNKTIONSAUFRUF (keine Include-Kante)
-#               NUR in src/adapters/plugin/ — kein anderer Adapter, nicht der
-#               Kern, nicht main.cpp, und KEIN Plugin im plugins/-Baum lädt
-#               selbst dynamisch. Den dlfcn.h-Include deckt a-check
-#               (tech-Regel `dlfcn.h`, composition_root: forbid).
-#   P2:         Feine Import-Allowlist für plugins/ und src/plugin_api/ —
-#               Quote-Include NUR aus plugin_api/ + hexagon/model/ +
-#               hexagon/ports/driving/, plus Angle-Include-Verbot für
-#               Projekt-Präfixe (src/ liegt für Plugins auf dem Include-Pfad).
-#               Die grobe Import-KANTE (plugins → nur diese Ebenen) deckt
-#               a-check zusätzlich über `edges`; die Quote-vs-Angle-Granularität
-#               (slice-026b, Code-Review-MED-3) liegt unter der Kanten-Ebene
-#               und bleibt darum hier.
+# SCOPE seit slice-050 / MR-021: Auch **Regel P1** (das dlopen/dlsym/dlclose-
+# AUFRUF-Monopol) liegt jetzt bei a-check — als `constructs`-Eintrag in
+# `.a-check.yml` (Roh-Text-Monopol, ab a-check v0.16.0; scan-weit inkl.
+# plugins/-Baum, main.cpp via `composition_root: forbid`). Der P1-Block ist
+# hier deshalb entfallen.
+#
+# Dieses Skript hält damit NUR NOCH Regel P2:
+#
+#   P2: Die GESCHLOSSENE Import-Allowlist für plugins/ und src/plugin_api/ —
+#       Quote-Include NUR aus plugin_api/ + hexagon/model/ +
+#       hexagon/ports/driving/, plus Angle-Include-Verbot für Projekt-Präfixe
+#       (src/ liegt für Plugins auf dem Include-Pfad).
+#
+#       Warum das NICHT nach a-check kann: a-check ist kanten-basiert und
+#       beurteilt ein Import-Ziel nur, wenn es auf eine `layers`-Schicht
+#       auflöst; ein Ziel ohne Schicht (repo-extern, plugin-lokal/relativ,
+#       repo-intern aber schichtlos) bleibt UNBEURTEILT — allow-when-
+#       unresolvable. Die VERBOTS-Hälfte von P2 (src/adapters/, Qt, OCC,
+#       SQLite, dlfcn.h) deckt a-check vollständig ab, quote- wie angle-Form;
+#       die ALLOWLIST-Natur ("nur diese drei Präfixe") ist deny-by-default und
+#       bleibt darum hier. `constructs` kann sie nicht ausdrücken: es ist ein
+#       Monopol ("nur in Zone X"), P2 bräuchte das Inverse.
+#       (slice-050, MR-006-Nachtrag HIGH-2 — fixture-belegt.)
 #
 # HINWEIS: Heuristik, kein C++-Parser.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 status=0
-
-# --- Regel P1 (Aufruf): dynamisches Laden nur im Plugin-Host (ADR-0017) ---
-# NUR das dlopen/dlsym/dlclose-AUFRUFmuster in src/ und plugins/ (das Monopol
-# schließt den plugins/-Baum ein: ein Plugin, das selbst dynamisch lädt,
-# unterliefe Lifecycle und Fehler-Barriere). Den dlfcn.h-Include deckt a-check.
-p1_hits="$(grep -rnE '\bdl(m?open|sym|close)[[:space:]]*\(' src plugins \
-    --include='*.cpp' --include='*.h' 2>/dev/null \
-    | grep -vE '^src/adapters/plugin/' || true)"
-if [ -n "$p1_hits" ]; then
-    echo "ARCH-CHECK FAIL (ADR-0017, Regel P1): dlopen/dlsym/dlclose-Aufruf außerhalb src/adapters/plugin/:"
-    echo "$p1_hits"
-    status=1
-fi
 
 # --- Regel P2: Import-Grenze für plugins/ und src/plugin_api/ (ADR-0017) ---
 # Quote-Includes nur aus plugin_api/, hexagon/model/, hexagon/ports/driving/.
@@ -70,6 +66,6 @@ if [ -n "$p2c_hits" ]; then
 fi
 
 if [ "$status" -eq 0 ]; then
-    echo "arch-check ok: Plugin-P-Rest gewahrt (ADR-0017: dlopen/dlsym/dlclose-Aufruf-Monopol im Plugin-Host + P2-Import-Allowlist plugins//plugin_api). Kern-Reinheit/laterale Adapter/Tech-Kapselung/Schicht-Kanten/Richtung via a-check (MR-013)."
+    echo "arch-check ok: Plugin-P-Rest gewahrt (ADR-0017 Regel P2: geschlossene Import-Allowlist für plugins/ + src/plugin_api/). Kern-Reinheit/laterale Adapter/Tech-Kapselung/Schicht-Kanten/Richtung via a-check (MR-013); das dlopen-Aufruf-Monopol (P1) via a-check constructs (MR-021)."
 fi
 exit "$status"

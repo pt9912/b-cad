@@ -695,6 +695,57 @@ sie.
   Folgepflicht **ohne** korrespondierende Slice-Datei/Deferral) als späteres `harness-steering`-Quergewerk,
   falls die Disziplin reißt.
 
+### MR-021 — [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md)-Regel **P1** via a-check `constructs`
+
+- **Datum:** 2026-07-25
+- **Geltungsbereich:** [`.a-check.yml`](../.a-check.yml), [`a-check.mk`](../a-check.mk),
+  [`Makefile`](../Makefile), [`tools/arch-check.sh`](../tools/arch-check.sh),
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates), [`AGENTS.md` §3](../AGENTS.md)
+- **Lineage:** Nachzug zu [MR-013](#mr-013--arch-check-via-a-check) (dort wanderte der Kern des
+  Architektur-Gates auf a-check; `tools/arch-check.sh` behielt den „P-Rest" P1+P2). MR-013 bleibt
+  **inhaltlich unverändert** — Nachzug per **neuem** Eintrag, Muster
+  [MR-003](#mr-003--docs-check-als-vendored-doku-sensor) → [MR-007](#mr-007--auflösung-von-mr-003-docs-check-via-d-check)
+  und MR-010 → [MR-012](#mr-012--mr-010-invariante-folgt-der-ausgelagerten-lastenheft-historie).
+- **Adaption:** **Regel P1** — das `dlopen`/`dlsym`/`dlclose`-**Aufruf**-Monopol des Plugin-Hosts — wird
+  nicht mehr von `tools/arch-check.sh` geprüft, sondern von **a-check** über den Optionalblock
+  `constructs` (Roh-Text-Monopol, ab **a-check v0.16.0**): das Aufruf-Muster darf nur in der Zone
+  `src/adapters/plugin/` stehen, jedes Vorkommen außerhalb ist `construct-leak`. Die Prüfung ist
+  **scan-weit** (auch der `plugins/`-Baum) und erfasst über `composition_root: forbid` auch
+  `src/main.cpp`. Der `dlfcn.h`-**Include** lag schon seit MR-013 bei a-checks `tech`-Regel.
+  **`tools/arch-check.sh` bleibt bestehen** und hält ab jetzt **nur noch Regel P2**.
+- **Warum P2 lokal bleibt (die entscheidende Grenze):** a-check ist **kanten-basiert** und beurteilt ein
+  Import-Ziel nur, wenn es auf eine `layers`-Schicht auflöst; ein Ziel **ohne** Schicht (repo-extern,
+  plugin-lokal/relativ, repo-intern aber schichtlos) bleibt **unbeurteilt** — *allow-when-unresolvable*.
+  Die **Verbots**-Hälfte von P2 (`src/adapters/`, Qt, OCC, SQLite, `dlfcn.h`) deckt a-check vollständig
+  ab — **quote- wie angle-Form** —, ebenso die Schicht-Kanten und die Richtung. Die **Allowlist**-Natur
+  von P2 („inkludieren **nur** Plugin-API + `hexagon/model/` + `hexagon/ports/driving/") ist dagegen
+  *deny-by-default* und damit strukturell außerhalb dessen, was ein Kanten-Prüfer leisten kann;
+  `constructs` kann sie nicht ersetzen, weil es ein **Monopol** ist („nur in Zone X") und P2 das Inverse
+  bräuchte. Fixture-belegt im MR-006-Nachtrag zu slice-050.
+- **Kein ADR:** es wird **keine** Architekturregel gelockert ([`AGENTS.md` §2.6](../AGENTS.md) verlangt
+  ADRs nur für Lockerungen) — P1 und P2 bleiben beide vollständig durchgesetzt, nur der
+  **Durchsetzungs-Mechanismus** für P1 wechselt. Lage identisch zu MR-013.
+  [ADR-0017](../docs/plan/adr/0017-plugin-api-abi.md) bleibt unverändert gültig und **unangetastet**
+  ([§2.5](../AGENTS.md)); seine Regel-P-Fitness-Function bindet ab jetzt **zwei** Sensoren:
+  `make a-check` (P1) und `make arch-check` (P2).
+- **Ehrlich benannt — eine Deckungs-Differenz:** `arch-check.sh` grepte roh, `constructs` **strippt
+  C-Kommentare** (a-check-Handbuch §4). Ein `dlopen(` in einem *Kommentar* außerhalb der Zone meldet
+  darum nicht mehr. Das ist ein **Deckungs-Verlust**, kein Gewinn — vertretbar, weil ein Kommentar kein
+  Aufruf ist, aber nicht als „Verschärfung" zu verkaufen.
+- **Zwei Fallstricke, beide empirisch belegt (Konfigurations-Disziplin):**
+  1. **Der wirksame `A_CHECK_IMAGE`-Pin steht im [`Makefile`](../Makefile)**, nicht in
+     [`a-check.mk`](../a-check.mk): der `Makefile` weist die Variable **vor** dem `include` zu, das `?=`
+     im Include ist dort ein **No-op**. `make -n a-check` zeigt den real verwendeten Digest. Beide
+     Fassungen werden gemeinsam gehoben, damit sie nicht divergieren.
+  2. **`constructs.adapter` ist ein Teilstring-Vergleich** auf dem Pfad (Handbuch §4) — die Zone wird
+     **mit Schrägstrich** notiert (`src/adapters/plugin/`), sonst entkäme ein Geschwister-Verzeichnis
+     mit gleichem Präfix.
+- **Folgepflicht:** Source-Drift gegen a-check beim Update nachziehen; Pin-Hebung bleibt ein bewusster
+  Commit ([ADR-0004](../docs/plan/adr/0004-toolchain-dependency-pinning.md)-Prinzip, MR-013-Praxis).
+- **Auflösungs-Trigger:** eine a-check-Fähigkeit für **geschlossene Allowlists je Schicht** bzw. eine
+  **inverse Zone** — dann kann auch P2 folden und `tools/arch-check.sh` ganz entfallen (CR-Präzedenz:
+  der d-check-Pilot, a-check-Lastenheft 0.14.0).
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

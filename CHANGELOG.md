@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- slice-050 Teil D — **[ADR-0017](docs/plan/adr/0017-plugin-api-abi.md)-Regel P1 wandert von
+  `tools/arch-check.sh` auf a-check** ([MR-021](harness/conventions.md), Lineage
+  [MR-013](harness/conventions.md#mr-013--arch-check-via-a-check)). a-check **v0.16.0** bringt den
+  Optionalblock `constructs` (Roh-Text-Monopol): das `dlopen`/`dlsym`/`dlclose`-**Aufruf**-Muster darf nur in
+  `src/adapters/plugin/` stehen, jedes Vorkommen außerhalb ist `construct-leak` — **scan-weit** (inkl.
+  `plugins/`-Baum) und via `composition_root: forbid` auch in `src/main.cpp`. Damit prüft ein Kanten-Prüfer
+  erstmals einen **Aufruf**, nicht nur Include-Kanten. **`tools/arch-check.sh` bleibt** und hält **nur noch
+  Regel P2** (die geschlossene Import-Allowlist für `plugins/` + `src/plugin_api/`) — sie ist
+  *deny-by-default* und kanten-basiert nicht abbildbar, weil a-check ein Import-Ziel **ohne** `layers`-Schicht
+  (repo-extern, plugin-lokal/relativ, repo-intern-schichtlos) **unbeurteilt** lässt. **Keine Gate-Lockerung**
+  → kein ADR ([AGENTS.md §2.6](AGENTS.md) n/a), [ADR-0017](docs/plan/adr/0017-plugin-api-abi.md) unangetastet
+  (§2.5); die Regel-P-Fitness-Function bindet jetzt **zwei** Sensoren. **Negativproben vor der Umstellung:**
+  je ein `dlopen`-Aufruf in einem fremden Adapter, im `plugins/`-Baum und in `main.cpp` → **3×
+  `construct-leak`**, Gate rot; ein unerlaubter Quote-Include im Beispiel-Plugin → `arch-check` weiter rot
+  (genau der Fall, den a-check **nicht** sieht). **Zwei Konfigurations-Fallstricke behoben:** der wirksame
+  `A_CHECK_IMAGE`-Pin liegt im `Makefile` (die Zuweisung steht **vor** `include a-check.mk`, dessen `?=`
+  damit ein No-op ist — real lief noch v0.13.0); und `constructs.adapter` ist ein **Teilstring**-Vergleich, die
+  Zone braucht den **Schrägstrich** (`src/adapters/plugin/`), sonst entkommt ein Geschwister-Verzeichnis mit
+  gleichem Präfix. Der Plan-Schnitt entstand aus dem
+  [MR-006](harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Nachtrag
+  (3 HIGH/5 MED/5 LOW/7 INFO), der die ursprüngliche Absicht „`arch-check.sh` ganz retiren" widerlegte.
+
 ### Added
 - slice-048a — **DRW-001 Fangpunkte — AK-Schärfung (Outline → AK) + §1-Mapping** (welle-5, DRW-Aids-Strang;
   [ADR-0019](docs/plan/adr/0019-drw-2d-canvas.md) Entscheidung 6 — **kein** neuer Grundsatz-ADR). Erste offene

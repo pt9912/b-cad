@@ -2,8 +2,9 @@
 // (REQ-TEC-008) über den System-Lader und vermittelt ihnen den
 // Plugin-Kontext (Port-Subset v1: EditStructurePort + EvaluatePort).
 //
-// dlfcn-Monopol (arch-check Regel P1): dlopen/dlsym/dlclose leben
-// AUSSCHLIESSLICH in diesem Adapter.
+// dlfcn-Monopol (Regel P1): dlopen/dlsym/dlclose leben AUSSCHLIESSLICH in
+// diesem Adapter. Gegatet von a-check — der Include via `tech`-Regel, der
+// AUFRUF via `constructs`-Roh-Text-Monopol (MR-013/MR-021).
 //
 // Lifecycle (spec/spezifikation.md §1, LH-FA-PLG-003): Entdeckt ->
 // Geladen -> Handshake -> Initialisiert -> Aktiv -> Beendet -> Entladen.
