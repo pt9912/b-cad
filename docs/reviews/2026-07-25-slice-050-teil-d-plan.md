@@ -2,7 +2,7 @@
 
 **Datum:** 2026-07-25 · **Reviewer:** unabhängiger Agent (≠ Autor), read-only ·
 **Gegenstand:** ausschließlich das Delta **Teil D (Amendment 2026-07-25)** in
-`docs/plan/planning/open/slice-050-tooling-konsolidierung-dcheck.md` — inkl. der von Teil D
+`docs/plan/planning/done/slice-050-tooling-konsolidierung-dcheck.md` — inkl. der von Teil D
 neu gefassten Stellen in A/B/C (HIGH-3-Auflösung, MR-Frage).
 **Nicht Gegenstand:** A/B/C im Ur-Stand (`docs/reviews/2026-07-24-slice-050-plan.md`).
 **Linse:** (a) Quellen-Konsistenz · (b) Plan-Qualität (DoD-Beobachtbarkeit, reale Sensor-Deckung).

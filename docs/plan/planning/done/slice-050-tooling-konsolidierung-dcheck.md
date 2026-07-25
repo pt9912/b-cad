@@ -1,7 +1,7 @@
 ---
 id: slice-050
 titel: Tooling-Konsolidierung — gate-consistency.sh → d-check `targets`-Modul, idlink.py → `d-check --repair`, arch-check-Regel P1 → a-check `constructs` (v0.16.0); P2 bleibt
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: []
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0017](../../adr/0017-plugin-api-abi.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0017](../.
 
 # Slice 050: Tooling-Konsolidierung — Alt-Skripte → d-check-Bordmittel
 
-**Status:** open.
+**Status:** done (2026-07-25).
 **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review**
 2026-07-24 (Reviewer ≠ Autor): **3 HIGH / 2 MED / 2 LOW / 1 INFO → nach Einarbeitung startbar**
 ([Report](../../../reviews/2026-07-24-slice-050-plan.md)). **Eingearbeitet:** HIGH-1 (`doc-tables` **+
@@ -381,4 +381,66 @@ sein Kopf-Kommentar wird ehrlich (P-Rest = **nur** noch die Import-Allowlist). G
 
 ## 8. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Geschlossen 2026-07-25.** DoD A+B+C+D vollständig; `make gates` **EXIT=0** (docs-check 0 Befunde /
+239 Dateien, a-check 0, arch-check ok, **268/268** Tests, Coverage 91,3 %). Commits: `4146cda` (Teil D) →
+`9e52f02` (Teil A+B+C) → dieser Closure-Commit.
+
+**Ergebnis.** Drei lokale Gate-Skripte waren im Blick, **zwei** sind retired
+(`tools/gate-consistency.sh`, `tools/idlink.py`), **eines lebt weiter** (`tools/arch-check.sh`, nur noch
+Regel P2). Zwei neue MRs: **[MR-021](../../../../harness/conventions.md)** (P1 → a-check `constructs`),
+**[MR-022](../../../../harness/conventions.md)** (`targets` + `--repair`).
+
+**Was der Plan richtig vorhergesagt hat.** Die `targets`-Baseline traf **exakt** die im
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Review
+(HIGH-2/MED-2) benannte Menge: **3** `gate-phantom` (nur der »Geplant«-Block, Z. 172–174) + **15**
+`gate-undocumented` (exakt die gelistete Utility-Menge). Der Baseline-vor-Retire-Zwang aus Rest-Risiko #4
+hat sich bezahlt gemacht — ohne ihn wäre die `exempt-targets`-Liste geraten worden.
+
+**Was sich als Phantom erwies.** **Rest-Risiko #2** (AGENTS.md-Tabellen-Grammatik): die Sorge, die
+Negativ-Beispiel-Tabelle (§2.9, `make <target>`-Platzhalter, `make docs-check / make gates (real)`) werfe
+`gate-phantom`, ist **empirisch widerlegt** — `targets` ignoriert sie. Ebenso warf `harness/README.md`
+**kein** Phantom; seine `make X`-Tabelle war bereits ehrlich. Kein Umbau nötig.
+
+**Die teuerste Korrektur ([`MR-006`](../../../../harness/conventions.md)-Nachtrag zu Teil D, 3 HIGH).** Die erste Amendment-Fassung wollte
+`arch-check.sh` **ganz** retiren und den P2-Verzicht per neuer ADR unter [§2.6](../../../../AGENTS.md)
+buchen. Fixture-Beleg des Reviewers: P2 ist im [ADR-0017](../../adr/0017-plugin-api-abi.md)-Wortlaut eine
+**geschlossene Allowlist** („inkludieren **nur** …"), von der a-check nur die **Verbots**-Hälfte und die
+**auflösbaren** Kanten trägt — ein Import-Ziel ohne `layers`-Schicht bleibt **unbeurteilt**
+(*allow-when-unresolvable*). Der Verzicht wäre also erheblich größer gewesen als beschrieben. Nach
+Projektinhaber-Entscheid bleibt P2 lokal ⇒ **keine Lockerung, keine ADR** — und HIGH-3 (D8 ↔ Teil C),
+der Tombstone-Bedarf für `arch-check.sh` und ein 15-facher ADR-Fitness-Nachzug (MED-3) fielen **ersatzlos**
+weg. Die Praxisprobe bestätigte den Entscheid: die P2-Negativprobe (`#include "vendor/fremd.h"` im
+Beispiel-Plugin) ist **genau** ein Fall, den a-check nicht meldet.
+
+**Zwei Konfigurations-Fallen, die ohne empirische Probe durchgerutscht wären.**
+1. Der wirksame `A_CHECK_IMAGE`-Pin steht im **`Makefile`**, nicht in `a-check.mk` — die Zuweisung steht
+   **vor** dem `include`, das `?=` dort ist ein **No-op**. Real lief noch **v0.13.0**; ein Bump nur in
+   `a-check.mk` hätte den `constructs`-Block gegen ein Image ohne dieses Feld laufen lassen
+   (`field constructs not found`, **Exit 2**, `gates` rot). Beide Stellen tragen jetzt einen Kommentar.
+2. `constructs.adapter` ist ein **Teilstring**-Vergleich: ohne Schrägstrich (`src/adapters/plugin/`)
+   entkäme ein Geschwister-Verzeichnis mit gleichem Präfix (Fixture: 2 vs. 3 Befunde).
+
+**Drei Werkzeug-Lehren (verifiziert, in AGENTS.md §3 / [`MR-022`](../../../../harness/conventions.md) festgeschrieben).**
+`make doc-repair | git apply` **scheitert** — der Patch trägt kontextlose Hunks, es braucht
+`git apply --unidiff-zero` (das Handbuch nennt nur `git apply`). `--repair` linkt nackte Kennungen auf das
+**Verzeichnis** und verlinkt **repo-fremde** IDs sachlich falsch ⇒ sichtprüfpflichtig, kein Blind-Apply.
+Und `ignore-refs` ist seit d-check v0.49.0 **querschnittlich** (`links`/`anchors`/`codepaths`) — damit sind
+Markdown-Links in **unveränderlichen** MR/ADR tombstone-bar, **ohne** sie zu editieren; das löste HIGH-3 des
+Ur-Reviews besser als der dort vorgeschlagene In-Place-Edit an [`MR-013`](../../../../harness/conventions.md).
+
+**Abweichungen vom Plan (bewusst, benannt).**
+- **Zwei MRs statt einer.** [`MR-021`](../../../../harness/conventions.md) war beim Commit von Teil D bereits D-spezifisch betitelt; ein
+  nachträglicher Scope-Umbau wäre genau der In-Place-Edit gewesen, den der Slice anderswo vermeidet.
+- **Die drei Alt-Tombstones bleiben modul-lokal** (LOW-3): die Hebung auf die querschnittliche Form hätte
+  ihre Wirkung ohne Anlass auf `links`/`anchors` ausgeweitet.
+- **`arch-check.sh` schrumpfte nicht auf ~35 Zeilen**, sondern auf 71: die Prüf-Logik halbiert sich, aber
+  die Begründung „warum P2 lokal bleibt" wandert als Kopf-Kommentar hinein — bewusst, damit die Grenze am
+  Werkzeug selbst steht und nicht nur im Plan.
+- **Nicht ausgeführt (im Plan als *optional* markiert):** die vorgefundene Staleness in
+  `spec/architecture.md` Z. 175 (`make arch-check` als »geplant« bezeichnet) und `spec/spezifikation.md`
+  Z. 579/638/677 (Regel A/B/C dem `arch-check` zugeschrieben, seit slice-030/[MR-013](../../../../harness/conventions.md#mr-013--arch-check-via-a-check) a-check). Beide sind
+  **nicht** von diesem Slice verursacht und bleiben offen.
+
+**Offener Re-Eval-Trigger.** Lernt a-check **geschlossene Allowlists je Schicht** bzw. eine **inverse
+Zone**, kann auch P2 folden und `tools/arch-check.sh` ganz entfallen (CR-Präzedenz: der d-check-Pilot,
+a-check-Lastenheft 0.14.0). Festgehalten in [MR-021](../../../../harness/conventions.md).

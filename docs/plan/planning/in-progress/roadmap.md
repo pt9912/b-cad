@@ -35,27 +35,38 @@ Slice im selben `git mv`-Commit entfernen).
 - **`slice-049` GEPLANT** (`145ae20`) — **Spec-Straten prozess-rein**: »welle-N«-Purge (3 Straten, 58 Stellen) +
   `matrix`-Gate-Härtung (`temporal`-Klasse `token '[Ww]elle-\d'`; Mechanik fixture-bestätigt).
   [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH**.
-- **`slice-050` GEPLANT** (`746cfc9`) — **Tooling-Konsolidierung**: `gate-consistency.sh` → d-check-Modul
-  `targets`; `idlink.py` → `d-check --repair` (`make doc-repair`); `arch-check.sh` bleibt.
-  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **3 HIGH
-  eingearbeitet** (Ausführung baseline-getrieben).
+- **[`slice-050`](../done/slice-050-tooling-konsolidierung-dcheck.md) done** (`4146cda`→`9e52f02`) —
+  **Tooling-Konsolidierung**: `gate-consistency.sh` → d-check-Modul `targets` (bidirektional, also
+  **strenger** als das abgeloeste Skript); `idlink.py` → `make doc-repair`; **arch-check-Regel P1** → a-check
+  **v0.16.0 `constructs`** (Roh-Text-Monopol — ein Kanten-Pruefer gatet erstmals einen **Aufruf**).
+  **`arch-check.sh` lebt weiter** mit Regel **P2**: die geschlossene Import-Allowlist ist *deny-by-default*
+  und kanten-basiert nicht abbildbar (ein Ziel ohne Schicht bleibt bei a-check **unbeurteilt**).
+  Zwei neue MRs: [MR-021](../../../../harness/conventions.md) (P1) + [MR-022](../../../../harness/conventions.md)
+  (`targets`/`--repair`); **keine** Gate-Lockerung ⇒ kein ADR.
+  Zwei [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Reviews
+  (Ur-Plan 3 HIGH; Teil-D-Nachtrag 3 HIGH) — der Nachtrag hat den Schnitt von „arch-check ganz retiren" auf
+  „nur P1" **verkleinert**.
 
 **Kontext-Erkenntnis (Tooling-Audit):** d-check (gepinnt v0.51.1) ist fähiger als die Konfig-Kommentare
 vermuten lassen — Fähigkeiten IMMER am gepinnten Handbuch (`d-check`-Repo `docs/user/benutzerhandbuch.md`)
 prüfen, nicht inferieren.
 
-**▶ NÄCHSTE SITZUNG — drei startbare Fäden (freie Wahl, je eigenes Impl-`git mv` open→in-progress):**
+**▶ NÄCHSTE SITZUNG — zwei startbare Fäden (freie Wahl, je eigenes Impl-`git mv` open→in-progress):**
 
-1. **`slice-050`** ausführen (Tooling-Konsolidierung) — zuerst `targets`-Baseline-Lauf (volle
-   `gate-phantom`/`gate-undocumented`-Menge), dann Doku entschärfen/`exempt-targets`, Negativprobe, dann Retire.
-2. **`slice-049`** ausführen (welle-Purge + `matrix`-Härtung) — Purge + `.d-check.yml`-`temporal`-Klasse + neue
+1. **`slice-049`** ausführen (welle-Purge + `matrix`-Härtung) — Purge + `.d-check.yml`-`temporal`-Klasse + neue
    MR im **selben Commit** (Regel darf nicht vor der Bereinigung grün sein).
-3. **`slice-048b`** (DRW-001-**Impl**: Fangen im Canvas — `PlanView`-Fang-Punkte + Bildschirm-Schwellwert +
+2. **`slice-048b`** (DRW-001-**Impl**: Fangen im Canvas — `PlanView`-Fang-Punkte + Bildschirm-Schwellwert +
    Maus-Auswahl + `QMouseEvent`-AK; [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) einschlägig), dann DRW-002/003/004/007.
 
-*Empfehlung:* 049 + 050 sind kleine, in sich geschlossene Gate-/Hygiene-Slices (beide berühren `.d-check.yml`,
-aber unabhängig); 048b ist der eigentliche Feature-Fortschritt der DRW-Kampagne. Reihenfolge nach Priorität des
-Projektinhabers.
+*Empfehlung:* 049 ist ein kleiner, in sich geschlossener Gate-/Hygiene-Slice (berührt `.d-check.yml`, das
+slice-050 gerade angefasst hat — Konflikte prüfen); 048b ist der eigentliche Feature-Fortschritt der
+DRW-Kampagne. Reihenfolge nach Priorität des Projektinhabers.
+
+**Aus slice-050 mitzunehmen (Werkzeug-Lehren):** der wirksame `A_CHECK_IMAGE`-Pin steht im `Makefile`, nicht
+in `a-check.mk` (dessen `?=` ist nach der Include-Reihenfolge ein No-op); `make doc-repair | git apply`
+scheitert an kontextlosen Hunks → `git apply --unidiff-zero`, und der Patch ist **sichtprüfpflichtig**;
+`ignore-refs` ist seit d-check v0.49.0 querschnittlich und damit das Mittel, Referenzen aus
+**unveränderlichen** MR/ADR zu tombstonen statt sie zu editieren.
 
 ---
 
