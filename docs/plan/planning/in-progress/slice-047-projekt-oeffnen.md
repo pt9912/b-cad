@@ -67,14 +67,14 @@ Beide über **eine** geteilte, testbare Save/Open-Naht (der vom Codebase-Autor v
 ## 3. Definition of Done
 
 ### 047a — CLI + Naht
-- [ ] **Save-Use-Case** (§2) als testbare Produktions-Naht + Unit-Test (Ableitung + fail-closed `E-IO`).
-- [ ] **`main.cpp` `--save <pfad>`** ruft den Use-Case; **`--open <pfad>`** ruft `load` → das `Building` ist die
+- [x] **Save-Use-Case** (§2) als testbare Produktions-Naht + Unit-Test (Ableitung + fail-closed `E-IO`).
+- [x] **`main.cpp` `--save <pfad>`** ruft den Use-Case; **`--open <pfad>`** ruft `load` → das `Building` ist die
       Export-Quelle; `provenance.source` = **Basename** (kein Struktur-Leak, 046a-R3); ohne `--open` bleibt `source`
       leer (`footerLine()` lässt es weg — LOW-1). Fehler (`load`/`save` werfen neutral) **gefangen** → stderr +
       Exit ≠ 0, kein Crash/Teil-Zustand.
-- [ ] **Export-Refactor:** der Export-Pfad exportiert einen **übergebenen** `Building` + `ExportProvenance` (main
+- [x] **Export-Refactor:** der Export-Pfad exportiert einen **übergebenen** `Building` + `ExportProvenance` (main
       wählt geladen-vs-Demo); das bestehende `--export-*`-Demo-Verhalten (ohne `--open`) bleicht unverändert.
-- [ ] **AK — io-smoke-Roundtrip:** Demo `--save $tmp.bcad` → `--open $tmp.bcad --export-pdf` → PDF trägt die echte
+- [x] **AK — io-smoke-Roundtrip:** Demo `--save $tmp.bcad` → `--open $tmp.bcad --export-pdf` → PDF trägt die echte
       Quelle (Basename grep-bar, PDF unkomprimiert); `--open` nicht existent → Exit ≠ 0, kein Crash. Load-Korrektheit
       deckt `test_sqlite_project_repository`.
 
