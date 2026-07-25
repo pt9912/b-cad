@@ -26,6 +26,9 @@
 #include "hexagon/model/segment.h"
 #include "hexagon/model/wall.h"
 #include "hexagon/ports/driven/model_changed_port.h"
+#include "hexagon/model/area_report.h"
+#include "hexagon/model/material.h"
+#include "hexagon/ports/driven/geometry_kernel_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
@@ -243,6 +246,150 @@ TEST(ManageProject_047b, OpenProjectKeepsModelWhenLoadThrows) {
     EXPECT_EQ(svc.building().walls.size(), walls_before);
     EXPECT_EQ(svc.building().walls.front().id, *wall)
         << "die bestehende Wand muss dieselbe bleiben";
+}
+
+
+// --- Code-Review 2026-07-25: die drei belegten Test-Luecken (MEDIUM-1/2/3) ---
+
+// Geometrie-Double, das beim N-ten Extrusions-Aufruf wirft (E-GEO-002-Surrogat).
+class ThrowingOnNthExtrude final
+    : public bcad::hexagon::ports::driven::GeometryKernelPort {
+public:
+    explicit ThrowingOnNthExtrude(int throw_on_call) : throw_on_(throw_on_call) {}
+
+    model::Solid extrudeFootprint(
+        const model::Footprint& footprint, double height_mm,
+        const std::vector<model::CutPrism>& cutouts) const override {
+        if (++calls_ == throw_on_) {
+            throw std::runtime_error("E-GEO-002: Extrusion fehlgeschlagen");
+        }
+        return inner_.extrudeFootprint(footprint, height_mm, cutouts);
+    }
+    model::TriangleMesh tessellateFootprint(
+        const model::Footprint& footprint, double height_mm,
+        const std::vector<model::CutPrism>& cutouts) const override {
+        return inner_.tessellateFootprint(footprint, height_mm, cutouts);
+    }
+
+private:
+    AnalyticGeometry inner_{};
+    int throw_on_;
+    mutable int calls_ = 0;
+};
+
+// Geschlossenes Rechteck aus vier Waenden — traegt einen erkennbaren Raum.
+model::Building roomedProject() {
+    model::Building b;
+    model::Storey s;
+    s.id = model::StoreyId{3};
+    s.height_mm = 2500.0;
+    b.storeys.push_back(s);
+
+    const double x0 = 0.0, y0 = 0.0, x1 = 4000.0, y1 = 3000.0;
+    const model::Point2D corners[4] = {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}};
+    for (int i = 0; i < 4; ++i) {
+        model::Wall w;
+        w.id = static_cast<model::WallId>(10 + i);
+        w.storey_id = s.id;
+        w.start = corners[i];
+        w.end = corners[(i + 1) % 4];
+        w.thickness_mm = 240.0;
+        w.height_mm = 2500.0;
+        b.walls.push_back(w);
+    }
+    return b;
+}
+
+// MEDIUM-1: die redetectRooms-Schleife wird wirklich durchlaufen — nach dem
+// Laden eines geschlossenen Grundrisses meldet floorArea eine Flaeche. Ohne
+// die Schleife bliebe rooms_ leer und die Flaeche 0.
+TEST(ManageProject_047b, ReplaceBuildingRedetectsRoomsOfLoadedProject) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+
+    svc.replaceBuilding(roomedProject());
+
+    const model::AreaReport report = svc.floorArea(model::StoreyId{3});
+    EXPECT_FALSE(report.room_areas_m2.empty())
+        << "geladener geschlossener Grundriss muss einen Raum ergeben";
+    EXPECT_GT(report.total_m2, 0.0);
+}
+
+// MEDIUM-2: der Zaehler-Reset gilt fuer JEDEN Zaehler, nicht nur Wand/Ebene.
+// Jede Element-Art bekommt ein ANDERES geladenes Maximum — ein vertauschter
+// maxIdValue-Aufruf (Copy-Paste) faellt damit auf.
+TEST(ManageProject_047b, ReplaceBuildingResetsEveryIdCounter) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+
+    model::Building b = loadedProject();  // Storey 7, Wall 42, Layer 9
+    model::Material m;
+    m.id = model::MaterialId{55};
+    m.name = "Beton";
+    b.materials.push_back(m);
+
+    model::GuideLine g;
+    g.id = model::GuideLineId{77};
+    g.storey_id = model::StoreyId{7};
+    g.layer_id = model::LayerId{9};
+    g.segment = model::Segment{{0.0, 0.0}, {100.0, 0.0}};
+    b.guide_lines.push_back(g);
+
+    svc.replaceBuilding(std::move(b));
+
+    EXPECT_GT(static_cast<int>(svc.addStorey(2500.0)), 7)
+        << "next_storey_id_";
+    const auto w = svc.addWall(model::StoreyId{7},
+                               model::Segment{{0.0, 500.0}, {1000.0, 500.0}});
+    ASSERT_TRUE(w.has_value());
+    EXPECT_GT(static_cast<int>(*w), 42) << "next_wall_id_";
+
+    model::Layer l;
+    l.name = "Frisch";
+    const auto lid = svc.addLayer(l);
+    ASSERT_TRUE(lid.has_value());
+    EXPECT_GT(static_cast<int>(*lid), 9) << "next_layer_id_";
+
+    model::Material fresh_m;
+    fresh_m.name = "Holz";
+    const auto mid = svc.addMaterial(fresh_m);
+    ASSERT_TRUE(mid.has_value());
+    EXPECT_GT(static_cast<int>(*mid), 55) << "next_material_id_";
+
+    model::GuideLine fresh_g;
+    fresh_g.storey_id = model::StoreyId{7};
+    fresh_g.layer_id = *lid;
+    fresh_g.segment = model::Segment{{0.0, 900.0}, {900.0, 900.0}};
+    const auto gid = svc.addGuideLine(fresh_g);
+    ASSERT_TRUE(gid.has_value());
+    EXPECT_GT(static_cast<int>(*gid), 77) << "next_guide_line_id_";
+}
+
+// MEDIUM-3: die zugesagte Transaktionalitaet. Wirft der Solid-Bau einer
+// GELADENEN Wand, bleibt der bisherige Stand vollstaendig unberuehrt — kein
+// halb ersetztes Modell, keine Meldung.
+TEST(ManageProject_047b, ReplaceBuildingIsTransactionalOnGeometryFailure) {
+    const ThrowingOnNthExtrude geometry(3);  // erste zwei Bauten ok, dritter wirft
+    services::StructureEditService svc(geometry);
+    const auto own_storey = svc.building().storeys.front().id;
+    const auto own_wall = svc.addWall(
+        own_storey, model::Segment{{0.0, 0.0}, {2000.0, 0.0}});
+    ASSERT_TRUE(own_wall.has_value());
+
+    RecordingListener listener;
+    svc.subscribe(listener);
+    const auto storeys_before = svc.building().storeys.size();
+    const auto walls_before = svc.building().walls.size();
+
+    // roomedProject hat vier Waende -> der dritte Extrusions-Aufruf wirft.
+    EXPECT_THROW(svc.replaceBuilding(roomedProject()), std::runtime_error);
+
+    EXPECT_EQ(svc.building().storeys.size(), storeys_before)
+        << "gescheiterter Solid-Bau darf das Modell nicht anfassen";
+    EXPECT_EQ(svc.building().walls.size(), walls_before);
+    EXPECT_EQ(svc.building().walls.front().id, *own_wall);
+    EXPECT_EQ(listener.replaced, 0) << "keine Meldung bei gescheitertem Tausch";
+    svc.unsubscribe(listener);
 }
 
 }  // namespace

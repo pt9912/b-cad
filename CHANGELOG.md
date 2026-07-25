@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- slice-047b — **Projekt speichern/öffnen im GUI** ([LH-FA-BLD-002](spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/[LH-FA-BLD-003](spec/lastenheft.md#lh-fa-bld-003--projekt-laden),
+  [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md)): Datei-Menü **Öffnen** / **Speichern unter** mit
+  Datei-Auswahl; Fehler erscheinen als Dialog, der Modell-Stand bleibt dabei unverändert. Damit ist die
+  Anforderung **benutzer-vollständig** — bisher gab es nur die CLI (047a).
+  **Drei neue öffentliche Verträge im Kern:** `services::openProject` (symmetrische Gegen-Naht zu
+  `saveProject`), `StructureEditService::replaceBuilding` und `ModelChangeOp::ModelReplaced`.
+  `replaceBuilding` tut mehr, als das Modell zu tauschen: es baut die **abgeleiteten** Zustände neu
+  (Wand-Solids, Raumerkennung je Geschoss) und setzt **jeden** Id-Zähler über das geladene Maximum —
+  ohne diesen Reset kollidierte die erste Mutation nach dem Laden mit einer persistierten Id.
+  Transaktional: schlägt der Solid-Bau einer geladenen Wand fehl, bleibt der bisherige Stand unberührt.
+  `ModelReplaced` ist die **eine** Full-Refresh-Meldung ([ADR-0008](docs/plan/adr/0008-aenderungs-benachrichtigung.md));
+  die `ViewerScene` baut darauf ihre Szene vollständig neu, weil der per-op-Pfad nur gemeldete Elemente
+  pullt und sonst die Netze des alten Projekts behielte.
+  **Grenze, benannt:** nur der **GUI**-Weg ersetzt den Sitzungs-Stand. Die CLI `--open` lädt weiterhin
+  eine **Export-Quelle** und geht **nicht** durch `openProject`/`replaceBuilding` — dort gibt es keine
+  Sitzung, also auch keinen Zähler-Reset und keine Meldung (spez. §1 `LH-FA-BLD-002.a`).
+
 ### Removed
 - slice-050 Teil A+B+C — **`tools/gate-consistency.sh` und `tools/idlink.py` retired**
   ([MR-022](harness/conventions.md)). Die Doku↔Makefile-Ehrlichkeit (Kurs-Modul 13) trägt jetzt das

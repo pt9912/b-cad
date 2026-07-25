@@ -720,16 +720,6 @@ Teil-Export, Zielpfad unverändert.
 **Totalität.** Ein Modell ohne Geschosse/Wände → eine **gültige, (annähernd) leere**
 PDF-Seite / PNG-Bild (kein Wurf). Reihenfolge deterministisch aus der Modell-Reihenfolge.
 
-**Projekt speichern/öffnen — Aufruf-Wege.** Die Persistenz
-([`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern)/[`003`](lastenheft.md#lh-fa-bld-003--projekt-laden))
-ist über **zwei** Wege benutzer-aufrufbar: die **CLI** (`--save`/`--open`) und das
-**GUI-Datei-Menü** (Speichern/Öffnen mit Datei-Auswahl). Beide Wege nutzen **denselben**
-Kern-Use-Case; ein Fehler (fehlende/korrupte Datei, nicht beschreibbarer Pfad) lässt den
-bisherigen Modell-Stand **unverändert** und wird dem Benutzer gemeldet — kein Teil-Zustand.
-Nach dem Öffnen zeigen die geöffneten Sichten (3D/2D) den **geladenen** Stand, nicht den
-vorherigen; die anschließend erzeugten Elemente erhalten Kennungen, die mit den geladenen
-**nicht kollidieren**.
-
 **Export-Herkunft (injiziert, determinismus-erhaltend).** Jeder Export trägt eine vom
 Aufrufer **injizierte** Herkunft — **Datum**, **Quelle** (Basename des via `--open`/GUI
 geöffneten Projekts; leer ohne geöffnetes Projekt), **Version** —, damit ein
@@ -743,6 +733,28 @@ deterministische Sentinels). Zusätzlich tragen PDF/PNG **statische** Erzeuger-/
 Metadaten (PDF `/Info`, PNG `tEXt` `Software`/`Title`); **nie** ein dynamisches
 `/CreationDate`/`/ID` bzw. `tIME` (Wall-Clock) — Datum kommt ausschließlich über die
 injizierte, im Test fixierte Herkunft.
+
+### LH-FA-BLD-002.a / LH-FA-BLD-003.a — Projekt speichern/öffnen (Aufruf-Wege)
+
+Die Persistenz-**Mechanik** (atomar, Temp+Rename) beschreibt
+[`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern); dieser Block beschreibt, **wie
+ein Benutzer sie auslöst** und was dabei beobachtbar ist.
+
+**Zwei Aufruf-Wege, mit unterschiedlichem Zweck.**
+
+- **Speichern** ist auf beiden Wegen dasselbe: CLI (`--save`) und GUI-Datei-Menü schreiben denselben
+  Projektstand über **einen** gemeinsamen Ableitungs-Schritt (die persistierten abgeleiteten Skalare
+  entstehen genau einmal, nicht je Weg neu).
+- **Öffnen** ist auf beiden Wegen **nicht** dasselbe: das **GUI** ersetzt den **Sitzungs-Stand** — die
+  geöffneten Sichten (3D/2D) zeigen danach den geladenen Stand, nicht den vorherigen, und die
+  anschließend erzeugten Elemente erhalten Kennungen, die mit den geladenen **nicht kollidieren**.
+  Die **CLI** (`--open`) lädt dagegen eine **Export-Quelle**: der geladene Stand wird exportiert und
+  füllt die Export-Herkunft, er wird aber **nicht** zum bearbeitbaren Sitzungs-Stand (die CLI hat
+  keine Sitzung). Wer die Sitzungs-Semantik meint, meint den GUI-Weg.
+
+**Fehlerfälle (beide Wege).** Fehlende oder nicht lesbare Datei, inkonsistenter Inhalt, nicht
+beschreibbarer Zielpfad → der bisherige Stand bleibt **unverändert** und der Fehler wird dem Benutzer
+gemeldet; **kein** Teil-Zustand, **keine** halb ersetzte Sitzung.
 
 ### LH-FA-PLG-001.a — Plugin-System (Host-Mapping, Teilumfang)
 
