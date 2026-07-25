@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- slice-050 Teil A+B+C — **`tools/gate-consistency.sh` und `tools/idlink.py` retired**
+  ([MR-022](harness/conventions.md)). Die Doku↔Makefile-Ehrlichkeit (Kurs-Modul 13) trägt jetzt das
+  d-check-Modul **`targets`**, das im `docs-check`-Modulset mitläuft: `gate-phantom` (behauptetes
+  `make X` ohne reale Regel) + `gate-undocumented` (reale Regel fehlt in AGENTS.md), hermetisch, kein
+  git. **Verschärfung:** das abgelöste Skript prüfte nur **eine** Richtung — `targets` prüft
+  **bidirektional**; der Rollout hat darum **neun** bisher undokumentierte Targets in die
+  AGENTS.md-§3-Tabelle gehoben (`doc-doctor`, `doc-repair`, `doc-trace`, `doc-complete`, `dev-image`,
+  `record-gates`, `versions`, `schema-regen`, `a-check-graph`), sechs weitere sind als
+  `exempt-targets` benannt (`help` + die internen `d-check.mk`-Distributoren). Die ID-Link-Generierung
+  übernimmt **`make doc-repair`** (`d-check --repair`) — dokumentiert inkl. des nicht-offensichtlichen
+  Aufrufs `git apply --unidiff-zero` (der Patch trägt kontextlose Hunks) und des Hinweises, dass er
+  sichtprüfpflichtig ist. **Baseline vor dem Retire:** 3 `gate-phantom` + 15 `gate-undocumented`; die
+  `make <target>`-Negativ-Beispiel-Tabelle wirft **nicht**, `harness/README.md` warf kein Phantom.
+  **Negativproben nach dem Umbau:** erfundene `make phantom-gate`-Tabellenzeile → `gate-phantom`,
+  reale undokumentierte Regel → `gate-undocumented`. Der »Geplant«-Block in AGENTS.md §3 ist jetzt
+  **Prosa ohne `make`-Präfix** — `targets` kennt keine Sektions-Marker und läse eine Tabellenzeile als
+  Phantom. Die Referenzen der gelöschten Skripte aus **unveränderlichen** Einträgen (u. a. MR-013,
+  Markdown-Link) sind per **querschnittlichem `ignore-refs`** (d-check ≥ v0.49.0, honoriert von
+  `links`/`anchors`/`codepaths`) tombstoned statt fremd-editiert; die drei Alt-Tombstones bleiben
+  bewusst modul-lokal, um ihre Wirkung nicht ohne Anlass auszuweiten.
+
 ### Changed
 - slice-050 Teil D — **[ADR-0017](docs/plan/adr/0017-plugin-api-abi.md)-Regel P1 wandert von
   `tools/arch-check.sh` auf a-check** ([MR-021](harness/conventions.md), Lineage

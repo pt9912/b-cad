@@ -29,7 +29,7 @@ COVERAGE_THRESHOLD ?= 70
 # Gate = Build einer Stage; --target wählt sie, der Kontext ist das Repo.
 GATE = $(DOCKER) build -f $(DOCKERFILE)
 
-.PHONY: help dev-image build test lint arch-check coverage-gate docs-check gate-consistency record-gates gates versions schema-check schema-regen acc-002-beleg run io-smoke golden-regen golden-check
+.PHONY: help dev-image build test lint arch-check coverage-gate docs-check record-gates gates versions schema-check schema-regen acc-002-beleg run io-smoke golden-regen golden-check
 
 help: ## Targets anzeigen
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -73,9 +73,6 @@ coverage-gate: ## bootstrap-aware Coverage (Schwelle $(COVERAGE_THRESHOLD)%, gco
 		-t $(IMAGE):coverage-check .
 
 docs-check: doc-check ## Doku-Konsistenz — Referenz-Integritäts-Gate via d-check (d-check.mk, digest-gepinnt, .d-check.yml; netzlos read-only Bind-Mount)
-
-gate-consistency: ## Modul 13 — jeder als real dokumentierte make-Befehl existiert (Doku↔Makefile)
-	$(GATE) --target gate-consistency -t $(IMAGE):gate-consistency .
 
 record-gates: ## Nachweis schreiben: Working-Tree-Hash (für den Stop-Hook)
 	@bash tools/harness/record-gates.sh
@@ -204,5 +201,5 @@ golden-check: ## slice-044a — Drift: committete Golden == golden_gen (NICHT in
 # REZEPT statt als letzter Prerequisite — unter `make -j` liefen
 # Prerequisites parallel und der Nachweis entstünde trotz roter Gates
 # (MR-005); das Rezept läuft erst, wenn ALLE Prerequisites grün sind.
-gates: docs-check gate-consistency a-check arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)
+gates: docs-check a-check arch-check lint test coverage-gate ## alle inneren Gates (mandatory vor PR)
 	@bash tools/harness/record-gates.sh

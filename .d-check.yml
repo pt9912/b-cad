@@ -11,7 +11,7 @@
 # Beschreibung siehe: https://raw.githubusercontent.com/pt9912/d-check/refs/heads/main/README.md
 scan:
   roots: ["."]
-modules: [links, anchors, codepaths, spans, hostpaths, matrix, ids, planning, tracked]
+modules: [links, anchors, codepaths, spans, hostpaths, matrix, ids, planning, tracked, targets]
 codepaths:
   roots: [docs, spec, harness, tools, src]
   # slice-033/MR-014: die tools/Dockerfile-FROM-Stage entfiel mit der Umstellung
@@ -23,9 +23,43 @@ codepaths:
   # `PlanView`-Typen + `visibleLayerIds` → `model/`); ADR-0018 (Accepted/immutabel,
   # AGENTS §2.5) + slice-032c (done) nennen die entfernte Datei noch als
   # historischen Zeiger — Tombstone, kein Bruch (keine Schwellen-Lockerung, §2.6 n/a).
+  # Diese drei bleiben BEWUSST modul-lokal (Alias-Form, nur `codepaths`): sie sind
+  # als Inline-Code-Pfade zitiert, nicht als Markdown-Links — eine Hebung auf die
+  # querschnittliche Form wuerde ihre Wirkung ohne Anlass auf `links`/`anchors`
+  # ausweiten (slice-050, MR-006-Nachtrag LOW-3).
   ignore-refs:
     ["tools/Dockerfile", "src/adapters/io/plan_geometry.h",
      "src/adapters/io/plan_geometry.cpp"]
+
+# slice-050: querschnittliches Referenz-Ventil (d-check >= v0.49.0) — anders als
+# der modul-lokale codepaths-Alias oben honorieren `links`, `anchors` UND
+# `codepaths` diese Eintraege gemeinsam. Noetig, weil die hier retirten Skripte
+# auch als MARKDOWN-LINK zitiert sind, u. a. in harness/conventions.md MR-013 —
+# einem nach Aufnahme unveraenderlichen Eintrag, den man nicht umtexten darf
+# (AGENTS §2.5-Praxis, Muster MR-003->MR-007). Tombstone statt Fremd-Edit; das
+# Handbuch nennt genau diesen Fall. Gate-Wirksamkeit bleibt: ohne passenden
+# Eintrag meldet ein fehlendes Ziel weiter. Keine Schwellen-Lockerung (§2.6 n/a).
+ignore-refs:
+  - refs: ["tools/gate-consistency.sh", "tools/idlink.py"]
+
+# slice-050: Deklarations-Konsistenz Doku <-> Build-Targets (loest den
+# Doku-/Makefile-Kern von tools/gate-consistency.sh ab, d-check-Modul `targets`).
+# makefiles: alle DREI — die realen Regeln von `make a-check`/`docs-check` leben
+# in den Includes, ohne sie gaebe es gate-phantom-Falschbefunde.
+# doc-tables: BEIDE Honesty-Dokumente — gate-consistency.sh scannte ebenfalls
+# beide; nur AGENTS.md wuerde den Korpus schrumpfen.
+# `targets` prueft BIDIREKTIONAL und ist damit strenger als das abgeloeste,
+# unidirektionale Skript (Gewinn): jede reale Regel muss in `authority` stehen.
+# exempt-targets (EXAKTE Regelnamen, kein Glob): `help` und die internen
+# d-check.mk-Distributoren, deren Vertrag unter anderem Namen dokumentiert ist
+# (`doc-check` laeuft als `make docs-check`; `doc-planning`/`doc-tracked`/
+# `doc-targets` sind dessen Teilmengen-Runner). Alles uebrige wurde in die
+# AGENTS.md-§3-Tabelle aufgenommen statt ausgenommen.
+targets:
+  makefiles: [Makefile, a-check.mk, d-check.mk]
+  doc-tables: [AGENTS.md, harness/README.md]
+  authority: AGENTS.md
+  exempt-targets: [help, doc-check, doc-planning, doc-tracked, doc-targets, doc-help]
 
 # Referenz-Richtung: Spec-Straten verweisen nie abwärts auf ADRs/Planning-Slices
 # (Markdown-Link-Form). Maßgeblich — NICHT dieser Kommentar — sind das gepinnte
@@ -66,7 +100,9 @@ matrix:
 # exempt-paths (je Pattern unten) von der ID-Linkpflicht befreit. Maßgeblich —
 # statt eines hier driftenden Verhaltens-Texts — sind die Adaption MR-011
 # (harness/conventions.md) und die in d-check.mk gepinnte d-check-Version
-# (deren exempt-Semantik). Anker/Links generiert von tools/idlink.py, vom Gate validiert.
+# (deren exempt-Semantik). Fehlende ID-Links repariert `make doc-repair` (d-check
+# --repair) als Patch — siehe AGENTS.md §3; das frueher hier genutzte lokale
+# Generator-Skript ist retired (slice-050, MR-022).
 # LH-FA-Regex D3-fest ([A-Z][A-Z0-9]*); Cross-Stratum: Ziel = kanonische
 # Definitionsdatei der Familie, unabhängig von der Fundstelle.
 ids:

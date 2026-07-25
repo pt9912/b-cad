@@ -746,6 +746,53 @@ sie.
   **inverse Zone** — dann kann auch P2 folden und `tools/arch-check.sh` ganz entfallen (CR-Präzedenz:
   der d-check-Pilot, a-check-Lastenheft 0.14.0).
 
+### MR-022 — Doku↔Makefile-Ehrlichkeit via d-check `targets` (Auflösung von `gate-consistency.sh`)
+
+- **Datum:** 2026-07-25
+- **Geltungsbereich:** [`.d-check.yml`](../.d-check.yml), [`Makefile`](../Makefile),
+  [`.devcontainer/Dockerfile`](../.devcontainer/Dockerfile), [`AGENTS.md` §3](../AGENTS.md),
+  [`harness/README.md` §Sensors](README.md#sensors-feedback-gates)
+- **Lineage:** dieselbe Klasse wie [MR-007](#mr-007--auflösung-von-mr-003-docs-check-via-d-check)
+  (vendorter Sensor → externes, digest-gepinntes Image + deklarative Config) und
+  [MR-013](#mr-013--arch-check-via-a-check)/[MR-021](#mr-021--adr-0017-regel-p1-via-a-check-constructs).
+  Löst [MR-003](#mr-003--docs-check-als-vendored-doku-sensor)' Schwester-Gate ab, das MR-007 offenließ.
+- **Adaption:** Das **Meta-Gate `make gate-consistency`** (lokales `tools/gate-consistency.sh`,
+  Kurs-Modul 13: „jeder als real dokumentierte `make`-Befehl existiert im Makefile") ist **retired**.
+  Seine Aufgabe trägt jetzt das d-check-Modul **`targets`**, das im `docs-check`-Modulset mitläuft:
+  `gate-phantom` (ein in einer Doku-**Tabellenzeile** behauptetes `make X` ohne reale Regel) und
+  `gate-undocumented` (eine reale Regel, die in der Autoritäts-Doku fehlt). Hermetisch — kein git,
+  kein Makefile-Ausführen. Konfiguration: `makefiles: [Makefile, a-check.mk, d-check.mk]` (**alle
+  drei** — die realen Regeln von `make a-check`/`docs-check` leben in den Includes),
+  `doc-tables: [AGENTS.md, harness/README.md]` (**beide** Honesty-Dokumente, wie im abgelösten Skript),
+  `authority: AGENTS.md`.
+- **Verschärfung, keine Lockerung ([§2.6](../AGENTS.md) n/a):** `gate-consistency.sh` prüfte
+  **unidirektional** (Doku → Makefile). `targets` prüft **bidirektional** — jede reale Regel muss auch
+  dokumentiert sein. Der Rollout hat darum **neun** bis dahin undokumentierte Targets in die
+  AGENTS.md-§3-Tabelle gehoben (`doc-doctor`, `doc-repair`, `doc-trace`, `doc-complete`, `dev-image`,
+  `record-gates`, `versions`, `schema-regen`, `a-check-graph`).
+- **`exempt-targets` (exakte Regelnamen, kein Glob):** `help` und die internen `d-check.mk`-
+  Distributoren, deren Vertrag unter anderem Namen dokumentiert ist — `doc-check` läuft als
+  `make docs-check`, `doc-planning`/`doc-tracked`/`doc-targets` sind dessen Teilmengen-Runner,
+  `doc-help` ist help-artig. Alles Übrige wurde **dokumentiert statt ausgenommen**.
+- **Bekannte Grenze (Konfigurations-Disziplin):** `targets` kennt **keine Sektions-Marker** — anders als
+  das abgelöste Skript, das eine `/Geplant/`-Sektion per `awk` unterdrückte. Ein **geplantes** `make X`
+  darf darum **nicht in Tabellenform** stehen; der „Geplant (noch NICHT behauptet)"-Block in
+  [`AGENTS.md` §3](../AGENTS.md) ist deshalb **Prosa ohne `make`-Präfix**. Wer ihn in eine Tabelle
+  zurückbaut, erzeugt `gate-phantom`.
+- **Empirisch belegt (Baseline vor dem Retire + Negativproben):** Baseline = 3 `gate-phantom` (genau der
+  Geplant-Block) + 15 `gate-undocumented`; die **Negativ-Beispiel-Tabelle** in
+  [`AGENTS.md` §2.9](../AGENTS.md) (`make <target>`-Platzhalter) wirft **nicht**, und
+  `harness/README.md` warf **kein** Phantom. Wirksamkeit nach dem Umbau: eine erfundene
+  `make phantom-gate`-Tabellenzeile ⇒ `gate-phantom`; eine reale, undokumentierte Regel ⇒
+  `gate-undocumented`.
+- **Referenz-Tombstone statt Fremd-Edit:** die gelöschten Skripte sind aus **unveränderlichen**
+  Einträgen heraus zitiert (u. a. MR-013, Markdown-Link). Aufgelöst über das **querschnittliche**
+  `ignore-refs` (d-check ≥ v0.49.0, honoriert von `links`/`anchors`/`codepaths`) — der ältere
+  modul-lokale `codepaths.ignore-refs`-Alias deckt **keine** Markdown-Links. Gate-Wirksamkeit bleibt:
+  ohne passenden Eintrag meldet ein fehlendes Ziel weiter.
+- **Auflösungs-Trigger:** permanent; entfällt, falls `targets` je Sektions-Marker lernt (dann kann der
+  Geplant-Block wieder Tabelle werden).
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·

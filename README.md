@@ -140,7 +140,7 @@ b-cad/
 │   └── main.cpp              Composition Root
 ├── plugins/                  zur Laufzeit ladbare Plugins (Beispiel + Test-Fixtures)
 ├── tests/                    GoogleTest (hexagon/ adapters/ e2e/)
-├── tools/                    Gate-Skripte (arch-check, gate-consistency, suppression-gate) + Dockerfile; docs-check via d-check (MR-007)
+├── tools/                    Gate-Skripte (arch-check [Regel P2], suppression-gate) + Dockerfile; docs-check via d-check (MR-007), Doku↔Makefile via d-check-Modul targets (slice-050)
 └── docs/
     ├── glossar.md
     ├── user/releasing.md

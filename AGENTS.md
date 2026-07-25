@@ -147,15 +147,14 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 
 | Target | Zweck | Bindung |
 |---|---|---|
-| `make docs-check` | Doku-Konsistenz: interne Links/Anker/Inline-Code-Pfade + **Referenz-Richtung Spec→ADR + ADR↛Slice** (no-downward; d-check-Module links/anchors/codepaths/spans/hostpaths/matrix/ids/**planning**/**tracked** [Lifecycle + Fresh-Clone-Schutz; hermetisch/range-frei]) | [MR-007](harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [MR-011](harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths), [MR-014](harness/conventions.md), [MR-017](harness/conventions.md), [MR-018](harness/conventions.md) |
-| `make gate-consistency` | jeder als real dokumentierte `make`-Befehl existiert im Makefile (fängt halluzinierte Gates) | Modul 13 |
+| `make docs-check` | Doku-Konsistenz: interne Links/Anker/Inline-Code-Pfade + **Referenz-Richtung Spec→ADR + ADR↛Slice** (no-downward) + **Doku↔Makefile-Ehrlichkeit** (Modul `targets`: jedes in einer Doku-Tabelle behauptete `make X` ist eine reale Regel — `gate-phantom` — und jede reale Regel steht in AGENTS.md — `gate-undocumented`; löst `gate-consistency.sh` ab, slice-050); d-check-Module links/anchors/codepaths/spans/hostpaths/matrix/ids/**planning**/**tracked**/**targets** [Lifecycle + Fresh-Clone-Schutz; hermetisch/range-frei]) | [MR-007](harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check), [MR-011](harness/conventions.md#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths), [MR-014](harness/conventions.md), [MR-017](harness/conventions.md), [MR-018](harness/conventions.md), [MR-022](harness/conventions.md) |
 | `make a-check` | Architektur (**primär**): hexagonale Schichtung via externem digest-gepinntem Image **a-check** (`.a-check.yml`; netzlos `--network none`, read-only Bind-Mount) — Kern-Reinheit (Regel A) · laterale Adapter (B, MeshSource-Naht via `adapter_sink`) · Tech-Kapselung OCC-`.hxx`/`sqlite3`/Qt/`dlfcn.h`-Include (C/D/E) · **Schicht-Kanten** · **driving/driven-Richtung** · **`dlopen`/`dlsym`/`dlclose`-Aufruf-Monopol** (Regel **P1** via `constructs`, scan-weit inkl. `plugins/` + `main.cpp`; seit slice-050) | [MR-013](harness/conventions.md#mr-013--arch-check-via-a-check), [MR-021](harness/conventions.md), [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md), [ADR-0002](docs/plan/adr/0002-geometrie-kern-opencascade.md), [ADR-0003](docs/plan/adr/0003-persistenz-sqlite.md), [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md), [ADR-0017](docs/plan/adr/0017-plugin-api-abi.md) |
 | `make arch-check` | Plugin-Import-Allowlist (**Regel P2**, der letzte lokale Rest): Dateien unter `plugins/`+`src/plugin_api/` inkludieren **nur** `plugin_api/`/`hexagon/model/`/`hexagon/ports/driving/` (Quote-Form + Angle-Verbot). **Deny-by-default** — genau das, was der kanten-basierte a-check nicht leisten kann (ein Ziel ohne Schicht bleibt dort unbeurteilt). Regel **P1** liegt seit slice-050 bei `make a-check` | [ADR-0017](docs/plan/adr/0017-plugin-api-abi.md), [MR-013](harness/conventions.md#mr-013--arch-check-via-a-check), [MR-021](harness/conventions.md) |
 | `make lint` | clang-tidy (0 Befunde in `src/` + `plugins/`) + Suppression-Gate | [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md), AGENTS §2.4 |
 | `make test` | GoogleTest: Kern-Logik + echte Adapter-Linkage (Qt/OCC/SQLite); Viewer headless via Xvfb | [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md)/0010 |
 | `make coverage-gate` | bootstrap-aware Line-Coverage ≥ `COVERAGE_THRESHOLD` (Composition Root ausgenommen) | Schwelle 70 %, Ramp → M2 |
 | `make build` | Target-Kette kompilieren; CMake-Target-Trennung (Kern ohne Adapter-Deps) | [ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md) |
-| `make gates` | docs-check · gate-consistency · a-check · arch-check · lint · test · coverage-gate | — |
+| `make gates` | docs-check · a-check · arch-check · lint · test · coverage-gate | — |
 | `make schema-check` | [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md)-Drift: `schema.sql` == d-migrate(`data-model.yaml`); **nicht** in `gates` (d-migrate aus dem Gate-Pfad) → CI-Befehlsliste | [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md) |
 | `make golden-check` | Byte-Drift der Export-Golden: committete `tests/adapters/golden/model.*` == `golden_gen`-Ausgabe (byte-genau; slice-044a). **Kein Gate** (Muster `schema-check`) → CI-Befehlsliste; der Byte-Vergleich `GoldenExport.*` läuft in `test`/`gates` | LH-Bindung [LH-FA-IO-001](spec/lastenheft.md#lh-fa-io-001--ifc-import) … [LH-FA-IO-006](spec/lastenheft.md#lh-fa-io-006), [ADR-0004](docs/plan/adr/0004-toolchain-dependency-pinning.md) |
 | `make golden-regen` | Export-Golden neu erzeugen (dedizierter `golden_gen` = geteilte `goldenModel()`-TU, writable Mount; slice-044a). **Kein Gate** (Muster `schema-regen`) → CI-Befehlsliste | [ADR-0004](docs/plan/adr/0004-toolchain-dependency-pinning.md) |
@@ -164,14 +163,26 @@ der verbotenen Tool-Namen an Wortgrenzen (prüft nur `tool_input.command`).
 | `make io-smoke` | IO-Binary headless je Format (IFC/DXF Export+Re-Import, STEP/STL Export; exit 0 + nicht-leere Datei, fail-closed) — belegt die coverage-ausgenommene `main.cpp`-CLI-/Composition-Root-Glue; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `schema-check`) | LH-Bindung [LH-FA-IO-001](spec/lastenheft.md#lh-fa-io-001--ifc-import) … [LH-FA-IO-006](spec/lastenheft.md#lh-fa-io-006) |
 | `make doc-commits` | Commit-Message-Traceability: jede Commit-Message einer Range trägt eine `slice-*`/`ADR-*`/`MR-*`/`LH-*`-Kennung (d-check-Modul `commits`, git-Range; `exempt-pattern` Merge/Revert) — macht §4 computational; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `schema-check`) | [MR-015](harness/conventions.md), §4 |
 | `make doc-immutable` | ADR-Immutabilität: der **Core** einer `Accepted`-ADR (ohne `## Geschichte`) unverändert über eine Range (d-check-Modul `vcs`, git-Diff; `head-allow` erlaubt `Superseded by`) — macht §2.5 computational; **kein Gate**, nicht in `gates` → CI-Befehlsliste (Muster `doc-commits`) | [MR-016](harness/conventions.md), §2.5 |
+| `make doc-doctor` | erklärende Doku-Diagnose (Klartext-Grund + Fix-Kandidat je Befund) statt der knappen `docs-check`-Liste — **kein Gate**, Werkzeug zur Fehlersuche | [MR-007](harness/conventions.md#mr-007--auflösung-von-mr-003-docs-check-via-d-check) |
+| `make doc-repair` | Reparatur-**Patch** (unified diff auf stdout) für auto-behebbare Doku-Befunde, v. a. `id-unlinked` (nackte Kennung → Markdown-Link). Anwendung: `make doc-repair > fix.patch && git apply --unidiff-zero fix.patch` — der Patch trägt **kontextlose** Hunks, ohne `--unidiff-zero` lehnt `git apply` ab. **Sichtprüfpflichtig** (verlinkt auf das Verzeichnis, nicht auf Datei+Anker; repo-fremde Kennungen linkt er falsch). **Kein Gate** | [MR-021](harness/conventions.md), slice-050 |
+| `make doc-trace` | Requirements-Traceability-Matrix (RTM) advisory ausgeben — **kein Gate** | [MR-019](harness/conventions.md) |
+| `make doc-complete` | RTM als Gate: eine Anforderung ohne Slice-Deckung (Waise) ⇒ Exit 1. **Kein** `gates`-Member → CI-Befehlsliste | [MR-019](harness/conventions.md) |
+| `make dev-image` | Toolchain-Image (deps-Stage) bauen — für IDE/DevContainer; **kein Gate** | §2.3 |
+| `make record-gates` | Gate-Ergebnisse als Nachweis protokollieren (Aggregat-Beleg zu `make gates`); **kein Gate** | Modul 13 |
+| `make versions` | gepinnte Toolchain-/Image-Versionen ausgeben (Reproduzierbarkeits-Beleg); **kein Gate** | [ADR-0004](docs/plan/adr/0004-toolchain-dependency-pinning.md) |
+| `make schema-regen` | `schema.sql` aus `data-model.yaml` via d-migrate neu erzeugen (Gegenstück zu `schema-check`); **kein Gate** → CI/Entwickler-Befehl | [ADR-0006](docs/plan/adr/0006-relationales-schema-design.md) |
+| `make a-check-graph` | die **deklarierte** Architektur aus `.a-check.yml` als Mermaid-Flowchart ausgeben (read-only, kein Quell-Scan); **kein Gate** | [MR-013](harness/conventions.md#mr-013--arch-check-via-a-check) |
 
-**Geplant (noch NICHT behauptet):**
+**Geplant (noch NICHT behauptet).** Bewusst als **Prosa**, nicht als Tabelle: das
+`targets`-Modul (slice-050) liest **jede** Tabellenzeile und kennt keine
+Sektions-Marker — ein geplantes `make X` in Tabellenform wäre für es ein
+halluziniertes Gate (`gate-phantom`). Die Namen stehen darum ohne `make`-Präfix:
 
-| Target (geplant) | Zweck | Bindung |
-|---|---|---|
-| `make coverage-gate-critical` | Critical-Path-Coverage: Persistenz/Crash-Recovery (Datenverlust = schärfster Fehlerfall) | [LH-QA-005](spec/lastenheft.md#lh-qa-005--crash-recovery) |
-| `make ci` | gates + Extras | — |
-| `make fullbuild` | volle Closure inkl. Runtime-Image + Image-Hash | — |
+- **`coverage-gate-critical`** — Critical-Path-Coverage: Persistenz/Crash-Recovery
+  (Datenverlust = schärfster Fehlerfall). Bindung:
+  [LH-QA-005](spec/lastenheft.md#lh-qa-005--crash-recovery).
+- **`ci`** — gates + Extras.
+- **`fullbuild`** — volle Closure inkl. Runtime-Image + Image-Hash.
 
 ## 4. Dokumentations-Regeln
 

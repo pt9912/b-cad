@@ -84,7 +84,7 @@ Ersatz für den Prosa-freien Kern von `gate-consistency.sh`.
 
 ### A — `gate-consistency.sh` → Modul `targets`
 
-- [ ] **`.d-check.yml` `targets`-Block** ergänzen:
+- [x] **`.d-check.yml` `targets`-Block** ergänzen:
       `makefiles: [Makefile, a-check.mk, d-check.mk]` (**alle drei** — die realen Regeln von `make a-check`/
       `docs-check` leben in den Includes; sonst `gate-phantom`-Falschbefund),
       **`doc-tables: [AGENTS.md, harness/README.md]`** (**HIGH-1** — `gate-consistency.sh` scannt **beide**
@@ -92,7 +92,7 @@ Ersatz für den Prosa-freien Kern von `gate-consistency.sh`.
       nur AGENTS.md ⇒ Korpus schrumpft, ein Phantom in README bliebe ungefangen),
       `authority: AGENTS.md`, `exempt-targets: [...]` (s. u.). `targets` in die `modules:`-Liste (hermetisch,
       kein git → zulässig im Default-Set neben `planning`/`tracked`).
-- [ ] **`gate-phantom` aus »Geplant«-Tabellen entschärfen (HIGH-2):** `targets` hat **keine** Sektions-Marker-
+- [x] **`gate-phantom` aus »Geplant«-Tabellen entschärfen (HIGH-2):** `targets` hat **keine** Sektions-Marker-
       Awareness (anders als `gate-consistency.sh`s `awk`-`/Geplant/`-Unterdrückung) → es liest **jede**
       Tabellenzeile. Die **AGENTS.md §3-»Geplant«-Tabelle** (`make coverage-gate-critical`/`make ci`/
       `make fullbuild` — **nicht** real) würde **`gate-phantom ×3`** werfen, und `exempt-targets` hilft
@@ -100,14 +100,14 @@ Ersatz für den Prosa-freien Kern von `gate-consistency.sh`.
       **Tabellen**-Form nehmen (Prosa/Code-Fence/ohne `make`-Präfix) — ebenso etwaige Prosa-`make X` in
       `harness/README.md` (Z. 28–29) und die **Negativ-Beispiel-Tabelle** AGENTS.md Z. 127/128
       (`make <target>`-Platzhalter). **Baseline-Lauf VOR Retire** belegt die vollständige Phantom-Menge.
-- [ ] **`gate-undocumented`-`exempt-targets` (exakte Namen, MED-2):** `targets` prüft **bidirektional** (jede
+- [x] **`gate-undocumented`-`exempt-targets` (exakte Namen, MED-2):** `targets` prüft **bidirektional** (jede
       reale Regel muss in AGENTS.md stehen) — strenger als das unidirektionale `gate-consistency.sh` (**Gewinn**).
       Die realen, **un**dokumentierten Utility-Regeln sind exakt: `help`, `dev-image`, `record-gates`,
       `versions`, `schema-regen`, `a-check-graph`, sowie aus `d-check.mk`: `doc-check`, `doc-doctor`,
       `doc-trace`, `doc-complete`, `doc-planning`, `doc-tracked`, `doc-targets`, `doc-help` (`doc-repair` **wird**
       dokumentiert, s. Teil B). Je Fall **dokumentieren** (in die AGENTS.md-Tabelle) **oder** `exempt-targets`
       (exakte Regelnamen, kein Glob — Handbuch §5). Baseline bestätigt die endgültige Liste.
-- [ ] **Retire `gate-consistency`:** aus der `gates:`-Zeile im `Makefile` entfernen (`targets` läuft nun in
+- [x] **Retire `gate-consistency`:** aus der `gates:`-Zeile im `Makefile` entfernen (`targets` läuft nun in
       `docs-check`; alternativ `doc-targets` explizit in `gates` — [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) wählt),
       das `gate-consistency:`-Target + die **Dockerfile-Stage `gate-consistency`** entfernen,
       `tools/gate-consistency.sh` löschen, `.PHONY`-Liste + AGENTS.md-Tabellenzeile (Z. 151) nachziehen
@@ -115,24 +115,24 @@ Ersatz für den Prosa-freien Kern von `gate-consistency.sh`.
 
 ### B — `idlink.py` → `d-check --repair` (`make doc-repair`)
 
-- [ ] **Fix-Weg dokumentieren:** `make doc-repair` (bereits vorhanden, aus `d-check.mk`) ist der neue Weg,
+- [x] **Fix-Weg dokumentieren:** `make doc-repair` (bereits vorhanden, aus `d-check.mk`) ist der neue Weg,
       `id-unlinked`-Prosa-Befunde als Patch zu beheben (`--repair | git apply`). AGENTS.md/README-Verweise auf
       `idlink.py` → auf `make doc-repair` umstellen; `.d-check.yml`-Kommentar Z. 69 (»Anker/Links generiert von
       tools/idlink.py, vom Gate validiert«) korrigieren.
-- [ ] **idlink.py ist link-only (MED-1, am Quelltext verifiziert — kein Anker-Rest):** `idlink.py` **schreibt
+- [x] **idlink.py ist link-only (MED-1, am Quelltext verifiziert — kein Anker-Rest):** `idlink.py` **schreibt
       nie** `<a id=…>` (Headings verbatim durchgereicht); die `HTML_ID`/`HTML_NAME`-Regex **lesen** bestehende
       Anker nur als Link-**Ziel**-Präzedenz (`build_map`). Es ist **rein** ein Referenz-Link-Generator → von
       `--repair`/`id-unlinked` (Handbuch §4.10: nackte Kennung → Markdown-Link, nur nackte Prosa)
       **vollständig** gedeckt. Die slice-018c-per-ID-Anker existieren im Repo, wurden aber **nicht** von
       idlink.py erzeugt (manuell/Inline-HTML). **Kein** manueller Anker-Schritt, **kein** Mini-Helfer nötig.
       (Log-Datei-Backtick-Normalisierung ist nicht gate-relevant — Log-Dateien sind `ids`-`exempt-paths`.)
-- [ ] **B-Befund 2026-07-25 (am eigenen Lauf belegt, in die Doku aufnehmen): `git apply` braucht
+- [x] **B-Befund 2026-07-25 (am eigenen Lauf belegt, in die Doku aufnehmen): `git apply` braucht
       `--unidiff-zero`.** Das Handbuch (§4.10) nennt schlicht `git apply fix.patch`; real erzeugt `--repair`
       **kontextlose** Hunks (`@@ -7,1 +7,1 @@`), die `git apply` **per Default ablehnt**
       (»Anwendung des Patches fehlgeschlagen«). Verifiziert beim Reparieren **dieses** Plans (44 `id-unlinked`):
       `git apply` scheitert, `git apply --unidiff-zero` wendet an. Der in AGENTS.md/README zu dokumentierende
       Weg lautet daher `make doc-repair > fix.patch && git apply --unidiff-zero fix.patch`.
-- [ ] **B-Befund 2026-07-25 (Qualitäts-Grenze von `--repair`, kein Blocker): Link-Ziel ist das Verzeichnis.**
+- [x] **B-Befund 2026-07-25 (Qualitäts-Grenze von `--repair`, kein Blocker): Link-Ziel ist das Verzeichnis.**
       `--repair` ersetzt eine nackte Kennung durch `[`ADR-NNNN`](../../adr)` — einen **Verzeichnis**-Link, nicht
       den Datei-/Anker-Link auf die Definition (der Handbuch-`fixCandidate` sagt das selbst: »Anker ggf.
       ergänzen«). Zwei Folgen, beide beim Reparieren dieses Plans real aufgetreten: (a) die Links sind schwächer
@@ -142,7 +142,7 @@ Ersatz für den Prosa-freien Kern von `gate-consistency.sh`.
       »Lesen Sie den Patch vor dem Anwenden«), und fremde Kennungen gehören nicht als nackte ID in b-cad-Prosa.
       Das ist **kein** Regress gegenüber `idlink.py` (MED-1 bleibt gültig), aber der Fix-Weg ist nicht
       „blind anwendbar".
-- [ ] **Retire `idlink.py`:** `tools/idlink.py` löschen; Referenzen nachziehen (**Tombstone-Purge s. Teil C**).
+- [x] **Retire `idlink.py`:** `tools/idlink.py` löschen; Referenzen nachziehen (**Tombstone-Purge s. Teil C**).
 
 ### D — Regel **P1** → a-check `constructs`; `arch-check.sh` schrumpft auf **P2** (Amendment 2026-07-25)
 
@@ -232,7 +232,7 @@ sein Kopf-Kommentar wird ehrlich (P-Rest = **nur** noch die Import-Allowlist). G
 
 ### C — Gemeinsam
 
-- [ ] **Link-/Tombstone-Purge VOR dem Löschen (HIGH-3 — sonst `docs-check` RED):** alle drei gelöschten Skripte
+- [x] **Link-/Tombstone-Purge VOR dem Löschen (HIGH-3 — sonst `docs-check` RED):** alle drei gelöschten Skripte
       sind referenziert → `target-missing` (Modul `links`) + `codepath-missing` (Modul `codepaths`, `roots`
       enthält `harness`). **Amendment 2026-07-25 — HIGH-3 wird ANDERS aufgelöst als im Ur-Plan:** der Ur-Plan
       wollte `harness/conventions.md` Z. 444 **umtexten** und Z. 478 **löschen** — beide Zeilen liegen **innerhalb
@@ -264,25 +264,28 @@ sein Kopf-Kommentar wird ehrlich (P-Rest = **nur** noch die Import-Allowlist). G
         `codepaths`-skopierte Einträge belassen und nur die neuen querschnittlich führen.
       - **Gate-Wirksamkeit bleibt:** ohne passenden Eintrag meldet ein fehlendes Ziel weiter — nichts
         verschwindet still (Handbuch §5). **Keine** Schwellen-Lockerung → §2.6 n/a.
-- [ ] **`README.md` (Root) Z. 143 (LOW-1):** die `tools/`-Prosa nennt `gate-consistency` (kein Link → nicht
+- [x] **`README.md` (Root) Z. 143 (LOW-1):** die `tools/`-Prosa nennt `gate-consistency` (kein Link → nicht
       gate-brechend, aber stale) → nachziehen. `arch-check` bleibt dort korrekt stehen.
-- [ ] **Prosa-`make X`-Ehrlichkeit (LOW-2):** bestätigen, dass **keine** Honesty-`make X`-Behauptung
+- [x] **Prosa-`make X`-Ehrlichkeit (LOW-2):** bestätigen, dass **keine** Honesty-`make X`-Behauptung
       **ausschließlich** in Prosa lebt (die `targets`-Tabellen-Prüfung sähe sie nicht); der `harness/README.md`-
       Prosa-Bezug (Z. 21–23) trägt kein exklusives `make X`-Versprechen.
-- [ ] **`arch-check.sh` bleibt als Target** — AGENTS.md-Zeile 153 bleibt, wird aber in **D8** auf **P2-only**
+- [x] **`arch-check.sh` bleibt als Target** — AGENTS.md-Zeile 153 bleibt, wird aber in **D8** auf **P2-only**
       umgeschrieben. `arch-check` ist real **und** dokumentiert, also in **keiner** Reihenfolge ein
       `exempt-targets`-Kandidat (**LOW-1 des Nachtrags**: die frühere Behauptung „Reihenfolge D → A ist
       zwingend" war überzogen). Einzige reale Kopplung: die D8-Umschreibung derselben Zeile, die Teil A als
       `doc-tables`-Quelle liest — **eine Reihenfolge-Empfehlung, kein Zwang**.
-- [ ] **`make gates` grün** nach dem Umbau (`targets` 0 Befunde über die dann bereinigte/exemptierte Menge);
+- [x] **`make gates` grün** nach dem Umbau (`targets` 0 Befunde über die dann bereinigte/exemptierte Menge);
       **Negativprobe** (wie bei den Alt-Skripten üblich): eine erfundene `make phantom`-Tabellenzeile bzw. eine
       undokumentierte Regel muss `gate-phantom`/`gate-undocumented` werfen (Wirksamkeits-Beleg vor dem Retire).
-- [ ] **Doku:** `harness/README.md`/AGENTS.md »Modul 13«-Bezüge (gate-consistency) auf `targets` umstellen;
+- [x] **Doku:** `harness/README.md`/AGENTS.md »Modul 13«-Bezüge (gate-consistency) auf `targets` umstellen;
       CHANGELOG; **neue MR** (statt Ergänzung zu
       [MR-013](../../../../harness/conventions.md#mr-013--arch-check-via-a-check)). **Amendment 2026-07-25:** der
       Ur-Plan ließ „Ergänzung **oder** neue MR" offen und nannte die Ergänzung „naheliegend" — das ist mit der
-      MR-Unveränderlichkeits-Praxis (s. Tombstone-Auflösung oben) **nicht** vereinbar; es wird **eine** neue
-      **[`MR-021`](../../../../harness/conventions.md)**, die A+B (targets/repair) **und** D (P1→`constructs`) trägt, mit Lineage-Pointer auf
+      MR-Unveränderlichkeits-Praxis (s. Tombstone-Auflösung oben) **nicht** vereinbar; es werden **zwei** neue MRs statt einer:
+      **[`MR-021`](../../../../harness/conventions.md)** (D — P1→`constructs`, bereits committet und D-spezifisch
+      betitelt) und **[`MR-022`](../../../../harness/conventions.md)** (A+B — `targets`/`--repair`). Der Plan sah
+      **eine** MR vor; nach dem Commit von [MR-021](../../../../harness/conventions.md) wäre ein nachträglicher Titel-/Scope-Umbau ein
+      In-Place-Edit gewesen — zwei thematisch geschlossene Einträge sind sauberer. Lineage-Pointer auf
       [`MR-013`](../../../../harness/conventions.md) (Muster [`MR-003`](../../../../harness/conventions.md)→[`MR-007`](../../../../harness/conventions.md), [`MR-010`](../../../../harness/conventions.md)→[`MR-012`](../../../../harness/conventions.md)).
 
 ## 3. Plan (vor Code)
