@@ -73,7 +73,7 @@ nur dort werden Adapter-Instanzen injiziert.
 
 | Port | Verantwortung | Bezug |
 |---|---|---|
-| `ManageProjectPort` | Projekt anlegen, speichern, laden, versionieren | [LH-FA-BLD-001](lastenheft.md#lh-fa-bld-001--projekt-anlegen)..004, [ACC-005](lastenheft.md#7-abnahmekriterien) |
+| `ManageProjectPort` (**Ziel-Form, noch nicht realisiert**) | Projekt anlegen, speichern, laden, versionieren. **Ist-Zustand:** Speichern und Öffnen liegen als **Kern-Use-Cases** vor (framework-freie Funktionen über dem `ProjectRepositoryPort`), nicht hinter einem eigenen Driving Port; sie sind dadurch außerhalb des Verdrahtungspunkts testbar, aber ein Treiber-Adapter spricht sie **direkt** an statt über eine Port-Abstraktion. Die Port-Form bleibt das Ziel, sobald ein zweiter Treiber sie braucht. | [LH-FA-BLD-001](lastenheft.md#lh-fa-bld-001--projekt-anlegen)..004, [ACC-005](lastenheft.md#7-abnahmekriterien) |
 | `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch); **projekt-eigene Materialien verwalten/zuweisen** (Material = Bauteil-Eigenschaft) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, [LH-FA-MAT-001](lastenheft.md#lh-fa-mat-001--materialien-verwalten)/003, [OBJ-002](lastenheft.md#3-projektziele) |
 | `DetectRoomsPort` | Raum-Autoerkennung (geschlossene Wandzüge → Raumpolygone, Netto-Fläche je Raum als Auswertungs-Quelle) | [LH-FA-ROM-001](lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)..003 |
 | `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten; **Material-Auflösung/-Liste** (Override-Auflösung je Bauteil als Quelle der Material-/Kostenlisten) | [LH-FA-EVL-001](lastenheft.md#lh-fa-evl-001--flächenberechnung)..006, [LH-FA-MAT-002](lastenheft.md#lh-fa-mat-002--materialbibliothek)/003 |
@@ -133,8 +133,10 @@ b-cad/
 │   │   ├── model/                   # Building, Storey, Wall, Room, Door,
 │   │   │                            #   Window, Stair, Roof, Slab, Foundation, Material
 │   │   ├── ports/
-│   │   │   ├── driving/             # ManageProjectPort, EditStructurePort,
-│   │   │   │                        #   DetectRoomsPort, ViewModelPort, ExchangeModelPort
+│   │   │   ├── driving/             # EditStructurePort, EditDrawingPort,
+│   │   │   │                        #   DetectRoomsPort, ViewModelPort, ExchangeModelPort,
+│   │   │   │                        #   EvaluatePort, PlanViewPort
+│   │   │   │                        #   (ManageProjectPort: Ziel-Form, s. §1.1)
 │   │   │   └── driven/              # GeometryKernelPort, ProjectRepositoryPort,
 │   │   │                            #   ModelImporterPort, ModelExporterPort, MaterialLibraryPort, TracingPort
 │   │   └── services/                # ProjectService, StructureEditService,

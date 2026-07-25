@@ -257,25 +257,37 @@ void installFileMenu(
     const bcad::hexagon::ports::driven::ProjectRepositoryPort& repository,
     bcad::adapters::ui::command::EditDrawingGuideLineSink& guide_sink,
     bcad::adapters::ui::view::CanvasWidget& canvas) {
-    const auto reresolve_after_open = [&service, &guide_sink, &canvas]() {
+    // Gibt einen Hinweis zurueck, falls das Zeichen-Ziel nicht vollstaendig
+    // aufgeloest werden konnte (leer = alles gut). Der Aufrufer zeigt ihn an —
+    // eine stille Teil-Aufloesung liesse Sink/Canvas auf den Ids des ALTEN
+    // Modells stehen, also genau in dem Zustand, den die Neu-Aufloesung
+    // beseitigen soll (Code-Review LOW-1).
+    //
+    // WICHTIG: Oeffnen ist LESEND. Frueher legte dieser Pfad eine Ebene
+    // "Canvas" an, wenn die geoeffnete Datei keine Ebenen hatte — damit wich
+    // der Stand im Speicher vom Dateiinhalt ab und ein anschliessendes
+    // Speichern schrieb die Zusatz-Ebene mit (Code-Review MEDIUM-8, gegen
+    // LH-FA-BLD-003 "vollstaendig wiederhergestellt"). Jetzt wird nichts mehr
+    // angelegt: ohne Ebene bleibt das Hilfslinien-Ziel unaufgeloest, und der
+    // Sink lehnt das Zeichnen vertragsgemaess ab, bis der Benutzer selbst eine
+    // Ebene anlegt.
+    const auto reresolve_after_open = [&service, &guide_sink,
+                                       &canvas]() -> QString {
         if (service.building().storeys.empty()) {
-            return;
+            return QStringLiteral(
+                "Das geoeffnete Projekt enthaelt kein Geschoss — die Zeichenflaeche "
+                "bleibt leer.");
         }
         const auto storey = service.building().storeys.front().id;
-        model::LayerId layer{};
-        if (service.building().layers.empty()) {
-            model::Layer fresh;
-            fresh.name = "Canvas";
-            const auto created = service.addLayer(fresh);
-            if (!created) {
-                return;
-            }
-            layer = *created;
-        } else {
-            layer = service.building().layers.front().id;
-        }
-        guide_sink.setTarget(storey, layer);
         canvas.setActiveStorey(static_cast<int>(storey));
+
+        if (service.building().layers.empty()) {
+            return QStringLiteral(
+                "Das geoeffnete Projekt enthaelt keine Zeichen-Ebene — Hilfslinien "
+                "koennen erst nach dem Anlegen einer Ebene gezeichnet werden.");
+        }
+        guide_sink.setTarget(storey, service.building().layers.front().id);
+        return {};
     };
 
     auto* file_menu = window.menuBar()->addMenu(QStringLiteral("&Datei"));
@@ -291,9 +303,13 @@ void installFileMenu(
             try {
                 bcad::hexagon::services::openProject(service, repository,
                                                      path.toStdString());
-                reresolve_after_open();
+                const QString hint = reresolve_after_open();
                 window.setWindowTitle(
                     QStringLiteral("b-cad — %1").arg(QFileInfo(path).fileName()));
+                if (!hint.isEmpty()) {
+                    QMessageBox::information(
+                        &window, QStringLiteral("Projekt geoeffnet"), hint);
+                }
             } catch (const std::exception& e) {
                 // Fehler benutzer-sichtbar, kein Crash; das Modell ist
                 // unveraendert (openProject laedt erst, ersetzt dann).
@@ -305,11 +321,16 @@ void installFileMenu(
     QObject::connect(
         file_menu->addAction(QStringLiteral("&Speichern unter...")),
         &QAction::triggered, &window, [&window, &service, &repository]() {
-            const QString path = QFileDialog::getSaveFileName(
+            QString path = QFileDialog::getSaveFileName(
                 &window, QStringLiteral("Projekt speichern"), QString(),
                 QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
             if (path.isEmpty()) {
                 return;
+            }
+            // Ohne Endung entstuende eine Datei, die der Oeffnen-Dialog mit
+            // seinem Vorgabefilter nicht mehr anzeigt (Code-Review LOW-4).
+            if (QFileInfo(path).suffix().isEmpty()) {
+                path += QStringLiteral(".bcad");
             }
             try {
                 bcad::hexagon::services::saveProject(
@@ -323,7 +344,6 @@ void installFileMenu(
 }
 
 }  // namespace
-
 
 int main(int argc, char** argv) {
     const QApplication app(argc, argv);

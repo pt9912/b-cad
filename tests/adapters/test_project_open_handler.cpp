@@ -12,6 +12,8 @@
 
 #include <gtest/gtest.h>
 
+#include <QApplication>
+
 #include <cstdlib>
 #include <filesystem>
 #include <string>
@@ -19,7 +21,10 @@
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "adapters/persistence/sqlite_project_repository.h"
 #include "adapters/ui/command/view_model_mesh_source.h"
+#include "adapters/ui/command/edit_drawing_guide_line_sink.h"
+#include "adapters/ui/view/canvas_widget.h"
 #include "adapters/ui/view/viewer_scene.h"
+#include "hexagon/model/layer.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/services/manage_project.h"
 #include "hexagon/services/structure_edit_service.h"
@@ -120,6 +125,115 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, MissingFileThrowsAndLeavesStateIntact) {
     EXPECT_EQ(target.building().walls.size(), walls_before);
     EXPECT_EQ(scene.wallMeshes().size(), meshes_before);
     target.unsubscribe(scene);
+}
+
+
+// MEDIUM-7: die HIGH-3-Auflösung selbst — nach dem Öffnen zeigt der Canvas das
+// GELADENE Geschoss und eine Hilfslinie landet auf dem geladenen Stand. Ohne die
+// Neu-Auflösung stünden Canvas und Sink auf den Ids des alten Modells: der Canvas
+// filterte jede Plan-Zeile weg (leer) und `addGuideLine` würde abgelehnt.
+TEST(ProjectOpenHandler_LH_FA_BLD_003, CanvasAndSinkFollowLoadedIds) {
+    int argc = 1;
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    const QApplication app(argc, static_cast<char**>(argv));
+
+    const bcad::adapters::persistence::SqliteProjectRepository repository;
+    const fs::path path = tempProjectPath("bcad_047b_canvas.bcad");
+    fs::remove(path);
+
+    bcad::adapters::geometry::OccGeometryAdapter geometry;
+    model::StoreyId saved_storey{};
+    model::LayerId saved_layer{};
+    {
+        services::StructureEditService source(geometry);
+        saved_storey = source.addStorey(2800.0);  // NICHT das Default-Geschoss
+        ASSERT_TRUE(source.addWall(saved_storey, seg(0, 0, 5000, 0)).has_value());
+        model::Layer l;
+        l.name = "Achsen";
+        const auto lid = source.addLayer(l);
+        ASSERT_TRUE(lid.has_value());
+        saved_layer = *lid;
+        services::saveProject(repository, source.building(), path);
+    }
+
+    services::StructureEditService target(geometry);
+    const auto stale_storey = target.building().storeys.front().id;
+    bcad::adapters::ui::command::EditDrawingGuideLineSink sink(
+        target, stale_storey, model::LayerId{});
+    bcad::adapters::ui::view::CanvasWidget canvas(
+        [&target]() { return target.planView(); },
+        [&sink](model::Point2D a, model::Point2D b) {
+            return sink.addGuideLine(a, b);
+        },
+        static_cast<int>(stale_storey));
+
+    services::openProject(target, repository, path);
+
+    // Der Composition-Root löst nach dem Laden neu auf — hier nachgestellt.
+    ASSERT_FALSE(target.building().storeys.empty());
+    ASSERT_FALSE(target.building().layers.empty());
+    const auto loaded_storey = target.building().storeys.front().id;
+    canvas.setActiveStorey(static_cast<int>(loaded_storey));
+    sink.setTarget(loaded_storey, target.building().layers.front().id);
+
+    // Orakel: die Hilfslinie wird auf dem GELADENEN Stand angenommen …
+    const auto guide = sink.addGuideLine(model::Point2D{0.0, 0.0},
+                                         model::Point2D{1000.0, 0.0});
+    ASSERT_TRUE(guide.has_value())
+        << "ohne Neu-Aufloesung wuerde der Sink die Ebene/das Geschoss ablehnen";
+    ASSERT_EQ(target.building().guide_lines.size(), 1U);
+    EXPECT_EQ(target.building().guide_lines.front().storey_id, loaded_storey);
+    EXPECT_EQ(target.building().guide_lines.front().layer_id, saved_layer);
+
+    // … und die geladene Wand des zweiten Geschosses ist da (Beleg, dass wirklich
+    // das gespeicherte Projekt im Service liegt und nicht der Ausgangs-Stand).
+    ASSERT_EQ(target.building().storeys.size(), 2U);
+    EXPECT_EQ(target.building().walls.size(), 1U);
+    EXPECT_EQ(target.building().walls.front().storey_id, saved_storey);
+
+    // Grenze, ehrlich benannt: `CanvasWidget` veroeffentlicht sein aktives
+    // Geschoss nicht — `setActiveStorey` ist hier nur auf "nimmt den Wert
+    // ohne Wurf an" geprueft. Das sichtbare Verhalten (leerer Canvas ohne
+    // Neu-Aufloesung) haengt am Paint-Pfad und ist display-gebunden.
+    fs::remove(path);
+}
+
+// MEDIUM-8: Öffnen ist LESEND — ein Projekt ohne Zeichen-Ebene bleibt ohne.
+// Früher legte der GUI-Pfad hier eine Ebene „Canvas" an; der Stand im Speicher
+// wich dann vom Dateiinhalt ab und ein erneutes Speichern schrieb sie mit.
+TEST(ProjectOpenHandler_LH_FA_BLD_003, OpeningDoesNotMutateLoadedModel) {
+    const bcad::adapters::persistence::SqliteProjectRepository repository;
+    const fs::path path = tempProjectPath("bcad_047b_readonly.bcad");
+    fs::remove(path);
+
+    bcad::adapters::geometry::OccGeometryAdapter geometry;
+    {
+        services::StructureEditService source(geometry);
+        const auto eg = source.building().storeys.front().id;
+        ASSERT_TRUE(source.addWall(eg, seg(0, 0, 3000, 0)).has_value());
+        ASSERT_TRUE(source.building().layers.empty())
+            << "Fixture-Annahme: das Quell-Projekt hat keine Ebene";
+        services::saveProject(repository, source.building(), path);
+    }
+
+    services::StructureEditService target(geometry);
+    services::openProject(target, repository, path);
+
+    EXPECT_TRUE(target.building().layers.empty())
+        << "Oeffnen darf keine Ebene anlegen (LH-FA-BLD-003: vollstaendig "
+           "wiederhergestellt, nicht ergaenzt)";
+
+    // Roundtrip-Beleg: erneutes Speichern schreibt keinen Zusatz-Inhalt.
+    const fs::path again = tempProjectPath("bcad_047b_readonly_2.bcad");
+    fs::remove(again);
+    services::saveProject(repository, target.building(), again);
+    const model::Building reread = repository.load(again);
+    EXPECT_TRUE(reread.layers.empty());
+    EXPECT_EQ(reread.walls.size(), target.building().walls.size());
+
+    fs::remove(path);
+    fs::remove(again);
 }
 
 }  // namespace

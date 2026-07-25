@@ -89,7 +89,14 @@ void ViewerScene::onModelChanged(const driven::ModelChange& change) {
             // Modell-Tausch blieben die Netze des alten Projekts stehen
             // (stale Wände, verwaiste Dächer/Platten/Treppen). Darum hier
             // der einzige Voll-Neuaufbau der Szene.
+            //
+            // Der Surrogat-Zaehler muss mitzaehlen (Code-Review LOW-2): er ist
+            // als "Netz ersetzt/hinzugefuegt/entfernt" dokumentiert und bliebe
+            // sonst ausgerechnet bei der groessten Szenen-Aenderung stehen. Der
+            // Voll-Neuaufbau zaehlt als EIN wirksames Update — nicht je Netz,
+            // sonst waere die Idempotenz-AK der Wand-Ops nicht mehr vergleichbar.
             loadAll();
+            ++effective_updates_;
             break;
         case driven::ModelChangeOp::StoreyAdded:
         case driven::ModelChangeOp::RoomsChanged:

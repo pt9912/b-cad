@@ -2,11 +2,8 @@
 // Persistenz-Skalare; `openProject`/`replaceBuilding` ersetzen das Modell SAMT
 // abgeleiteter Zustaende (Solids, Raeume, Id-Zaehler) und melden EINEN
 // Full-Refresh. Kern-Test, OCC-frei ueber das GeometryKernelPort-Double.
-//
-// Save-Use-Case (slice-047a): baut die kern-abgeleiteten Persistenz-Skalare
-// (`rise` je Treppe) und speichert über den `ProjectRepositoryPort`. Kern-Test
-// mit einem **Fake-Repo** (dependency-frei) — prüft die Ableitung + die
-// **fail-closed**-Semantik (danglendes `from_storey` → Wurf VOR `save`).
+// Fake-Repo (dependency-frei) für die Save-Hälfte: prüft die rise-Ableitung und
+// die fail-closed-Semantik (danglendes `from_storey` → Wurf VOR `save`).
 
 #include <filesystem>
 #include <stdexcept>
@@ -390,6 +387,38 @@ TEST(ManageProject_047b, ReplaceBuildingIsTransactionalOnGeometryFailure) {
     EXPECT_EQ(svc.building().walls.front().id, *own_wall);
     EXPECT_EQ(listener.replaced, 0) << "keine Meldung bei gescheitertem Tausch";
     svc.unsubscribe(listener);
+}
+
+
+// MEDIUM-10: Ganzdatei-Ablehnung. Wirft der Solid-Bau EINER geladenen Wand,
+// scheitert das Oeffnen der GESAMTEN Datei — der Fehler kommt neutral durch
+// und der bisherige Stand bleibt. Bewusst anders als der Query-Zweig
+// (`wallMesh` faengt E-GEO-002 und liefert nullopt): eine Darstellungs-Abfrage
+// darf total sein, ein Modell-Tausch nicht halb gelingen.
+TEST(ManageProject_047b, OpenProjectRejectsWholeFileOnGeometryFailure) {
+    class LoadingRoomedRepository final
+        : public bcad::hexagon::ports::driven::ProjectRepositoryPort {
+    public:
+        void save(const model::Building&, const model::PersistedDerivations&,
+                  const fs::path&) const override {}
+        model::Building load(const fs::path&) const override {
+            return roomedProject();
+        }
+    };
+
+    const ThrowingOnNthExtrude geometry(3);
+    services::StructureEditService svc(geometry);
+    const auto own_storey = svc.building().storeys.front().id;
+    ASSERT_TRUE(svc.addWall(own_storey,
+                            model::Segment{{0.0, 0.0}, {2000.0, 0.0}}).has_value());
+    const auto walls_before = svc.building().walls.size();
+
+    const LoadingRoomedRepository repo;
+    EXPECT_THROW(services::openProject(svc, repo, "geometrie-kaputt.bcad"),
+                 std::runtime_error);
+
+    EXPECT_EQ(svc.building().walls.size(), walls_before)
+        << "Ganzdatei-Ablehnung: kein Teil-Zustand";
 }
 
 }  // namespace

@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ModelReplaced` ist die **eine** Full-Refresh-Meldung ([ADR-0008](docs/plan/adr/0008-aenderungs-benachrichtigung.md));
   die `ViewerScene` baut darauf ihre Szene vollständig neu, weil der per-op-Pfad nur gemeldete Elemente
   pullt und sonst die Netze des alten Projekts behielte.
+  **Öffnen ist lesend** (Code-Review MEDIUM-8): frühere Fassungen legten beim Öffnen eine Ebene „Canvas"
+  an, wenn die Datei keine hatte — der Stand im Speicher wich damit vom Dateiinhalt ab und ein
+  anschließendes Speichern schrieb sie mit. Jetzt wird nichts ergänzt; fehlt eine Zeichen-Ebene, wird das
+  **gemeldet** und das Hilfslinien-Zeichnen bleibt bis zum manuellen Anlegen abgelehnt.
   **Grenze, benannt:** nur der **GUI**-Weg ersetzt den Sitzungs-Stand. Die CLI `--open` lädt weiterhin
   eine **Export-Quelle** und geht **nicht** durch `openProject`/`replaceBuilding` — dort gibt es keine
   Sitzung, also auch keinen Zähler-Reset und keine Meldung (spez. §1 `LH-FA-BLD-002.a`).

@@ -1,7 +1,7 @@
 ---
 id: slice-047
 titel: BLD-002/003 benutzer-erfüllbar machen — Projekt speichern/öffnen (CLI + GUI)
-status: open
+status: in-progress
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern), [LH-FA-BLD-003](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)]
 adr_refs: [[ADR-0003](../../adr/0003-persistenz-sqlite.md), [ADR-0006](../../adr/0006-relationales-schema-design.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md)]
@@ -9,16 +9,28 @@ adr_refs: [[ADR-0003](../../adr/0003-persistenz-sqlite.md), [ADR-0006](../../adr
 
 # Slice 047: Projekt speichern/öffnen benutzer-erfüllbar (CLI + GUI)
 
-**Status:** open (Umbrella — **047a DONE**, 047b offen). **[`047a` (CLI) implementiert + committet 2026-07-24](../../../../CHANGELOG.md)**
-(`make gates` grün, 268 Tests: `--save`/`--open` + promoteter `services::saveProject`-Use-Case [fail-closed] +
-echte Provenance-Quelle; io-smoke-Roundtrip grün; [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-0 HIGH). **047b (GUI): [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-2026-07-24 — 3 HIGH / 2 MED → in-Plan aufgelöst (spezifiziert), dann startbar.** Die „Modell-Ersetzung" ist mehr als
-`building_ = geladen`: (HIGH-1) neuer `ModelReplaced`-Op + `ViewerScene`-`loadAll()`-Fall [per-op-Viewer refresht sonst
-nicht]; (HIGH-2) abgeleitete Zustände neu bauen (`solids_`, `redetectRooms`, **`next_*_id_`-Reset über geladenes Max**);
-(HIGH-3) eingefrorene Demo-Geschoss/-Ebenen-Ids (main/Canvas/Sink) neu auflösen; (MED-1) Test über den **Handler**,
-nicht den modalen Dialog; (MED-2) symmetrische **`openProject`-Kern-Naht**. Der Umbrella bleibt in `open/`, bis 047b
-die Anforderung benutzer-vollständig macht.
+**Status:** in-progress (Umbrella — **047a DONE**, **047b implementiert**, Closure offen).
+
+**047a (CLI)** implementiert + committet 2026-07-24 (`--save`/`--open` + promoteter
+`services::saveProject`-Use-Case [fail-closed] + echte Provenance-Quelle; io-smoke-Roundtrip grün).
+
+**047b (GUI)** implementiert + committet 2026-07-25 (`15448d2`): Datei-Menü Öffnen/Speichern,
+`services::openProject`, `StructureEditService::replaceBuilding` (abgeleitete Zustände + Id-Zähler-Reset),
+`ModelChangeOp::ModelReplaced` + Viewer-Voll-Neuaufbau, Neu-Auflösung der eingefrorenen Geschoss-/Ebenen-Ids.
+
+**Unabhängiges Code-Review 2026-07-25** (Reviewer ≠ Autor, Skill-Datei `.harness/skills/reviewer.md`):
+**1 HIGH / 10 MEDIUM / 6 LOW / 4 INFO**
+([Report](../../../reviews/2026-07-25-slice-047b-code-review.md)) — **alle Findings eingearbeitet**
+(`2db4fc6` + Folge-Commit). Der HIGH betraf eine **falsche Spec-Aussage** („beide Wege nutzen denselben
+Kern-Use-Case" — für *Öffnen* unwahr, die CLI geht nicht durch `openProject`); MEDIUM-1/2/3 waren
+**empirisch belegte Test-Lücken** (Produktionscode zurückgenommen → Tests blieben grün).
+
+**Prozess-Befund (Alt-Last, NICHT geheilt):** für slice-047 existierte **kein**
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Plan-Review-Report,
+obwohl der Plan-Kopf zwei Ergebnisse behauptete — ebenso für slice-045/046a/046b. Regelwerk Modul 10
+verlangt „ein Report pro Lauf" unter `docs/reviews/`. Nachträgliche Reports wären eine Fälschung der
+Audit-Spur und werden **nicht** geschrieben; die Lücke ist als Alt-Last benannt und der Gate-Nachzug
+liegt in [`slice-051`](../open/slice-051-review-artefakt-pflicht.md).
 
 **Welle:** welle-5-erweiterung. **Autor:** Dietmar Burkard (AI-Harness-Lauf). **Datum:** 2026-07-24.
 

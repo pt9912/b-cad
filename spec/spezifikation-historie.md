@@ -9,6 +9,7 @@ Anforderung**, nicht normativ zitierbar.
 
 | Datum | Änderung | ADR |
 |---|---|---|
+| 2026-07-25 | §1 neuer Block `LH-FA-BLD-002.a`/`003.a` (Aufruf-Wege Speichern/Öffnen: Speichern weg-gleich, Öffnen **nicht** — GUI ersetzt den Sitzungs-Stand, CLI lädt eine Export-Quelle; Öffnen ist lesend; Ganzdatei-Ablehnung bei `E-GEO-002`) + §1 `LH-FA-D3-002.a` um `op = ModelReplaced` erweitert (neuer `op` im §5-Span-Vokabular, **eine** benannte Ausnahme vom `element_id`-Teil des Vertrags) | [ADR-0008](../docs/plan/adr/0008-aenderungs-benachrichtigung.md)/[ADR-0009](../docs/plan/adr/0009-gui-framework-qt6.md) |
 | 2026-06-08 | Initiale Outline aus Lastenheft-Wertebereichen; Fehler-Codes und OTel-Span-Skelett | Greenfield-Bootstrap |
 | 2026-06-11 | §1 `LH-FA-ROM-001`.a präzisiert: Innenkanten-Basis + Ring-Modell, Auslösung bei Modell-Mutation, Endpunkt-Knoten-Einschränkung (welle-1), Erkennung total (kein `E-GEO-002`); §7-Punkt Polygon-Basis geschlossen | [ADR-0007](../docs/plan/adr/0007-raumerkennung-geometrie-basis.md) |
 | 2026-06-11 | §1 Kollaps-Kriterium präzisiert: Kantenrichtungs-Erhalt statt reiner Flächen-Prüfung (Doppel-Inversion erzeugt Phantom-Polygon positiver Fläche) | [ADR-0007](../docs/plan/adr/0007-raumerkennung-geometrie-basis.md) |

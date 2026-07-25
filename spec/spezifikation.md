@@ -372,6 +372,18 @@ gesamten Satz: alle neuen Solids (Wand + Nachbarn) entstehen vor dem
 Commit — schlägt eines fehl, bleibt das Modell unverändert und es
 ergeht keine Meldung.
 
+**Modell-Ersetzung (`op = ModelReplaced`, Projekt geöffnet — [LH-FA-BLD-003](lastenheft.md#lh-fa-bld-003--projekt-laden).a):**
+Wird der **gesamte** Sitzungs-Stand ersetzt (Projekt geladen), ergeht **genau eine** Meldung mit
+`op = ModelReplaced` (neuer `op` im §5-Span-Vokabular) — **nicht** eine Meldung je geladenem Element.
+Diese Meldung ist die **eine benannte Ausnahme** vom `element_id`-Teil des Vertrags oben: sie trägt
+**keine** Element-Kennung, weil sich kein einzelnes Element geändert hat, sondern alle. Der Beobachter
+baut seinen Stand deshalb **vollständig** neu, statt ein gemeldetes Element nachzuziehen; ein Beobachter,
+der nur das gemeldete Element pullt, behielte den Stand des vorherigen Projekts. Die transaktionale
+Garantie gilt wie oben: schlägt der Aufbau eines geladenen Elements fehl
+([`E-GEO-002`](#4-fehler-codes-und-logging-felder)), bleibt der bisherige Stand unverändert und es ergeht
+**keine** Meldung — die Datei wird als **Ganzes** abgelehnt (bewusst anders als die Darstellungs-Abfrage,
+die bei [`E-GEO-002`](#4-fehler-codes-und-logging-felder) total antwortet).
+
 **Beobachter-Pflichten:** Mehrere Beobachter (2D-/3D-Sicht, [OBJ-003](lastenheft.md#3-projektziele))
 über Registrierung (`subscribe`/`unsubscribe`); Callbacks dürfen
 abfragen, aber keine Mutationen auslösen (Re-Entranz-Verbot); eine
@@ -754,7 +766,16 @@ ein Benutzer sie auslöst** und was dabei beobachtbar ist.
 
 **Fehlerfälle (beide Wege).** Fehlende oder nicht lesbare Datei, inkonsistenter Inhalt, nicht
 beschreibbarer Zielpfad → der bisherige Stand bleibt **unverändert** und der Fehler wird dem Benutzer
-gemeldet; **kein** Teil-Zustand, **keine** halb ersetzte Sitzung.
+gemeldet; **kein** Teil-Zustand, **keine** halb ersetzte Sitzung. Dasselbe gilt, wenn sich die Geometrie
+**eines** geladenen Bauteils nicht aufbauen lässt ([`E-GEO-002`](#4-fehler-codes-und-logging-felder)):
+die Datei wird als **Ganzes** abgelehnt, nicht teilweise übernommen.
+
+**Öffnen ist lesend.** Das Öffnen **ergänzt** nichts am geladenen Modell — der Stand in der Sitzung
+entspricht dem Dateiinhalt ([LH-FA-BLD-003](lastenheft.md#lh-fa-bld-003--projekt-laden): „vollständig
+wiederhergestellt"), und ein unmittelbar folgendes Speichern schreibt denselben Inhalt zurück. Fehlt dem
+geöffneten Projekt etwas, das eine Sicht zum Arbeiten braucht (z. B. eine Zeichen-Ebene für Hilfslinien),
+wird das dem Benutzer **gemeldet**, statt es still anzulegen; die betroffene Aktion bleibt bis dahin
+abgelehnt.
 
 ### LH-FA-PLG-001.a — Plugin-System (Host-Mapping, Teilumfang)
 
