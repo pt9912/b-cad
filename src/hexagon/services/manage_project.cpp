@@ -1,6 +1,7 @@
 #include "hexagon/services/manage_project.h"
 
 #include <stdexcept>
+#include <utility>
 
 #include "hexagon/model/persisted_derivations.h"
 #include "hexagon/model/stair.h"
@@ -28,6 +29,16 @@ void saveProject(const ports::driven::ProjectRepositoryPort& repository,
         derived.stairRiseMm[stair.id] = stairRiseMm(stair, *storey_height);
     }
     repository.save(building, derived, path);
+}
+
+void openProject(StructureEditService& service,
+                 const ports::driven::ProjectRepositoryPort& repository,
+                 const std::filesystem::path& path) {
+    // Laden (wirft neutral bei fehlender/korrupter Datei) und erst DANACH
+    // ersetzen: schlaegt das Laden fehl, hat der Service nichts gesehen und
+    // der bisherige Stand bleibt unveraendert.
+    model::Building loaded = repository.load(path);
+    service.replaceBuilding(std::move(loaded));
 }
 
 }  // namespace bcad::hexagon::services

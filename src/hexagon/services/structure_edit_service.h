@@ -198,6 +198,17 @@ public:
     // für Tests; Telemetrie-Anschluss folgt mit REQ-TEC-006.
     int swallowedListenerErrors() const { return swallowed_listener_errors_; }
 
+    // Ersetzt das GESAMTE Modell (Projekt geladen, LH-FA-BLD-003 —
+    // slice-047b). Mehr als `building_ = geladen`: die vom Kern gehaltenen
+    // ABGELEITETEN Zustände werden neu gebaut — die Wand-Solids, die
+    // Raum-Erkennung je Geschoss und die Id-Zähler (jeder über das geladene
+    // Maximum, sonst kollidiert die erste Mutation nach dem Laden mit einer
+    // persistierten Id). Transaktional: schlägt der Solid-Bau einer geladenen
+    // Wand fehl (E-GEO-002), bleibt der bisherige Stand unverändert und es
+    // ergeht keine Meldung. Danach genau EINE `ModelReplaced`-Meldung
+    // (Full-Refresh für die Beobachter).
+    void replaceBuilding(model::Building building);
+
     // Queries (für Konsumenten/Tests; nicht Teil des Command-Ports).
     const model::Building& building() const { return building_; }
     const model::Wall& wall(model::WallId id) const;

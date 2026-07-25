@@ -46,6 +46,12 @@ public:
     CanvasWidget(PlanPull pull, GuideLineDraw draw, int active_storey_id,
                  QWidget* parent = nullptr);
 
+    // Aktives Geschoss neu setzen (slice-047b): nach einem Projekt-Laden ist
+    // die beim Demo-Bau eingefrorene Geschoss-Id i. d. R. ungültig — der Canvas
+    // filterte dann jede Plan-Zeile weg und bliebe LEER. Der Composition-Root
+    // löst das Geschoss nach dem Laden neu auf und setzt es hier nach.
+    void setActiveStorey(int active_storey_id);
+
     // ADR-0008-Callback: `op`-Mutation → neu einrahmen + Repaint einplanen.
     void onModelChanged(
         const hexagon::ports::driven::ModelChange& change) override;

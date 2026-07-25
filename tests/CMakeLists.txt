@@ -37,6 +37,7 @@ add_executable(bcad_adapter_tests
     adapters/test_sqlite_project_repository.cpp
     adapters/test_sqlite_crash_recovery.cpp
     adapters/test_viewer_scene.cpp
+    adapters/test_project_open_handler.cpp  # slice-047b: Open-Handler + Voll-Refresh der Sichten
     adapters/test_viewer_widget.cpp
     adapters/test_canvas_widget.cpp    # slice-043: 2D-Canvas-Interaktions-AK (ADR-0019, Xvfb)
     adapters/test_ifc_spf_reader.cpp   # slice-019b Commit i: SPF-Codec (isoliert)

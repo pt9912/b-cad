@@ -83,6 +83,14 @@ void ViewerScene::onModelChanged(const driven::ModelChange& change) {
             effective_updates_ +=
                 reloadKeyed(stair_meshes_, mesh_source_.stairMeshes());
             break;
+        case driven::ModelChangeOp::ModelReplaced:
+            // Projekt geladen (LH-FA-BLD-003, slice-047b): der per-op-Pfad
+            // oben pullt IMMER nur das gemeldete Element — nach einem
+            // Modell-Tausch blieben die Netze des alten Projekts stehen
+            // (stale Wände, verwaiste Dächer/Platten/Treppen). Darum hier
+            // der einzige Voll-Neuaufbau der Szene.
+            loadAll();
+            break;
         case driven::ModelChangeOp::StoreyAdded:
         case driven::ModelChangeOp::RoomsChanged:
             // Kein 3D-Szenen-Inhalt: Geschosse sind Container, Räume

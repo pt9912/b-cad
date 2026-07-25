@@ -720,6 +720,16 @@ Teil-Export, Zielpfad unverändert.
 **Totalität.** Ein Modell ohne Geschosse/Wände → eine **gültige, (annähernd) leere**
 PDF-Seite / PNG-Bild (kein Wurf). Reihenfolge deterministisch aus der Modell-Reihenfolge.
 
+**Projekt speichern/öffnen — Aufruf-Wege.** Die Persistenz
+([`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern)/[`003`](lastenheft.md#lh-fa-bld-003--projekt-laden))
+ist über **zwei** Wege benutzer-aufrufbar: die **CLI** (`--save`/`--open`) und das
+**GUI-Datei-Menü** (Speichern/Öffnen mit Datei-Auswahl). Beide Wege nutzen **denselben**
+Kern-Use-Case; ein Fehler (fehlende/korrupte Datei, nicht beschreibbarer Pfad) lässt den
+bisherigen Modell-Stand **unverändert** und wird dem Benutzer gemeldet — kein Teil-Zustand.
+Nach dem Öffnen zeigen die geöffneten Sichten (3D/2D) den **geladenen** Stand, nicht den
+vorherigen; die anschließend erzeugten Elemente erhalten Kennungen, die mit den geladenen
+**nicht kollidieren**.
+
 **Export-Herkunft (injiziert, determinismus-erhaltend).** Jeder Export trägt eine vom
 Aufrufer **injizierte** Herkunft — **Datum**, **Quelle** (Basename des via `--open`/GUI
 geöffneten Projekts; leer ohne geöffnetes Projekt), **Version** —, damit ein

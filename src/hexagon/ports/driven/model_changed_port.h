@@ -35,6 +35,15 @@ enum class ModelChangeOp {
     // (projektweit). Kein `RoomsChanged` (Treppen berühren die Raumerkennung
     // nicht).
     StairChanged,
+    // Das GESAMTE Modell wurde ersetzt (Projekt geladen, LH-FA-BLD-003 —
+    // slice-047b). Anders als die element-bezogenen Ops trägt diese Meldung
+    // KEINE sinnvolle Element-Id: der Beobachter muss seinen Stand
+    // VOLLSTÄNDIG neu aufbauen (der per-op-Viewer pullt sonst nur das
+    // gemeldete Element und behielte die Netze des alten Projekts).
+    // `storey_id` trägt das erste Geschoss des neuen Stands (oder den
+    // Default-Wert bei leerem Modell) — nur informativ, nicht als Filter
+    // gedacht.
+    ModelReplaced,
 };
 
 // Push-Notify-Meldung (ADR-0008): WAS sich geändert hat (`op`) und

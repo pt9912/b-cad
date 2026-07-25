@@ -79,32 +79,32 @@ Beide über **eine** geteilte, testbare Save/Open-Naht (der vom Codebase-Autor v
       deckt `test_sqlite_project_repository`.
 
 ### 047b — GUI (MR-006 2026-07-24: 3 HIGH / 2 MED **in-Plan aufgelöst**, s. u.)
-- [ ] **`openProject`-Kern-Naht** (MED-2, symmetrisch zu `saveProject`): `services::openProject(service, repository, path)`
+- [x] **`openProject`-Kern-Naht** (MED-2, symmetrisch zu `saveProject`): `services::openProject(service, repository, path)`
       (o. `StructureEditService::replaceBuilding(Building)`, vom Handler gerufen) — **testbar außerhalb** des
       coverage-ausgenommenen main/GUI.
-- [ ] **`StructureEditService::replaceBuilding(Building)`** (HIGH-2): setzt `building_` **und** baut die abgeleiteten
+- [x] **`StructureEditService::replaceBuilding(Building)`** (HIGH-2): setzt `building_` **und** baut die abgeleiteten
       Zustände neu — `solids_` für die geladenen Wände, `redetectRooms` je geladenem Geschoss, **jeden `next_*_id_`-
       Zähler über das geladene Maximum** zurücksetzen (sonst kollidiert die erste Mutation nach dem Laden mit
       persistierten Ids). Danach der **Full-Refresh-Notify** (s. u.). **Unit-Test:** nach dem Laden eines
       geroomten Projekts ist `floorArea` nicht leer; die erste `addGuideLine`/`addWall` mintet eine **frische** (nicht
       kollidierende) Id.
-- [ ] **`ModelReplaced`-Op + Viewer-Refresh** (HIGH-1): ein neuer `ModelChangeOp` (`model_changed_port.h`); der
+- [x] **`ModelReplaced`-Op + Viewer-Refresh** (HIGH-1): ein neuer `ModelChangeOp` (`model_changed_port.h`); der
       **`ViewerScene`** bekommt einen Fall, der `scene_.loadAll()` ruft (der per-op-Viewer refresht sonst NICHT — er
       pullt nur die geänderte Wand; alte Wände blieben stale). Der **`CanvasWidget`** refresht bereits generisch
       (pullt `planView()` bei jedem Notify) — nur der Viewer braucht den neuen Fall.
-- [ ] **Eingefrorene Ids neu auflösen** (HIGH-3): `main.cpp`/`CanvasWidget`/`EditDrawingGuideLineSink` frieren beim
+- [x] **Eingefrorene Ids neu auflösen** (HIGH-3): `main.cpp`/`CanvasWidget`/`EditDrawingGuideLineSink` frieren beim
       Demo-Bau das aktive Geschoss + die Hilfslinien-Ebene ein (by-value). Nach dem Laden sind diese Ids i. d. R.
       ungültig → Canvas malt leer + Hilfslinien-Zeichnen wird abgelehnt. Das aktive Geschoss/die Ebene **nach dem
       Laden neu auflösen** (aus `service.building()`; ggf. eine Canvas-Ebene anlegen) — oder lazy statt captured.
-- [ ] **`QMainWindow`-Menü „Datei"** ([ADR-0009](../../adr/0009-gui-framework-qt6.md)) mit **Speichern**/**Öffnen** →
+- [x] **`QMainWindow`-Menü „Datei"** ([ADR-0009](../../adr/0009-gui-framework-qt6.md)) mit **Speichern**/**Öffnen** →
       `QFileDialog` (Pfadwahl) → der path-nehmende **Handler** (`openProject`/`saveProject`). Fehler → benutzer-sichtbarer
       `QMessageBox`/Status, kein Crash. Der modale Dialog lebt im coverage-ausgenommenen main (nicht getestet, MED-1).
-- [ ] **Headless-Test über den Handler** (MED-1, Muster `test_viewer_widget`, Xvfb — **nicht** den modalen Dialog):
+- [x] **Headless-Test über den Handler** (MED-1, Muster `test_viewer_widget`, Xvfb — **nicht** den modalen Dialog):
       ein gespeichertes Projekt „öffnen" (Handler direkt) → `service.building()` entspricht dem Stand + ein
       abonnierter headless `CanvasWidget`/`ViewerScene` spiegelt ihn; Speichern → Repository-Roundtrip.
 
 ### gemeinsam
-- [ ] **Doku:** [CHANGELOG](../../../../CHANGELOG.md); Spec-Notiz `spec/spezifikation.md` (Speichern/Öffnen benutzer-
+- [x] **Doku:** [CHANGELOG](../../../../CHANGELOG.md); Spec-Notiz `spec/spezifikation.md` (Speichern/Öffnen benutzer-
       aufrufbar via GUI+CLI, Provenance-Quelle real; lösungsfrei [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)).
       **Traceability-Korrektur** der BLD-002/003-`done`-Markierung (welle-Ergebnis-/Status-Notiz). **Kein** ADR-Index-Eintrag.
 

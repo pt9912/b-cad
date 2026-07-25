@@ -28,6 +28,16 @@ public:
                              hexagon::model::LayerId layer)
         : port_(port), storey_(storey), layer_(layer) {}
 
+    // Ziel-Geschoss/-Ebene neu setzen (slice-047b): nach einem Projekt-Laden
+    // sind die beim Demo-Bau eingefrorenen Ids i. d. R. ungültig — jedes
+    // Hilfslinien-Zeichnen würde dann abgelehnt (unbekanntes Geschoss/unbekannte
+    // Ebene). Der Composition-Root löst beides nach dem Laden neu auf.
+    void setTarget(hexagon::model::StoreyId storey,
+                   hexagon::model::LayerId layer) {
+        storey_ = storey;
+        layer_ = layer;
+    }
+
     std::optional<hexagon::model::GuideLineId> addGuideLine(
         hexagon::model::Point2D start, hexagon::model::Point2D end) const {
         hexagon::model::GuideLine prototype;

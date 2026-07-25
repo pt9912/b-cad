@@ -21,8 +21,12 @@
 #include <string>
 
 #include <QApplication>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QImage>
 #include <QMainWindow>
+#include <QMenuBar>
+#include <QMessageBox>
 #include <QTabWidget>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
@@ -238,7 +242,88 @@ std::optional<int> runHeadlessCli(
     return 0;  // headless: Persistenz/Export erledigt, keine GUI
 }
 
+// Datei-Menue "Oeffnen/Speichern unter" (LH-FA-BLD-002/003, slice-047b,
+// ADR-0009). Der modale QFileDialog lebt hier im coverage-ausgenommenen main;
+// die eigentliche Arbeit machen die HANDLER (openProject/saveProject), die
+// headless getestet sind (Plan-Review MED-1/MED-2).
+//
+// Nach dem Laden werden die beim Demo-Bau EINGEFRORENEN Ids neu aufgeloest
+// (Plan-Review HIGH-3): aktives Geschoss und Hilfslinien-Ebene stammen aus dem
+// alten Modell und sind im geladenen Projekt i. d. R. ungueltig — ohne
+// Neu-Aufloesung malte der Canvas leer und jedes Hilfslinien-Zeichnen wuerde
+// abgelehnt.
+void installFileMenu(
+    QMainWindow& window, bcad::hexagon::services::StructureEditService& service,
+    const bcad::hexagon::ports::driven::ProjectRepositoryPort& repository,
+    bcad::adapters::ui::command::EditDrawingGuideLineSink& guide_sink,
+    bcad::adapters::ui::view::CanvasWidget& canvas) {
+    const auto reresolve_after_open = [&service, &guide_sink, &canvas]() {
+        if (service.building().storeys.empty()) {
+            return;
+        }
+        const auto storey = service.building().storeys.front().id;
+        model::LayerId layer{};
+        if (service.building().layers.empty()) {
+            model::Layer fresh;
+            fresh.name = "Canvas";
+            const auto created = service.addLayer(fresh);
+            if (!created) {
+                return;
+            }
+            layer = *created;
+        } else {
+            layer = service.building().layers.front().id;
+        }
+        guide_sink.setTarget(storey, layer);
+        canvas.setActiveStorey(static_cast<int>(storey));
+    };
+
+    auto* file_menu = window.menuBar()->addMenu(QStringLiteral("&Datei"));
+    QObject::connect(
+        file_menu->addAction(QStringLiteral("&Oeffnen...")), &QAction::triggered,
+        &window, [&window, &service, &repository, reresolve_after_open]() {
+            const QString path = QFileDialog::getOpenFileName(
+                &window, QStringLiteral("Projekt oeffnen"), QString(),
+                QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
+            if (path.isEmpty()) {
+                return;  // abgebrochen — kein Zustandswechsel
+            }
+            try {
+                bcad::hexagon::services::openProject(service, repository,
+                                                     path.toStdString());
+                reresolve_after_open();
+                window.setWindowTitle(
+                    QStringLiteral("b-cad — %1").arg(QFileInfo(path).fileName()));
+            } catch (const std::exception& e) {
+                // Fehler benutzer-sichtbar, kein Crash; das Modell ist
+                // unveraendert (openProject laedt erst, ersetzt dann).
+                QMessageBox::critical(&window,
+                                      QStringLiteral("Oeffnen fehlgeschlagen"),
+                                      QString::fromStdString(e.what()));
+            }
+        });
+    QObject::connect(
+        file_menu->addAction(QStringLiteral("&Speichern unter...")),
+        &QAction::triggered, &window, [&window, &service, &repository]() {
+            const QString path = QFileDialog::getSaveFileName(
+                &window, QStringLiteral("Projekt speichern"), QString(),
+                QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
+            if (path.isEmpty()) {
+                return;
+            }
+            try {
+                bcad::hexagon::services::saveProject(
+                    repository, service.building(), path.toStdString());
+            } catch (const std::exception& e) {
+                QMessageBox::critical(&window,
+                                      QStringLiteral("Speichern fehlgeschlagen"),
+                                      QString::fromStdString(e.what()));
+            }
+        });
+}
+
 }  // namespace
+
 
 int main(int argc, char** argv) {
     const QApplication app(argc, argv);
@@ -327,6 +412,10 @@ int main(int argc, char** argv) {
         return *rc;
     }
 
+    // Persistenz-Adapter fuer das GUI-Datei-Menue (slice-047b). Die CLI haelt
+    // ihre eigene Instanz in runHeadlessCli; der Adapter ist zustandslos.
+    const bcad::adapters::persistence::SqliteProjectRepository repository;
+
     // ADR-0009 (e): Konstruktor-Injektion der Driving-Port-Referenz, dann
     // Beobachter-Lebenszyklus. Der 3D-Viewer akkumuliert seinen Szenen-Stand über
     // die ADR-0008-Meldungen → subscribe VOR dem Modell-Aufbau.
@@ -350,7 +439,9 @@ int main(int argc, char** argv) {
         return *service.addLayer(fallback);
     }();
     const bcad::adapters::ui::command::PlanViewPlanSource plan_source(service);
-    const bcad::adapters::ui::command::EditDrawingGuideLineSink guide_sink(
+    // NICHT const: nach einem Projekt-Laden muss das Ziel-Geschoss/die Ebene
+    // neu gesetzt werden (slice-047b, s. u.).
+    bcad::adapters::ui::command::EditDrawingGuideLineSink guide_sink(
         service, active_storey, canvas_layer);
     auto* canvas = new bcad::adapters::ui::view::CanvasWidget(
         [&plan_source]() { return plan_source.planView(); },
@@ -369,6 +460,11 @@ int main(int argc, char** argv) {
     window.setCentralWidget(tabs);  // Qt übernimmt das Widget-Ownership
     window.resize(1280, 800);
     window.setWindowTitle(QStringLiteral("b-cad"));
+
+    // Datei-Menue (LH-FA-BLD-002/003, slice-047b) — ausgelagert, damit die
+    // Kognitive Komplexitaet von `main` unter der lint-Schwelle bleibt
+    // (Muster runHeadlessCli).
+    installFileMenu(window, service, repository, guide_sink, *canvas);
 
     const QStringList args = QApplication::arguments();
     const int beleg_index = static_cast<int>(args.indexOf(

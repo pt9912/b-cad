@@ -20,6 +20,15 @@ CanvasWidget::CanvasWidget(PlanPull pull, GuideLineDraw draw,
       draw_(std::move(draw)),
       active_storey_id_(active_storey_id) {}
 
+void CanvasWidget::setActiveStorey(int active_storey_id) {
+    active_storey_id_ = active_storey_id;
+    // Derselbe Pfad wie im Notify-Callback: neu einrahmen + Repaint einplanen
+    // (`update()` ist queued), damit der Wechsel ohne weitere Modell-Meldung
+    // sichtbar wird.
+    fitted_ = false;
+    update();
+}
+
 void CanvasWidget::onModelChanged(
     const hexagon::ports::driven::ModelChange& /*change*/) {
     // `op`-Mutation (Wände etc.) → neu einrahmen und Repaint einplanen

@@ -355,6 +355,62 @@ void StructureEditService::redetectRooms(model::StoreyId storey) {
     rooms_[storey] = detectRooms(building_, storey);
 }
 
+namespace {
+
+// Höchste vergebene Id einer Element-Liste als int (0 bei leerer Liste) —
+// Grundlage des Zähler-Resets nach dem Laden.
+template <typename Elements>
+int maxIdValue(const Elements& elements) {
+    int max_id = 0;
+    for (const auto& element : elements) {
+        max_id = std::max(max_id, static_cast<int>(element.id));
+    }
+    return max_id;
+}
+
+}  // namespace
+
+void StructureEditService::replaceBuilding(model::Building building) {
+    // 1) Solids VOR dem Commit bauen (transaktionale Garantie, Muster
+    //    `commitOpenings`/`rebuildAffectedNeighbors`): wirft der Bau einer
+    //    geladenen Wand (E-GEO-002), bleibt der bisherige Stand komplett
+    //    unberührt — kein halb ersetztes Modell, keine Meldung.
+    std::map<model::WallId, model::Solid> trial_solids;
+    for (const model::Wall& w : building.walls) {
+        trial_solids[w.id] = buildWallSolid(w, building.walls, building.openings);
+    }
+
+    // 2) Commit: Modell + abgeleitete Zustände ersetzen.
+    building_ = std::move(building);
+    solids_ = std::move(trial_solids);
+    rooms_.clear();
+    for (const model::Storey& s : building_.storeys) {
+        redetectRooms(s.id);  // LH-FA-ROM-001 für den geladenen Stand
+    }
+
+    // 3) Id-Zähler über das geladene Maximum. Ohne diesen Reset mintet die
+    //    erste Mutation nach dem Laden eine Id, die im geladenen Projekt
+    //    bereits vergeben ist (Kollision statt frischer Id).
+    next_storey_id_ = maxIdValue(building_.storeys) + 1;
+    next_wall_id_ = maxIdValue(building_.walls) + 1;
+    next_opening_id_ = maxIdValue(building_.openings) + 1;
+    next_roof_id_ = maxIdValue(building_.roofs) + 1;
+    next_slab_id_ = maxIdValue(building_.slabs) + 1;
+    next_stair_id_ = maxIdValue(building_.stairs) + 1;
+    next_material_id_ = maxIdValue(building_.materials) + 1;
+    next_layer_id_ = maxIdValue(building_.layers) + 1;
+    next_guide_line_id_ = maxIdValue(building_.guide_lines) + 1;
+
+    // 4) Genau EINE Full-Refresh-Meldung (ADR-0008): die Beobachter bauen
+    //    ihren Stand vollständig neu, statt je Element eine Meldung zu sehen.
+    ports::driven::ModelChange change;
+    change.op = ports::driven::ModelChangeOp::ModelReplaced;
+    if (!building_.storeys.empty()) {
+        change.storey_id = building_.storeys.front().id;
+    }
+    notifyListeners(change);
+}
+
 std::vector<StructureEditService::NeighborRebuild>
 StructureEditService::rebuildAffectedNeighbors(
     const model::Wall& changed, const std::vector<model::Wall>& trial) const {

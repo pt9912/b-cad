@@ -44,7 +44,7 @@ Raumerkennung, 3D-Extrusion in Echtzeit **als Kern-Vertrag**. Die
 | slice-004 | Gepinnte Toolchain 26.04/node24, Digest+Snapshot ([ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)) |
 | slice-005 | Gate-Consistency-Sensor |
 | slice-007 | Datenmodell-Definition (`spec/data-model.yaml`) + [ADR-0006](../../adr/0006-relationales-schema-design.md) |
-| slice-008a | Persistenz speichern/laden, atomar via Temp+Rename ([LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/003, [ADR-0003](../../adr/0003-persistenz-sqlite.md)) |
+| slice-008a | Persistenz speichern/laden, atomar via Temp+Rename ([LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/003, [ADR-0003](../../adr/0003-persistenz-sqlite.md)) — **Traceability-Korrektur (slice-047, 2026-07-25):** das war die **Mechanik**, nicht die ganze Anforderung; ein benutzer-aufrufbarer Weg fehlte bis slice-047a (CLI) / 047b (GUI-Datei-Menü). Die welle-1-`done`-Markierung von BLD-002/003 war insofern **verfrüht** — Mechanik ≠ Anforderung. |
 | slice-008b | Crash-Recovery (`kill -9`, [LH-QA-005](../../../../spec/lastenheft.md#lh-qa-005--crash-recovery)) + Fehlercodes [E-IO-001](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)/002 |
 | slice-009a | [ADR-0007](../../adr/0007-raumerkennung-geometrie-basis.md) accepted (Innenkante + Ring-Modell) + Spec-Schärfung Raumerkennung |
 | slice-009b | Raum-Autoerkennung implementiert ([LH-FA-ROM-001](../../../../spec/lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)), 5 AK-Tests |
