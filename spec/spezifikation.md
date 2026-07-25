@@ -733,8 +733,9 @@ Teil-Export, Zielpfad unverändert.
 PDF-Seite / PNG-Bild (kein Wurf). Reihenfolge deterministisch aus der Modell-Reihenfolge.
 
 **Export-Herkunft (injiziert, determinismus-erhaltend).** Jeder Export trägt eine vom
-Aufrufer **injizierte** Herkunft — **Datum**, **Quelle** (Basename des via `--open`/GUI
-geöffneten Projekts; leer ohne geöffnetes Projekt), **Version** —, damit ein
+Aufrufer **injizierte** Herkunft — **Datum**, **Quelle** (Basename des über die CLI (`--open`)
+geöffneten Projekts; leer ohne geöffnetes Projekt — ein **GUI**-Export existiert nicht, das
+GUI öffnet und speichert nur), **Version** —, damit ein
 Benutzer erkennt, aus welchem **Stand** ein Artefakt stammt und Exporte verschiedener
 Stände **unterscheidbar** sind. Sie erscheint **sichtbar** (PDF-Fußzeile)
 und/oder im **Format-Header** (STEP `FILE_NAME`, STL-80-Byte-Header; weitere Formate
