@@ -4,20 +4,23 @@ titel: Sitzungs-Zustand + „Speichern" + Ungesichert-Rückfrage bei Öffnen/Bee
 status: open
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern), [LH-FA-BLD-003](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)]
-adr_refs: [[ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
+adr_refs: [[ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
 ---
 
 # Slice 052a: Sitzungs-Zustand + „Speichern" + Ungesichert-Rückfrage
 
-**Status:** open — **zwei [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
-gefahren, beide „nicht startbar"** ([Lauf 1](../../../reviews/2026-07-26-slice-052-plan.md): 2 HIGH /
+**Status:** open — **drei [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
+gefahren, alle „nicht startbar"** ([Lauf 1](../../../reviews/2026-07-26-slice-052-plan.md): 2 HIGH /
 7 MED / 5 LOW / 2 INFO · [Lauf 2](../../../reviews/2026-07-26-slice-052-plan-2.md): 1 HIGH / 11 MED /
-4 LOW / 2 INFO). Beide Läufe galten dem **ungeteilten** slice-052. Die Findings sind eingearbeitet
-(§13); der HIGH aus Lauf 2 und fünf seiner MEDIUM hingen am **gewachsenen Scope** und sind mit dem
-**Split** an der Wurzel behandelt: „Neues Projekt" lebt jetzt in
-[`slice-052b`](slice-052b-neues-projekt.md). **Ein dritter
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
-vor dem Start** — Split und Einarbeitung sind neu und ungeprüft.
+4 LOW / 2 INFO · [Lauf 3](../../../reviews/2026-07-26-slice-052a-plan-3.md): 1 HIGH / 3 MED / 4 LOW /
+2 INFO). Lauf 1 + 2 galten dem **ungeteilten** slice-052; Lauf 2 führte zum **Split**
+([`slice-052b`](slice-052b-neues-projekt.md)), Lauf 3 zum **Struktur-Vorläufer**
+[`slice-053`](slice-053-fenster-als-adapter.md). Alle Findings sind eingearbeitet (§13).
+
+**Abhängigkeit: [`slice-053`](slice-053-fenster-als-adapter.md) muss zuerst laufen** — ohne das
+Hauptfenster als Adapter-Klasse ist die Schließ-Rückfrage nicht orakel-fähig (Lauf-3-HIGH-1). **Ein
+vierter [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
+vor dem Start**, sobald 053 geliefert ist.
 
 **Welle:** welle-5-erweiterung. **Autor:** Dietmar Burkard (AI-Harness-Lauf). **Datum:** 2026-07-26.
 
@@ -71,10 +74,14 @@ Was der Vergleich leistet — und was **nicht** (Lauf-2-MEDIUM-1, präzisiert st
 - **Gegenüber neuen Mutatoren ist er strukturell.** Es gibt keine Meldung, die ein Mutator vergessen
   könnte, und keine `op`-Liste, die gepflegt werden müsste. Jeder heutige und jeder künftige
   **Schreibweg** ist erfasst, weil der Vergleich am **Ergebnis** ansetzt.
-- **Gegenüber neuen Feldern ist er es nicht.** Ein handgeschriebenes `operator==`, das ein Feld
-  auslässt, macht dessen Änderung unsichtbar — **stiller Datenverlust** (§9 R1). Das ist der Preis des
-  Ansatzes, keine Randnotiz: die Gegenmaßnahme (Feld-für-Feld-Orakel) steht deshalb **in der
-  §6-Tabelle**, nicht nur in der DoD.
+- **Gegenüber neuen Feldern ebenfalls — aber nur in **einer** Implementierungs-Form.** Lauf-3-MEDIUM-1
+  hat zu Recht gerügt, dass die Vorfassung „strukturell" behauptete und zwei Absätze später eine
+  Konvention beschrieb. Die Auflösung ist eine **Festlegung, die der Plan bisher schuldig blieb**: die
+  Vergleiche sind **`= default`** (C++20 — `CMakeLists.txt`:5 setzt `CXX_STANDARD 20`). Ein
+  `auto operator==(const T&) const = default;` vergleicht **alle** Member, die der Typ hat — auch die,
+  die ein künftiger Slice hinzufügt, **ohne** dass jemand den Operator anfasst. Damit ist auch die
+  Feld-Dimension strukturell. **Handgeschriebene Vergleiche sind verboten**; genau sie wären der stille
+  Datenverlust aus §9 R1, und genau dagegen steht die Gegenprobe der §6-Zeile 3.
 - **Semantisch genauer als ein Flag.** „Zurück-geändert auf den Dateistand" ist wieder **sauber**.
 - **Kein Vertrag wird berührt.** Kein neuer `op`, keine neue Schicht-Kante, kein Port: die
   [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-Entscheidung bleibt gültig, statt umgangen oder per
@@ -127,6 +134,12 @@ LH-FA-BLD-003, zusätzlich:
   then Rückfrage vor dem Ersetzen des Arbeitsstands; der Benutzer kann
   speichern, verwerfen oder die Aktion abbrechen.
 ```
+
+**Zuordnung der Auslöser, begründet** (Lauf-3-LOW-2): „Speichern" gehört zu **BLD-002**, „Öffnen" zu
+**BLD-003** — beides unmittelbar. Der Auslöser **„Programm beenden"** schärft streng genommen keine der
+beiden Anforderungen; er hängt an BLD-002, weil die Rückfrage dort **das Speichern** anbietet und der
+Verlust, den sie verhindert, der Verlust eines **ungespeicherten** Stands ist. Die Alternative wäre eine
+eigene Anforderung „Sitzung beenden", die es nicht gibt und die dieser Slice nicht erfindet.
 
 **Beide Vorlagen sind dreiwertig ausformuliert** (Lauf-2-MEDIUM-8): der frühere Rückverweis „analog
 [LH-FA-BLD-001](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen)" behauptete eine Deckung, die der dortige **zweiwertige** AK-Text („Rückfrage
@@ -181,41 +194,61 @@ er **vor** dem Start — erweitert um die Lücken beider [MR-006](../../../../ha
 | 10 | „Speichern" schreibt in die **gemerkte** Datei (Round-Trip über das echte Repository) | Pfad nicht gemerkt ⇒ rot | — |
 | 11 | **Verdikt**: `Proceed` / `AskFirst` | Verdikt-Bildung entfernt ⇒ rot | — |
 | 12 | **Antwort-Auswertung**: „abbrechen" ⇒ *unterlassen*; „verwerfen" ⇒ *ausführen*; „speichern" ⇒ *erst speichern, dann ausführen* | „abbrechen" führt aus ⇒ rot | **Lauf 1 MEDIUM-3** |
-| 13 | **Fenster-Schließen mit ungesichertem Stand** ⇒ Rückfrage; „abbrechen" ⇒ Fenster bleibt offen (headless über `QCloseEvent` + `QApplication::sendEvent`) | Schließ-Anbindung entfernt ⇒ rot | **Lauf 2 MEDIUM-10** |
+| 12a | **„speichern" im Verwerf-Fluss scheitert** (Zielmedium/Recht) ⇒ die auslösende Aktion wird **unterlassen**, der Stand bleibt ungesichert | Fehler geschluckt und trotzdem ausgeführt ⇒ rot | **Lauf 3 MEDIUM-2a** |
+| 13 | **Fenster-Schließen mit ungesichertem Stand** ⇒ Rückfrage; „abbrechen" ⇒ Fenster bleibt offen (headless über `QCloseEvent` + `QApplication::sendEvent`) — **setzt [`slice-053`](slice-053-fenster-als-adapter.md) voraus** | Schließ-Anbindung entfernt ⇒ rot | **Lauf 2 MEDIUM-10 / Lauf 3 HIGH-1** |
+| 14 | **Baseline-Übergabe**: die Sitzung wird mit dem Stand **nach** dem Start-Aufbau konstruiert | Konstruktion mit leerem `Building` ⇒ rot (Zeile 8 allein bliebe grün) | **Lauf 3 MEDIUM-2b** |
 
-**Zeile 13 ist neu und korrigiert eine zu großzügige Grenze:** die Vorfassung erklärte das
+**Zeile 13 war in Lauf 3 der blockierende HIGH — und ist der Grund für
+[`slice-053`](slice-053-fenster-als-adapter.md):** unter dem Datei-Plan der Vorfassung wäre sie **nicht
+herstellbar** gewesen, weil `main.cpp` in **kein** Testbinary gelinkt ist (`src/CMakeLists.txt`:6 vs.
+`tests/CMakeLists.txt`) und die zitierte Präzedenz **Adapter-Klassen** prüft. Das Ereignis ist erst
+prüfbar, wenn das Fenster eine Adapter-Klasse **ist** — deshalb der Vorläufer, nicht ein weiterer
+Anlauf hier. **Die Korrektur der Grenze bleibt richtig:** die Vorfassung erklärte das
 Qt-Schließ-Ereignis für sensorlos. Das Repo stellt Qt-Ereignisse aber längst headless zu
 (`tests/adapters/test_canvas_widget.cpp`:108–116, `tests/adapters/test_viewer_widget.cpp`:55–67;
 [ADR-0009](../../adr/0009-gui-framework-qt6.md) (f)). Die Sensorlosigkeit wäre eine Eigenschaft der
 **Verortung** gewesen, nicht des Ereignisses — also eine Entscheidung, keine Naturkonstante.
 
-**Benannte Grenze (bleibt ohne Sensor, bewusst — vollständige Aufzählung):** die **modalen Dialoge**
-selbst (`QMessageBox`, `QFileDialog`) und die **Menü-Verdrahtung** (Aktion → Handler) für Öffnen,
-Speichern, Speichern unter. **Nicht** mehr in der Grenze: das Schließ-Ereignis (Zeile 13). Die harte
-Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
+**Benannte Grenze (bleibt ohne Sensor, bewusst — vollständige Aufzählung):** **nur** die modalen
+Dialoge selbst (`QMessageBox`, `QFileDialog`) — sie blockieren im Test und werden über eine
+injizierbare Naht gerufen ([`slice-053`](slice-053-fenster-als-adapter.md) §3).
+
+**Nicht** mehr in der Grenze: das **Schließ-Ereignis** (Zeile 13) und die **Menü-Verdrahtung** — beides
+wird mit [`slice-053`](slice-053-fenster-als-adapter.md) prüfbar (dessen §3-Zeile 4 belegt, dass eine
+Menü-Aktion programmatisch auslösbar ist). Damit fällt auch Lauf-3-MEDIUM-3: die DoD-Zusage „‚Speichern'
+**nutzt** `saveTarget()`" lag in der Vorfassung vollständig in der sensorlosen Zone — Zeile 9 prüfte die
+Kern-Abfrage, nicht ihre Verwendung. Der Nachweis der **Verwendung** hängt damit ebenfalls an 053.
+
+Die harte Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
 
 ## 7. Definition of Done
 
-- [ ] **Gleichheit auf den Modell-Werttypen** (`src/hexagon/model/`): `operator==` über **alle** Felder
-      **aller 13** Struct-Typen — `Building`, die neun Element-Typen **und** die verschachtelten
-      `Point2D`/`Segment`/`Footprint` (Lauf-2-MEDIUM-3). Orakel: §6-Zeile 3.
+- [ ] **Gleichheit auf den Modell-Werttypen** (`src/hexagon/model/`): `auto operator==(const T&) const
+      = default;` auf **allen 13** Struct-Typen — `Building`, die neun Element-Typen **und** die
+      verschachtelten `Point2D`/`Segment`/`Footprint` (Lauf-2-MEDIUM-3). **`= default` ist Pflicht, kein
+      Stil:** nur der compiler-generierte Vergleich nimmt künftige Felder automatisch auf
+      (Lauf-3-MEDIUM-1). Orakel: §6-Zeile 3.
 - [ ] **`ProjectSession` im Kern** (`src/hexagon/services/`, framework-frei, **kein** Port):
       Konstruktion mit **Start-Baseline** · `markPersisted(path, building)` · `path()` ·
       `isDirty(current)` · `verdictForDiscard(current)` · `saveTarget()` · Antwort-Auswertung.
-- [ ] **Orakel: alle 13 Zeilen der §6-Tabelle**, **je einmal als diskriminierend belegt** (Gegenprobe
+- [ ] **Orakel: alle 15 Zeilen der §6-Tabelle** (1–12, 12a, 13, 14), **je einmal als diskriminierend belegt** (Gegenprobe
       rot, im Closure-Text protokolliert). **Zeile 1 ist Pflicht** — Regressions-Schutz gegen
       Lauf-1-HIGH-1; **Zeile 3** ist die einzige Absicherung gegen §9 R1.
 - [ ] **Menü-Aktion „Speichern"** nutzt `saveTarget()` + `services::saveProject`; „Speichern unter…"
       bleibt und **setzt** den Pfad. **Kein** zweiter Schreibpfad am Use-Case vorbei (§9 R3).
 - [ ] **Rückfrage vor Sitzungs-Verlust** an **beiden** Auslösern dieses Slice (Öffnen, Fenster
-      schließen); **Abbrechen unterlässt** die auslösende Aktion.
+      schließen); **Abbrechen unterlässt** die auslösende Aktion. Der Schließ-Weg wird über die
+      [`slice-053`](slice-053-fenster-als-adapter.md)-Naht geprüft (§6-Zeile 13).
 - [ ] **Lastenheft:** die §3-Vorlagen in
       [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern) und
       [`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden); Header-Version +
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md) nachgezogen.
-- [ ] **Spezifikation §1** neuer Block
-      [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)`.b`
-      (Sitzungs-Zustand, Vergleichs-Semantik, Baseline, Verdikt, Rücksetz-Regel) + Zeile in
+- [ ] **Spezifikation §1** neuer Block für **beide** geschärften Anforderungen —
+      [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)`.b` **und** die
+      neue [`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)-Boundary
+      (Lauf-3-LOW-1: der bestehende Block ist ein **kombinierter** `002.a / 003.a`; ein reiner
+      `002.b`-Block ließe die neue BLD-003-AK spezifikations-seitig unverankert). Inhalt:
+      Sitzungs-Zustand, Vergleichs-Semantik (`= default`), Baseline, Verdikt, Rücksetz-Regel. + Zeile in
       [`spezifikation-historie.md`](../../../../spec/spezifikation-historie.md).
 - [ ] **`spec/architecture.md`** §2.1-Verzeichnisbaum um den neuen Kern-Service ergänzt (Lauf-1
       MEDIUM-5 — der Baum zählt die Services heute **vollständig** auf).
@@ -234,12 +267,13 @@ Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
 | `src/hexagon/model/*.h` (13 Struct-Typen) | ändern | `operator==` über alle Felder, inkl. `Point2D`/`Segment`/`Footprint` (§2) |
 | `src/hexagon/services/project_session.{h,cpp}` | neu | Baseline, Verdikt, Ziel-Wahl, Antwort-Auswertung (§2) |
 | `src/hexagon/services/manage_project.{h,cpp}` | ändern | erfolgreiches Öffnen/Speichern meldet Pfad **+ Stand** (**nach** dem Erfolg, §9 R2) |
-| `src/main.cpp` | ändern | Menü **Speichern**; Öffnen + Schließen holen Verdikt/Auswertung; Dialoge (**keine** Entscheidung) |
+| `src/adapters/ui/view/main_window.*` (aus [`slice-053`](slice-053-fenster-als-adapter.md)) | ändern | Menü **Speichern**; Öffnen + **Schließen** holen Verdikt/Auswertung — hier, weil nur hier prüfbar (Lauf-3-HIGH-1) |
+| `src/main.cpp` | ändern | Verdrahtung: Sitzung konstruieren (Baseline, §6-Zeile 14), Dialoge stellen (**keine** Entscheidung) |
 | `src/hexagon/CMakeLists.txt`, `tests/CMakeLists.txt` | ändern | beide Listen zählen Dateien **explizit** auf (Lauf-1-LOW-3) |
 | `tests/hexagon/test_model_equality.cpp` | neu | §6-Zeile 3 (Feld-für-Feld über alle 13 Typen) |
 | `tests/hexagon/test_project_session.cpp` | neu | §6-Zeilen 1, 2, 4–9, 11, 12 |
 | `tests/adapters/test_project_open_handler.cpp` | ändern | §6-Zeile 10 (Round-Trip in die gemerkte Datei) |
-| `tests/adapters/test_main_window_close.cpp` | neu | §6-Zeile 13 (`QCloseEvent` headless, Muster `test_canvas_widget.cpp`) |
+| `tests/adapters/test_main_window.cpp` (aus [`slice-053`](slice-053-fenster-als-adapter.md)) | ändern | §6-Zeilen 13 + 14 (`QCloseEvent` headless + Baseline-Übergabe) |
 | `spec/lastenheft.md`, `spec/lastenheft-historie.md` | ändern | AK-Aufnahme BLD-002/003 + Header-Version |
 | `spec/spezifikation.md`, `spec/spezifikation-historie.md` | ändern | §1-Mechanik-Block + Provenance-Zeile |
 | `spec/architecture.md` | ändern | Kern-Service im §2.1-Baum |
@@ -295,7 +329,7 @@ anders aus, ist sie vor dem Start zu schreiben.
 
 ## 12. Closure-Trigger
 
-- **Alle 13 Zeilen der §6-Tabelle** grün **und** je einmal als diskriminierend belegt (Gegenprobe rot).
+- **Alle 15 Zeilen der §6-Tabelle** grün **und** je einmal als diskriminierend belegt (Gegenprobe rot).
 - **Lastenheft** um die §3-Vorlagen ergänzt, Header-Version + Historie nachgezogen; §1-Mapping mit der
   dann feststehenden Mechanik.
 - **Handbuch an allen vier Stellen** nachgeführt.
@@ -333,10 +367,29 @@ MED-7 → §10. LOW-1..5 + INFO-1 → eingearbeitet.
 | **INFO-1** (Gegenprobe braucht Ersatz-Implementierung) | in §6-Zeile 1 als **Ersatz** statt Entfernung ausgeschrieben. |
 | **INFO-2** (Ruhe-Marker) | in der DoD-Gates-Zeile. |
 
-**Lehre aus zwei Läufen:** Der Plan hatte den Orakel-Schnitt **vorab** entschieden — die richtige Lehre
+**Lauf 3** ([Report](../../../reviews/2026-07-26-slice-052a-plan-3.md)) — 1 HIGH / 3 MED / 4 LOW / 2 INFO.
+Der Lauf bestätigte Split (sauber, keine Zusage verloren) und eigenständige Lieferbarkeit von 052a:
+
+| # | Behandlung |
+|---|---|
+| **HIGH-1** (Orakel-Zeile 13 unter dem eigenen Datei-Plan nicht herstellbar) | **Vorläufer-Slice [`slice-053`](slice-053-fenster-als-adapter.md)**: das Hauptfenster wird eine Adapter-Klasse, erst dann ist das Schließ-Ereignis prüfbar. 052a hängt davon ab. Projektinhaber-Entscheidung 2026-07-26. |
+| **MEDIUM-1** (Struktur/Konvention beruht auf ungenannter Implementierungs-Form) | **`= default` festgelegt** (C++20, `CMakeLists.txt`:5): der compiler-generierte Vergleich nimmt künftige Felder automatisch auf, handgeschriebene Operatoren sind **verboten**. Damit ist auch die Feld-Dimension strukturell — §2 und §9 R1 sind widerspruchsfrei. |
+| **MEDIUM-2a** (Fehlerweg „Speichern im Verwerf-Fluss scheitert") | **§6-Zeile 12a** neu. |
+| **MEDIUM-2b** (Baseline-Übergabe in `main`) | **§6-Zeile 14** neu. |
+| **MEDIUM-3** (Nutzung von `saveTarget()` in der sensorlosen Zone) | mit 053 prüfbar; die Grenze führt die Menü-Verdrahtung nicht mehr. |
+| **LOW-1** | §1-Block deckt **beide** Anforderungen (der bestehende ist ein kombinierter `002.a/003.a`). |
+| **LOW-2** | §3 begründet die Auslöser-Zuordnung, inkl. „Programm beenden". |
+| **LOW-3** | Sizing: die Tabelle wuchs auf 15 Zeilen; §14 bleibt „hoch", ein weiterer Split ist laut Lauf 3 **nicht** angezeigt. |
+| **LOW-4** | `adr_refs` ohne [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md) (kommt im Körper nicht mehr vor). |
+| **INFO-1** | Ruhe-Marker in der DoD-Gates-Zeile. |
+| **INFO-2** (Pflege-Signal: dritte Wiederholung) | **beantwortet durch [`slice-053`](slice-053-fenster-als-adapter.md)** — die Klasse „Entscheidung im Kern geprüft, Nutzung im Handler nicht" bekommt einen strukturellen Ort statt einer vierten Einzelfall-Behandlung. |
+
+**Lehre aus drei Läufen:** Der Plan hatte den Orakel-Schnitt **vorab** entschieden — die richtige Lehre
 aus slice-047 — und beide HIGHs lagen trotzdem **außerhalb** dessen, was ein Orakel je gezeigt hätte:
 Lauf-1-HIGH-1 hätte grüne Orakel bei toter Funktion ergeben, Lauf-2-HIGH-1 war ein Zustands-Loch, das
-erst durch eine **Scope-Erweiterung** entstand. Ein Orakel prüft, was man gebaut hat; ob der
+erst durch eine **Scope-Erweiterung** entstand, und Lauf-3-HIGH-1 war ein **versprochenes Orakel, das
+der eigene Datei-Plan nicht hergab** — ein Sensor, den man zusagt, ohne den Code dorthin zu bewegen, wo
+er messbar ist. Ein Orakel prüft, was man gebaut hat; ob der
 Mechanismus den realen Weg trifft und ob ein gewachsener Scope bis in alle Ecken durchgezogen wurde,
 prüft nur ein unabhängiger Leser. **Und:** Scope-Wachstum ist nicht additiv — der dritte Auslöser hat
 nicht ein Feature, sondern eine Zustands-, eine Anforderungs- und eine Doku-Dimension mitgebracht.
@@ -346,7 +399,7 @@ nicht ein Feature, sondern eine Zustands-, eine Anforderungs- und eine Doku-Dime
 ### Sub-Area: GUI-Sitzung / Persistenz-Bedienung
 
 - **Modus:** GF; **Dichte:** **hoch** (13 `operator==` + Feld-Orakel, ein neuer Kern-Service mit sechs
-  Verantwortlichkeiten, 13 Orakel-Zeilen **je mit roter Gegenprobe**, AK-Ergänzung an zwei
+  Verantwortlichkeiten, 15 Orakel-Zeilen **je mit roter Gegenprobe**, AK-Ergänzung an zwei
   Anforderungen, fünf Spec-/Doku-Dateien). Die frühere Einstufung „mittel / keine neue Mechanik" war
   falsch (Lauf-2-MEDIUM-11/LOW-4): der Sitzungs-Zustand **ist** neue Mechanik.
 - **Phase-Reife:** Persistenz-Mechanik reif (welle-1), Aufruf-Pfad seit slice-047 vorhanden.

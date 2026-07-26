@@ -48,9 +48,10 @@ orakel-losen `main.cpp` in den Use-Case gewandert, **Lastenheft 0.1.17**
 **Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl — laut
 slice-049-Sequenz jetzt an der Reihe) ·
 [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht) ·
-[`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) + [`slice-052b`](../open/slice-052b-neues-projekt.md)
-(Sitzungs-Zustand/Speichern bzw. »Neues Projekt«, aus der 047-Validation; **je ein [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) offen** — 052 wurde nach
-zwei Review-Läufen geteilt).
+[`slice-053`](../open/slice-053-fenster-als-adapter.md) → [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) → [`slice-052b`](../open/slice-052b-neues-projekt.md)
+(Fenster als testbarer Adapter · Sitzungs-Zustand/Speichern · »Neues Projekt«; aus der 047-Validation.
+**Fünf [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe** haben den ursprünglichen slice-052 zweimal umgebaut, geteilt und um den
+Struktur-Vorläufer ergänzt — je ein weiterer Lauf steht vor jedem Start aus).
 
 
 
