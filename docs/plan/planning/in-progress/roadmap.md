@@ -41,7 +41,7 @@ orakel-losen `main.cpp` in den Use-Case gewandert, **Lastenheft 0.1.17**
 **Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl) ·
 [`slice-049`](../open/slice-049-spec-straten-prozess-rein-welle.md) (welle-Purge) ·
 [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht) ·
-Folge-Slice aus der 047-Validation (Sitzungs-Datei merken + Ungesichert-Warnung, noch anzulegen).
+[`slice-052`](../open/slice-052-sitzungs-datei-und-ungesichert-warnung.md) (Sitzungs-Datei merken + Ungesichert-Warnung, aus der 047-Validation).
 
 
 

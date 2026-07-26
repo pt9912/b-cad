@@ -233,7 +233,9 @@ nur noch Dialog, Meldungstext und Verdrahtung.
 - `rest`: kein „Speichern" auf die zuletzt geöffnete Datei (nur „Speichern unter…"), **keine** Warnung vor
   ungesicherten Änderungen beim Öffnen, **kein** GUI-Export, **keine** Zuletzt-geöffnet-Liste. Der Rest blockiert
   den Nutzen nicht, ist aber im Handbuch (4.3) **benannt**, damit ihn kein Benutzer als Fehler erlebt.
-- `folge`: Folge-Slice in `open/` — Sitzungs-Datei merken (Speichern ohne Pfad-Dialog) + Ungesichert-Warnung.
+- `folge`: [`slice-052`](../open/slice-052-sitzungs-datei-und-ungesichert-warnung.md) in `open/` — Sitzungs-Datei
+  merken (Speichern ohne Pfad-Dialog) + Ungesichert-Warnung. GUI-Export und Zuletzt-geöffnet-Liste bleiben
+  eigene Schnitte.
 
 **Traceability-Korrektur:** [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/[`003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)
 waren in welle-1 verfrüht `done` (Mechanik ohne Aufruf-Pfad) — vermerkt in
