@@ -5,6 +5,78 @@
 
 ---
 
+## Tagesabschluss 2026-07-26 — Stand + nächste-Sitzung-Zeiger
+
+`make gates` **EXIT=0** (docs-check **0 Befunde / 256 Dateien** · a-check 0 · arch-check ok ·
+**285/285** Tests · Coverage 91,4 %), `make io-smoke` EXIT=0, `make schema-check` ok.
+Alles committet; **lokal auf `main`** (14 Commits seit `2570c99`), **nicht gepusht**.
+`in-progress/` trägt **keinen** Slice — der Ruhe-Sentinel steht.
+
+### Was heute abgeschlossen wurde
+
+- **slice-047 geschlossen** (`a708d1b` Findings → `a3406ed` Closure). Verify-Verdikt „nicht fertig"
+  abgearbeitet: die Neu-Auflösung des Zeichen-Ziels wanderte aus dem orakel-losen `main.cpp` in den
+  Use-Case, die vier ungedeckten Id-Zähler bekamen ein Orakel, **Lastenheft 0.1.17**
+  ([`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden) Outline → AK) und
+  **Benutzerhandbuch 1.1**. **Validation (Projektinhaber): angenommen mit benanntem Rest.**
+- **slice-049 geschlossen** (`ec89ed0` Purge+Härtung in **einem** Commit → `ed663ab` Closure):
+  56 »welle-N«-Fundstellen aus den drei Spec-Straten, Regel computational über die neue
+  `matrix`-Klasse `temporal` = **[MR-023](../../../../harness/conventions.md)**. Belegt: 56 Befunde
+  vorher, 0 nachher.
+
+### Was offen in `open/` liegt — und in welcher Reihenfolge
+
+**Sequenz: [`slice-054`](../open/slice-054-manage-project-port.md) →
+[`slice-053`](../open/slice-053-fenster-als-adapter.md) →
+[`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
+[`slice-052b`](../open/slice-052b-neues-projekt.md).**
+
+Alle vier stammen aus dem **Validations-Rest von slice-047** („Speichern" auf die offene Datei +
+Warnung vor ungesicherten Änderungen). Sie sind das Ergebnis von **sechs**
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufen
+mit **acht HIGHs** — jeder Lauf hat etwas Echtes gefunden, **keine Zeile Code ist gefallen**.
+
+| Slice | Was | Stand |
+|---|---|---|
+| **054** | `ManageProjectPort` realisieren (die in `architecture.md`:76 seit dem Bootstrap deklarierte Ziel-Form) | Plan fertig, **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) offen** |
+| **053** | Hauptfenster als testbarer Adapter (`ui/view/` port-frei + Handler in `ui/command/`) | ein [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) durch (2 HIGH eingearbeitet), **zweiter Lauf offen** |
+| **052a** | Sitzungs-Zustand über **Vergleich** + „Speichern" + Rückfrage bei Öffnen/Beenden | drei [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) durch, **vierter offen** (nach 053) |
+| **052b** | „Neues Projekt" — macht [`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen) erstmals benutzer-erfüllbar | ein [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) durch, **zweiter offen** |
+
+### Der Befund, der die Kette erklärt (nicht wieder herleiten)
+
+`.a-check.yml` erlaubt **keinem** Adapter, `hexagon/services/` zu rufen (`ui_view` → `model`/`ports_driven`,
+`ui_command` → `model`/`ui_view`/`ports_driving`). Die Projekt-Use-Cases sind aber **Services ohne
+Port** — also darf sie nur `main.cpp` rufen, und dort ist alles orakel-los. **Deshalb** landete seit
+slice-047 in jedem GUI-Slice dieselbe Klasse Finding (047-B4 · 052-Lauf-1-MED-2/3 ·
+052a-Lauf-3-HIGH-1 · 053-HIGH-1). Kein Disziplin-Problem — ein **fehlender Port**.
+`spec/architecture.md`:76 nennt die Auflösung seit dem Bootstrap; **slice-054 vollzieht sie.**
+
+### Drei Netz-Lehren von heute
+
+1. **`main.cpp` ist orakel-los per Konstruktion** — in kein Testbinary gelinkt
+   (`src/CMakeLists.txt`:6), coverage-ausgenommen, `io-smoke` kehrt vor dem GUI-Aufbau zurück. Die
+   Frage ist nie „wie teste ich `main`?", sondern „gehört dieser Schritt dorthin?".
+2. **Eine Prüfung findet nur, was ihr Maßstab enthält.** Plan-Review, Code-Review und Verify haben
+   alle das falsche Benutzerhandbuch übersehen, weil die DoD-Doku-Zeile nur `CHANGELOG` + `spec/`
+   nannte. **Regel: ein Slice, der eine Anforderung benutzer-erfüllbar macht, führt `docs/user/` in
+   seiner Doku-DoD-Zeile.** Gefunden hat es der Projektinhaber, nicht der Prozess.
+3. **Ein vorab entschiedener Orakel-Schnitt schützt nicht vor allem.** Zwei der acht HIGHs lagen
+   **außerhalb** dessen, was ein Orakel je gezeigt hätte: eine tote Funktion mit grünen Orakeln, und
+   ein versprochenes Orakel, das der eigene Datei-Plan nicht hergab.
+
+### Offene Prozess-Punkte
+
+- **`git add -A` vermeiden**, Pfade einzeln stagen (Herkunft: `17da627` nahm Fremd-Änderungen mit).
+- **Rollen-Skills:** `.harness/skills/` trägt reviewer · verifier · validator (v1.0);
+  **Planner · Architect · Implementation fehlen** — nimmt `slice-051` sie auf? Frage dahinter:
+  **Delta vs. Duplikat** zu AGENTS.md. Kein `make verify`-Target.
+- **Alt-Last unbelegbar:** für slice-045/046a/046b/047 existiert **kein** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report, obwohl die
+  Plan-Köpfe Ergebnisse behaupten. Nachträgliche Reports wären Fälschung → Gate-Nachzug in
+  [`slice-051`](../open/slice-051-review-artefakt-pflicht.md).
+
+---
+
 ## Tagesabschluss 2026-07-25 — Stand + nächste-Sitzung-Zeiger
 
 `make gates` **EXIT=0** (docs-check 0 Befunde / 246 Dateien · a-check 0 · arch-check ok ·
