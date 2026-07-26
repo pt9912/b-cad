@@ -27,13 +27,16 @@ Finding F1):
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**In Arbeit:** [`slice-049`](slice-049-spec-straten-prozess-rein-welle.md) — Spec-Straten prozess-/zeit-rein:
-»welle-N«-Purge über `lastenheft`/`spezifikation`/`architecture` (58 Fundstellen) + `matrix`-Gate-Härtung
-(neue `temporal`-Klasse), damit die Regel künftig **computational** ist statt gelebt.
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-2026-07-24: **0 HIGH / 3 MED / 2 LOW → startbar** (MEDs eingearbeitet).
+Keine offenen Slices.
 
-**Zuletzt geschlossen:** [`slice-047`](../done/slice-047-projekt-oeffnen.md) (2026-07-26) — Projekt
+**Zuletzt geschlossen:** [`slice-049`](../done/slice-049-spec-straten-prozess-rein-welle.md) (2026-07-26) —
+Spec-Straten **prozess-/zeit-rein**: 56 »welle-N«-Fundstellen aus `lastenheft`/`spezifikation`/`architecture`
+entfernt (keine Aussage-Änderung) und die Regel **computational** gemacht (d-check-`matrix`-Klasse `temporal`,
+[MR-023](../../../../harness/conventions.md#mr-023--spec-straten-sind-prozess-zeit-rein-d-check-matrix-klasse-temporal)).
+Belegt: 56 Befunde vor der Bereinigung, 0 danach. `architecture.md` forderte das in seiner eigenen Hard-Rule
+und verletzte es.
+
+**Davor:** [`slice-047`](../done/slice-047-projekt-oeffnen.md) (2026-07-26) — Projekt
 speichern/öffnen **benutzer-erfüllbar**: Datei-Menü **Öffnen**/**Speichern unter…** + CLI `--save`/`--open`
 über eine geteilte Kern-Naht. Vollständige Rollen-Sequenz gefahren: Code-Review (1 HIGH / 10 MED / 6 LOW),
 **Verify** (Verdikt *nicht fertig* → 3 unbelegte DoD-Zeilen), **Validation** (Projektinhaber: *angenommen
@@ -42,7 +45,8 @@ orakel-losen `main.cpp` in den Use-Case gewandert, **Lastenheft 0.1.17**
 ([`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden) Outline → AK) und
 **Benutzerhandbuch 1.1** (das Datei-Menü existiert jetzt auch in der Doku).
 
-**Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl) ·
+**Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl — laut
+slice-049-Sequenz jetzt an der Reihe) ·
 [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht) ·
 [`slice-052`](../open/slice-052-sitzungs-datei-und-ungesichert-warnung.md) (Sitzungs-Datei merken + Ungesichert-Warnung, aus der 047-Validation).
 

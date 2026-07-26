@@ -17,7 +17,7 @@ als load-bearing, gezielte Kern-/Viewer-Umschrift], MED-2 [Historie-Provenance-A
 begründen], MED-3 [neue-MR-Forward-Reference als `ids`-Falle → Nummer-frei formuliert], LOW-1/LOW-2 eingearbeitet).
 
 **Welle:** welle-5-erweiterung (Quergewerk / **harness-steering + Doku-Hygiene** — Muster
-[slice-036](../done/slice-036-planning-lifecycle.md)-artige Gate-Adoption: eine gelebte, aber **nicht
+[slice-036](slice-036-planning-lifecycle.md)-artige Gate-Adoption: eine gelebte, aber **nicht
 computational** durchgesetzte Stratifizierungs-Regel wird maschinell + der Ist-Verstoß bereinigt).
 
 **Auslöser (Projektinhaber, 2026-07-24):** Prozess-/Planungs-Vokabular **»welle-N«** (Projekt-Abwicklungs-

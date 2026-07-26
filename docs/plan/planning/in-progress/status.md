@@ -68,7 +68,7 @@
 
 ### Danach frei wählbar
 
-- **[`slice-049`](slice-049-spec-straten-prozess-rein-welle.md)** (welle-Purge + `matrix`-Härtung) —
+- **[`slice-049`](../done/slice-049-spec-straten-prozess-rein-welle.md)** (welle-Purge + `matrix`-Härtung) —
   berührt `.d-check.yml`, das slice-050 heute umgebaut hat: **Konflikte prüfen**.
 - **[`slice-051`](../open/slice-051-review-artefakt-pflicht.md)** (neu, Skelett) — Review-Artefakt-Pflicht
   computational. **Offene Frage vom Projektinhaber:** ob dieser Slice auch die **fehlenden Rollen-Skills**
