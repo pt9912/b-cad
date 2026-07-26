@@ -251,6 +251,6 @@ Doku-Zeile führen. Zweite Lehre: `main.cpp` ist orakel-los per Konstruktion —
 hin (s. §7).
 
 **Folge:** slice-047 ist geschlossen; der laufende Faden ist die
-[DRW-Aids-Kampagne](../open/slice-049-spec-straten-prozess-rein-welle.md)-Sequenz bzw. `slice-048b`
+[DRW-Aids-Kampagne](../in-progress/slice-049-spec-straten-prozess-rein-welle.md)-Sequenz bzw. `slice-048b`
 (DRW-001-Impl). Der Prozess-Nachzug „Review-Artefakt-Pflicht" bleibt
 [`slice-051`](../open/slice-051-review-artefakt-pflicht.md).

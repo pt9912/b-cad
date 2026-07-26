@@ -27,7 +27,11 @@ Finding F1):
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-Keine offenen Slices.
+**In Arbeit:** [`slice-049`](slice-049-spec-straten-prozess-rein-welle.md) — Spec-Straten prozess-/zeit-rein:
+»welle-N«-Purge über `lastenheft`/`spezifikation`/`architecture` (58 Fundstellen) + `matrix`-Gate-Härtung
+(neue `temporal`-Klasse), damit die Regel künftig **computational** ist statt gelebt.
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+2026-07-24: **0 HIGH / 3 MED / 2 LOW → startbar** (MEDs eingearbeitet).
 
 **Zuletzt geschlossen:** [`slice-047`](../done/slice-047-projekt-oeffnen.md) (2026-07-26) — Projekt
 speichern/öffnen **benutzer-erfüllbar**: Datei-Menü **Öffnen**/**Speichern unter…** + CLI `--save`/`--open`
@@ -39,7 +43,6 @@ orakel-losen `main.cpp` in den Use-Case gewandert, **Lastenheft 0.1.17**
 **Benutzerhandbuch 1.1** (das Datei-Menü existiert jetzt auch in der Doku).
 
 **Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl) ·
-[`slice-049`](../open/slice-049-spec-straten-prozess-rein-welle.md) (welle-Purge) ·
 [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht) ·
 [`slice-052`](../open/slice-052-sitzungs-datei-und-ungesichert-warnung.md) (Sitzungs-Datei merken + Ungesichert-Warnung, aus der 047-Validation).
 
