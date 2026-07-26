@@ -30,7 +30,7 @@ des verschobenen Slice nicht).
 
 | Verzeichnis | Slices |
 |---|---|
-| `open/` | slice-006 (Drittanbieter-Attribution), slice-052a/052b (Sitzungs-Zustand + »Neues Projekt«), slice-053 (Fenster als Adapter) u. a. — Verzeichnis-Inhalt ist maßgeblich |
+| `open/` | slice-006 (Drittanbieter-Attribution), slice-052a/052b (Sitzungs-Zustand + »Neues Projekt«), slice-053 (Fenster als Adapter), slice-054 (ManageProjectPort) u. a. — Verzeichnis-Inhalt ist maßgeblich |
 | `next/` | — |
 | `in-progress/` | [`roadmap.md`](in-progress/roadmap.md) (Wellen-Sequenz, Meilensteine) + [`status.md`](in-progress/status.md) (Sitzungs-Stand/Tagesabschlüsse) + [`d-check.md`](in-progress/d-check.md) (d-check-Modul-Fahrplan) + die Slice-Pläne der laufenden Welle |
 | `done/` | **Abgeschlossene Slice-Pläne (Lifecycle-Endzustand, ab `slice-025`):** slice-025a/b/c (PDF/PNG-Export), slice-026a/b (Plugin-System), slice-027 (lint-Härtung), slice-028/029 (a-check-Vorbereitung), slice-030 (a-check-Gate), slice-031 (lint-Härtung II), slice-033 (d-check-Matrix `adr→slice`), slice-034 (Commit-Traceability). **Lebende Referenz:** `welle-1-results.md` · `welle-1v-results.md` · `welle-2-results.md` · `welle-3-results.md` · `welle-4-results.md` + acc-002-Artefakte (Beleg/Befund). |
