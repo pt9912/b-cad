@@ -12,6 +12,11 @@
 Alles committet; **lokal auf `main`** (14 Commits seit `2570c99`), **nicht gepusht**.
 `in-progress/` trägt **keinen** Slice — der Ruhe-Sentinel steht.
 
+### Zuletzt geschlossene Slices
+
+*(Slice-Ebene gehört hierher, nicht in den `## Aktuelle Welle`-Block der Roadmap — die führt die
+**Wellen**-Sequenz. Die Wellen-Closure selbst steht am Wellen-Ende in `done/welle-N-results.md`.)*
+
 ### Was heute abgeschlossen wurde
 
 - **slice-047 geschlossen** (`a708d1b` Findings → `a3406ed` Closure). Verify-Verdikt „nicht fertig"
@@ -23,6 +28,47 @@ Alles committet; **lokal auf `main`** (14 Commits seit `2570c99`), **nicht gepus
   56 »welle-N«-Fundstellen aus den drei Spec-Straten, Regel computational über die neue
   `matrix`-Klasse `temporal` = **[MR-023](../../../../harness/conventions.md)**. Belegt: 56 Befunde
   vorher, 0 nachher.
+
+### Offener Planungs-Punkt (Projektinhaber-Befund 2026-07-26): „viele Slices, keine Wellen"
+
+**Belegt, nicht gemeint:**
+
+- **welle-5 existiert als drei Zeilen** in [`roadmap.md`](roadmap.md) (Welle-ID im
+  `## Aktuelle Welle`-Block · Meilenstein-Tabellen-Zeile · Mermaid-Knoten) plus dem `welle:`-Feld in
+  ~19 Slice-Frontmattern. **Keine** Scope-Definition, **keine** Slice-Liste, **kein**
+  Abschluss-Kriterium außer dem M5-Trigger. welle-1..4 haben je ein `done/welle-N-results.md`; für
+  welle-5 gibt es kein Artefakt.
+- **Der M5-Trigger ist erfüllt, die Tabelle sagt „offen".**
+  [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) (Accepted, immutabel) stellt fest: „M5
+  „Erweiterbar" ([OBJ-004](../../../../spec/lastenheft.md#3-projektziele)) ist mit dem Plugin-Strang
+  ([ADR-0017](../../adr/0017-plugin-api-abi.md)) **inhaltlich geliefert**".
+  [`roadmap.md`](roadmap.md) führt M5 dagegen als **offen**. Doku-Unwahrheit derselben Klasse wie
+  slice-047-F4/V1.
+- **Zwölf Slices seit dem 2026-07-02** (043–054) unter einem Label, thematisch unverbunden:
+  2D-Canvas · Golden-Files · Export-Provenance · Projekt-Persistenz im GUI · vier
+  harness-steering-Quergewerke · die GUI-Architektur-Kette. Eine Welle hat ein Ziel und ein Ende;
+  das hier ist ein Sammelbecken.
+
+**Zu entscheiden (Projektinhaber, nicht der Agent):**
+
+1. **welle-5 schließen** — M5 buchen, `done/welle-5-results.md` schreiben, die Folge-Arbeit in eine
+   **neu benannte** Welle mit eigenem Ziel und Trigger schneiden.
+2. **Die Wellen-Fiktion beenden** — die Roadmap sagt ehrlich, dass seit M4/M5 **strang-basiert**
+   gearbeitet wird (DRW · GUI-Bedienbarkeit · harness-steering), und die Wellen-Sektion beschreibt nur
+   noch die **Historie**. Dann fällt auch das `welle:`-Frontmatter-Feld zur Disposition.
+3. **Bewusst so lassen** — dann muss mindestens die M5-Zeile korrigiert werden, sonst bleibt die
+   Roadmap gegen eine `Accepted`-ADR unwahr.
+
+**Nicht heute entschieden** — Tagesabschluss. Der Punkt hat Vorrang vor dem Start eines weiteren
+Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
+
+### Startbare Fäden (Projektinhaber-Wahl)
+
+- **`slice-048b`** — DRW-001-Impl (Fang-Punkte); laut slice-049-Sequenz an der Reihe, **Plan liegt
+  noch nicht in `open/`**.
+- [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) — Review-Artefakt-Pflicht
+  (Gate-Nachzug der [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report-Alt-Last).
+- die **Vierer-Kette** unten (aus der slice-047-Validation).
 
 ### Was offen in `open/` liegt — und in welcher Reihenfolge
 

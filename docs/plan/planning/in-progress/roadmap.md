@@ -26,34 +26,11 @@ Finding F1):
 
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
+**Welle-Ziel:** [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) (Plugins) erfüllt — der
+Plugin-Strang ist inhaltlich geliefert; die Welle trägt daneben nicht meilenstein-bindende Stränge
+(DRW-Zeichenwerkzeuge, GUI-Bedienbarkeit, harness-steering).
 
 Keine offenen Slices.
-
-**Zuletzt geschlossen:** [`slice-049`](../done/slice-049-spec-straten-prozess-rein-welle.md) (2026-07-26) —
-Spec-Straten **prozess-/zeit-rein**: 56 »welle-N«-Fundstellen aus `lastenheft`/`spezifikation`/`architecture`
-entfernt (keine Aussage-Änderung) und die Regel **computational** gemacht (d-check-`matrix`-Klasse `temporal`,
-[MR-023](../../../../harness/conventions.md#mr-023--spec-straten-sind-prozess-zeit-rein-d-check-matrix-klasse-temporal)).
-Belegt: 56 Befunde vor der Bereinigung, 0 danach. `architecture.md` forderte das in seiner eigenen Hard-Rule
-und verletzte es.
-
-**Davor:** [`slice-047`](../done/slice-047-projekt-oeffnen.md) (2026-07-26) — Projekt
-speichern/öffnen **benutzer-erfüllbar**: Datei-Menü **Öffnen**/**Speichern unter…** + CLI `--save`/`--open`
-über eine geteilte Kern-Naht. Vollständige Rollen-Sequenz gefahren: Code-Review (1 HIGH / 10 MED / 6 LOW),
-**Verify** (Verdikt *nicht fertig* → 3 unbelegte DoD-Zeilen), **Validation** (Projektinhaber: *angenommen
-mit benanntem Rest*). Aus der Verify-Einarbeitung: die Neu-Auflösung des Zeichen-Ziels ist aus dem
-orakel-losen `main.cpp` in den Use-Case gewandert, **Lastenheft 0.1.17**
-([`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden) Outline → AK) und
-**Benutzerhandbuch 1.1** (das Datei-Menü existiert jetzt auch in der Doku).
-
-**Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl — laut
-slice-049-Sequenz jetzt an der Reihe) ·
-[`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht) ·
-[`slice-054`](../open/slice-054-manage-project-port.md) → [`slice-053`](../open/slice-053-fenster-als-adapter.md) → [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) → [`slice-052b`](../open/slice-052b-neues-projekt.md)
-(`ManageProjectPort` · Fenster als testbarer Adapter · Sitzungs-Zustand/Speichern · »Neues Projekt«; aus der 047-Validation.
-**Sechs [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe** haben den ursprünglichen slice-052 zweimal umgebaut, geteilt und um **zwei** Struktur-Vorläufer ergänzt — je ein weiterer Lauf steht vor jedem Start aus).
-
-
-
 
 ## Nächste Wellen
 
