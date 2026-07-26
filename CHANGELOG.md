@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- slice-049 — **Spec-Straten sind prozess-/zeit-rein** ([MR-023](harness/conventions.md#mr-023--spec-straten-sind-prozess-zeit-rein-d-check-matrix-klasse-temporal)).
+  Das Prozess-Vokabular **»welle-N«** (Projekt-Abwicklungs-Wellen) ist aus
+  [`spec/lastenheft.md`](spec/lastenheft.md) (17), [`spec/spezifikation.md`](spec/spezifikation.md) (38) und
+  [`spec/architecture.md`](spec/architecture.md) (1) entfernt — **56 Fundstellen**, **keine**
+  Aussage-Änderung: benannt wird jetzt die **Eigenschaft** („Teilumfang", „Reifephase-Näherung", „in dieser
+  Ausbaustufe", „benannte Lücke") statt der Welle, in der sie entstand. `spec/architecture.md` forderte das
+  in seiner eigenen Hard-Rule („keine Wellen, Slices, Commit-Hashes oder Closure-Daten") und verletzte es.
+  **Kein** Lastenheft-`Version:`-Bump — rein editorial, keine Anforderung berührt (die
+  Lastenheft-Provenance trägt dieser Eintrag + Commit; `spec/lastenheft-historie.md` ist
+  **versions-indiziert** und bleibt deshalb unberührt, sonst erzwänge sie einen Bump ohne Anlass).
+  **Gezielt statt generisch** bei zwei load-bearing Zeigern: `Welle-1`/`Welle-1v`-Operationalisierung von
+  „sichtbar" → **Kern**- bzw. **Viewer**-Operationalisierung; das `v`-Suffix kodierte die
+  Kern-vs-Viewer-Unterscheidung und wäre unter einer generischen Ersetzung kollabiert.
+- slice-049 — **die Regel ist jetzt computational, nicht nur geschrieben:** neue
+  d-check-`matrix`-Klasse **`temporal`** (`token: '[Ww]elle-\d'`) + Regel
+  `{from: spec-straten, to: temporal, allow: false}` in [`.d-check.yml`](.d-check.yml) — läuft im
+  `docs-check`-Modulset und damit **in `make gates`**. Belegt: **56 Befunde** vor der Bereinigung, **0**
+  danach. Verschärfung, kein Carveout ([AGENTS §2.6](AGENTS.md) n/a).
+  **Zwei benannte Grenzen:** die Klasse trägt **nur** den Token (`paths` leer) — mit dem geplanten
+  Roadmap-`paths` verbietet die Regel zusätzlich den **Link** eines Spec-Stratums auf die Roadmap und
+  trifft damit genau den Prinzip-Satz in `architecture.md`, der auf die zeitliche Schicht verweisen muss
+  (gemessen: 57 statt 56 Befunde); und der Token fasst den **Identifikator**, nicht Prosa wie „spätere
+  Welle" (einmalig manuell bereinigt).
+
 ### Added
 - slice-047 (Verify-Einarbeitung) — **Lastenheft 0.1.17:**
   [`LH-FA-BLD-003`](spec/lastenheft.md#lh-fa-bld-003--projekt-laden) („Projekt laden") von Outline auf

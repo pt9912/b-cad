@@ -90,7 +90,7 @@ nur dort werden Adapter-Instanzen injiziert.
 | `ProjectRepositoryPort` | Projekt **atomar** persistieren und laden; Versionshistorie | [LH-FA-BLD-002](lastenheft.md#lh-fa-bld-002--projekt-speichern)..004, [LH-QA-005](lastenheft.md#lh-qa-005--crash-recovery) |
 | `ModelImporterPort` | externes Modell (IFC/DXF) in Domain-Bauteile lesen | [LH-FA-IO-001](lastenheft.md#lh-fa-io-001--ifc-import), [LH-FA-IO-003](lastenheft.md#lh-fa-io-003) |
 | `ModelExporterPort` | Domain-Modell in Zielformat schreiben (IFC/DXF/STEP/STL/PDF/PNG) | [LH-FA-IO-002](lastenheft.md#lh-fa-io-002),004,005,006,007,008 |
-| `MaterialLibraryPort` | **externer** Material-Katalog/-Import (welle-3 zurückgestellt; die projekt-eigene Material-Verwaltung/-Zuweisung läuft über `EditStructurePort`/`EvaluatePort`, da `materials` projekt-eigen sind) | [LH-FA-MAT-002](lastenheft.md#lh-fa-mat-002--materialbibliothek) |
+| `MaterialLibraryPort` | **externer** Material-Katalog/-Import (in dieser Ausbaustufe zurückgestellt; die projekt-eigene Material-Verwaltung/-Zuweisung läuft über `EditStructurePort`/`EvaluatePort`, da `materials` projekt-eigen sind) | [LH-FA-MAT-002](lastenheft.md#lh-fa-mat-002--materialbibliothek) |
 | `TracingPort` | OTel-Spans emittieren (optional abschaltbar) | (ADR-Folge) |
 | `ModelChangedPort` | Beobachter-Schnittstelle: committete Modell-Mutationen melden (Push-Notify `element_id`/`op`, Pull-State über Abfrage-Ports); implementiert von Darstellungs-Adaptern | [LH-FA-D3-002](lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung), [OBJ-003](lastenheft.md#3-projektziele) |
 
@@ -259,6 +259,11 @@ selbst (Aufwärts-Verweis ADR → Spec); der Vollindex steht in
 [`../docs/plan/adr/README.md`](../docs/plan/adr/README.md). Diese
 Tabelle trägt keine eigene Anforderung und keine zeitliche Schicht
 (meilensteinfrei).
+
+**Editorial (Provenance dieser Datei, kein Architektur-Aspekt):** das <!-- d-check:status-provenance -->
+Prozess-Vokabular »welle-N« ist aus dem Körper entfernt und die Hard-Rule oben damit
+computational durchgesetzt (d-check-`matrix`-Klasse `temporal`) — slice-049.
+Keine Aussage-Änderung.
 
 | Architektur-Aspekt | Prägende ADR |
 |---|---|

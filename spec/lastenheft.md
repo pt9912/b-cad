@@ -5,9 +5,9 @@
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
 **Reifephase (Bootstrap):** Outline (Phase 2). Top-Level und ID-Schema
-stehen; Akzeptanzkriterien sind für die Welle-1-Anforderungen
-ausformuliert, für spätere Module zunächst als Beschreibung skizziert
-und werden pro Slice geschärft.
+stehen; ein Teil der Anforderungen trägt bereits ausformulierte
+Akzeptanzkriterien, die übrigen Module zunächst eine Beschreibung; sie
+werden pro Slice geschärft.
 
 ## 1. Zweck und Geltungsbereich
 
@@ -47,10 +47,10 @@ gebaut wird — Geometrie-Kern, GUI-Framework, Persistenz, Build.
 
 ID-Schema: `LH-FA-<BEREICH>-<NNN>` (siehe
 [`harness/conventions.md` MR-002](../harness/conventions.md#mr-002--id-schema-für-b-cad)).
-Vollständig ausformulierte Akzeptanzkriterien (Happy / Boundary /
-Negative) tragen die Welle-1-Anforderungen; die übrigen sind als
-Outline geführt und werden im jeweiligen Slice auf Akzeptanz-Niveau
-geschärft.
+Welche Anforderungen bereits vollständig ausformulierte Akzeptanz-
+kriterien (Happy / Boundary / Negative) tragen, zeigt der jeweilige
+Abschnitt; die übrigen sind als Outline geführt und werden im
+jeweiligen Slice auf Akzeptanz-Niveau geschärft.
 
 ### Modul Gebäude / Projekt (`BLD`)
 
@@ -70,7 +70,7 @@ geschärft.
   Projekt anlegen, then Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder), kein leerer
   Projektzustand mit verlorenem Vorgänger.
 
-**Out-of-Scope:** Projektvorlagen-Galerie (spätere Welle).
+**Out-of-Scope:** Projektvorlagen-Galerie (spätere Ausbaustufe).
 
 #### LH-FA-BLD-002 — Projekt speichern
 
@@ -337,7 +337,7 @@ ist die Wand wieder geschlossen.
 ### Modul Treppen (`STR`)
 
 Geschärft 2026-06-14 (slice-016a) von Outline auf AK-Niveau <!-- d-check:status-provenance -->
-(Reifephase-Klausel). **Teilumfang welle-2: gerade einläufige Treppe** —
+(Reifephase-Klausel). **Teilumfang: gerade einläufige Treppe** —
 eine gerade Treppe, die zwei Geschosse verbindet. Podest-, U-/L-förmige
 und Wendeltreppen bleiben ausdrücklich **offen** (späterer Vollumfang).
 b-cad ist **keine Statik** (§6): Stufen-/Breiten-Bereiche sind
@@ -388,7 +388,7 @@ oberen Geschoss; sie steigt vom Startpunkt als Stufenfolge auf.
 #### LH-FA-STR-004 — Treppengeländer
 
 **Beschreibung:** Eine gerade Treppe trägt ein Geländer (Handlauf) entlang
-des Laufs. **Teilumfang welle-2:** das Geländer ist **immer sichtbar**;
+des Laufs. **Teilumfang:** das Geländer ist **immer sichtbar**;
 eine An/Aus-Schaltung oder Seitenwahl bleibt offen.
 
 **Akzeptanzkriterien:**
@@ -402,7 +402,7 @@ eine An/Aus-Schaltung oder Seitenwahl bleibt offen.
 ### Modul Dach (`ROF`)
 
 Geschärft 2026-06-13 (slice-014a) von Outline auf AK-Niveau <!-- d-check:status-provenance -->
-(Reifephase-Klausel). **Teilumfang welle-2: rechteckiger
+(Reifephase-Klausel). **Teilumfang: rechteckiger
 Dach-Grundriss** — Sattel-, Walm- und Pultdach über einem rechteckigen
 Grundriss. Komplexe (L-/U-förmige) Polygon-Grundrisse bleiben
 ausdrücklich **offen** (späterer Vollumfang).
@@ -648,7 +648,7 @@ Endpunkt) auf einem Geschoss, einer **Ebene** ([LH-FA-DRW-006](#lh-fa-drw-006))
 zugeordnet. Sie überlebt Speichern/Laden und erscheint im maßstäblichen 2D-Grundriss-
 Export (Muster [LH-FA-IO-007](#lh-fa-io-007)/008).
 
-**Teilumfang (welle-5):** Eine Hilfslinie wird auf einer **2D-Zeichenfläche** der Oberfläche
+**Teilumfang:** Eine Hilfslinie wird auf einer **2D-Zeichenfläche** der Oberfläche
 **interaktiv mit der Maus** erzeugt (Anfang setzen, Ende setzen); zusätzlich bleibt das
 **persistierte und exportierte Artefakt** der durable/sichtbare Nachweis (Muster
 [LH-FA-IO-007](#lh-fa-io-007)/008). In dieser Ausbaustufe wird **frei** gezeichnet — **Fangen,
@@ -693,7 +693,7 @@ Organisations-Ebene mit **Sichtbarkeit** (optional Sperre und Farbe). Hilfslinie
 ([LH-FA-DRW-005](#lh-fa-drw-005)) werden einer Ebene zugeordnet; die Sichtbarkeit der
 Ebene steuert, ob **ihre Hilfslinien im 2D-Export erscheinen**.
 
-**Teilumfang (welle-5, Fundament):** in dieser Ausbaustufe ordnen sich **nur Hilfslinien**
+**Teilumfang (Fundament):** in dieser Ausbaustufe ordnen sich **nur Hilfslinien**
 (Zeichen-Entitäten) einer Ebene zu — die Zuordnung von **Bauteilen** (Wänden/Räumen) zu
 Benutzer-Ebenen und eine Sichtbarkeits-Steuerung im **3D-Viewer** sind **ausdrücklich
 offen** (späterer Umfang), kein stiller Vollumfang. Die Ebenen-Sichtbarkeit wirkt hier als
@@ -798,7 +798,7 @@ Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
 #### LH-FA-EVL-003 — Wohnflächenberechnung
 
 **Beschreibung:** Die Wohnfläche wird aus den Raum-Netto-Flächen abgeleitet.
-**Teilumfang welle-3:** Wohnfläche = Summe der Netto-Grundflächen;
+**Teilumfang:** Wohnfläche = Summe der Netto-Grundflächen;
 **Anrechnungsfaktoren** (Dachschrägen, Balkone, …) bleiben **offen**.
 
 **Akzeptanzkriterien:**
@@ -836,7 +836,7 @@ Klausel). Auswertungen sind eine **reine Ableitung aus dem committeten Modell**
 
 **Beschreibung:** Import eines IFC-Modells in das b-cad-Gebäudemodell.
 
-**Teilumfang (welle-4):** Import deckt **Geschosse und gerade Wände**; weitere
+**Teilumfang:** Import deckt **Geschosse und gerade Wände**; weitere
 Bauteile (Türen, Fenster, Dach, Decken, Treppen) werden beim Import
 **übersprungen** — ausdrücklich offen, kein stiller Vollumfang.
 
@@ -856,7 +856,7 @@ Bauteile (Türen, Fenster, Dach, Decken, Treppen) werden beim Import
 
 **Beschreibung:** Export des b-cad-Gebäudemodells als IFC-Datei.
 
-**Teilumfang (welle-4):** Export schreibt **Geschosse und gerade Wände**; weitere
+**Teilumfang:** Export schreibt **Geschosse und gerade Wände**; weitere
 Bauteile werden **nicht geschrieben** (siehe LH-FA-IO-001).
 
 **Akzeptanzkriterien:**
@@ -872,7 +872,7 @@ Bauteile werden **nicht geschrieben** (siehe LH-FA-IO-001).
 
 **Beschreibung:** Export des b-cad-Gebäudemodells als STEP-Datei (CAD-Volumenmodell).
 
-**Teilumfang (welle-4):** Export deckt die **3D-Bauteile** (Wände inkl.
+**Teilumfang:** Export deckt die **3D-Bauteile** (Wände inkl.
 Wandöffnungen, Dächer, Decken/Fundament, Treppen) als Volumenkörper;
 Material/Farbe/Property-Sets werden **nicht** geschrieben — ausdrücklich offen,
 kein stiller Vollumfang.
@@ -894,7 +894,7 @@ kein stiller Vollumfang.
 **Beschreibung:** Export des b-cad-Gebäudemodells als STL-Datei (Dreiecksnetz für
 3D-Druck/Visualisierung).
 
-**Teilumfang (welle-4):** wie STEP — die **3D-Bauteile** als Netz; Material/Farbe
+**Teilumfang:** wie STEP — die **3D-Bauteile** als Netz; Material/Farbe
 bleiben ausgespart.
 
 **Akzeptanzkriterien:**
@@ -912,7 +912,7 @@ bleiben ausgespart.
 
 **Beschreibung:** Import einer DXF-Datei (2D-Grundriss) als gerade Wände.
 
-**Teilumfang (welle-4):** gerade Wände als **2D-Achsen je Geschoss**; weitere
+**Teilumfang:** gerade Wände als **2D-Achsen je Geschoss**; weitere
 DXF-Inhalte (Räume, Bemaßung, Schraffuren, Blöcke, Text, Bögen/Kreise, 3D) werden
 **übersprungen**. Importierte Wände erhalten **Standard-Höhe/-Dicke** — ausdrücklich
 offen, da eine DXF keine Höhe/Dicke trägt (benannte Lücke).
@@ -931,7 +931,7 @@ offen, da eine DXF keine Höhe/Dicke trägt (benannte Lücke).
 
 **Beschreibung:** Export des b-cad-Modells als DXF-Datei (2D-Grundriss).
 
-**Teilumfang (welle-4):** wie Import — gerade Wände als **2D-Achsen je Geschoss**;
+**Teilumfang:** wie Import — gerade Wände als **2D-Achsen je Geschoss**;
 weitere Inhalte werden **nicht geschrieben**.
 
 **Akzeptanzkriterien:**
@@ -952,7 +952,7 @@ weitere Inhalte werden **nicht geschrieben**.
 **Beschreibung:** Export des b-cad-Gebäudemodells als **maßstäblicher 2D-Plan** im
 PDF-Format (Grundriss je Geschoss).
 
-**Teilumfang (welle-4):** der Plan zeigt **gerade Wand-Achsen je Geschoss**
+**Teilumfang:** der Plan zeigt **gerade Wand-Achsen je Geschoss**
 (Achsen-Plan); Wand-Umrisse mit Dicke/Footprint, Räume, Bemaßung, Schraffur, Text,
 Möblierung und die 3D-Ansicht werden **nicht gezeichnet** — ausdrücklich offen, kein
 stiller Vollumfang. **Export-only** (kein Import — aus einem PDF wird kein Modell
@@ -976,7 +976,7 @@ zurückgelesen).
 
 **Beschreibung:** Export desselben 2D-Grundriss-Plans als **PNG-Rasterbild**.
 
-**Teilumfang (welle-4):** wie PDF — **gerade Wand-Achsen je Geschoss** als Rasterbild;
+**Teilumfang:** wie PDF — **gerade Wand-Achsen je Geschoss** als Rasterbild;
 weitere Plan-Inhalte (Footprint/Dicke, Räume, Bemaßung, Schraffur, Text, 3D-Ansicht)
 werden **nicht gezeichnet**. **Export-only.**
 
@@ -1007,7 +1007,7 @@ werden **nicht gezeichnet**. **Export-only.**
 **Beschreibung:** Plugins erweitern b-cad um modell-bezogene Funktionen und
 werden **zur Laufzeit** geladen und entladen (ohne Neustart).
 
-**Teilumfang (welle-5):** Plugins wirken auf das **Gebäudemodell** (lesen und
+**Teilumfang:** Plugins wirken auf das **Gebäudemodell** (lesen und
 ändern über dieselben geprüften Wege wie die manuelle Bedienung) und werden
 tätig, wenn sie aufgerufen werden — sie reagieren in dieser Ausbaustufe
 **nicht selbsttätig** auf Modell-Änderungen (benannte Lücke). Eigene

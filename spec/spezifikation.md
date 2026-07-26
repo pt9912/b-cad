@@ -29,7 +29,7 @@ Stand und löst selbst keine Erkennung aus.
 
 1. Graph über Wand-Segmente: Knoten = Segment-Endpunkte
    (Punkt-Gleichheit über `GEOMETRY_TOLERANCE_MM`), Kanten = Segmente.
-   *Welle-1-Einschränkung:* Schnittpunkte werden erst mit dem
+   *Reifephase-Einschränkung:* Schnittpunkte werden erst mit dem
    **WAL-006-Vollumfang** zu Knoten (der Teilumfang behandelt
    nur Endpunkt-Ecken) — bis dahin schließen nur endpunkt-verbundene
    Wandzüge Räume.
@@ -42,7 +42,7 @@ Stand und löst selbst keine Erkennung aus.
 3. Pro Zyklus das **Innenkanten-Polygon** ableiten: jede Kante um die
    halbe Wandstärke ihres Segments zum Zyklus-Inneren versetzt,
    benachbarte Offset-Geraden geschnitten.
-   *Welle-1-Näherung:* bei **kollinearen Nachbarkanten ungleicher
+   *Reifephase-Näherung:* bei **kollinearen Nachbarkanten ungleicher
    Stärke** springt die Ecke auf den Offset-Punkt der Folgekante
    (lineare Überblendung statt exakter Stufenkontur); die exakte
    Stufe kommt mit dem **WAL-006-Vollumfang** (nicht Teil des
@@ -64,7 +64,7 @@ Flächen-Prüfung „Netto-Fläche ≤ 0" genügt nicht — Doppel-Inversion in
 beiden Achsen erzeugt ein Phantom-Polygon *positiver* Fläche). `E-GEO-002` (§4) bleibt mutierenden
 Geometrie-Operationen vorbehalten (z. B. Extrusion, [LH-FA-D3-001](lastenheft.md#modul-3d-modellierung-d3).a).
 
-**Komplexität:** Vollerkennung pro Mutation ist Welle-1-Stand (kleine
+**Komplexität:** Vollerkennung pro Mutation ist der Stand dieser Ausbaustufe (kleine
 Modelle); Zielkomplexität/inkrementelle Erkennung bleibt offener
 Punkt (§7, M3).
 
@@ -145,7 +145,7 @@ Meldung (Muster wie beim Eckenschluss).
 **Folge-Meldung.** Eine Öffnungs-Mutation (anlegen/verschieben/Parameter/
 löschen) meldet `op = WallGeometryChanged` für die **Wirtswand**
 (§5-Vokabular, kein neuer `op`) — die Öffnung ist ein Hohlraum im
-Wand-Solid, kein eigenes Solid (welle-2). Es findet **keine
+Wand-Solid, kein eigenes Solid (dieser Teilumfang). Es findet **keine
 Raum-Re-Detektion** statt: eine Öffnung ändert weder Wandachse noch
 Wandstärke, daher bleiben Raumerkennung und Footprint/
 Eckenschluss ([LH-FA-WAL-006](lastenheft.md#lh-fa-wal-006--wand-verbinden).a) unberührt; die ROM- und WAL-006-AK-Tests
@@ -154,15 +154,15 @@ bleiben textlich unverändert grün. Abgelehnte Mutationen melden nicht.
 ### LH-FA-ROF-001.a — Dach-Geometrie (Teilumfang Rechteck-Grundriss)
 
 Sammelblock, deckt **[LH-FA-ROF-001](lastenheft.md#lh-fa-rof-001--satteldach)..006** (Sattel/Walm/Pult, Neigung,
-Überstand); Reifephase-Teilumfang welle-2 (Lastenheft 0.1.4). Modell-
+Überstand); Reifephase-Teilumfang (Lastenheft 0.1.4). Modell-
 Einordnung über das Bauteil-Erweiterungs-Muster (#6) — keine
 eigene Grundsatz-ADR; die Geometrie wird **hier** normativ festgelegt.
 
-**Grundriss-Herkunft (welle-2):** Das Dach hat einen **expliziten
+**Grundriss-Herkunft:** Das Dach hat einen **expliziten
 rechteckigen Grundriss** `b × t` (Parameter; persistiert als
 `roofs.footprint_json`). Die Auto-Ableitung aus dem
-Geschoss-Wandumriss bleibt späterer Ausbau (keine Kopplung an
-Wand-Mutationen in welle-2).
+Geschoss-Wandumriss bleibt späterer Ausbau (in dieser Ausbaustufe **keine**
+Kopplung an Wand-Mutationen).
 
 **Traufrechteck:** der Grundriss `b × t` wird ringsum um den Überstand
 `o` ([LH-FA-ROF-005](lastenheft.md#lh-fa-rof-005--dachüberstand-definieren)) zum **Traufrechteck** `(b+2o) × (t+2o)` vergrößert;
@@ -268,11 +268,11 @@ die Raumerkennung nicht).
 ### LH-FA-STR-001.a — Treppen-Geometrie (Teilumfang gerade einläufige Treppe)
 
 Sammelblock, deckt **[LH-FA-STR-001](lastenheft.md#lh-fa-str-001--treppe-erzeugen)..004** (erzeugen, Stufenanzahl, Laufbreite,
-Geländer); Reifephase-Teilumfang welle-2 (Lastenheft 0.1.6). Modell-Einordnung
+Geländer); Reifephase-Teilumfang (Lastenheft 0.1.6). Modell-Einordnung
 über das Bauteil-Erweiterungs-Muster (#6) — keine eigene Grundsatz-ADR;
 die Geometrie wird **hier** normativ festgelegt.
 
-**Teilumfang (welle-2):** eine **gerade einläufige Treppe**. Das `stairs`-Schema
+**Teilumfang:** eine **gerade einläufige Treppe**. Das `stairs`-Schema
 trägt genau die Parameter dafür (`start_x/y_mm`, `width_mm`,
 `step_count`, `rise_mm`, `tread_mm`, `from_storey_id`/`to_storey_id`) und **kein**
 Podest-/Wendel-/Richtungs-Feld. Mehrläufige, gewendelte und Podest-Treppen
@@ -280,8 +280,8 @@ bleiben offen (späterer Vollumfang).
 
 **Geschoss-Spanne:** Die Treppe verbindet `from_storey` (unten) → `to_storey`
 (oben); die **Gesamtsteigung = Geschosshöhe** der unteren Etage. Die
-Aufstandshöhe `base_z` ist der Boden der unteren Etage (welle-2-Ein-Geschoss-
-Annahme = 0, Muster [`LH-FA-SLB-001.a`](lastenheft.md#lh-fa-slb-001--decke-erzeugen)/`slab_geometry`); Mehr-Geschoss-Stapelung
+Aufstandshöhe `base_z` ist der Boden der unteren Etage (Ein-Geschoss-
+Annahme dieser Ausbaustufe = 0, Muster [`LH-FA-SLB-001.a`](lastenheft.md#lh-fa-slb-001--decke-erzeugen)/`slab_geometry`); Mehr-Geschoss-Stapelung
 später.
 
 **Steigung abgeleitet:** `stairs.rise_mm` ist **nicht** freie Eingabe, sondern
@@ -306,7 +306,7 @@ Koordinaten `x ∈ [i·tread, (i+1)·tread]` (Aufstiegsrichtung), `y ∈ [0, wid
 (Laufbreite), `z ∈ [0, (i+1)·rise]` (solides Stufenprofil vom Boden zur
 Stufenoberkante). Die Lauflänge ist `step_count · tread`.
 
-**Aufstiegsrichtung (welle-2):** das Schema trägt **keine** Richtungs-Spalte →
+**Aufstiegsrichtung:** das Schema trägt **keine** Richtungs-Spalte →
 die Treppe steigt in einer **festen Konvention `+x` ab dem Startpunkt**
 (`start_x/y_mm`) auf. Freie Rotation/Orientierung bräuchte eine Schema-Erweiterung
 und bleibt offen (analog ROF „rechteckiger Grundriss").
@@ -314,7 +314,7 @@ und bleibt offen (analog ROF „rechteckiger Grundriss").
 **Geländer (STR-004):** ein dünnes vertikales Element entlang der Lauf-Seite(n)
 auf `STAIR_RAILING_HEIGHT_MM` über den Stufen-Oberkanten, das der Stufenfolge
 folgt — **generierte Geometrie aus der Treppe**, kein persistierter Eigenzustand
-(das `stairs`-Schema trägt keine Geländer-Spalte). In welle-2 ist das Geländer
+(das `stairs`-Schema trägt keine Geländer-Spalte). In dieser Ausbaustufe ist das Geländer
 **immer Teil der Treppe** (nicht schaltbar); eine persistierte An/Aus- bzw.
 Seiten-Option ist späterer Ausbau (Schema-Erweiterung). Da es deterministisch
 aus der Stufen-Geometrie folgt, geht beim Speichern nichts verloren (Muster
@@ -335,7 +335,7 @@ meldet `op = StairChanged` (neuer `op` im D3-002.a-§5-Span-Vokabular, neuer Bau
 ein Geschoss) spannt die Treppe zwei; die Meldung wird an die **untere Etage
 (`from_storey`)** gebunden — dort liegen Start/Anker (`start_x/y_mm`) und die
 `base_z` der Treppe (die obere Etage ist nur Ziel der abgeleiteten Steigung). Der
-Beobachter lädt die Treppen über `ViewModelPort.stairMeshes` neu — in welle-2
+Beobachter lädt die Treppen über `ViewModelPort.stairMeshes` neu — in dieser Ausbaustufe
 **projektweit** (eine Treppe ist geschossübergreifend; eine geschoss-gefilterte
 Sicht wird mit der Mehr-Geschoss-Stapelung später möglich). **Keine
 `RoomsChanged`** (Treppen berühren die Raumerkennung nicht).
@@ -394,13 +394,13 @@ werfende Beobachter-Implementierung kippt die committete Mutation
 nicht und blockiert weitere Beobachter nicht (Kapselung im Service;
 Sichtbarkeit der Fehler später über REQ-TEC-006-Telemetrie).
 
-**Welle-1-Operationalisierung von „sichtbar":** Der Kern erfüllt
+**Kern-Operationalisierung von „sichtbar":** Der Kern erfüllt
 D3-002 bis zur Benachrichtigungs-/Abfrage-Grenze; die sichtbare
-3D-Darstellung liefert der Viewer-Strang (Roadmap, `welle-1v-viewer`)
+3D-Darstellung liefert der Viewer-Strang (Roadmap)
 auf dieser Basis — der Lastenheft-Wortlaut bleibt benutzer-beobachtbar
 und wird zusammen mit [ACC-002](lastenheft.md#7-abnahmekriterien) dort erfüllt.
 
-**Welle-1v-Operationalisierung von „sichtbar":**
+**Viewer-Operationalisierung von „sichtbar":**
 „Sichtbar" heißt: ein Qt-6-Widgets-3D-Fenster zeigt den
 **extrudierten Stand als tesselliertes Netz**, bezogen über den
 `ViewModelPort` (framework-freie Dreiecksnetze je `element_id`;
@@ -428,11 +428,11 @@ Netto-Grundfläche je Raum ist die **Shoelace-Fläche des Raumpolygons**
 wird **wiederverwendet**, keine zweite Semantik, keine Doppelzählung). ROM-002
 (Raumfläche) / ROM-003 (Raumvolumen) sind die **Per-Raum-Quelle**; EVL
 **aggregiert** sie je Geschoss/Gebäude (Bericht) — **eine** Flächen-Semantik.
-**Wohnfläche (EVL-003)** = Summe der Raum-Netto-Flächen (welle-3-Teilumfang;
+**Wohnfläche (EVL-003)** = Summe der Raum-Netto-Flächen (Teilumfang;
 Anrechnungsfaktoren offen, `LIVING_AREA_FACTOR = 1` §3).
 
 **Volumen (EVL-002) — Bauteil-Netto-Volumen analytisch im Kern.** Das
-Netto-Material-Volumen deckt in welle-3 **Wand · Decke/Fundament · Treppe** (je
+Netto-Material-Volumen deckt in dieser Ausbaustufe **Wand · Decke/Fundament · Treppe** (je
 ein `VolumeReport`-Subtotal + Summe `total_m3`; **Dach ausgenommen**, s. u.). Je
 Bauteil: **Platte/Treppe** aus ihrem analytischen Solid (Treppe = Σ Stufenkörper
 `tread · width · Geschosshöhe · (step_count+1)/2`, **geländer-frei**); **Wand** =
@@ -445,18 +445,18 @@ Schnitt-Prismen sind das Boolean-**Werkzeug**, nicht das Volumen-Maß). Die
 Auswertung ist **rein analytisch im Kern** und liest **nicht** das adapter-
 gemessene `Solid.volume_mm3` (das wäre eine driven-Volumenmessung — keine reine
 Kern-Query).
-**Eck-Näherung (welle-3, benannt):** die Summe der Wand-Volumina **doppelzählt**
+**Eck-Näherung (benannt):** die Summe der Wand-Volumina **doppelzählt**
 den Miter-Sporn endpunkt-verbundener Wände (WAL-006-Footprint) — kleine
 Über-Zählung, bewusst in Kauf genommen; das exakte vereinigte Volumen
 (Footprint-Union je Geschoss) ist Re-Eval (parallel
 WAL-006-Vollumfang).
-**Aussparungs-Näherung (welle-3, benannt):** überlappende Platten-Aussparungen
+**Aussparungs-Näherung (benannt):** überlappende Platten-Aussparungen
 werden analytisch über die **Summe** der Einzelflächen abgezogen (nicht ihre
 Vereinigung) — eine kleine **Unter-Zählung** im seltenen Überlappungsfall (der
 reale Boolean entfernt die Vereinigung); das exakte Vereinigungs-Volumen ist
 Re-Eval (parallel zur Wand-Eck-Näherung).
 
-**Dach-Volumen — welle-3 zurückgestellt (benannte Lücke).** Das Dachmodell ist
+**Dach-Volumen — zurückgestellt (benannte Lücke).** Das Dachmodell ist
 **dicke-los** (Shell aus geneigten Flächen, unten offen) und trägt damit **kein
 wohldefiniertes Bauteil-/Material-Solid**; der einzige berechenbare Dachkörper
 wäre **umbauter Raum**, kein Material-Volumen, und gehört nicht in dieselbe
@@ -470,12 +470,12 @@ Volumen-Schicht neu bewertet.
 (EVL-004) gruppiert die **material-tragenden Bauteile mit Netto-Volumen**
 (`walls`/`slabs` mit `material_id`) je Material und summiert die Menge =
 **Netto-Volumen (m³)** über Wand + Decke/Fundament (EVL-002/`volume_geometry`,
-welle-3-Einheit). Bauteile **ohne** Material werden nicht gruppiert (Boundary).
+Einheit dieser Ausbaustufe). Bauteile **ohne** Material werden nicht gruppiert (Boundary).
 **Kosten (MAT-006):** je Material `Menge × cost_per_m3` (Projekt-Summe Σ); ein
 Material **ohne** `cost_per_m3` trägt **keine** Kosten (NULL, nicht „kostenlos").
-**`cost_per_m2`** (Flächen-Kosten) ist welle-3 **nicht** genutzt — EVL-004 führt
+**`cost_per_m2`** (Flächen-Kosten) ist in dieser Ausbaustufe **nicht** genutzt — EVL-004 führt
 Volumen (benannte Lücke; Re-Eval mit flächen-basierter Aggregation).
-**Dach welle-3 ausgenommen:** ein `roof` ist zwar material-tragend, sein
+**Dach ausgenommen:** ein `roof` ist zwar material-tragend, sein
 **Volumen ist zurückgestellt** (dicke-loses Modell, s. o.) → **nicht** in die
 EVL-004-Aggregation (benannte Lücke; Re-Eval mit Dach-Volumen-Semantik). Ebenso
 tragen `stairs`/`openings`/`doors`/`windows` kein `material_id` (**benannte
@@ -486,12 +486,12 @@ ihren Maßen (Anzahl = Listengröße).
 
 **Material-Auflösungsregel (Datenfluss):** das **effektive** Material eines
 Bauteils ist sein eigenes `material_id`; **fehlt es, gilt das `material_id`
-seines `wall_type`** (Default über den Typ — **welle-3 zurückgestellt: geliefert
+seines `wall_type`** (Default über den Typ — **zurückgestellt: geliefert
 ist Override-only**, s. „Auflösungs-Teilumfang" unten) — `wall_types.material_id`
 als Vorlage, das Bauteil-`material_id` als Override (Werttyp/FK-Autorität siehe
 §2.1).
 
-**Material-Verwaltung/-Zuweisung (welle-3-Teilumfang, MAT-001/002/003).**
+**Material-Verwaltung/-Zuweisung (Teilumfang, MAT-001/002/003).**
 Materialien sind **projekt-eigen** (`materials.project_id`) und werden über den
 Bauteil-Edit-Port **angelegt/geändert/entfernt** (MAT-001) und **gelistet**
 (MAT-002); ein Material **ohne Name** (leer oder nur Whitespace) wird
@@ -500,7 +500,7 @@ Bauteil-Edit-Port **angelegt/geändert/entfernt** (MAT-001) und **gelistet**
 kein Fehler). Ein **noch zugewiesenes** Material ist **nicht löschbar**
 (`on_delete: restrict` — kein stiller Verlust der Zuweisung; erst löschbar, wenn
 unreferenziert). Material-Mutationen sind **op-frei** (per Pull
-von der Auswertung konsumiert, **kein** gerendertes Szenen-Korrelat in welle-3 —
+von der Auswertung konsumiert, **kein** gerendertes Szenen-Korrelat in dieser Ausbaustufe —
 Farbe/Textur = MAT-004, Sicht). **Auflösungs-Teilumfang:** geliefert ist der
 **Override** (eigenes `material_id` → effektives Material); der
 **`wall_type`-Template-Fallback** ist **zurückgestellt** — das Domänenmodell
@@ -524,14 +524,14 @@ Bezug: [`LH-FA-IO-001`](lastenheft.md#lh-fa-io-001--ifc-import) (Import),
 beide). IFC wird über einen **selbst getragenen IFC-SPF-Subset-Codec** im
 IO-Adapter (`adapters/io/`) gelesen/geschrieben — der Geometrie-Kern
 (OpenCascade) deckt STEP/STL, **nicht** IFC. Dieser Block legt das **Mapping** im
-welle-4-Subset fest; die Port-/Adapter-Mechanik (`ExchangeService`, Signaturen)
+Austausch-Subset fest; die Port-/Adapter-Mechanik (`ExchangeService`, Signaturen)
 bleibt der Implementierung überlassen (Lösungsfreiheit der Ebenen). Backend-Provenance: § Historie.
 
 **Encoding.** IFC im **STEP-Physical-File** (ISO 10303-21, `.ifc`-Klartext);
 Schema **IFC4** beim Export, **IFC4 und IFC2x3** beim Import (soweit die
 Subset-Entitäten schema-kompatibel sind).
 
-**Entitäts-Subset (welle-4).** Räumliche Struktur `IfcProject` → `IfcSite`
+**Entitäts-Subset.** Räumliche Struktur `IfcProject` → `IfcSite`
 (optional) → `IfcBuilding` → `IfcBuildingStorey`, Komposition über
 `IfcRelAggregates`; Bauteil-Verortung über `IfcRelContainedInSpatialStructure`.
 Bauteil: **gerade, achsen-getragene Wände** — beim **Import** aus
@@ -569,7 +569,7 @@ Ein nicht beschreibbarer **Export**-Zielpfad → [`E-IO-001`](#4-fehler-codes-un
 (Schreibrecht; kein Teil-Export, Zielpfad unverändert — Muster Projekt-Persistenz
 [`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern)).
 
-**Subset-Grenze (benannte Lücke, Teilumfang welle-4).** Entitäten außerhalb des
+**Subset-Grenze (benannte Lücke, Teilumfang).** Entitäten außerhalb des
 Subsets — Türen/Fenster (`IfcDoor`/`IfcWindow`), Dach (`IfcRoof`), Decken/
 Fundament (`IfcSlab`), Treppen (`IfcStair`), beliebige BREP-/Swept-Solid-Geometrie
 nicht-prismatischer Wände, Property-Sets/Materialien über den Layer hinaus,
@@ -616,7 +616,7 @@ zuvor adapter-genutzten puren Werte (`StepBox`, die Mesh-z-Verschiebung) liegen 
 **analytisch rekonstruierten** Stufen-Box-Solids ([`LH-FA-STR-001`](lastenheft.md#lh-fa-str-001--treppe-erzeugen)); Ziel-Schema AP214. **STL** schreibt das **tessellierte Dreiecksnetz**
 **aller** 3D-Bauteile (binär als Default). Längeneinheit mm.
 
-**Bauteil-Subset (welle-4).** **STL** deckt alle 3D-Bauteile — Wände (inkl.
+**Bauteil-Subset.** **STL** deckt alle 3D-Bauteile — Wände (inkl.
 Wandöffnungen/Cutouts), Decken/Fundament, Dächer, Treppen (inkl. Geländer). **STEP**
 deckt **alle 3D-Bauteile als B-Rep**: Wände + Decken/Fundament (OCC-Solids), Dächer
 (das wasserdichte Dach-Netz wird zu einem B-Rep-Solid **vernäht**; ein
@@ -1026,21 +1026,21 @@ Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
 
 Pure Werttypen in `src/hexagon/model/`, framework-frei. Implementiert
 (slice-003a): `Building`, `Storey`, `Wall`, `Point2D`, `Segment`, `Solid`, <!-- d-check:status-provenance -->
-`WallType`. Wand-Auszug (Stand: Einzelsegment, welle-1):
+`WallType`. Wand-Auszug (Stand: Einzelsegment):
 `{ id, storey_id, start: Point2D, end: Point2D, thickness_mm, height_mm, type ∈ {Innen, Aussen, Trag} }`.
 
 *Wandzüge/Polylines* (mehrere verbundene Segmente, [LH-FA-WAL-001](lastenheft.md#lh-fa-wal-001--wand-zeichnen)/006)
 folgen als Erweiterung; `Storey` gewinnt später `level_index`/`elevation`
 aus dem Persistenz-Schema (§2.2).
 
-**Material (welle-3, LH-FA-MAT-*, von EVL konsumiert):** `model::Material`
+**Material (LH-FA-MAT-*, von EVL konsumiert):** `model::Material`
 als pure Werte aus dem `materials`-Schema:
 `{ id, name, category, u_value?, cost_per_m2?, cost_per_m3?, color_hex?, texture_path? }`.
 **FK-Zuweisungs-Autorität:** ein Bauteil (`walls`/`roofs`/`slabs`) trägt ein
 **eigenes** `material_id` (Override); `wall_types.material_id` ist die
 **Typ-Vorlage**. Die **effektive** Auflösung (eigenes `material_id`, sonst über
 den `wall_type`) ist Datenfluss → §1 [`LH-FA-EVL-001.a`](lastenheft.md#lh-fa-evl-001--flächenberechnung) ([LH-FA-MAT-003](lastenheft.md#lh-fa-mat-003--materialzuweisung).a).
-`stairs`/`openings`/`doors` tragen in welle-3 **kein** Material (benannte Lücke);
+`stairs`/`openings`/`doors` tragen in dieser Ausbaustufe **kein** Material (benannte Lücke);
 `windows.frame_material` ist Freitext, **kein** `materials`-FK.
 
 ### 2.2 Persistenz-Schema (SQLite)
@@ -1051,7 +1051,7 @@ generiert daraus die dialekt-spezifische DDL (Ziel: SQLite, kein
 hand-geschriebenes SQL). Design: per-Typ-Tabellen,
 `openings`-Spezialisierung, JSON-Geometrie, persistierter Undo-Stack.
 
-Kerntabellen (welle-1) — vollständig in `data-model.yaml`:
+Kerntabellen — vollständig in `data-model.yaml`:
 
 | Tabelle | Inhalt |
 |---|---|
@@ -1063,7 +1063,7 @@ Kerntabellen (welle-1) — vollständig in `data-model.yaml`:
 | `materials`, `wall_types` | Material- und Wandtyp-Bibliothek |
 | `undo_commands` | persistierter Undo-Stack ([LH-QA-003](lastenheft.md#lh-qa-003--undoredo)) |
 
-**2D-Zeichen-Daten (welle-5, DRW-Strang).** Das Neutral-Format führt die
+**2D-Zeichen-Daten (DRW-Strang).** Das Neutral-Format führt die
 Ebenen-Tabelle (`layers`: Name/Sichtbarkeit/Sperre/Farbe, projekt-eindeutiger Name) —
 seit dem DRW-Impl-Slice erstmals **real verdrahtet** (Persistenz-Round-Trip durch den
 SQLite-Adapter) — und die **Hilfslinien-Tabelle** (`guide_lines`: Anfangs-/Endpunkt in mm,
@@ -1141,7 +1141,7 @@ im Schema (nur Undo) — eigener Slice.
 | `PROJECT_OPEN_BUDGET_S` | 3 | Performance-Budget Projektöffnung (Standardprojekt) | [LH-QA-001](lastenheft.md#lh-qa-001--performance-projektöffnung) |
 | `MEMORY_BUDGET_GB` | 2 | RAM-Budget Standardprojekt | [LH-QA-002](lastenheft.md#lh-qa-002--speicherverbrauch) |
 | `SUPPORTED_LOCALES` | `de`, `en` | Mehrsprachigkeit | [LH-QA-006](lastenheft.md#lh-qa-006--mehrsprachigkeit) |
-| `LIVING_AREA_FACTOR` | 1 | Wohnflächen-Anrechnungsfaktor (welle-3-Teilumfang: Wohnfläche = Netto-Grundfläche; Schrägen-/Balkon-Faktoren offen) | [LH-FA-EVL-003](lastenheft.md#lh-fa-evl-003--wohnflächenberechnung) |
+| `LIVING_AREA_FACTOR` | 1 | Wohnflächen-Anrechnungsfaktor (Teilumfang: Wohnfläche = Netto-Grundfläche; Schrägen-/Balkon-Faktoren offen) | [LH-FA-EVL-003](lastenheft.md#lh-fa-evl-003--wohnflächenberechnung) |
 
 Die Default-**Wandhöhe** bei Anlage ist die **Höhe des Geschosses**
 (parametrisch, kein eigener Konstant; [LH-FA-WAL-001](lastenheft.md#lh-fa-wal-001--wand-zeichnen)). `slice-003a` hat <!-- d-check:status-provenance -->
@@ -1205,7 +1205,7 @@ nicht im Bootstrap.
   (beeinflusst Wohnflächenberechnung [LH-FA-EVL-003](lastenheft.md#lh-fa-evl-003--wohnflächenberechnung))~~ → entschieden
   (Innenkante, Ring-Modell; §1).
 - Performance-Zielkomplexität der Raumerkennung (M3).
-- ~~IFC-Schema-Version und -Bibliothek (ADR in welle-4-austausch)~~ → entschieden
+- ~~IFC-Schema-Version und -Bibliothek (ADR offen)~~ → entschieden
   (IFC-SPF-Subset-Codec; IFC4-Export / IFC2x3+4-Import; §1 [`LH-FA-IO-001.a`](lastenheft.md#lh-fa-io-001--ifc-import),
   Provenance § Historie); **STEP/STL-Backend ebenfalls entschieden** (OCC-DataExchange
   nativ, geometrie-resident, §1 [`LH-FA-IO-005.a`](lastenheft.md#lh-fa-io-005));

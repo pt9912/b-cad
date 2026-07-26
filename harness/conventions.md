@@ -793,6 +793,47 @@ sie.
 - **Auflösungs-Trigger:** permanent; entfällt, falls `targets` je Sektions-Marker lernt (dann kann der
   Geplant-Block wieder Tabelle werden).
 
+### MR-023 — Spec-Straten sind prozess-/zeit-rein (d-check `matrix`-Klasse `temporal`)
+
+- **Datum:** 2026-07-26
+- **Geltungsbereich:** [`../spec/lastenheft.md`](../spec/lastenheft.md),
+  [`../spec/spezifikation.md`](../spec/spezifikation.md),
+  [`../spec/architecture.md`](../spec/architecture.md), [`.d-check.yml`](../.d-check.yml)
+- **Lineage:** dieselbe Klasse wie [MR-014](#mr-014--referenz-richtungs-verschärfung-adr-nennt-keine-slice-d-check-v0371)
+  (Referenz-Richtungs-Disziplin computational gemacht) — **eigenes Prinzip**, nicht bloß eine
+  [MR-011](#mr-011--referenz-integritäts-gate-matrix-ids-spans-hostpaths)-Ergänzung: MR-011/MR-014
+  regeln die **Richtung** zwischen Straten, MR-023 die **Zeit-Freiheit** eines Stratums.
+- **Adaption:** Die drei Spec-Straten tragen **kein** Prozess-/Planungs-Vokabular. Konkret verboten ist
+  der **Wellen-Identifikator** `welle-N` / `Welle-N` (Projekt-Abwicklungs-Wellen); dasselbe gilt sinngemäß
+  für Slice-Kennungen (bereits [MR-014](#mr-014--referenz-richtungs-verschärfung-adr-nennt-keine-slice-d-check-v0371)), Commit-Hashes und
+  Closure-Daten. Die **zeitliche Schicht** lebt in
+  [`../docs/plan/planning/`](../docs/plan/planning/); die Straten beschreiben das **Was/Wie**,
+  zeit-los und fortschreibbar.
+  **Reifephase-Reflexions-Pflicht:** wo ein Stratum eine bewusste Teil-Lieferung benennt, wird die
+  **Eigenschaft** genannt („Teilumfang", „Reifephase-Näherung", „in dieser Ausbaustufe", „benannte
+  Lücke") — **nicht** die Welle, in der sie entstand. Die Stufungs-Provenance trägt der daneben
+  stehende **Lastenheft-Versions-Bezug**, sonst Roadmap/Historie.
+- **Warum überhaupt eine Regel:** [`../spec/architecture.md`](../spec/architecture.md) formuliert das
+  Prinzip in seiner Hard-Rule **selbst** („keine Wellen, Slices, Commit-Hashes oder Closure-Daten") —
+  und verletzte es. Eine Regel, die nur im Text steht, driftet: gemessen wurden **56 Fundstellen** über
+  alle drei Straten. Die gelebte Disziplin war also nachweislich keine.
+- **Sensor:** d-check-Modul `matrix`, Klasse **`temporal`** (`token: '[Ww]elle-\d'`) + Regel
+  `{from: spec-straten, to: temporal, allow: false}` → `matrix-forbidden`. Läuft im
+  `docs-check`-Modulset, also **in `make gates`** (hermetisch, range-frei).
+  **Verschärfung, keine Lockerung** ([`AGENTS.md` §2.6](../AGENTS.md) n/a).
+- **Empirisch belegt (Baseline vor / Messung nach der Bereinigung, slice-049):** die Regel meldet auf dem
+  unbereinigten Stand **56** Token-Befunde (lastenheft 17 · spezifikation 38 · architecture 1) und nach
+  der Bereinigung **0**. Die Fundstellen-Liste **war** der Arbeitsvorrat.
+- **Zwei benannte Grenzen des Sensors:**
+  1. **`paths` der Klasse bleibt leer.** Mit `paths: [.../roadmap.md]` — so war es geplant — verbietet die
+     Regel zusätzlich den **Link** Spec-Stratum → Roadmap und trifft damit genau den Prinzip-Satz in
+     `architecture.md`, der auf die zeitliche Schicht verweisen **muss** (gemessen: 57 statt 56 Befunde,
+     der eine Zusatzbefund ist dieser Link). Die Klasse ist eine reine **Token**-Trägerin.
+  2. **Der Token fasst den Identifikator, nicht die Prosa.** „spätere Welle", „Wellen" bleiben
+     ungeflaggt — sie sind einmalig manuell zu bereinigen. Ein breiteres `[Ww]elle` würde den
+     Prinzip-Satz selbst falsch melden (verworfen).
+- **Auflösungs-Trigger:** permanent.
+
 ## Zusatzklassen-Deklaration für Sensors-Bindung
 
 b-cad nutzt neben den vier kanonischen Bindung-Klassen (ADR · Carveout ·
