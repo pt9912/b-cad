@@ -25,6 +25,9 @@
 #include "hexagon/ports/driven/model_changed_port.h"
 #include "hexagon/model/area_report.h"
 #include "hexagon/model/material.h"
+#include "hexagon/model/opening.h"
+#include "hexagon/model/roof.h"
+#include "hexagon/model/slab.h"
 #include "hexagon/ports/driven/geometry_kernel_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
@@ -136,6 +139,59 @@ model::Building loadedProject() {
     return b;
 }
 
+// Ergaenzt das geladene Projekt um die vier Element-Arten, deren Zaehler-Reset
+// bis zum Verify-Lauf ungedeckt war (Finding B2, Gegenprobe CP-1: die vier
+// Resets entfernt -> 280/280 blieben gruen). Wieder mit PAARWEISE VERSCHIEDENEN
+// Maxima, damit ein vertauschter `maxIdValue`-Aufruf auffaellt.
+void addHighIdComponents(model::Building& b) {
+    // Zweites Geschoss: eine Treppe verlangt eine gueltige Zwei-Geschoss-Spanne
+    // (`from != to`, beide bekannt).
+    model::Storey og;
+    og.id = model::StoreyId{8};
+    og.height_mm = 2500.0;
+    b.storeys.push_back(og);
+
+    model::Opening o;  // Tuer in der geladenen Wand 42
+    o.id = model::OpeningId{31};
+    o.wall_id = model::WallId{42};
+    o.kind = model::OpeningKind::Door;
+    o.offset_mm = 500.0;
+    o.width_mm = 900.0;
+    o.height_mm = 2000.0;
+    b.openings.push_back(o);
+
+    model::Roof r;
+    r.id = model::RoofId{23};
+    r.storey_id = model::StoreyId{7};
+    r.origin = model::Point2D{0.0, 0.0};
+    r.width_mm = 4000.0;
+    r.depth_mm = 3000.0;
+    r.pitch_deg = 30.0;
+    r.thickness_mm = 200.0;
+    b.roofs.push_back(r);
+
+    model::Slab sl;
+    sl.id = model::SlabId{64};
+    sl.storey_id = model::StoreyId{7};
+    sl.type = model::SlabType::Decke;
+    sl.footprint = model::Footprint{{model::Point2D{0.0, 0.0},
+                                     model::Point2D{4000.0, 0.0},
+                                     model::Point2D{4000.0, 3000.0},
+                                     model::Point2D{0.0, 3000.0}}};
+    sl.thickness_mm = 200.0;
+    b.slabs.push_back(sl);
+
+    model::Stair st;
+    st.id = model::StairId{88};
+    st.from_storey_id = model::StoreyId{7};
+    st.to_storey_id = model::StoreyId{8};
+    st.start = model::Point2D{1000.0, 1000.0};
+    st.width_mm = 1000.0;
+    st.step_count = 10;
+    st.tread_mm = 280.0;
+    b.stairs.push_back(st);
+}
+
 // HIGH-2: nach dem Ersetzen sind die abgeleiteten Zustaende neu gebaut —
 // das Solid der geladenen Wand existiert, und die naechste Mutation mintet
 // eine FRISCHE Id (keine Kollision mit einer persistierten).
@@ -207,6 +263,107 @@ TEST(ManageProject_047b, OpenProjectReplacesModelViaPort) {
     ASSERT_EQ(svc.building().storeys.size(), 1U);
     EXPECT_EQ(svc.building().storeys.front().id, model::StoreyId{7});
     EXPECT_EQ(svc.building().walls.size(), 1U);
+}
+
+// --- Verify-Finding B4: die Neu-Aufloesung des Zeichen-Ziels ---------------
+//
+// Sie lag als Lambda im coverage-ausgenommenen `main` und wurde von KEINEM
+// Sensor ausgefuehrt (Gegenprobe CP-5: Aufruf entfernt -> 280/280 gruen). Jetzt
+// gehoert sie zum Use-Case und wird hier direkt geprueft: die Senken bekommen
+// die Ids des GELADENEN Stands, nicht die eingefrorenen des alten Modells.
+
+// Repository-Double, das ein frei waehlbares Projekt liefert.
+class FixtureRepository final
+    : public bcad::hexagon::ports::driven::ProjectRepositoryPort {
+public:
+    explicit FixtureRepository(model::Building fixture)
+        : fixture_(std::move(fixture)) {}
+    void save(const model::Building&, const model::PersistedDerivations&,
+              const fs::path&) const override {}
+    model::Building load(const fs::path&) const override { return fixture_; }
+
+private:
+    model::Building fixture_;
+};
+
+TEST(ManageProject_047b, OpenProjectRetargetsDrawingToLoadedIds) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const FixtureRepository repo{loadedProject()};  // Storey 7, Layer 9
+
+    // Ausgangsstand der Sichten: die eingefrorenen Ids des Demo-Modells.
+    auto seen_storey = model::StoreyId{1};
+    auto target_storey = model::StoreyId{1};
+    auto target_layer = model::LayerId{1};
+    const services::DrawingTargetSinks sinks{
+        [&seen_storey](model::StoreyId s) { seen_storey = s; },
+        [&target_storey, &target_layer](model::StoreyId s, model::LayerId l) {
+            target_storey = s;
+            target_layer = l;
+        },
+    };
+
+    const auto resolution = services::openProject(svc, repo, "egal.bcad", sinks);
+
+    EXPECT_EQ(resolution, services::DrawingTargetResolution::Resolved);
+    EXPECT_EQ(seen_storey, model::StoreyId{7}) << "Canvas-Geschoss";
+    EXPECT_EQ(target_storey, model::StoreyId{7}) << "Hilfslinien-Geschoss";
+    EXPECT_EQ(target_layer, model::LayerId{9}) << "Hilfslinien-Ebene";
+}
+
+// Teil-Aufloesung: Projekt ohne Zeichen-Ebene. Das Geschoss wird gesetzt (der
+// Grundriss zeichnet), das Hilfslinien-Ziel NICHT — und der Aufrufer erfaehrt
+// es, statt dass still eine Ebene angelegt wird (Code-Review MEDIUM-8: Oeffnen
+// ist lesend).
+TEST(ManageProject_047b, OpenProjectReportsMissingLayerWithoutCreatingOne) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    model::Building without_layer = loadedProject();
+    without_layer.layers.clear();
+    const FixtureRepository repo{without_layer};
+
+    bool storey_set = false;
+    bool target_set = false;
+    const services::DrawingTargetSinks sinks{
+        [&storey_set](model::StoreyId) { storey_set = true; },
+        [&target_set](model::StoreyId, model::LayerId) { target_set = true; },
+    };
+
+    const auto resolution = services::openProject(svc, repo, "egal.bcad", sinks);
+
+    EXPECT_EQ(resolution, services::DrawingTargetResolution::NoLayer);
+    EXPECT_TRUE(storey_set) << "das Geschoss ist aufloesbar und wird gesetzt";
+    EXPECT_FALSE(target_set) << "ohne Ebene bleibt das Hilfslinien-Ziel offen";
+    EXPECT_TRUE(svc.building().layers.empty())
+        << "Oeffnen darf keine Ebene anlegen";
+}
+
+// Leeres Projekt: nichts aufloesbar, keine Senke gerufen, kein Wurf.
+TEST(ManageProject_047b, OpenProjectReportsMissingStorey) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const FixtureRepository repo{model::Building{}};
+
+    bool any_sink = false;
+    const services::DrawingTargetSinks sinks{
+        [&any_sink](model::StoreyId) { any_sink = true; },
+        [&any_sink](model::StoreyId, model::LayerId) { any_sink = true; },
+    };
+
+    EXPECT_EQ(services::openProject(svc, repo, "egal.bcad", sinks),
+              services::DrawingTargetResolution::NoStorey);
+    EXPECT_FALSE(any_sink);
+}
+
+// Ohne Senken (CLI/Tests ohne Sichten) laeuft derselbe Pfad wurf-frei durch.
+TEST(ManageProject_047b, OpenProjectWithoutSinksIsSafe) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const FixtureRepository repo{loadedProject()};
+
+    EXPECT_EQ(services::openProject(svc, repo, "egal.bcad"),
+              services::DrawingTargetResolution::Resolved);
+    EXPECT_EQ(svc.building().storeys.front().id, model::StoreyId{7});
 }
 
 // Fehlerfall: wirft das Repository, bleibt der bisherige Stand unveraendert.
@@ -360,6 +517,62 @@ TEST(ManageProject_047b, ReplaceBuildingResetsEveryIdCounter) {
     const auto gid = svc.addGuideLine(fresh_g);
     ASSERT_TRUE(gid.has_value());
     EXPECT_GT(static_cast<int>(*gid), 77) << "next_guide_line_id_";
+}
+
+// Verify-Finding B2: dieselbe Zusage fuer die vier RESTLICHEN Zaehler. Der
+// Code-Review hatte die Luecke als MEDIUM-2 gemeldet ("7 der 9 ungetestet"),
+// die Einarbeitung schloss fuenf — die Gegenprobe des Verifiers (CP-1: Resets
+// fuer opening/roof/slab/stair entfernt) blieb 280/280 gruen. Ein Verlust
+// dieser vier Resets bedeutet eine Id-KOLLISION bei der ersten Oeffnung/dem
+// ersten Dach/der ersten Platte/der ersten Treppe nach dem Laden.
+TEST(ManageProject_047b, ReplaceBuildingResetsComponentIdCounters) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+
+    model::Building b = loadedProject();  // Storey 7, Wall 42, Layer 9
+    addHighIdComponents(b);               // Opening 31, Roof 23, Slab 64, Stair 88
+
+    svc.replaceBuilding(std::move(b));
+
+    // Zweite Tuer in derselben geladenen Wand — weit genug von der geladenen
+    // (offset 500 + Breite 900) entfernt, damit sie nicht ueberlappt.
+    const auto oid = svc.addDoor(model::WallId{42}, 2000.0);
+    ASSERT_TRUE(oid.has_value());
+    EXPECT_GT(static_cast<int>(*oid), 31) << "next_opening_id_";
+
+    model::Roof fresh_r;
+    fresh_r.storey_id = model::StoreyId{7};
+    fresh_r.origin = model::Point2D{0.0, 0.0};
+    fresh_r.width_mm = 3000.0;
+    fresh_r.depth_mm = 2000.0;
+    fresh_r.pitch_deg = 25.0;
+    fresh_r.thickness_mm = 180.0;
+    const auto rid = svc.addRoof(fresh_r);
+    ASSERT_TRUE(rid.has_value());
+    EXPECT_GT(static_cast<int>(*rid), 23) << "next_roof_id_";
+
+    model::Slab fresh_sl;
+    fresh_sl.storey_id = model::StoreyId{7};
+    fresh_sl.type = model::SlabType::Fundament;
+    fresh_sl.footprint = model::Footprint{{model::Point2D{0.0, 0.0},
+                                           model::Point2D{2000.0, 0.0},
+                                           model::Point2D{2000.0, 2000.0},
+                                           model::Point2D{0.0, 2000.0}}};
+    fresh_sl.thickness_mm = 300.0;
+    const auto slid = svc.addSlab(fresh_sl);
+    ASSERT_TRUE(slid.has_value());
+    EXPECT_GT(static_cast<int>(*slid), 64) << "next_slab_id_";
+
+    model::Stair fresh_st;
+    fresh_st.from_storey_id = model::StoreyId{7};
+    fresh_st.to_storey_id = model::StoreyId{8};
+    fresh_st.start = model::Point2D{2000.0, 2000.0};
+    fresh_st.width_mm = 1000.0;
+    fresh_st.step_count = 12;
+    fresh_st.tread_mm = 280.0;
+    const auto stid = svc.addStair(fresh_st);
+    ASSERT_TRUE(stid.has_value());
+    EXPECT_GT(static_cast<int>(*stid), 88) << "next_stair_id_";
 }
 
 // MEDIUM-3: die zugesagte Transaktionalitaet. Wirft der Solid-Bau einer

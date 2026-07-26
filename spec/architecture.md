@@ -138,9 +138,12 @@ b-cad/
 │   │   │   │                        #   EvaluatePort, PlanViewPort
 │   │   │   │                        #   (ManageProjectPort: Ziel-Form, s. §1.1)
 │   │   │   └── driven/              # GeometryKernelPort, ProjectRepositoryPort,
-│   │   │                            #   ModelImporterPort, ModelExporterPort, MaterialLibraryPort, TracingPort
-│   │   └── services/                # ProjectService, StructureEditService,
-│   │       │                        #   RoomDetectionService, ViewService, ExchangeService
+│   │   │                            #   ModelImporterPort, ModelExporterPort,
+│   │   │                            #   ModelChangedPort, GreetingSourcePort
+│   │   └── services/                # StructureEditService, RoomDetectionService,
+│   │       │                        #   ExchangeService, GreetingService,
+│   │       │                        #   manage_project (Save-/Open-Use-Case),
+│   │       │                        #   volume_geometry, bootstrap_info
 │   │       └── geometry/            # reine Berechnungs-Kerne (port-frei, model-only)
 │   └── adapters/
 │       ├── ui/                      # Qt 6 — je Unterverzeichnis EINE Port-Richtung:

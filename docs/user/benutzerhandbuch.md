@@ -1,8 +1,8 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.0
-Stand: 2026-07-24
+Handbuch-Version: 1.1
+Stand: 2026-07-26
 
 ---
 
@@ -29,7 +29,7 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
   geöffnetes Projekt (3D-Ansicht + 2D-Grundriss),
 - **Hilfslinien** im Grundriss zeichnen,
 - in Formate **exportieren** (IFC/DXF/STEP/STL/PDF/PNG),
-- ein Projekt **speichern** und **öffnen**,
+- ein Projekt **speichern** und **öffnen** (Menü **Datei** oder Kommandozeile),
 - Fremdformate **importieren** (IFC/DXF).
 
 **In dieser Version noch NICHT möglich:**
@@ -44,7 +44,7 @@ Wie ein Gebäude heute überhaupt in b-cad kommt, beschreibt **Abschnitt 3**.
 
 Anwenderinnen und Anwender, die mit b-cad ein Gebäudemodell ansehen, zeichnen,
 speichern und exportieren möchten. Technisches Vorwissen ist nicht nötig; für
-den fortgeschrittenen Kommandozeilen-Betrieb (Abschnitt 4.4) hilft etwas
+den fortgeschrittenen Kommandozeilen-Betrieb (Abschnitt 4.5) hilft etwas
 Erfahrung mit einem Terminal.
 
 ### Voraussetzungen
@@ -103,6 +103,8 @@ Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 - **3D drehen:** Im Reiter **3D** mit der Maus ziehen.
 - **Hilfslinie zeichnen:** Im Reiter **2D** mit gedrückter linker Maustaste ziehen
   (siehe Abschnitt 4.2).
+- **Projekt speichern/öffnen:** Menü **Datei** → **Speichern unter…** bzw.
+  **Öffnen…** (siehe Abschnitt 4.3).
 
 ---
 
@@ -112,8 +114,9 @@ Da Sie ein Gebäude in dieser Version **nicht selbst planen** (siehe Abschnitt 1
 gibt es **drei** Wege, mit einem Gebäude zu arbeiten:
 
 1. **Das mitgelieferte Beispiel** — nach dem Start ist es sofort da (Abschnitt 2).
-2. **Ein importiertes Gebäude** — aus einer IFC- oder DXF-Datei (Abschnitt 4.4).
-3. **Ein geöffnetes Projekt** — eine zuvor gespeicherte `.bcad`-Datei (Abschnitt 4.4).
+2. **Ein importiertes Gebäude** — aus einer IFC- oder DXF-Datei (Abschnitt 4.5).
+3. **Ein geöffnetes Projekt** — eine zuvor gespeicherte `.bcad`-Datei; über
+   **Datei → Öffnen…** in der Oberfläche (Abschnitt 4.3).
 
 ### Das geladene Gebäude ansehen
 
@@ -143,10 +146,10 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 |---|---|
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
 | Hilfslinie zeichnen | Oberfläche, Reiter 2D (4.2) |
-| Modell exportieren (IFC/DXF/STEP/STL/PDF/PNG) | Kommandozeile (4.4) |
-| Projekt speichern / öffnen | Kommandozeile (4.4) |
-| Projekt importieren (IFC/DXF) | Kommandozeile (4.4) |
-| Erweiterung (Plugin) laden | Kommandozeile (4.4) |
+| Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
+| Modell exportieren (IFC/DXF/STEP/STL/PDF/PNG) | Kommandozeile (4.5) |
+| Projekt importieren (IFC/DXF) | Kommandozeile (4.5) |
+| Erweiterung (Plugin) laden | Kommandozeile (4.5) |
 
 ### 4.2 Eine Hilfslinie zeichnen
 
@@ -169,7 +172,50 @@ Modell und erscheint auch im 2D-Export (DXF/PDF/PNG).
 - In dieser Version wird **frei** gezeichnet; Fangen, Raster und Winkel-Bindung
   sind noch nicht enthalten.
 
-### 4.3 Welches Format wofür? (Kurzüberblick)
+### 4.3 Ein Projekt speichern und öffnen (Menü **Datei**)
+
+**Ziel:** Den aktuellen Modellstand als Projektdatei (`.bcad`) sichern und ein
+zuvor gespeichertes Projekt wieder zum Arbeitsstand machen.
+
+**Voraussetzung:** b-cad ist gestartet (Abschnitt 2.1).
+
+#### Speichern
+
+1. Öffnen Sie das Menü **Datei** und wählen Sie **Speichern unter…**.
+2. Wählen Sie Ordner und Dateinamen; die Endung `.bcad` wird ergänzt, wenn Sie
+   keine angeben.
+3. Bestätigen Sie mit **Speichern**.
+
+**Ergebnis:** Die Projektdatei enthält den vollständigen Modellstand. Sie wird
+**atomar** geschrieben: Schlägt das Schreiben fehl (z. B. Medium voll oder kein
+Schreibrecht), bleibt eine **vorhandene** Datei unverändert — es entsteht **kein**
+halb geschriebenes Projekt. Ein Fehler wird als Meldung angezeigt.
+
+#### Öffnen
+
+1. Öffnen Sie das Menü **Datei** und wählen Sie **Öffnen…**.
+2. Wählen Sie eine `.bcad`-Datei und bestätigen Sie.
+
+**Ergebnis:** Der geladene Stand **ersetzt** Ihren bisherigen Arbeitsstand.
+3D-Ansicht und Grundriss zeigen danach das geöffnete Projekt, der Fenstertitel
+nennt den Dateinamen, und Sie können am geladenen Projekt weiterarbeiten, ohne
+dass Vorhandenes überschrieben wird.
+
+**Hinweise:**
+- **Öffnen ist lesend:** Es wird **nichts** ergänzt. Speichern Sie unmittelbar
+  nach dem Öffnen, entsteht derselbe Inhalt.
+- Enthält das geöffnete Projekt **keine Zeichen-Ebene**, erscheint ein Hinweis:
+  Hilfslinien lassen sich erst zeichnen, wenn eine Ebene vorhanden ist — b-cad
+  legt sie **nicht** von sich aus an (das würde die Datei verändern).
+- Lässt sich eine Datei nicht öffnen (nicht vorhanden, beschädigt, oder ein
+  Bauteil ist nicht darstellbar), wird sie **als Ganzes** abgelehnt: Sie
+  erhalten eine Meldung, und Ihr bisheriger Stand bleibt unverändert.
+- Ein **Speichern** auf die zuletzt geöffnete Datei (ohne erneute Pfad-Auswahl)
+  gibt es in dieser Version noch nicht; **Speichern unter…** fragt jedes Mal
+  nach dem Ziel. Es gibt auch **keine** Warnung vor ungesicherten Änderungen —
+  speichern Sie, bevor Sie ein anderes Projekt öffnen.
+
+### 4.4 Welches Format wofür? (Kurzüberblick)
 
 | Format | Zweck | Import | Export |
 |---|---|---|---|
@@ -182,11 +228,13 @@ Modell und erscheint auch im 2D-Export (DXF/PDF/PNG).
 
 Details und Grenzen: Abschnitt 6.
 
-### 4.4 Kommandozeile (Export, Speichern, Öffnen, Import)
+### 4.5 Kommandozeile (Export, Import, Speichern/Öffnen ohne Oberfläche)
 
-In dieser Version steuern Sie Export, Speichern, Öffnen und Import über
-**Kommandozeilen-Optionen** des Programms `b-cad`. Rufen Sie es mit der
-passenden Option und einem Ziel-/Quellpfad auf.
+**Export** und **Import** steuern Sie in dieser Version ausschließlich über
+**Kommandozeilen-Optionen** des Programms `b-cad`; **Speichern** und **Öffnen**
+gibt es hier **zusätzlich** zum Menü **Datei** (Abschnitt 4.3) — skriptbar, ohne
+Oberfläche. Rufen Sie `b-cad` mit der passenden Option und einem Ziel-/Quellpfad
+auf.
 
 #### Modell exportieren
 
@@ -226,7 +274,7 @@ laden.
 | Option | Ergebnis |
 |---|---|
 | `--save <pfad.bcad>` | Projekt speichern (atomar) |
-| `--open <pfad.bcad>` | Projekt öffnen (als Quelle für Export) |
+| `--open <pfad.bcad>` | Projekt öffnen (als **Quelle für Export**, siehe Hinweis) |
 
 Beispiel — speichern, dann öffnen und als PDF exportieren:
 ```
@@ -238,6 +286,13 @@ b-cad --open haus.bcad --export-pdf haus.pdf
 (z. B. Medium voll) bleibt eine vorhandene Datei unverändert. `--open` lädt das
 Projekt vollständig wieder (Modell, Geometrie, Materialzuordnungen). Ein Export
 nach `--open` trägt den Datei**namen** als Herkunft.
+
+> **Wichtiger Unterschied zum Menü Datei.** Ein Aufruf mit `--open` startet
+> **keine** Oberfläche: das Programm lädt das Projekt, führt die angegebenen
+> Aufgaben (Speichern/Export) aus und endet. Der geladene Stand wird hier also
+> **nicht** zu einem bearbeitbaren Arbeitsstand — dafür ist **Datei → Öffnen…**
+> in der Oberfläche da (Abschnitt 4.3). Auf der Kommandozeile ist `--open` eine
+> **Export-Quelle**, im Menü ist Öffnen ein **Sitzungs-Wechsel**.
 
 **Hinweis:** Öffnen einer nicht vorhandenen oder beschädigten Datei bricht mit
 einer Fehlermeldung ab (kein Absturz).
@@ -315,8 +370,12 @@ vorhandenes Verzeichnis) oder das Medium ist voll.
 **Ursache:** Die Projektdatei existiert nicht, ist beschädigt oder wurde nicht
 von b-cad geschrieben.
 
-**Lösung:** Prüfen Sie Pfad und Dateiname; öffnen Sie eine mit `--save` erstellte
-`.bcad`-Datei.
+**Lösung:** Prüfen Sie Pfad und Dateiname; öffnen Sie eine von b-cad erzeugte
+`.bcad`-Datei (**Datei → Speichern unter…** oder `--save`).
+
+**Gut zu wissen:** Eine Datei, die sich nicht vollständig laden lässt, wird **als
+Ganzes** abgelehnt — Ihr bisheriger Arbeitsstand bleibt unverändert; es entsteht
+nie ein halb geladenes Projekt.
 
 ### Import ergibt ein (fast) leeres Modell
 
@@ -336,8 +395,10 @@ das Zeichnen von Hilfslinien; das interaktive Bauteil-Zeichnen folgt in einer
 späteren Version.
 
 **Wie speichere/öffne ich über ein Menü?**
-Ein „Datei"-Menü ist in dieser Version noch nicht enthalten — nutzen Sie
-`--save`/`--open` auf der Kommandozeile (Abschnitt 4.4).
+Über das Menü **Datei** in der Oberfläche: **Öffnen…** und **Speichern unter…**
+(Abschnitt 4.3). Ein „Speichern" auf die zuletzt geöffnete Datei ohne erneute
+Pfad-Auswahl gibt es noch nicht — **Speichern unter…** fragt jedes Mal nach dem
+Ziel. Skriptbar bleibt der Weg über `--save`/`--open` (Abschnitt 4.5).
 
 **Woran erkenne ich, aus welchem Stand ein Export stammt?**
 An der Herkunfts-Angabe (Version, Quelle, Datum) — sichtbar in PDF/PNG und im
@@ -390,3 +451,4 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.1 | 0.1.0 | 2026-07-26 | Menü **Datei** (Speichern unter…/Öffnen…) als neuer Abschnitt 4.3 aufgenommen — das Handbuch beschrieb Speichern/Öffnen bis dahin als reine Kommandozeilen-Aufgabe und die FAQ verneinte ein Datei-Menü. Der Unterschied der beiden Wege ist jetzt benannt: im Menü ist Öffnen ein **Sitzungs-Wechsel**, auf der Kommandozeile ist `--open` eine **Export-Quelle**. Frühere 4.3/4.4 zu 4.4/4.5 verschoben. |

@@ -7,6 +7,14 @@ Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
 Greenfield-Bootstrap (Kurs-Modul 2, Schritt 5) — sie ist eine
 Feature-Sequenz, kein Reconciliation-Plan.
 
+**Schwester-Dokumente in diesem Verzeichnis** (2026-07-25 aus dieser Datei
+herausgelöst, damit die Roadmap wieder Wellen-Sequenz ist und nicht
+Sitzungs-Protokoll — vom slice-047-Verify als unbenannter Umbau gerügt,
+Finding F1):
+
+- [`status.md`](status.md) — Sitzungs-Stand, Tagesabschlüsse, Werkzeug-Lehren.
+- [`d-check.md`](d-check.md) — Fahrplan der d-check-Module (Gate-Adoptionen).
+
 ---
 
 ## Aktuelle Welle
@@ -27,104 +35,7 @@ Datei-Auswahl, `openProject`-Naht, `replaceBuilding` (abgeleitete Zustände + Id
 (`2db4fc6`, `17da627`). **Offen: Verify + Validation + Closure** — s. §Tagesabschluss.
 
 
-## Tagesabschluss 2026-07-25 — Stand + nächste-Sitzung-Zeiger
 
-`make gates` **EXIT=0** (docs-check 0 Befunde / 246 Dateien · a-check 0 · arch-check ok ·
-**280/280** Tests · Coverage 91,4 %). Alles committet; **lokal auf `main`, Push nach eigenem Ermessen.**
-
-### Was heute fertig wurde
-
-- **[`slice-050`](../done/slice-050-tooling-konsolidierung-dcheck.md) GESCHLOSSEN** — Tooling-Konsolidierung.
-  `gate-consistency.sh` + `idlink.py` retired (d-check-Modul `targets` bzw. `make doc-repair`);
-  **arch-check-Regel P1** → a-check **v0.16.0 `constructs`**. `tools/arch-check.sh` **lebt weiter** mit
-  Regel **P2** (geschlossene Import-Allowlist, kanten-basiert nicht abbildbar). Zwei neue MRs
-  ([MR-021](../../../../harness/conventions.md) P1, [MR-022](../../../../harness/conventions.md) targets/repair);
-  **keine** Gate-Lockerung ⇒ kein ADR.
-- **slice-047b implementiert** + Code-Review vollständig eingearbeitet (s. o.).
-
-### Wo morgen angesetzt wird — Reihenfolge zwingend
-
-1. **Verify-Findings einarbeiten** — Report liegt:
-   [`2026-07-25-slice-047-verify.md`](../../../reviews/2026-07-25-slice-047-verify.md).
-   **Verdikt: nicht fertig.** 11 DoD-Zeilen — **8 bestätigt, 0 widerlegt, 3 unbelegt**. Die Zeilen
-   sind also nicht falsch, aber drei tragen kein Orakel. Offen:
-   - **B4 (unbelegt):** `reresolve_after_open()` in `main.cpp` wird von **keinem** Sensor ausgeführt
-     (main.cpp ist in kein Testbinary gelinkt, coverage-ausgenommen, `io-smoke` kehrt vor dem
-     GUI-Aufbau zurück). Gegenprobe des Verifiers: Aufruf entfernt → **280/280 grün**. Der
-     Adapter-Test ruft die Setter selbst nach, prüft also nicht den Produktions-Aufruf.
-   - **B5 (unbelegt):** das Datei-Menü selbst hat keinen Sensor (modaler Dialog, bewusst).
-   - **B2 (teil-ungedeckt):** die Zusage „**jeden** Id-Zähler" ist nur für 5 von 9 diskriminierend —
-     Resets für opening/roof/slab/stair entfernt → 280/280 grün.
-   - **C1 (erledigt 2026-07-25):** die Spec normierte die Export-Quelle als „via `--open`/**GUI**
-     geöffnetes Projekt" — einen GUI-Export gibt es **nicht**. Stammte aus `70a30f1`, korrigiert.
-   - **Anforderungs-Ebene:** trägt für [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern).
-     Für [`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden) ist die Korrektur
-     **formal unbelegbar**, solange die Anforderung im Lastenheft **Outline ohne AK** ist — „benutzer-
-     erfüllbar?" hat dort kein Maß. **Entscheidung nötig:** AK-Schärfung nachziehen (Muster slice-048a,
-     [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)) oder
-     die Grenze im Closure-Text benennen.
-2. **Validation** (Rolle: **Projektinhaber**, [`.harness/skills/validator.md`](../../../../.harness/skills/validator.md)).
-   Übergabe-Artefakt nach Modul 8: Build-Ergebnis + Slice-Resultat. Konkret die Frage, die weder
-   Review noch Verify beantworten: *ist Projekt-Öffnen so, wie es jetzt ist, für einen Benutzer
-   brauchbar?* Die Entscheidung geht in die Closure-Notiz.
-3. **Closure slice-047:** §8-Notiz, `git mv` `in-progress/` → `done/` **mit** Ruhe-Sentinel-Toggle im
-   **selben** Commit ([MR-017](../../../../harness/conventions.md), [AGENTS §2.8](../../../../AGENTS.md)),
-   Roadmap nachziehen. Achtung: der Sentinel muss beim Schließen **zurück** in den
-   `## Aktuelle Welle`-Block (heute wurde er beim Öffnen entfernt).
-
-### Danach frei wählbar
-
-- **[`slice-049`](../open/slice-049-spec-straten-prozess-rein-welle.md)** (welle-Purge + `matrix`-Härtung) —
-  berührt `.d-check.yml`, das slice-050 heute umgebaut hat: **Konflikte prüfen**.
-- **[`slice-051`](../open/slice-051-review-artefakt-pflicht.md)** (neu, Skelett) — Review-Artefakt-Pflicht
-  computational. **Offene Frage vom Projektinhaber:** ob dieser Slice auch die **fehlenden Rollen-Skills**
-  (Planner/Architect/Implementation) aufnimmt oder ob dafür ein eigener Slice geschnitten wird.
-- **slice-048b** (DRW-001-Impl) — der eigentliche Feature-Fortschritt der DRW-Kampagne.
-
-### ⚠ Offener Klärungspunkt: Fremd-Änderungen in `17da627`
-
-Der Commit `17da627` (Titel: Code-Review-Findings) enthält Änderungen, die **nicht** zum Slice gehören
-und **nicht** vom Implementer stammen: `roadmap.md` wurde von 372 auf 94 Zeilen gekürzt und der Inhalt in
-zwei **neue, von nirgends verlinkte** Dateien ausgelagert — `status.md` und **`d-ckeck.md`**
-(Tippfehler im Dateinamen). Ursache: ein `git add -A` des Implementers hat parallel im Arbeitsbaum
-entstandene Fremd-Änderungen mitgenommen; die Commit-Message beschreibt sie nicht.
-
-**Zu klären (Projektinhaber):** stammen `status.md`/`d-ckeck.md` von dir, und sollen sie bleiben? Falls
-ja: Tippfehler im Dateinamen korrigieren und beide verlinken (sonst sind es tote Dokumente — kein Gate
-fängt eine unverlinkte, aber existierende Datei). Falls nein: Revert des Doku-Teils von `17da627`.
-**Lehre für den Implementer:** kein `git add -A`, wenn der Arbeitsbaum fremde Änderungen tragen kann —
-Pfade einzeln stagen.
-
-### Prozess-Befunde von heute (Alt-Last, bewusst NICHT geheilt)
-
-- **Fehlende Plan-Review-Reports** für slice-045/046a/046b/047: die Pläne behaupten
-  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Ergebnisse,
-  ohne dass ein Artefakt unter `docs/reviews/` liegt. Regelwerk **Modul 10** verlangt „ein Report **pro
-  Lauf**". Rückwirkende Reports wären eine **Fälschung der Audit-Spur** — sie werden nicht geschrieben;
-  der Gate-Nachzug liegt in slice-051.
-- **Negativbefund-Zeilen** („geprüft, ohne Befund") tragen nur **13 von 101** Alt-Reports. Die neuen
-  Skills fordern sie ein; der Alt-Bestand bleibt, wie er ist (dieselbe Fälschungs-Grenze).
-- **Rollen-Skills** nach Modul 8 (»eine Person darf alle Rollen spielen — aber mit unterschiedlichen
-  Skill-Dateien«): **Reviewer · Verifier · Validator** liegen jetzt unter `.harness/skills/`;
-  **Planner · Architect · Implementation** fehlen noch. Deren Inhalte überschneiden sich stark mit
-  `AGENTS.md` (das laut Modul 9 ohnehin in **jeden** Lauf-Kontext gehört) — die zu entscheidende Frage
-  ist **Delta vs. Duplikat**, nicht ob.
-- **Kein `make verify`-Target.** Modul 11 zeigt das Muster (DoD-Aussage → Operationalisierung →
-  `verify-*`-Sub-Target, bewusst **nicht** in `make gates`). Die DoD-Prüfung ist derzeit rein
-  inferentiell — laut Modul 11 „die am wenigsten ausgereifte" Schicht.
-
-### Werkzeug-Lehren von heute (nicht wieder herleiten)
-
-- Der **wirksame `A_CHECK_IMAGE`-Pin** steht im `Makefile`, **nicht** in `a-check.mk`: die Zuweisung
-  steht **vor** dem `include`, dessen `?=` ist ein No-op. `make -n a-check` zeigt die Wahrheit.
-- **`constructs.adapter` ist ein Teilstring-Vergleich** → Zone **mit Schrägstrich** notieren.
-- **`make doc-repair | git apply` scheitert** (kontextlose Hunks) → `git apply --unidiff-zero`; der Patch
-  ist **sichtprüfpflichtig** (verlinkt aufs Verzeichnis, repo-fremde Kennungen falsch).
-- **`ignore-refs` ist seit d-check v0.49.0 querschnittlich** (`links`/`anchors`/`codepaths`) — damit sind
-  Referenzen aus **unveränderlichen** MR/ADR tombstone-bar, ohne sie zu editieren.
-- **Regelwerk-Bezug:** gepinnte Release-ZIP `lab-regelwerk.zip` (v1.3.0) ziehen und selbst lesen. Die
-  Migration auf **v3.5.2** steht aus; bis dahin ist die committet-vendored Baseline nach u-boot-Muster
-  **zurückgestellt** (Projektinhaber 2026-07-25).
 
 ## Nächste Wellen
 

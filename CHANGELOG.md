@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-047 (Verify-Einarbeitung) — **Lastenheft 0.1.17:**
+  [`LH-FA-BLD-003`](spec/lastenheft.md#lh-fa-bld-003--projekt-laden) („Projekt laden") von Outline auf
+  **AK-Niveau** geschärft. Bis dahin war die Anforderung eine Beschreibung ohne Akzeptanzkriterien —
+  die Aussage „jetzt benutzer-erfüllbar" hatte damit **kein Maß**, und der `LH-FA-BLD-003.a`-Block der
+  Spezifikation normierte Verhalten ohne Lastenheft-Fundament. Die AK sagen jetzt: der geöffnete Stand
+  ersetzt den Arbeitsstand und ist weiterbearbeitbar (Happy); Öffnen ist **lesend** und meldet
+  Fehlendes, statt es anzulegen (Boundary); eine fehlende/beschädigte Datei lässt den bisherigen Stand
+  unverändert (Negative).
+- **Benutzerhandbuch 1.1** ([`docs/user/benutzerhandbuch.md`](docs/user/benutzerhandbuch.md)): das
+  **Datei-Menü** als eigener Abschnitt 4.3. Das Handbuch beschrieb Speichern/Öffnen bis dahin als reine
+  Kommandozeilen-Aufgabe, und die FAQ verneinte ein Datei-Menü ausdrücklich — beides seit slice-047b
+  falsch. Neu benannt ist auch der **Unterschied der beiden Öffnen-Wege**: im Menü ist Öffnen ein
+  **Sitzungs-Wechsel**, auf der Kommandozeile ist `--open` eine **Export-Quelle**.
+
+### Changed
+- slice-047 (Verify-Einarbeitung) — die **Neu-Auflösung des Zeichen-Ziels nach dem Öffnen** ist vom
+  Composition-Root in den Use-Case gewandert: `services::openProject` löst das aktive Geschoss und die
+  Hilfslinien-Ebene jetzt **selbst** neu auf und meldet sie über port-freie `DrawingTargetSinks`
+  (`std::function`, Muster [ADR-0019](docs/plan/adr/0019-drw-2d-canvas.md) Option A); der Rückgabewert
+  sagt, ob das Ziel vollständig auflösbar war. **Warum:** als Lambda in `main.cpp` wurde der Schritt von
+  **keinem** Sensor ausgeführt (`main.cpp` ist in kein Testbinary gelinkt und coverage-ausgenommen) —
+  die unabhängige Verifikation entfernte den Aufruf und alle Tests blieben grün. Jetzt fällt er mit dem
+  Use-Case zusammen; dieselbe Gegenprobe färbt vier Tests rot. Verhalten unverändert.
 - slice-047b — **Projekt speichern/öffnen im GUI** ([LH-FA-BLD-002](spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/[LH-FA-BLD-003](spec/lastenheft.md#lh-fa-bld-003--projekt-laden),
   [ADR-0009](docs/plan/adr/0009-gui-framework-qt6.md)): Datei-Menü **Öffnen** / **Speichern unter** mit
   Datei-Auswahl; Fehler erscheinen als Dialog, der Modell-Stand bleibt dabei unverändert. Damit ist die

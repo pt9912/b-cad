@@ -376,7 +376,10 @@ ergeht keine Meldung.
 Wird der **gesamte** Sitzungs-Stand ersetzt (Projekt geladen), ergeht **genau eine** Meldung mit
 `op = ModelReplaced` (neuer `op` im §5-Span-Vokabular) — **nicht** eine Meldung je geladenem Element.
 Diese Meldung ist die **eine benannte Ausnahme** vom `element_id`-Teil des Vertrags oben: sie trägt
-**keine** Element-Kennung, weil sich kein einzelnes Element geändert hat, sondern alle. Der Beobachter
+**keine** Element-Kennung, weil sich kein einzelnes Element geändert hat, sondern alle. Die
+Geschoss-Kennung der Meldung ist dabei **rein informativ** (erstes Geschoss des neuen Stands bzw. der
+Default-Wert bei leerem Modell) und **kein Filter-Kriterium** — ein Beobachter, der auf sie filtert,
+verliert die Elemente aller übrigen Geschosse. Der Beobachter
 baut seinen Stand deshalb **vollständig** neu, statt ein gemeldetes Element nachzuziehen; ein Beobachter,
 der nur das gemeldete Element pullt, behielte den Stand des vorherigen Projekts. Die transaktionale
 Garantie gilt wie oben: schlägt der Aufbau eines geladenen Elements fehl

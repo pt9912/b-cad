@@ -1,12 +1,41 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
 
 #include "hexagon/model/building.h"
+#include "hexagon/model/layer.h"  // LayerId
+#include "hexagon/model/wall.h"   // StoreyId
 #include "hexagon/ports/driven/project_repository_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace bcad::hexagon::services {
+
+// Senken für das **Zeichen-Ziel** einer laufenden Sitzung (slice-047,
+// Verify-Finding B4). Beim Aufbau der Sitzung frieren die Sichten das aktive
+// Geschoss und die Hilfslinien-Ebene **by-value** ein; nach einem Projekt-Laden
+// stammen diese Ids aus dem alten Modell und sind i. d. R. ungültig — der
+// Grundriss bliebe leer und jedes Hilfslinien-Zeichnen würde abgelehnt.
+// `openProject` löst das Ziel darum **selbst** neu auf und meldet es hier.
+//
+// **Port-frei** (Muster ADR-0019 Option A): zwei `std::function`-Callables statt
+// eines Ports — der Kern kennt weder `view/` noch `command/`, und der
+// Composition-Root verdrahtet die konkreten Sicht-Objekte. Nicht gesetzte
+// Callables sind zulässig (CLI/Tests ohne Sichten).
+struct DrawingTargetSinks {
+    std::function<void(model::StoreyId)> set_active_storey;
+    std::function<void(model::StoreyId, model::LayerId)> set_draw_target;
+};
+
+// Ergebnis der Neu-Auflösung. Ein unvollständiges Ziel ist **kein Fehler** (die
+// Datei ist in Ordnung), aber benutzer-relevant: der Aufrufer meldet es, statt
+// das Fehlende still anzulegen — Öffnen ist lesend (spez. §1 `LH-FA-BLD-003.a`,
+// Code-Review MEDIUM-8).
+enum class DrawingTargetResolution {
+    Resolved,   // Geschoss + Ebene gesetzt
+    NoStorey,   // Projekt ohne Geschoss — Zeichenfläche bleibt leer
+    NoLayer,    // Geschoss gesetzt, aber keine Ebene für Hilfslinien
+};
 
 // Save-Use-Case (slice-047a, der vorgesehene `ManageProjectPort`): baut die
 // **kern-abgeleiteten** write-derived Persistenz-Skalare (`PersistedDerivations`:
@@ -33,8 +62,16 @@ void saveProject(const ports::driven::ProjectRepositoryPort& repository,
 // Zweck der Naht (wie bei `saveProject`): der Lade-Pfad ist damit **testbar
 // außerhalb** des coverage-ausgenommenen `main`/GUI — der Datei-Dialog bleibt
 // die einzige untestbare Schicht darüber.
-void openProject(StructureEditService& service,
-                 const ports::driven::ProjectRepositoryPort& repository,
-                 const std::filesystem::path& path);
+//
+// **Teil des Use-Case, nicht des Aufrufers** (slice-047, Verify-Finding B4): nach
+// dem Tausch löst `openProject` das **Zeichen-Ziel** neu auf und meldet es über
+// `sinks`. Vorher lag dieser Schritt als Lambda im coverage-ausgenommenen `main`
+// und wurde von **keinem** Sensor ausgeführt — sein Verlust blieb unbemerkt
+// (Gegenprobe des Verifiers: Aufruf entfernt → 280/280 grün). Jetzt fällt er mit
+// dem Use-Case zusammen und ist damit orakel-gedeckt.
+DrawingTargetResolution openProject(
+    StructureEditService& service,
+    const ports::driven::ProjectRepositoryPort& repository,
+    const std::filesystem::path& path, const DrawingTargetSinks& sinks = {});
 
 }  // namespace bcad::hexagon::services

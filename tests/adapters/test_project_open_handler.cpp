@@ -128,10 +128,11 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, MissingFileThrowsAndLeavesStateIntact) {
 }
 
 
-// MEDIUM-7: die HIGH-3-Auflösung selbst — nach dem Öffnen zeigt der Canvas das
-// GELADENE Geschoss und eine Hilfslinie landet auf dem geladenen Stand. Ohne die
-// Neu-Auflösung stünden Canvas und Sink auf den Ids des alten Modells: der Canvas
-// filterte jede Plan-Zeile weg (leer) und `addGuideLine` würde abgelehnt.
+// MEDIUM-7 + Verify-Finding B4: die HIGH-3-Auflösung selbst — nach dem Öffnen
+// zeigt der Canvas das GELADENE Geschoss und eine Hilfslinie landet auf dem
+// geladenen Stand. Ohne die Neu-Auflösung stünden Canvas und Sink auf den Ids des
+// alten Modells: der Canvas filterte jede Plan-Zeile weg (leer) und
+// `addGuideLine` würde abgelehnt.
 TEST(ProjectOpenHandler_LH_FA_BLD_003, CanvasAndSinkFollowLoadedIds) {
     int argc = 1;
     char arg0[] = "bcad_adapter_tests";
@@ -168,14 +169,22 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, CanvasAndSinkFollowLoadedIds) {
         },
         static_cast<int>(stale_storey));
 
-    services::openProject(target, repository, path);
+    // Die **echten** Senken des Composition-Root (main.cpp verdrahtet dieselben
+    // zwei Callables) — NICHT im Test nachgestellt. Vorher rief der Test die
+    // Setter selbst; damit prüfte er die Setter, nicht die Entscheidung, sie
+    // nach dem Laden zu rufen, und der Verlust des Produktions-Aufrufs blieb
+    // grün (Verify-Finding B4, Gegenprobe CP-5).
+    const services::DrawingTargetSinks sinks{
+        [&canvas](model::StoreyId s) {
+            canvas.setActiveStorey(static_cast<int>(s));
+        },
+        [&sink](model::StoreyId s, model::LayerId l) { sink.setTarget(s, l); },
+    };
+    const auto resolution = services::openProject(target, repository, path, sinks);
 
-    // Der Composition-Root löst nach dem Laden neu auf — hier nachgestellt.
-    ASSERT_FALSE(target.building().storeys.empty());
-    ASSERT_FALSE(target.building().layers.empty());
+    EXPECT_EQ(resolution, services::DrawingTargetResolution::Resolved)
+        << "geladenes Projekt hat Geschoss UND Ebene";
     const auto loaded_storey = target.building().storeys.front().id;
-    canvas.setActiveStorey(static_cast<int>(loaded_storey));
-    sink.setTarget(loaded_storey, target.building().layers.front().id);
 
     // Orakel: die Hilfslinie wird auf dem GELADENEN Stand angenommen …
     const auto guide = sink.addGuideLine(model::Point2D{0.0, 0.0},

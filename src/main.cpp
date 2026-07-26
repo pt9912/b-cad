@@ -247,53 +247,54 @@ std::optional<int> runHeadlessCli(
 // die eigentliche Arbeit machen die HANDLER (openProject/saveProject), die
 // headless getestet sind (Plan-Review MED-1/MED-2).
 //
-// Nach dem Laden werden die beim Demo-Bau EINGEFRORENEN Ids neu aufgeloest
-// (Plan-Review HIGH-3): aktives Geschoss und Hilfslinien-Ebene stammen aus dem
-// alten Modell und sind im geladenen Projekt i. d. R. ungueltig — ohne
-// Neu-Aufloesung malte der Canvas leer und jedes Hilfslinien-Zeichnen wuerde
-// abgelehnt.
+// Die Neu-Aufloesung der beim Demo-Bau EINGEFRORENEN Ids (Plan-Review HIGH-3)
+// liegt NICHT mehr hier, sondern in `services::openProject` selbst: als Lambda
+// in diesem coverage-ausgenommenen main wurde sie von keinem Sensor ausgefuehrt
+// (Verify-Finding B4 — Aufruf entfernt, 280/280 blieben gruen). main verdrahtet
+// nur noch die Senken und uebersetzt das Ergebnis in einen Hinweis-Text.
 void installFileMenu(
     QMainWindow& window, bcad::hexagon::services::StructureEditService& service,
     const bcad::hexagon::ports::driven::ProjectRepositoryPort& repository,
     bcad::adapters::ui::command::EditDrawingGuideLineSink& guide_sink,
     bcad::adapters::ui::view::CanvasWidget& canvas) {
-    // Gibt einen Hinweis zurueck, falls das Zeichen-Ziel nicht vollstaendig
-    // aufgeloest werden konnte (leer = alles gut). Der Aufrufer zeigt ihn an —
-    // eine stille Teil-Aufloesung liesse Sink/Canvas auf den Ids des ALTEN
-    // Modells stehen, also genau in dem Zustand, den die Neu-Aufloesung
-    // beseitigen soll (Code-Review LOW-1).
-    //
-    // WICHTIG: Oeffnen ist LESEND. Frueher legte dieser Pfad eine Ebene
-    // "Canvas" an, wenn die geoeffnete Datei keine Ebenen hatte — damit wich
-    // der Stand im Speicher vom Dateiinhalt ab und ein anschliessendes
-    // Speichern schrieb die Zusatz-Ebene mit (Code-Review MEDIUM-8, gegen
-    // LH-FA-BLD-003 "vollstaendig wiederhergestellt"). Jetzt wird nichts mehr
-    // angelegt: ohne Ebene bleibt das Hilfslinien-Ziel unaufgeloest, und der
-    // Sink lehnt das Zeichnen vertragsgemaess ab, bis der Benutzer selbst eine
-    // Ebene anlegt.
-    const auto reresolve_after_open = [&service, &guide_sink,
-                                       &canvas]() -> QString {
-        if (service.building().storeys.empty()) {
-            return QStringLiteral(
-                "Das geoeffnete Projekt enthaelt kein Geschoss — die Zeichenflaeche "
-                "bleibt leer.");
-        }
-        const auto storey = service.building().storeys.front().id;
-        canvas.setActiveStorey(static_cast<int>(storey));
+    // Die Sichten als Senken (port-frei, Muster ADR-0019 Option A) — der Kern
+    // ruft sie nach dem Tausch mit den Ids des GELADENEN Stands.
+    const bcad::hexagon::services::DrawingTargetSinks sinks{
+        [&canvas](model::StoreyId storey) {
+            canvas.setActiveStorey(static_cast<int>(storey));
+        },
+        [&guide_sink](model::StoreyId storey, model::LayerId layer) {
+            guide_sink.setTarget(storey, layer);
+        },
+    };
 
-        if (service.building().layers.empty()) {
-            return QStringLiteral(
-                "Das geoeffnete Projekt enthaelt keine Zeichen-Ebene — Hilfslinien "
-                "koennen erst nach dem Anlegen einer Ebene gezeichnet werden.");
+    // Ein unvollstaendig aufgeloestes Ziel ist kein Fehler, aber der Benutzer
+    // muss es erfahren — sonst stuende er vor einer leeren Flaeche bzw. vor
+    // einem Zeichnen, das ohne sichtbaren Grund abgelehnt wird (Code-Review
+    // LOW-1). Leerer Text = alles aufgeloest.
+    const auto hint_for =
+        [](bcad::hexagon::services::DrawingTargetResolution r) -> QString {
+        using Res = bcad::hexagon::services::DrawingTargetResolution;
+        switch (r) {
+            case Res::NoStorey:
+                return QStringLiteral(
+                    "Das geoeffnete Projekt enthaelt kein Geschoss — die "
+                    "Zeichenflaeche bleibt leer.");
+            case Res::NoLayer:
+                return QStringLiteral(
+                    "Das geoeffnete Projekt enthaelt keine Zeichen-Ebene — "
+                    "Hilfslinien koennen erst nach dem Anlegen einer Ebene "
+                    "gezeichnet werden.");
+            case Res::Resolved:
+                break;
         }
-        guide_sink.setTarget(storey, service.building().layers.front().id);
         return {};
     };
 
     auto* file_menu = window.menuBar()->addMenu(QStringLiteral("&Datei"));
     QObject::connect(
         file_menu->addAction(QStringLiteral("&Oeffnen...")), &QAction::triggered,
-        &window, [&window, &service, &repository, reresolve_after_open]() {
+        &window, [&window, &service, &repository, sinks, hint_for]() {
             const QString path = QFileDialog::getOpenFileName(
                 &window, QStringLiteral("Projekt oeffnen"), QString(),
                 QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
@@ -301,9 +302,9 @@ void installFileMenu(
                 return;  // abgebrochen — kein Zustandswechsel
             }
             try {
-                bcad::hexagon::services::openProject(service, repository,
-                                                     path.toStdString());
-                const QString hint = reresolve_after_open();
+                const QString hint =
+                    hint_for(bcad::hexagon::services::openProject(
+                        service, repository, path.toStdString(), sinks));
                 window.setWindowTitle(
                     QStringLiteral("b-cad — %1").arg(QFileInfo(path).fileName()));
                 if (!hint.isEmpty()) {

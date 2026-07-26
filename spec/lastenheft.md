@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.16
+**Version:** 0.1.17
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -92,6 +92,21 @@ Projektdatei (SQLite) gespeichert.
 
 Projekt kann erneut geöffnet werden; Modellbaum, Geometrie und
 Materialzuordnungen werden vollständig wiederhergestellt.
+
+**Akzeptanzkriterien:**
+
+- **Happy Path:** Given ein gespeichertes Projekt, when „Öffnen", then ist
+  der Modellstand der Datei vollständig wiederhergestellt (Modellbaum,
+  Geometrie, Materialzuordnungen), er ersetzt den bisherigen Arbeitsstand,
+  die geöffneten Ansichten zeigen ihn, und der Benutzer kann an ihm
+  weiterarbeiten, ohne dass Vorhandenes überschrieben wird.
+- **Boundary:** Given ein soeben geöffnetes Projekt, when unmittelbar
+  danach „Speichern", then ist der geschriebene Inhalt derselbe wie der
+  geöffnete — das Öffnen ergänzt nichts; fehlt dem Projekt etwas, das eine
+  Ansicht zum Arbeiten braucht, wird das gemeldet statt still angelegt.
+- **Negative:** Given eine nicht vorhandene oder beschädigte Projektdatei,
+  when „Öffnen", then bleibt der bisherige Arbeitsstand unverändert und der
+  Fehler wird gemeldet — **kein** teilweise geladenes Projekt.
 
 #### LH-FA-BLD-004 — Projektversionierung
 

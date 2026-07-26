@@ -31,14 +31,43 @@ void saveProject(const ports::driven::ProjectRepositoryPort& repository,
     repository.save(building, derived, path);
 }
 
-void openProject(StructureEditService& service,
-                 const ports::driven::ProjectRepositoryPort& repository,
-                 const std::filesystem::path& path) {
+DrawingTargetResolution openProject(
+    StructureEditService& service,
+    const ports::driven::ProjectRepositoryPort& repository,
+    const std::filesystem::path& path, const DrawingTargetSinks& sinks) {
     // Laden (wirft neutral bei fehlender/korrupter Datei) und erst DANACH
     // ersetzen: schlaegt das Laden fehl, hat der Service nichts gesehen und
     // der bisherige Stand bleibt unveraendert.
     model::Building loaded = repository.load(path);
     service.replaceBuilding(std::move(loaded));
+
+    // Zeichen-Ziel neu aufloesen (slice-047b HIGH-3): die Sichten halten das
+    // aktive Geschoss / die Hilfslinien-Ebene by-value aus dem ALTEN Modell.
+    //
+    // WICHTIG: hier wird nichts angelegt. Frueher legte der GUI-Pfad eine Ebene
+    // "Canvas" an, wenn die geoeffnete Datei keine hatte — damit wich der Stand
+    // im Speicher vom Dateiinhalt ab und ein anschliessendes Speichern schrieb
+    // die Zusatz-Ebene mit (Code-Review MEDIUM-8, gegen LH-FA-BLD-003
+    // "vollstaendig wiederhergestellt"). Fehlt etwas, meldet der Rueckgabewert
+    // es dem Aufrufer, der es dem Benutzer zeigt.
+    const model::Building& current = service.building();
+    if (current.storeys.empty()) {
+        return DrawingTargetResolution::NoStorey;
+    }
+    const model::StoreyId storey = current.storeys.front().id;
+    if (sinks.set_active_storey) {
+        sinks.set_active_storey(storey);
+    }
+    if (current.layers.empty()) {
+        // Geschoss ist gesetzt (der Grundriss zeichnet), nur das Hilfslinien-
+        // Ziel bleibt unaufgeloest — der Sink lehnt das Zeichnen dann
+        // vertragsgemaess ab, bis der Benutzer selbst eine Ebene anlegt.
+        return DrawingTargetResolution::NoLayer;
+    }
+    if (sinks.set_draw_target) {
+        sinks.set_draw_target(storey, current.layers.front().id);
+    }
+    return DrawingTargetResolution::Resolved;
 }
 
 }  // namespace bcad::hexagon::services
