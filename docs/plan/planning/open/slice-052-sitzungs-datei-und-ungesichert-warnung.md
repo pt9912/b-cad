@@ -9,10 +9,10 @@ adr_refs: [[ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009]
 
 # Slice 052: Sitzungs-Datei merken + Ungesichert-Warnung
 
-**Status:** open — Scope-Reservierung aus der
-[slice-047](../done/slice-047-projekt-oeffnen.md)-Validation. **Vier Fragen sind bereits entschieden**
-(§3 Anforderungs-Ebene · §5 Wirkungs-Breite · §6 Orakel-Schnitt · §4 Abgrenzung); offen bleibt der
-**Lösungsraum** (§2) und damit der Detail-Schnitt. Eigenes
+**Status:** open — **review-reif** (2026-07-26), Scope-Reservierung aus der
+[slice-047](../done/slice-047-projekt-oeffnen.md)-Validation. **Fünf Fragen sind bereits entschieden**
+(§2 Lösung · §3 Anforderungs-Ebene · §4 Abgrenzung · §5 Wirkungs-Breite · §6 Orakel-Schnitt), DoD (§7) und
+Datei-Plan (§8) stehen — der Plan ist damit **review-reif**. Eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 **vor dem Start** — die Vorab-Entscheidungen sind sein Prüfgegenstand, nicht sein Ersatz.
 
@@ -49,22 +49,45 @@ Die GUI-Sitzung bekommt zwei benutzer-beobachtbare Eigenschaften:
 - **Sie weiß, ob sie ungesichert ist** → jede Aktion, die den Sitzungs-Stand verwirft (anderes Projekt
   öffnen, Fenster schließen), fragt vorher nach.
 
-## 2. Lösungsraum (offen — Entscheid beim Start; §3/§5/§6 sind bereits entschieden)
+## 2. Lösung — **entschieden**
 
-**Nicht** vorentschieden. Zwei Punkte sind aber schon jetzt belegbar und sollten den Schnitt leiten:
+Der Sitzungs-Zustand ist genau ein Paar: **welche Datei bin ich** + **bin ich seit dem letzten
+Schreiben verändert**. Beides bekommt **einen** Träger.
 
-- **Der „verändert"-Zustand ist bereits beobachtbar.** Der
-  [`ModelChangedPort`](../../../../src/hexagon/ports/driven/model_changed_port.h)
-  ([ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)) meldet **jede** committete Mutation; ein
-  Beobachter, der „seit dem letzten Schreiben kam mindestens eine Meldung" festhält, braucht **keine**
-  neue Naht im Kern. Der `ModelReplaced`-Fall aus slice-047 muss den Zustand dabei **zurücksetzen**
-  (ein frisch geöffnetes Projekt ist nicht verändert) — das ist der leicht zu übersehende Fall.
-- **Wohin gehört der Zustand?** Genau die Frage, an der slice-047 sein blockierendes Verify-Finding
-  hatte: was im coverage-ausgenommenen `main.cpp` landet, ist **orakel-los per Konstruktion**. „Welche
-  Datei bin ich, bin ich verändert?" ist eine **Entscheidung**, keine Verdrahtung — sie gehört in eine
-  testbare Naht (Muster: der `DrawingTargetSinks`-Rückweg aus
-  [slice-047](../done/slice-047-projekt-oeffnen.md) §7). In `main` darf bleiben: Dialog, Meldung,
-  Verdrahtung.
+**Ort: der Kern** (`src/hexagon/services/`), framework-frei. Nicht verhandelbar aus drei Gründen, zwei
+davon am Gate belegbar:
+
+1. **`main.cpp` ist orakel-los per Konstruktion** — der blockierende Verify-Befund aus
+   [slice-047](../done/slice-047-projekt-oeffnen.md) §7. „Bin ich verändert?" ist eine **Entscheidung**.
+2. **`ui/command/` kann es nicht tragen:** der Träger muss den
+   [`ModelChangedPort`](../../../../src/hexagon/ports/driven/model_changed_port.h) implementieren, und
+   die Kante `ui_command → ports_driven` **existiert nicht** in [`.a-check.yml`](../../../../.a-check.yml)
+   (nur `ui_view → ports_driven` und `services → ports_driven`). Sie zu ergänzen wäre eine
+   Gate-Lockerung mit ADR-Pflicht ([§2.6](../../../../AGENTS.md)) — für einen Zustand, der ohnehin
+   Qt-frei ist, ein schlechter Tausch.
+3. **`ui/view/` wäre semantisch falsch:** die Sitzung ist keine Sicht.
+
+**Form: ein `ProjectSession` im Kern, der selbst `ModelChangedPort`-Beobachter ist.**
+
+- **Dirty entsteht aus Meldungen, nicht aus Aufrufen.** Genau das macht den Schutz
+  **mutator-agnostisch** (§5): jede committete Mutation meldet über
+  [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), also auch jede künftige, ohne dass ein
+  neuer Mutator daran denken muss.
+- **`ModelReplaced` setzt zurück, statt zu setzen.** Ein frisch geöffnetes Projekt ist **nicht**
+  verändert — und weil `openProject` genau eine `ModelReplaced`-Meldung erzeugt (slice-047, belegt durch
+  `…NotifiesExactlyOneFullRefresh`), fällt der Rücksetz-Fall des Öffnens **mit der Meldung zusammen**.
+  Das ist der leicht zu übersehende Fall und hier strukturell erledigt.
+- **Der Pfad kommt von den Handlern**, die ihn ohnehin haben (`openProject`/`saveProject`): erfolgreiches
+  Öffnen und erfolgreiches Speichern melden ihn der Sitzung. **Nach**, nicht vor dem Schreiben (§9 R2).
+- **Das Verdikt ist eine reine Abfrage** über dieses Paar — kein Qt, kein Dialog, kein Zustand außerhalb:
+  `Proceed` (nichts zu verlieren) oder `AskFirst` (ungesichert). Damit ist der Kern des §6-Schnitts
+  port-frei testbar.
+- **„Speichern" nutzt den gemerkten Pfad und denselben Use-Case** — `saveProject`, kein zweiter
+  Schreibpfad (§9 R1). Ohne gemerkten Pfad verhält es sich wie „Speichern unter…".
+
+**Zwei- vs. dreiwertig, präzise:** das **Verdikt** ist zweiwertig (`Proceed`/`AskFirst`). Die **Antwort
+des Benutzers** ist dreiwertig (speichern / verwerfen / abbrechen) und lebt im Composition-Root, der sie
+in „Aktion ausführen" oder „Aktion **unterlassen**" übersetzt. Genau dieses Unterlassen ist §9 R3.
 
 ## 3. Anforderungs-Ebene — **entschieden** (Projektinhaber, 2026-07-26)
 
@@ -168,7 +191,56 @@ Qt-Schließ-Ereignis. Bedingung dafür — und das ist die harte Auflage dieses 
 Verdrahtung darf keine Entscheidung stehen.** Kein „wenn ungesichert dann…" im Ereignis-Handler; der
 Handler fragt das Verdikt ab und führt aus. Wer diese Auflage bricht, reproduziert Finding B4.
 
-## 7. Verbleibende Risiken
+## 7. Definition of Done
+
+- [ ] **`ProjectSession` im Kern** (`src/hexagon/services/`, framework-frei, `ModelChangedPort`-Beobachter):
+      `isDirty()` · `path()` (optional) · `markPersisted(path)` (Öffnen **und** Speichern) ·
+      `verdictForDiscard()` → `Proceed`/`AskFirst`. `ModelReplaced` **setzt zurück**, jede andere Meldung
+      setzt dirty.
+- [ ] **Orakel: alle sechs Zeilen der §6-Tabelle** als Unit-/Adapter-Tests **außerhalb** des
+      coverage-ausgenommenen `main`, **je einmal als diskriminierend belegt** (Gegenprobe rot, im
+      Closure-Text protokolliert).
+- [ ] **„Speichern" (neue Menü-Aktion)** nutzt `session.path()` + `services::saveProject`; ohne gemerkten
+      Pfad fällt es auf die Ziel-Abfrage zurück. „Speichern unter…" bleibt unverändert und **setzt** den
+      Pfad. **Kein** zweiter Schreibpfad am Use-Case vorbei (§9 R1).
+- [ ] **Rückfrage vor Sitzungs-Verlust** an **beiden** Auslösern (Öffnen, Fenster schließen): der Handler
+      holt das Verdikt und führt aus; bei `AskFirst` entscheidet der Benutzer speichern/verwerfen/**abbrechen**,
+      und Abbrechen **unterlässt** die auslösende Aktion (§9 R3). **In der Verdrahtung steht keine
+      Entscheidung** — die harte §6-Auflage.
+- [ ] **Lastenheft:** die §3-Vorlage in
+      [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern) aufgenommen,
+      Header-Version + [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md) nachgezogen
+      ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)).
+- [ ] **Spezifikation §1** neuer Block [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)`.b` mit der dann feststehenden Mechanik
+      (Sitzungs-Zustand, Rücksetz-Regel, Verdikt) + Zeile in
+      [`spezifikation-historie.md`](../../../../spec/spezifikation-historie.md).
+- [ ] **Benutzerhandbuch** ([Abschnitt 4.3](../../../user/benutzerhandbuch.md)) nachgeführt — er benennt
+      **heute beide Grenzen ausdrücklich als fehlend**; sie müssen mit der Lieferung verschwinden.
+      Handbuch-Version + Änderungshistorie mitziehen. (**`docs/user/` steht in dieser DoD-Zeile** — die
+      Lehre aus slice-047 V1.)
+- [ ] **CHANGELOG** [Unreleased]-Eintrag.
+- [ ] **`make gates` grün**; `make schema-check` byte-unberührt (**keine** Schema-Änderung — der
+      Sitzungs-Zustand ist **nicht** persistent).
+
+## 8. Plan (vor Code)
+
+| Datei / Komponente | Art | Begründung |
+|---|---|---|
+| `src/hexagon/services/project_session.{h,cpp}` | neu | der Sitzungs-Zustand + Verdikt (§2); `ModelChangedPort`-Beobachter, framework-frei |
+| `src/hexagon/services/manage_project.{h,cpp}` | ändern | erfolgreiches Öffnen/Speichern meldet den Pfad an die Sitzung (**nach** dem Erfolg, R2) |
+| `src/main.cpp` | ändern | Menü-Aktion **Speichern**; beide Verlust-Auslöser holen das Verdikt; Dialog + Antwort-Übersetzung (**keine** Entscheidung hier) |
+| `tests/hexagon/test_project_session.cpp` | neu | die §6-Zeilen 1–4 + 6 (Zustand + Verdikt, port-frei) |
+| `tests/adapters/test_project_open_handler.cpp` | ändern | §6-Zeile 5 (Round-Trip in die **gemerkte** Datei, echtes Repository) |
+| `spec/lastenheft.md`, `spec/lastenheft-historie.md` | ändern | AK-Aufnahme (§3-Vorlage) + Header-Version |
+| `spec/spezifikation.md`, `spec/spezifikation-historie.md` | ändern | §1-Mechanik-Block + Provenance-Zeile |
+| `docs/user/benutzerhandbuch.md` | ändern | die beiden „fehlt noch"-Hinweise in 4.3 auflösen |
+| `CHANGELOG.md` | ändern | [Unreleased]-Eintrag |
+
+**Nicht berührt:** `data-model.yaml`/`schema.sql` (kein persistenter Zustand), `.d-check.yml`/`.a-check.yml`
+(keine Gate-Änderung — die Kern-Platzierung ist gerade der Weg **ohne** neue Kante), ADR-Index (keine neue
+Grundsatz-Entscheidung).
+
+## 9. Verbleibende Risiken
 
 - **R1 — „Speichern" ohne Dialog ist ein neuer Datenverlust-Pfad.** Es überschreibt eine bestehende
   Datei **ohne Rückfrage** (genau das ist der Zweck). Die Atomarität aus
@@ -181,12 +253,12 @@ Handler fragt das Verdikt ab und führt aus. Wer diese Auflage bricht, reproduzi
   auslösende Aktion (Öffnen, Schließen) muss **unterbleiben** können. Ein Zwei-Wege-Verdikt
   (ja/nein) reicht nicht — das fällt sonst erst im Benutzer-Test auf.
 
-## 8. Trigger
+## 10. Trigger
 
 - **Validations-Rest** aus der [slice-047](../done/slice-047-projekt-oeffnen.md)-Closure (2026-07-26,
   Rolle Projektinhaber). Kein Gate-Befund, kein Review-Finding — ein **Bedarfs**-Befund.
 
-## 9. Closure-Trigger
+## 11. Closure-Trigger
 
 - **Alle sechs Zeilen der §6-Orakel-Tabelle** grün **und** je einmal als diskriminierend belegt
   (Gegenprobe rot) — die Tabelle ist der Maßstab, an dem die Verifikation misst.
@@ -199,16 +271,16 @@ Handler fragt das Verdikt ab und führt aus. Wer diese Auflage bricht, reproduzi
 - `make gates` grün; Closure-Notiz mit der §6-Auflage („keine Entscheidung in der Verdrahtung")
   beantwortet.
 
-## 10. Sub-Area-Modus-Begründung
+## 12. Sub-Area-Modus-Begründung
 
 ### Sub-Area: GUI-Sitzung / Persistenz-Bedienung
 
 - **Modus:** GF; **Dichte:** mittel. **Phase-Reife:** die Persistenz-Mechanik ist reif (welle-1) und der
   Aufruf-Pfad seit slice-047 vorhanden — dieser Slice ergänzt **Sitzungs-Zustand**, keine neue Mechanik.
-- **Risiko:** mittel — Datenverlust-nah (§7 R1/R2), und der schwerste Pfad liegt im sensorlosen
+- **Risiko:** mittel — Datenverlust-nah (§9 R1/R2), und der schwerste Pfad liegt im sensorlosen
   Fenster-Ereignis. Letzteres ist durch den vorab entschiedenen §6-Schnitt entschärft, **nicht**
   beseitigt: die benannte Grenze bleibt.
 
-## 11. Closure-Notiz
+## 13. Closure-Notiz
 
 _(bei Ausführung auszufüllen)_
