@@ -180,7 +180,7 @@ injizierbar + sichtbar im PDF-Footer, in STEP/STL-Header) — Exporte verschiede
 PNG-Titelblock** (self-rolled 5×7-Font + `tEXt`) — Herkunft jetzt sichtbar in **PDF *und* PNG**; visuell verifiziert.
 Damit ist der Export-Provenance-Strang für **PDF/PNG/STEP/STL** komplett. **Offen (Deferral,
 [MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)):** IFC-`FILE_NAME`/DXF-Provenance-Nachzug;
-**echte „Quelle"** via [`slice-047`](slice-047-projekt-oeffnen.md) („Projekt öffnen"). `make gates` grün
+**echte „Quelle"** via [`slice-047`](../done/slice-047-projekt-oeffnen.md) („Projekt öffnen"). `make gates` grün
 (266 Tests). **Prozess-Fix:** `make golden-regen` mount-frei (`tar`-Stream → Golden gehören dem User, nicht root).
 
 **[`slice-044a`](../done/slice-044a-golden-export-infra.md) done** (2026-07-24): Byte-Golden aller 6 Export-Formate

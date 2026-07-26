@@ -40,7 +40,7 @@ liegt in [`slice-051`](../open/slice-051-review-artefakt-pflicht.md).
 
 ## Traceability-Korrektur ([LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/[003](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden))
 
-**Befund (aus dem [slice-046a](../done/slice-046a-export-provenance.md)-Review):** BLD-002/003 wurden in welle-1 als
+**Befund (aus dem [slice-046a](slice-046a-export-provenance.md)-Review):** BLD-002/003 wurden in welle-1 als
 `done` verbucht, sind aber **nicht benutzer-erfüllbar**: die Persistenz-**Mechanik** (atomarer `save`/`load`,
 Crash-Recovery, `E-IO`-Fehler) ist implementiert + getestet (slices **008a/008b** + Bauteil-Persistenz), **aber es
 gibt keinen Aufruf-Pfad** — weder GUI „Datei → Speichern/Öffnen" noch CLI. Die AK-Klausel **„when Speichern"** ist
@@ -55,7 +55,7 @@ Die vorhandene Persistenz **benutzer-aufrufbar** machen — **beides** (Projekti
 - **GUI (047b):** „Datei → Speichern / Öffnen" (Menü + `QFileDialog`) — die **natürliche** Desktop-CAD-Aktion, die die
   AK „when Speichern" erfüllt.
 - **CLI (047a):** `--save <pfad>` / `--open <pfad>` — skriptbar, **io-smoke-testbar**, und speist die
-  [slice-046a](../done/slice-046a-export-provenance.md)-Provenance-**„Quelle"** (Basename statt leer).
+  [slice-046a](slice-046a-export-provenance.md)-Provenance-**„Quelle"** (Basename statt leer).
 
 Beide über **eine** geteilte, testbare Save/Open-Naht (der vom Codebase-Autor vorgesehene `ManageProjectPort`-Use-Case).
 
@@ -237,7 +237,7 @@ nur noch Dialog, Meldungstext und Verdrahtung.
 
 **Traceability-Korrektur:** [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/[`003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)
 waren in welle-1 verfrüht `done` (Mechanik ohne Aufruf-Pfad) — vermerkt in
-[`welle-1-results.md`](../done/welle-1-results.md). Beide sind **jetzt** benutzer-erfüllbar, für BLD-003 seit
+[`welle-1-results.md`](welle-1-results.md). Beide sind **jetzt** benutzer-erfüllbar, für BLD-003 seit
 0.1.17 auch **messbar**. [`ACC-005`](../../../../spec/lastenheft.md#7-abnahmekriterien) ist damit End-to-End
 demonstrierbar (alles außer dem modalen Dialog orakel-gedeckt).
 

@@ -15,7 +15,7 @@ vier slice-050-Commits davor; sie werden nur zitiert, wo 047b sie fortschreibt.
 (§1 D3-002.a, §1 IO-007.a, §4 E-GEO-002/E-IO-001, §5 Span-Tabelle) · `spec/spezifikation-historie.md` ·
 `spec/architecture.md` §1.2 · ADR-0001/0003/0008/0009/0018/0019/0020 · `AGENTS.md` §2 + §3 + §4 + §5 ·
 `harness/conventions.md` (MR-006/MR-008/MR-009/MR-011/MR-017) · `.a-check.yml` · `.d-check.yml` ·
-der Slice-Plan `docs/plan/planning/in-progress/slice-047-projekt-oeffnen.md` ·
+der Slice-Plan `docs/plan/planning/done/slice-047-projekt-oeffnen.md` ·
 `docs/reviews/` (letzte Reports zum Modul: **kein** slice-047-Report vorhanden, s. INFO-1).
 
 **Eigene Sensor-Läufe (nur `make`, AGENTS §2.9):**
@@ -125,7 +125,7 @@ der Slice-Plan `docs/plan/planning/in-progress/slice-047-projekt-oeffnen.md` ·
 - **quelle:** AGENTS §5.8 („Doku/Indizes aktualisieren, falls ein öffentlicher Vertrag berührt"),
   gelebte Repo-Praxis (Keep-a-Changelog, Eintrag je Slice — 047a hat einen)
 - **pfad:** CHANGELOG (unverändert in diesem Commit; `grep 047` trifft nur 047a-Zeilen);
-  Slice-Plan `docs/plan/planning/in-progress/slice-047-projekt-oeffnen.md`:107
+  Slice-Plan `docs/plan/planning/done/slice-047-projekt-oeffnen.md`:107
 - **befund:** Der Commit fügt drei öffentliche Verträge hinzu (`services::openProject`,
   `StructureEditService::replaceBuilding`, `ModelChangeOp::ModelReplaced`) und ändert das Startverhalten
   des GUI, schreibt aber keinen CHANGELOG-Eintrag; die entsprechende Doku-Zeile im Slice-Plan wurde im
@@ -213,7 +213,7 @@ der Slice-Plan `docs/plan/planning/in-progress/slice-047-projekt-oeffnen.md` ·
 ### LOW-3 — Der Plan-Kopf widerspricht dem im selben Commit abgehakten DoD
 
 - **kategorie:** LOW · **quelle:** Doku-Drift ·
-  **pfad:** `docs/plan/planning/in-progress/slice-047-projekt-oeffnen.md`:4, :12–21
+  **pfad:** `docs/plan/planning/done/slice-047-projekt-oeffnen.md`:4, :12–21
 - **befund:** Alle 047b-DoD-Haken sind gesetzt, während Kopf-Frontmatter (`status: open`) und Kopftext
   („047b offen", „… dann startbar", „Der Umbrella bleibt in `open/`") den Vorzustand beschreiben; die
   Datei liegt seit `daa7ab8` in `in-progress/`.

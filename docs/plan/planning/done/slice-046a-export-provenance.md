@@ -20,7 +20,7 @@ Der **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-rev
 gelöst → startbar:** die „Quelle = SQLite-Dateiname" ist **aktuell unerreichbar** (`main.cpp` lädt nie aus SQLite,
 jeder Export ist die in-memory [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)-Demo). **Gewählt (Projektinhaber
 2026-07-24): Option A** — slice-046 liefert **Datum + Version** (echt) + die Quelle-Mechanik mit `(ungespeichert)`-
-Fallback; **„Quelle" wird real durch den Folge-Slice [`slice-047`](../in-progress/slice-047-projekt-oeffnen.md)** („Projekt öffnen").
+Fallback; **„Quelle" wird real durch den Folge-Slice [`slice-047`](slice-047-projekt-oeffnen.md)** („Projekt öffnen").
 Auflösung s. §0.1. Quergreifende Feature-Slice; **Split empfohlen** (§0).
 
 > **046a IMPLEMENTIERT 2026-07-24 (closure-bereit, `make gates` grün, 265 Tests):** `ExportProvenance`-Vertrag durch
@@ -102,7 +102,7 @@ verdrahten + `--open`-Pfad + Basename-Tracking, **damit „Quelle" sofort echt**
 §0-Sizing zugibt (ein eigenes Feature „Projekt-Öffnen", quer zur Provenance).
 
 **→ GEWÄHLT (Projektinhaber 2026-07-24): Option A.** slice-046 liefert **Datum + Version** injizierbar + die
-Quelle-Mechanik mit `(ungespeichert)`-Fallback; „Quelle" wird **real** durch **[`slice-047`](../in-progress/slice-047-projekt-oeffnen.md)**
+Quelle-Mechanik mit `(ungespeichert)`-Fallback; „Quelle" wird **real** durch **[`slice-047`](slice-047-projekt-oeffnen.md)**
 („Projekt aus SQLite öffnen" — schließt zugleich die vom Review aufgedeckte Lücke, dass b-cad **gar keine** gespeicherten
 Projekte öffnen kann; dessen letzte DoD-Zeile reicht den geladenen Basename in den 046-Provenance-Vertrag). HIGH-1
 damit aufgelöst → **startbar**. (Die restliche Mechanik — Datum/Version, sichtbar PDF/PNG, alle Header — ist unberührt.)

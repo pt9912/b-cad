@@ -27,12 +27,21 @@ Finding F1):
 **Welle-ID:** welle-5-erweiterung
 **Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
 
-**In Arbeit:** [`slice-047`](slice-047-projekt-oeffnen.md) — Projekt speichern/öffnen benutzer-erfüllbar.
-**047a (CLI + Kern-Naht) done** (`70a30f1`); **047b (GUI) implementiert** (`15448d2`) — Datei-Menü +
-Datei-Auswahl, `openProject`-Naht, `replaceBuilding` (abgeleitete Zustände + Id-Zähler-Reset),
-`ModelReplaced`-Op + Viewer-Voll-Neuaufbau, Neu-Auflösung der eingefrorenen Geschoss-/Ebenen-Ids.
-**Unabhängiges Code-Review** (1 HIGH / 10 MED / 6 LOW / 4 INFO) **vollständig eingearbeitet**
-(`2db4fc6`, `17da627`). **Offen: Verify + Validation + Closure** — s. §Tagesabschluss.
+Keine offenen Slices.
+
+**Zuletzt geschlossen:** [`slice-047`](../done/slice-047-projekt-oeffnen.md) (2026-07-26) — Projekt
+speichern/öffnen **benutzer-erfüllbar**: Datei-Menü **Öffnen**/**Speichern unter…** + CLI `--save`/`--open`
+über eine geteilte Kern-Naht. Vollständige Rollen-Sequenz gefahren: Code-Review (1 HIGH / 10 MED / 6 LOW),
+**Verify** (Verdikt *nicht fertig* → 3 unbelegte DoD-Zeilen), **Validation** (Projektinhaber: *angenommen
+mit benanntem Rest*). Aus der Verify-Einarbeitung: die Neu-Auflösung des Zeichen-Ziels ist aus dem
+orakel-losen `main.cpp` in den Use-Case gewandert, **Lastenheft 0.1.17**
+([`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden) Outline → AK) und
+**Benutzerhandbuch 1.1** (das Datei-Menü existiert jetzt auch in der Doku).
+
+**Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl) ·
+[`slice-049`](../open/slice-049-spec-straten-prozess-rein-welle.md) (welle-Purge) ·
+[`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht) ·
+Folge-Slice aus der 047-Validation (Sitzungs-Datei merken + Ungesichert-Warnung, noch anzulegen).
 
 
 
