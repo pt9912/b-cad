@@ -48,7 +48,9 @@ orakel-losen `main.cpp` in den Use-Case gewandert, **Lastenheft 0.1.17**
 **Nächste startbare Fäden** (Projektinhaber-Wahl): `slice-048b` (DRW-001-Impl — laut
 slice-049-Sequenz jetzt an der Reihe) ·
 [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht) ·
-[`slice-052`](../open/slice-052-sitzungs-datei-und-ungesichert-warnung.md) (Sitzungs-Datei merken + Ungesichert-Warnung, aus der 047-Validation).
+[`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) + [`slice-052b`](../open/slice-052b-neues-projekt.md)
+(Sitzungs-Zustand/Speichern bzw. »Neues Projekt«, aus der 047-Validation; **je ein [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) offen** — 052 wurde nach
+zwei Review-Läufen geteilt).
 
 
 
