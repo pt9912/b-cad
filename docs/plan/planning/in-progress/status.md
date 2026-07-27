@@ -5,6 +5,57 @@
 
 ---
 
+## 2026-07-27 (4) — slice-052b geschlossen: **die Vierer-Kette ist komplett**
+
+`make gates` **EXIT=0** (docs-check 0 Befunde / 260 Dateien · a-check 0 · arch-check ok ·
+**352/352** Tests · Coverage 91,8 %), `make io-smoke` EXIT=0, `make schema-check` EXIT=0.
+`in-progress/` ist leer, der Ruhe-Sentinel steht.
+
+**[`slice-052b`](../done/slice-052b-neues-projekt.md) done** (`7674344` Review-Lauf-2-Einarbeitung →
+Start → Implementierung → Closure). „Datei → Neu" legt ein Projekt mit **einem Geschoss und einer
+Zeichen-Ebene** an, setzt den Sitzungs-Zustand zurück und läuft hinter derselben Rückfrage wie Öffnen
+und Beenden. **Lastenheft 0.1.19**, **Benutzerhandbuch 1.3**.
+
+### Damit ist der Validations-Rest von slice-047 abgearbeitet
+
+**054 → 053 → 052a → 052b**, alle vier `done`. Zwischenstand der Kette:
+
+| Slice | Was | Review-Läufe |
+|---|---|---|
+| **054** | `ManageProjectPort` — die Wurzel der GUI-Findings-Klasse | 1 (2 HIGH) |
+| **053** | Fenster + Menü-Handler als Adapter | 2 (2 + 1 HIGH) |
+| **052a** | Sitzungs-Zustand, „Speichern", Rückfrage | 4 (8 HIGH gesamt) |
+| **052b** | „Neues Projekt" | 2 (3 + 3 HIGH) |
+
+**Jeder** Lauf hat etwas Echtes gefunden. Die letzten drei Läufe fanden jeweils dasselbe Muster:
+**ein Plan, der vor seinen Vorläufern geschrieben wurde, bucht auf Artefakten, die es so nicht gibt.**
+
+### Der Regel-Kandidat ist reif — dritte Wiederholung
+
+052a: eine Gegenprobe blieb grün, weil der Test **die falsche Komponente** prüfte (Reihenfolge zwischen
+zwei Komponenten, belegt an einer einzelnen). 052b-Lauf-2-HIGH-3 fand **wörtlich dieselbe Bauart**:
+Orakel-Zeilen auf `test_project_session.cpp` gebucht, obwohl die Kette seit 052a im
+`ProjectMenuHandler` liegt. Davor 053: „eingearbeitet ≠ entschieden".
+
+> **Vorschlag für eine MR** (3×-Regel erfüllt): *Eine Orakel-Zeile benennt nicht nur die Zusicherung,
+> sondern die **Komponente**, an der sie diskriminiert. Zusagen über das Zusammenspiel zweier
+> Komponenten werden am **Zusammenspiel** belegt, nicht an einer von beiden.* Sensor: die
+> [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Linse
+> „reale Sensor-Deckung" — computational (noch) nicht prüfbar, wie [MR-020](../../../../harness/conventions.md).
+
+**Nicht** von mir angelegt — das ist eine Regelwerk-Entscheidung des Projektinhabers.
+
+### Was jetzt offen ist
+
+- **VORRANGIG: „viele Slices, keine Wellen"** (2026-07-26, unten) — welle-5 ist ein Label ohne
+  Artefakt, der M5-Trigger laut [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) erfüllt, die
+  Roadmap sagt „offen". Die Kette, die den Punkt verdrängt hat, ist jetzt abgeräumt.
+- **`slice-048b`** (DRW-001-Impl, Fang-Punkte) — Plan liegt weiter nicht in `open/`.
+- [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) — Review-Artefakt-Pflicht als Gate.
+- [`slice-006`](../open/slice-006-drittanbieter-attribution.md), 039a/b, 040a, 044b — Alt-Bestand.
+
+---
+
 ## 2026-07-27 (3) — slice-052a geschlossen: die Kette ist bis auf 052b durch
 
 `make gates` **EXIT=0** (docs-check 0 Befunde / 259 Dateien · a-check 0 · arch-check ok ·
@@ -35,7 +86,7 @@ Fehlschlag durch den **echten** Use-Case führen; danach ist die Gegenprobe rot.
 wäre sie wieder orakel-los gewesen. Sie ist als `ProjectMenuHandler::mayDiscard(ask, ask_target)` in
 den geprüften Adapter gewandert; `main.cpp` reicht nur die zwei **Dialoge** herein.
 
-**Weiter in der Kette:** ▶ **[`slice-052b`](slice-052b-neues-projekt.md)** („Neues Projekt",
+**Weiter in der Kette:** ▶ **[`slice-052b`](../done/slice-052b-neues-projekt.md)** („Neues Projekt",
 macht [`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen) erstmals
 benutzer-erfüllbar) — **zweiter
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
@@ -201,7 +252,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 **Sequenz: [`slice-054`](../done/slice-054-manage-project-port.md) →
 [`slice-053`](../done/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) →
-[`slice-052b`](slice-052b-neues-projekt.md).**
+[`slice-052b`](../done/slice-052b-neues-projekt.md).**
 
 Alle vier stammen aus dem **Validations-Rest von slice-047** („Speichern" auf die offene Datei +
 Warnung vor ungesicherten Änderungen). Sie sind das Ergebnis von **sechs**

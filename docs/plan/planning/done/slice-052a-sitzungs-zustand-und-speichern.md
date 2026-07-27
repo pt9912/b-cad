@@ -14,7 +14,7 @@ gefahren, alle „nicht startbar"** ([Lauf 1](../../../reviews/2026-07-26-slice-
 7 MED / 5 LOW / 2 INFO · [Lauf 2](../../../reviews/2026-07-26-slice-052-plan-2.md): 1 HIGH / 11 MED /
 4 LOW / 2 INFO · [Lauf 3](../../../reviews/2026-07-26-slice-052a-plan-3.md): 1 HIGH / 3 MED / 4 LOW /
 2 INFO). Lauf 1 + 2 galten dem **ungeteilten** slice-052; Lauf 2 führte zum **Split**
-([`slice-052b`](../in-progress/slice-052b-neues-projekt.md)), Lauf 3 zum **Struktur-Vorläufer**
+([`slice-052b`](../done/slice-052b-neues-projekt.md)), Lauf 3 zum **Struktur-Vorläufer**
 [`slice-053`](../done/slice-053-fenster-als-adapter.md). Alle Findings sind eingearbeitet (§13).
 
 **Abhängigkeit: [`slice-053`](../done/slice-053-fenster-als-adapter.md) muss zuerst laufen** — ohne das
@@ -48,7 +48,7 @@ erst entstand, als slice-047 dem Benutzer überhaupt eine Sitzung gab, die er ve
 - **Die Sitzung weiß, welche Datei sie ist** → „Speichern" schreibt ohne Pfad-Dialog dorthin zurück;
   „Speichern unter…" bleibt daneben bestehen.
 - **Die Sitzung weiß, ob sie ungesichert ist** → **Öffnen** und **Fenster schließen** fragen vorher
-  nach. (Der dritte Auslöser „Neues Projekt" liegt in [`slice-052b`](../in-progress/slice-052b-neues-projekt.md).)
+  nach. (Der dritte Auslöser „Neues Projekt" liegt in [`slice-052b`](../done/slice-052b-neues-projekt.md).)
 
 ## 2. Lösung — **entschieden** (Projektinhaber 2026-07-26, nach Lauf-1-HIGH-1)
 
@@ -145,7 +145,7 @@ nichts.
 > **Die frühere Aussage „die Ungesichert-Warnung hat heute keine Anforderung" war falsch.**
 > [`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen) trägt sie bereits auf
 > **AK-Niveau** — allerdings für den Auslöser „Neues Projekt", der in
-> [`slice-052b`](../in-progress/slice-052b-neues-projekt.md) liegt.
+> [`slice-052b`](../done/slice-052b-neues-projekt.md) liegt.
 
 Für **diesen** Slice sind zwei AK zu ergänzen (lösungsfrei nach
 [MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei);
@@ -176,7 +176,7 @@ eigene Anforderung „Sitzung beenden", die es nicht gibt und die dieser Slice n
 **Beide Vorlagen sind dreiwertig ausformuliert** (Lauf-2-MEDIUM-8): der frühere Rückverweis „analog
 [LH-FA-BLD-001](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen)" behauptete eine Deckung, die der dortige **zweiwertige** AK-Text („Rückfrage
 ‚Änderungen verwerfen?'") nicht hergibt. Für „Neu" löst das
-[`slice-052b`](../in-progress/slice-052b-neues-projekt.md).
+[`slice-052b`](../done/slice-052b-neues-projekt.md).
 
 **Warum der Text hier steht und nicht schon im Lastenheft:** die Aufnahme ist **Ausführung** dieses
 Slice, nicht seine Planung — sie braucht den Lifecycle-Schritt nach `in-progress/` und das
@@ -184,7 +184,7 @@ vorgeschaltete [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges
 
 ## 4. Bewusst NICHT Teil
 
-- **„Neues Projekt"** → [`slice-052b`](../in-progress/slice-052b-neues-projekt.md). Der Split ist die Antwort auf
+- **„Neues Projekt"** → [`slice-052b`](../done/slice-052b-neues-projekt.md). Der Split ist die Antwort auf
   Lauf-2-HIGH-1 und -MEDIUM-11: der Auslöser bringt eigene Zustands-, Anforderungs- und Doku-Arbeit mit
   (Reset der gemerkten Datei, Negative-AK, fehlende Zeichen-Ebene) und hat in einem Schnitt mit dem
   Sitzungs-Zustand nachweislich Löcher hinterlassen.
@@ -353,7 +353,7 @@ Die harte Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
   **ohne Rückfrage** (das ist der Zweck). Die Atomarität aus
   [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern) trägt das bereits —
   **kein** Schreibpfad am Use-Case vorbei. *(Der gefährlichste Fall dieser Klasse — „Speichern" nach
-  „Neu" schreibt in die alte Datei — liegt in [`slice-052b`](../in-progress/slice-052b-neues-projekt.md); dieser Slice
+  „Neu" schreibt in die alte Datei — liegt in [`slice-052b`](../done/slice-052b-neues-projekt.md); dieser Slice
   kennt keine Aktion, die den Pfad stehen lässt und den Stand ersetzt.)*
 - **R4 — Kosten des Vergleichs.** Modell-Kopie + O(n)-Vergleich, nur bei Verwerf-Aktionen. Bei sehr
   großen Modellen ein benannter Re-Eval (Inhalts-Hash), **kein** Thema dieses Schnitts.
@@ -403,21 +403,21 @@ MED-7 → §10. LOW-1..5 + INFO-1 → eingearbeitet.
 
 | # | Behandlung |
 |---|---|
-| **HIGH-1** (nach „Neu" schreibt „Speichern" in die alte Datei) | **an der Wurzel: Split.** Dieser Slice kennt keine Aktion, die den Modellstand ersetzt und den Pfad stehen lässt. Reset-Semantik + Orakel liegen in [`slice-052b`](../in-progress/slice-052b-neues-projekt.md). |
+| **HIGH-1** (nach „Neu" schreibt „Speichern" in die alte Datei) | **an der Wurzel: Split.** Dieser Slice kennt keine Aktion, die den Modellstand ersetzt und den Pfad stehen lässt. Reset-Semantik + Orakel liegen in [`slice-052b`](../done/slice-052b-neues-projekt.md). |
 | **MEDIUM-1** (Struktur vs. Konvention) | §2 unterscheidet jetzt **neue Mutatoren** (strukturell erfasst) von **neuen Feldern** (Konvention); §9 R1 benennt die Grenze und den Re-Eval statt sie zu überzeichnen. |
 | **MEDIUM-2** (Feld-Orakel außerhalb des Maßstabs) | als **§6-Zeile 3** in die Tabelle gehoben, die §12 zum Maßstab erklärt. |
 | **MEDIUM-3** (verschachtelte Werttypen) | §2 + §7 nennen `Point2D`/`Segment`/`Footprint` **namentlich**; die Gegenprobe der Zeile 3 nennt `Point2D::y_mm` als Beispiel. |
 | **MEDIUM-4** (Anfangszustand) | **Baseline ist Konstruktions-Parameter** des Kern-Objekts (§2), Orakel §6-Zeile 8, Risiko §9 R5 — inkl. der zweiten Start-Mutation `addLayer`. |
-| **MEDIUM-5** (B4-Klasse bei „Neu") | → [`slice-052b`](../in-progress/slice-052b-neues-projekt.md). |
+| **MEDIUM-5** (B4-Klasse bei „Neu") | → [`slice-052b`](../done/slice-052b-neues-projekt.md). |
 | **MEDIUM-6a** (Speichern-Verdrahtung nicht in der Grenze) | die Grenze ist neu gefasst und zählt die Menü-Verdrahtung **inkl. Speichern** auf; Zeilen 9 + 10 decken die Entscheidung. **MEDIUM-6b** (Neu-Erzeugung) → 052b. |
-| **MEDIUM-7** (Negative-AK [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)) | → [`slice-052b`](../in-progress/slice-052b-neues-projekt.md). |
+| **MEDIUM-7** (Negative-AK [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)) | → [`slice-052b`](../done/slice-052b-neues-projekt.md). |
 | **MEDIUM-8** (zweiwertige AK als Referenz) | beide §3-Vorlagen sind **dreiwertig ausformuliert**; der Rückverweis „analog BLD-001" ist entfernt. |
 | **MEDIUM-9** (Handbuch-Stellen) | DoD nennt **vier** Stellen für diesen Slice (4.3, FAQ, 2.3, 4.1); die „Neu"-Stellen (§1 „Heute möglich", §3 „drei Wege") trägt 052b. |
 | **MEDIUM-10** (Schließ-Ereignis testbar) | **§6-Zeile 13** neu, headless über `QCloseEvent`; die Grenze führt das Ereignis nicht mehr. |
 | **MEDIUM-11** (Sizing) | **Split** in 052a/052b; §14 neu bewertet. |
 | **LOW-1** | `removeGuideLine` mit **eigener** Fundstelle (:1350–1359) belegt. |
 | **LOW-2** | **13** Struct-Typen statt „~10". |
-| **LOW-3** (§1-Anker für „Neu") | → [`slice-052b`](../in-progress/slice-052b-neues-projekt.md). |
+| **LOW-3** (§1-Anker für „Neu") | → [`slice-052b`](../done/slice-052b-neues-projekt.md). |
 | **LOW-4** (§14-Widerspruch) | §14 neu formuliert. |
 | **INFO-1** (Gegenprobe braucht Ersatz-Implementierung) | in §6-Zeile 1 als **Ersatz** statt Entfernung ausgeschrieben. |
 | **INFO-2** (Ruhe-Marker) | in der DoD-Gates-Zeile. |

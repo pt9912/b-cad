@@ -233,7 +233,7 @@ nur noch Dialog, Meldungstext und Verdrahtung.
 - `rest`: kein „Speichern" auf die zuletzt geöffnete Datei (nur „Speichern unter…"), **keine** Warnung vor
   ungesicherten Änderungen beim Öffnen, **kein** GUI-Export, **keine** Zuletzt-geöffnet-Liste. Der Rest blockiert
   den Nutzen nicht, ist aber im Handbuch (4.3) **benannt**, damit ihn kein Benutzer als Fehler erlebt.
-- `folge`: [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) (+ [`slice-052b`](../in-progress/slice-052b-neues-projekt.md)) in `open/` — Sitzungs-Datei
+- `folge`: [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) (+ [`slice-052b`](../done/slice-052b-neues-projekt.md)) in `open/` — Sitzungs-Datei
   merken (Speichern ohne Pfad-Dialog) + Ungesichert-Warnung. GUI-Export und Zuletzt-geöffnet-Liste bleiben
   eigene Schnitte.
 

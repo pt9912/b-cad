@@ -20,7 +20,7 @@ gefahren:** Lauf 1 (2026-07-26, 2 HIGH / 6 MED / 5 LOW / 2 INFO,
 und „keine neue Kante" ohne ihn nicht gleichzeitig einlösbar sind. **Dieser Plan ist auf den
 tatsächlich gelieferten Port geprüft** (Lauf 2), nicht auf den erwarteten. **Sequenz: 054 → 053 →
 [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) →
-[`slice-052b`](../in-progress/slice-052b-neues-projekt.md).**
+[`slice-052b`](../done/slice-052b-neues-projekt.md).**
 
 **Welle:** welle-5-erweiterung (Quergewerk / Struktur-Vorbereitung — Muster
 slice-028/029 (in `done/`), die vor der a-check-Umstellung dieselbe Rolle spielten).
@@ -96,7 +96,7 @@ Wort** — und genau daran hing der gefährlichste Befund des zweiten Laufs:
 
 - **Jede neue Funktion.** Kein „Speichern", kein „Neu", keine Ungesichert-Rückfrage — das sind
   [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) und
-  [`slice-052b`](../in-progress/slice-052b-neues-projekt.md). Dieser Slice **ermöglicht** sie, er liefert sie nicht.
+  [`slice-052b`](../done/slice-052b-neues-projekt.md). Dieser Slice **ermöglicht** sie, er liefert sie nicht.
 - **Die 3D-/2D-Widgets** (`ViewerWidget`, `CanvasWidget`) und ihre Verdrahtung — unverändert.
 - **Der `--acc-002-beleg`-Pfad und die CLI** (`runHeadlessCli`) — unberührt; der
   [ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)-Beleg muss **bit-gleich** erzeugbar
