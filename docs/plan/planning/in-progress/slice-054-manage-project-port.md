@@ -312,4 +312,63 @@ ist **nicht** erforderlich ([MR-006](../../../../harness/conventions.md#mr-006--
 
 ## 11. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Ausgeführt 2026-07-27.** `make gates` **EXIT=0** (docs-check 0 Befunde / 257 Dateien · a-check 0 ·
+arch-check ok · **291/291** Tests · Coverage 91,5 %), `make io-smoke` EXIT=0, `make schema-check`
+EXIT=0.
+
+### Was entstanden ist
+
+- **`src/hexagon/ports/driving/manage_project_port.h`** — `ManageProjectPort` mit `openProject(path,
+  sinks)` und `saveProject(path)`; `DrawingTargetSinks`/`DrawingTargetResolution` sind mit umgezogen.
+  Includes: `<filesystem>`, `<functional>`, `model/layer.h`, `model/wall.h` — **nichts sonst**.
+- **`ManageProjectService`** in `src/hexagon/services/manage_project.{h,cpp}` — hält
+  `StructureEditService&` + `const ProjectRepositoryPort&`, delegiert an die unveränderten freien
+  Funktionen. `services`-seitige `using`-Aliase halten die Bestands-Aufrufer wortgleich.
+- **`src/main.cpp`** — `installFileMenu` nimmt jetzt `ManageProjectPort&` statt Service + Repository;
+  beide GUI-Lambdas rufen über den Port. Der Composition-Root verdrahtet die Infrastruktur einmal.
+- **`tests/hexagon/test_manage_project_port.cpp`** (6 Tests) + Eintrag in `tests/CMakeLists.txt`.
+
+### Orakel §3 — je mit roter Gegenprobe (gemessen, nicht behauptet)
+
+| # | Gegenprobe | Ergebnis |
+|---|---|---|
+| 1/2 | `ManageProjectService::openProject` delegiert nicht mehr (Rumpf gibt `Resolved` zurück) | **4 rot**: `PortSightAloneOpensAndSaves`, `PortSaveWritesSessionStateNotAPassedModel`, `PortSaveIsFailClosedOnDanglingFromStorey`, `PortOpenResolvesDrawingTargetThroughMethodSinks` |
+| 3 | Port-`save` speichert `Building{}` statt `service_.building()` | **3 rot**: `PortSightAloneOpensAndSaves`, `PortSaveWritesSessionStateNotAPassedModel`, `PortSaveIsFailClosedOnDanglingFromStorey` |
+| 4 | `openProject` fängt den Fehler und gibt `NoStorey` zurück | **1 rot**: `PortOpenPropagatesNeutralErrorAndKeepsState` |
+| 5 | Probe-Include `hexagon/ports/driven/project_repository_port.h` im Port-Header | **`make a-check` rot**: `manage_project_port.h:7: wrong-direction: ports_driving -> ports_driven` |
+
+Gegenprobe 5 ist zugleich der **empirische Beleg für HIGH-1 des Plan-Reviews**: die ursprünglich
+zugesagte Signatur wäre genau dieser Befund gewesen.
+
+### Invarianz-Beleg
+
+`git diff` über die fünf Bestands-Dateien `tests/hexagon/test_manage_project.cpp`,
+`tests/adapters/test_project_open_handler.cpp`, `tests/adapters/save_project_test_helper.h`,
+`tests/adapters/test_sqlite_crash_recovery.cpp`, `tests/adapters/test_sqlite_project_repository.cpp`
+ist **leer** — sie sind byte-unverändert grün. Das Verhalten (rise-Ableitung, fail-closed, Atomarität,
+Modell-Ersetzung, Zeichen-Ziel) ist damit an unverändertem Maßstab belegt.
+
+### Entscheidungen, die der Plan verlangt hat
+
+- **R1 — Port-Zuschnitt protokolliert:** der Port führt **zwei** der vier in `architecture.md`:76
+  genannten Aufgaben. „Anlegen" ([`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen))
+  und „versionieren" ([`LH-FA-BLD-004`](../../../../spec/lastenheft.md#lh-fa-bld-004--projektversionierung))
+  sind **nicht** deklariert — sie existieren als Verhalten nicht, und ein Port darf nichts versprechen,
+  was niemand erfüllt. Die Architektur-Zeile sagt das jetzt explizit („realisiert, Teilumfang" + die
+  Aufzählung der nicht enthaltenen Aufgaben), statt die Lücke zu verschweigen.
+- **`spec/spezifikation.md` — begründet unberührt.** Der Block
+  [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)`.a`/[`003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)`.a` (:753 ff.) beschreibt die **Aufruf-Wege aus Benutzersicht** (CLI vs. GUI,
+  Sitzungs-Semantik, Fehlerfälle, „Öffnen ist lesend") und nennt an keiner Stelle den Aufruf-**Mechanismus**.
+  Seine Aussagen gelten unverändert: CLI und GUI schreiben weiterhin über **einen** gemeinsamen
+  Ableitungs-Schritt — der GUI-Weg erreicht ihn jetzt über den Port. Keine Zeile wird durch die
+  Port-Naht falsch, also wird keine geändert (Entscheidung explizit, nicht implizit).
+- **Kein Lastenheft-, kein Handbuch-Eintrag** — geprüft und verneint: nichts wird benutzer-sichtbar,
+  keine Anforderung ändert ihre Erfüllbarkeit.
+
+### Was 054 bewusst NICHT belegt
+
+Die Kante `ui_command → ports_driving` ist in `.a-check.yml` deklariert, aber **noch von keiner realen
+Datei begangen** — 054 legt keinen Adapter an. Den architektonischen Beleg führt
+[`slice-053`](../open/slice-053-fenster-als-adapter.md); erst dort sieht `make a-check` einen
+`ui/command/`-Handler am Port. Der Port hat nach diesem Slice **einen** Treiber (den
+Composition-Root), nach 053 den zweiten (R4).

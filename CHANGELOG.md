@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-054 — **`ManageProjectPort` realisiert** (Struktur, **verhaltens-invariant**): die
+  Projekt-Use-Cases „speichern"/„öffnen" stehen hinter einem Driving Port
+  ([`src/hexagon/ports/driving/manage_project_port.h`](src/hexagon/ports/driving/manage_project_port.h)),
+  den ein Kern-Service erfüllt. [`spec/architecture.md`](spec/architecture.md) deklarierte diese
+  Ziel-Form seit dem Bootstrap; realisiert wird sie jetzt, weil sie gebraucht wird —
+  **kein** Adapter darf `hexagon/services/` rufen ([`.a-check.yml`](.a-check.yml)), die Use-Cases waren
+  aber **Services ohne Port**. Damit war `main.cpp` der einzige zulässige Aufrufer, und jede
+  Entscheidung an diesen Aufrufen landete im coverage-ausgenommenen Composition-Root — dieselbe
+  Findings-Klasse in **vier** aufeinanderfolgenden Slices (047-B4 · 052 · 052a · 053).
+  **Signatur-Schnitt:** Repository und Struktur-Service hält die Implementierung als
+  Konstruktor-Abhängigkeit, der Vertrag führt nur `model/` + Standardbibliothek — ein Driving Port darf
+  nichts anderes sehen. Dadurch kommt ein künftiger `adapters/ui/command/`-Handler ohne
+  `StructureEditService` und ohne `ProjectRepositoryPort` aus.
+  **Kein neues Verhalten:** die freien Funktionen bleiben die geteilte Ableitungs-Logik, der Service
+  delegiert an sie; die fünf Bestands-Testdateien sind **byte-unverändert** grün — das ist der
+  Invarianz-Beleg. Das GUI-Datei-Menü ruft ab jetzt über den Port; die CLI (`--save`) bleibt bei der
+  freien Funktion, weil sie ein Modell speichert, das **kein Service hält**. **Kein ADR**
+  ([ADR-0001](docs/plan/adr/0001-hexagonale-architektur.md) macht Use-Cases hinter Driving Ports zur
+  Regel — dies ist deren Erfüllung, keine Abweichung; [AGENTS §2.6](AGENTS.md) n/a, keine
+  Gate-Lockerung).
 - slice-049 — **Spec-Straten sind prozess-/zeit-rein** ([MR-023](harness/conventions.md#mr-023--spec-straten-sind-prozess-zeit-rein-d-check-matrix-klasse-temporal)).
   Das Prozess-Vokabular **»welle-N«** (Projekt-Abwicklungs-Wellen) ist aus
   [`spec/lastenheft.md`](spec/lastenheft.md) (17), [`spec/spezifikation.md`](spec/spezifikation.md) (38) und

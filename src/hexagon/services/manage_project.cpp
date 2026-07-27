@@ -70,4 +70,23 @@ DrawingTargetResolution openProject(
     return DrawingTargetResolution::Resolved;
 }
 
+// --- ManageProjectService: die Port-Naht (slice-054) ----------------------
+//
+// Beide Methoden delegieren an die freien Funktionen oben. Der einzige
+// Unterschied ist, WOHER die Abhängigkeiten kommen: aus den
+// Konstruktor-Referenzen statt aus der Signatur. Genau das macht den Vertrag
+// adapter-tauglich (Plan §2.1).
+
+DrawingTargetResolution ManageProjectService::openProject(
+    const std::filesystem::path& path, const DrawingTargetSinks& sinks) {
+    return services::openProject(service_, repository_, path, sinks);
+}
+
+void ManageProjectService::saveProject(const std::filesystem::path& path) {
+    // Der zu speichernde Stand ist der des Struktur-Service — nicht ein von
+    // aussen gereichtes `Building`. Deshalb kommt ein `ui_command`-Handler ohne
+    // `StructureEditService` aus.
+    services::saveProject(repository_, service_.building(), path);
+}
+
 }  // namespace bcad::hexagon::services

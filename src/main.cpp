@@ -47,6 +47,7 @@
 #include "adapters/ui/view/viewer_widget.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
+#include "hexagon/ports/driving/manage_project_port.h"
 #include "hexagon/services/bootstrap_info.h"
 #include "hexagon/services/exchange_service.h"
 #include "hexagon/services/manage_project.h"
@@ -252,9 +253,13 @@ std::optional<int> runHeadlessCli(
 // in diesem coverage-ausgenommenen main wurde sie von keinem Sensor ausgefuehrt
 // (Verify-Finding B4 — Aufruf entfernt, 280/280 blieben gruen). main verdrahtet
 // nur noch die Senken und uebersetzt das Ergebnis in einen Hinweis-Text.
+//
+// slice-054: das Menue spricht die Use-Cases ueber den `ManageProjectPort` an,
+// nicht mehr ueber die freien Service-Funktionen. Es sieht damit weder den
+// `StructureEditService` noch den `ProjectRepositoryPort` — genau die Sicht,
+// die ein `adapters/ui/command/`-Handler haben wird (slice-053).
 void installFileMenu(
-    QMainWindow& window, bcad::hexagon::services::StructureEditService& service,
-    const bcad::hexagon::ports::driven::ProjectRepositoryPort& repository,
+    QMainWindow& window, bcad::hexagon::ports::driving::ManageProjectPort& project,
     bcad::adapters::ui::command::EditDrawingGuideLineSink& guide_sink,
     bcad::adapters::ui::view::CanvasWidget& canvas) {
     // Die Sichten als Senken (port-frei, Muster ADR-0019 Option A) — der Kern
@@ -294,7 +299,7 @@ void installFileMenu(
     auto* file_menu = window.menuBar()->addMenu(QStringLiteral("&Datei"));
     QObject::connect(
         file_menu->addAction(QStringLiteral("&Oeffnen...")), &QAction::triggered,
-        &window, [&window, &service, &repository, sinks, hint_for]() {
+        &window, [&window, &project, sinks, hint_for]() {
             const QString path = QFileDialog::getOpenFileName(
                 &window, QStringLiteral("Projekt oeffnen"), QString(),
                 QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
@@ -303,8 +308,7 @@ void installFileMenu(
             }
             try {
                 const QString hint =
-                    hint_for(bcad::hexagon::services::openProject(
-                        service, repository, path.toStdString(), sinks));
+                    hint_for(project.openProject(path.toStdString(), sinks));
                 window.setWindowTitle(
                     QStringLiteral("b-cad — %1").arg(QFileInfo(path).fileName()));
                 if (!hint.isEmpty()) {
@@ -321,7 +325,7 @@ void installFileMenu(
         });
     QObject::connect(
         file_menu->addAction(QStringLiteral("&Speichern unter...")),
-        &QAction::triggered, &window, [&window, &service, &repository]() {
+        &QAction::triggered, &window, [&window, &project]() {
             QString path = QFileDialog::getSaveFileName(
                 &window, QStringLiteral("Projekt speichern"), QString(),
                 QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
@@ -334,8 +338,7 @@ void installFileMenu(
                 path += QStringLiteral(".bcad");
             }
             try {
-                bcad::hexagon::services::saveProject(
-                    repository, service.building(), path.toStdString());
+                project.saveProject(path.toStdString());
             } catch (const std::exception& e) {
                 QMessageBox::critical(&window,
                                       QStringLiteral("Speichern fehlgeschlagen"),
@@ -485,7 +488,12 @@ int main(int argc, char** argv) {
     // Datei-Menue (LH-FA-BLD-002/003, slice-047b) — ausgelagert, damit die
     // Kognitive Komplexitaet von `main` unter der lint-Schwelle bleibt
     // (Muster runHeadlessCli).
-    installFileMenu(window, service, repository, guide_sink, *canvas);
+    // slice-054: die Projekt-Use-Cases hinter ihrem Driving Port. Der
+    // Composition-Root verdrahtet die Infrastruktur EINMAL hier; das Menue
+    // (und ab slice-053 der ui/command/-Handler) sieht nur noch den Vertrag.
+    bcad::hexagon::services::ManageProjectService manage_project(service,
+                                                                repository);
+    installFileMenu(window, manage_project, guide_sink, *canvas);
 
     const QStringList args = QApplication::arguments();
     const int beleg_index = static_cast<int>(args.indexOf(

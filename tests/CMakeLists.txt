@@ -15,6 +15,7 @@ add_executable(bcad_tests
     hexagon/test_evaluate_volume.cpp
     hexagon/test_greeting_service.cpp
     hexagon/test_manage_project.cpp   # slice-047a: Save-Use-Case (rise-Ableitung + fail-closed)
+    hexagon/test_manage_project_port.cpp   # slice-054: die ManageProjectPort-Naht (Adapter-Sicht)
     hexagon/test_material.cpp
     hexagon/test_model_change_notification.cpp
     hexagon/test_openings.cpp

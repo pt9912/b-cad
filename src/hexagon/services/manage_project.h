@@ -1,43 +1,25 @@
 #pragma once
 
 #include <filesystem>
-#include <functional>
 
 #include "hexagon/model/building.h"
 #include "hexagon/model/layer.h"  // LayerId
 #include "hexagon/model/wall.h"   // StoreyId
 #include "hexagon/ports/driven/project_repository_port.h"
+#include "hexagon/ports/driving/manage_project_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace bcad::hexagon::services {
 
-// Senken für das **Zeichen-Ziel** einer laufenden Sitzung (slice-047,
-// Verify-Finding B4). Beim Aufbau der Sitzung frieren die Sichten das aktive
-// Geschoss und die Hilfslinien-Ebene **by-value** ein; nach einem Projekt-Laden
-// stammen diese Ids aus dem alten Modell und sind i. d. R. ungültig — der
-// Grundriss bliebe leer und jedes Hilfslinien-Zeichnen würde abgelehnt.
-// `openProject` löst das Ziel darum **selbst** neu auf und meldet es hier.
-//
-// **Port-frei** (Muster ADR-0019 Option A): zwei `std::function`-Callables statt
-// eines Ports — der Kern kennt weder `view/` noch `command/`, und der
-// Composition-Root verdrahtet die konkreten Sicht-Objekte. Nicht gesetzte
-// Callables sind zulässig (CLI/Tests ohne Sichten).
-struct DrawingTargetSinks {
-    std::function<void(model::StoreyId)> set_active_storey;
-    std::function<void(model::StoreyId, model::LayerId)> set_draw_target;
-};
+// slice-054: `DrawingTargetSinks` und `DrawingTargetResolution` sind mit dem
+// `ManageProjectPort` in die Port-Schicht gezogen — sie stehen im Port-Vertrag.
+// Die Aliase halten die bestehenden Aufrufer und Orakel **wortgleich**; das ist
+// der Invarianz-Beleg des Slice, nicht Bequemlichkeit.
+using ports::driving::DrawingTargetResolution;
+using ports::driving::DrawingTargetSinks;
 
-// Ergebnis der Neu-Auflösung. Ein unvollständiges Ziel ist **kein Fehler** (die
-// Datei ist in Ordnung), aber benutzer-relevant: der Aufrufer meldet es, statt
-// das Fehlende still anzulegen — Öffnen ist lesend (spez. §1 `LH-FA-BLD-003.a`,
-// Code-Review MEDIUM-8).
-enum class DrawingTargetResolution {
-    Resolved,   // Geschoss + Ebene gesetzt
-    NoStorey,   // Projekt ohne Geschoss — Zeichenfläche bleibt leer
-    NoLayer,    // Geschoss gesetzt, aber keine Ebene für Hilfslinien
-};
-
-// Save-Use-Case (slice-047a, der vorgesehene `ManageProjectPort`): baut die
+// Save-Use-Case (slice-047a; seit slice-054 die Implementierung hinter
+// `ManageProjectPort::saveProject`): baut die
 // **kern-abgeleiteten** write-derived Persistenz-Skalare (`PersistedDerivations`:
 // `rise` je Treppe, aus `resolveStoreyHeight` + `stairRiseMm`) aus dem `Building`
 // und speichert **atomar** über den `ProjectRepositoryPort` (der Adapter
@@ -73,5 +55,42 @@ DrawingTargetResolution openProject(
     StructureEditService& service,
     const ports::driven::ProjectRepositoryPort& repository,
     const std::filesystem::path& path, const DrawingTargetSinks& sinks = {});
+
+// Erfüllt den `ManageProjectPort` (slice-054) — die seit dem Bootstrap in
+// `spec/architecture.md` §1.1 deklarierte Ziel-Form der Projekt-Use-Cases.
+//
+// **Was diese Klasse hinzufügt, ist ausschließlich die Naht:** die
+// Infrastruktur (Repository, Struktur-Service) wird hier **einmal** verdrahtet,
+// damit der Vertrag darüber sie nicht mehr führen muss. Ein Treiber-Adapter
+// (`adapters/ui/command/`) kann die Use-Cases dadurch über den Port rufen, ohne
+// `services/` oder `ports/driven/` zu sehen — die Kante, die
+// `.a-check.yml` ihm verbietet. Vorher blieb nur der Composition-Root, und
+// jede Entscheidung an diesen Aufrufen landete im coverage-ausgenommenen
+// `main.cpp` (slice-047-B4 · 052-MED-2/3 · 052a-HIGH-1 · 053-HIGH-1).
+//
+// **Kein neues Verhalten:** beide Methoden delegieren an die freien Funktionen
+// oben, die die geteilte Ableitungs-Logik bleiben (CLI, GUI, Persistenz-Tests).
+//
+// **Lebensdauer:** hält Referenzen — der Composition-Root muss Service und
+// Repository überleben lassen (Muster der übrigen Kern-Services).
+class ManageProjectService : public ports::driving::ManageProjectPort {
+public:
+    ManageProjectService(StructureEditService& service,
+                         const ports::driven::ProjectRepositoryPort& repository)
+        : service_(service), repository_(repository) {}
+
+    DrawingTargetResolution openProject(
+        const std::filesystem::path& path,
+        const DrawingTargetSinks& sinks = {}) override;
+
+    // Speichert den Stand, den der **Struktur-Service** hält — deshalb braucht
+    // der Vertrag kein `Building` und ein `ui_command`-Handler keinen
+    // `StructureEditService` (slice-054, Plan §2.1).
+    void saveProject(const std::filesystem::path& path) override;
+
+private:
+    StructureEditService& service_;
+    const ports::driven::ProjectRepositoryPort& repository_;
+};
 
 }  // namespace bcad::hexagon::services
