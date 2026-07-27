@@ -35,7 +35,7 @@ Fehlschlag durch den **echten** Use-Case führen; danach ist die Gegenprobe rot.
 wäre sie wieder orakel-los gewesen. Sie ist als `ProjectMenuHandler::mayDiscard(ask, ask_target)` in
 den geprüften Adapter gewandert; `main.cpp` reicht nur die zwei **Dialoge** herein.
 
-**Weiter in der Kette:** ▶ **[`slice-052b`](../open/slice-052b-neues-projekt.md)** („Neues Projekt",
+**Weiter in der Kette:** ▶ **[`slice-052b`](slice-052b-neues-projekt.md)** („Neues Projekt",
 macht [`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen) erstmals
 benutzer-erfüllbar) — **zweiter
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
@@ -201,7 +201,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 **Sequenz: [`slice-054`](../done/slice-054-manage-project-port.md) →
 [`slice-053`](../done/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) →
-[`slice-052b`](../open/slice-052b-neues-projekt.md).**
+[`slice-052b`](slice-052b-neues-projekt.md).**
 
 Alle vier stammen aus dem **Validations-Rest von slice-047** („Speichern" auf die offene Datei +
 Warnung vor ungesicherten Änderungen). Sie sind das Ergebnis von **sechs**

@@ -13,7 +13,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../.
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 vor dem Start. **Sequenz: 054 → [`slice-053`](../done/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) →
-[`slice-052b`](../open/slice-052b-neues-projekt.md).**
+[`slice-052b`](../in-progress/slice-052b-neues-projekt.md).**
 
 **Welle:** welle-5-erweiterung (Quergewerk / Struktur-Vorbereitung).
 **Autor:** Dietmar Burkard (AI-Harness-Lauf). **Datum:** 2026-07-26.
