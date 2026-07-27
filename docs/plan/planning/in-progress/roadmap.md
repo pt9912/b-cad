@@ -24,19 +24,29 @@ Finding F1):
      Slice im selben Commit wie der git mv toggeln (siehe planning-README, Abschnitt Ruhe-Marker).
      Den exakten Sentinel-String NIE als Prosa in diesem Block verwenden (Fehl-Match). -->
 
-**Welle-ID:** welle-5-erweiterung
-**Zeitraum:** ab 2026-07-02 (Ziel: Meilenstein M5 „Erweiterbar")
-**Welle-Ziel:** [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) (Plugins) erfüllt — der
-Plugin-Strang ist inhaltlich geliefert; die Welle trägt daneben nicht meilenstein-bindende Stränge
-(DRW-Zeichenwerkzeuge, GUI-Bedienbarkeit, harness-steering).
+**Welle-ID:** welle-6-interaktiv-planen
+**Zeitraum:** ab 2026-07-27 (Ziel: Meilenstein M6 „Interaktiv planbar")
+**Welle-Ziel:** [OBJ-001](../../../../spec/lastenheft.md#3-projektziele) — „Gebäude ohne tiefe
+CAD-Kenntnisse modellierbar": der Benutzer legt **Bauteile in der Oberfläche** an und bearbeitet sie.
+Heute ist das der größte Abstand zwischen Produkt-Zweck und Ist-Stand — das
+[Benutzerhandbuch](../../../user/benutzerhandbuch.md) führt es selbst unter „In dieser Version noch
+**NICHT** möglich" und nennt es „den nächsten großen Ausbauschritt".
+**Abschluss-Trigger (beobachtbar):** eine **Wand** lässt sich im 2D-Canvas **zeichnen** und
+**parametrisch ändern** — ohne Kommandozeile.
+
+**Warum die Welle einen Trigger trägt und nicht nur ein Thema** (Lehre aus der welle-5-Closure §5-1):
+welle-5 lief 24 Tage über ihren erfüllten Meilenstein hinaus, weil kein Abschluss-Kriterium sie fällig
+machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nicht, wenn die Arbeit
+ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
+wellen-bindend und verlängert sie nicht.
 
 Keine offenen Slices.
 
 ## Nächste Wellen
 
-Keine Folge-Welle benannt — die nächste Welle nach M5 ist eine
+Keine Folge-Welle benannt — die nächste Welle nach M6 ist eine
 **Planungs-Entscheidung** (kein Automatismus). Benannte Kandidaten-Themen aus
-den Re-Eval-Trägern der welle-3/-4-Closures: Format-Reichtum (IFC-/DXF-
+den Re-Eval-Trägern der welle-3/-4/-5-Closures: Format-Reichtum (IFC-/DXF-
 Bibliothek, PDF-Fit-to-Page/Bemaßung), Wandtyp-Bibliothek (`wall_type`-
 Template-Fallback), Observability (`TracingPort`-Anbindung), Drittanbieter-
 Attribution (slice-006 in `open/`).
@@ -50,7 +60,8 @@ Attribution (slice-006 in `open/`).
 | M2 — Vollständige Bauteile | welle-2-bauteile    | Haus mit Türen, Fenstern, Dach vollständig                                                                                         | **erreicht** (2026-06-14; vier Bauteil-Familien geliefert + Decken/Fundament/Treppen, welle-2-Closure)                                                                                                                                                                                           |
 | M3 — Auswertbar            | welle-3-auswertung  | Flächen/Volumen/Materiallisten korrekt                                                                                             | **erreicht** (2026-06-16; `EvaluatePort` Flächen/Volumen/Wohnfläche + Material-/Kosten-/Tür-/Fensterlisten analytisch im Kern, welle-3-Closure)                                                                                                                                                  |
 | M4 — Offen austauschbar    | welle-4-austausch   | [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien), [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) erfüllt | **erreicht** (2026-07-01; alle sechs Austauschformate IFC/DXF/STEP/STL/PDF/PNG hinter Driven-Adaptern, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien) IFC-Export-Roundtrip + [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien) maßstäblicher PDF-Plan, welle-4-Closure) |
-| M5 — Erweiterbar           | welle-5-erweiterung | [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) (Plugins) erfüllt                                                         | offen                                                                                                                                                                                                                                                                                            |
+| M5 — Erweiterbar           | welle-5-erweiterung | [OBJ-004](../../../../spec/lastenheft.md#3-projektziele) (Plugins) erfüllt                                                         | **erreicht** (inhaltlich 2026-07-03 mit dem Plugin-Strang, festgestellt in [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md):15; **gebucht 2026-07-27** mit der welle-5-Closure — die Zeile stand bis dahin gegen eine `Accepted`-ADR auf „offen", s. [`welle-5-results.md`](../done/welle-5-results.md) §0)                                                    |
+| M6 — Interaktiv planbar    | welle-6-interaktiv-planen | eine **Wand** ist im 2D-Canvas **zeichenbar und parametrisch änderbar**, ohne Kommandozeile ([OBJ-001](../../../../spec/lastenheft.md#3-projektziele)) | offen                                                                                                                                                                                                                                                                                            |
 
 ## Abhängigkeitsgraph
 
@@ -61,10 +72,11 @@ flowchart LR
     W2[welle-2-bauteile<br/>done 2026-06-14]
     W3[welle-3-auswertung<br/>done 2026-06-16]
     W4[welle-4-austausch<br/>done 2026-07-01]
-    W5[welle-5-erweiterung<br/>aktiv seit 2026-07-02]
+    W5[welle-5-erweiterung<br/>done 2026-07-27]
+    W6[welle-6-interaktiv-planen<br/>aktiv seit 2026-07-27]
 
     W1 --> W1V
-    W1 --> W2 --> W3 --> W4 --> W5
+    W1 --> W2 --> W3 --> W4 --> W5 --> W6
 ```
 
 ## Abgeschlossene Wellen
@@ -76,6 +88,7 @@ flowchart LR
 | welle-2-bauteile   | 2026-06-13 – 2026-06-14 | **Alle parametrischen Bauteile** über die Wände hinaus: Türen/Fenster (automatische Wandöffnung, OCC-Boolean), Dach (Sattel/Walm/Pult), Decken/Fundament (Platten + Ausschnitte), Treppen (gerade einläufig) — je Familie Lastenheft-AK-Schärfung + Implementierung (Domäne/Geometrie/Viewer/Edit-Ops) + Persistenz; **12 Slices** in `done/`, **[ADR-0011](../../adr/0011-bauteil-hosting-wandoeffnung.md) (#6)-Leitplanke** über vier Familien. **Meilenstein M2 erreicht** + [ACC-001](../../../../spec/lastenheft.md#7-abnahmekriterien)-Bauteil-Hälfte. Unabhängige Verifikation (keine HIGH, 1 MED/1 LOW behoben) + Carveout-Audit (keine aktiven); `make gates` grün am HEAD `d7073fb` (116/116, Coverage 92,3 %). Geometrielastige Code-Reviews je Familie (013b/014b/015b je 1 HIGH gefixt, 016b keine HIGH).                                                                                                                                                                                                                                                                                                                                                                                                                                                      | [`../done/welle-2-results.md`](../done/welle-2-results.md)   |
 | welle-3-auswertung | 2026-06-14 – 2026-06-16 | **Gebäudemodell auswertbar** ([ADR-0012](../../adr/0012-evaluations-architektur.md) `EvaluatePort` read-only/pull, **kein** `GeometryKernelPort`/`Solid.volume_mm3`): Flächen EVL-001/003 (Shoelace-Raum-Netto + Wohnfläche), **Volumen EVL-002 analytisch im Kern** (Wand/Decke/Treppe; Dach dicke-los → benannte Lücke), **Material-System** MAT-001/002/003/005/006 (projekt-eigen über `EditStructurePort`, `restrict`-treu, NULL-sicher round-trippt über SQLite), **Listen** EVL-004/005/006 (Material-Menge=Σ Netto-Volumen, Tür-/Fensterlisten) + **Kosten MAT-006** (`Menge × cost_per_m3`); `wall_type`-Template-Fallback bewusst zurückgestellt (welle-4+). **7 Slices** (017a–017g) in `done-archive/`. **Meilenstein M3 erreicht**. Unabhängige Verifikation (0 HIGH, 1 LOW behoben) + Carveout-Audit (keine aktiven); `make gates` grün am HEAD (145/145, Coverage 92,7 %), `make schema-check` grün.                                                                                                                                                                                                                                                                                                                                                         | [`../done/welle-3-results.md`](../done/welle-3-results.md)   |
 | welle-4-austausch  | 2026-06-16 – 2026-07-01 | **b-cad offen austauschbar** ([OBJ-005](../../../../spec/lastenheft.md#3-projektziele)): **alle sechs Austauschformate** hinter Driven-Adaptern (Kern format-frei) — **IFC** Import+Export ([ADR-0013](../../adr/0013-ifc-bibliothek.md) SPF-Subset-Codec Option D, [ACC-003](../../../../spec/lastenheft.md#7-abnahmekriterien)-Roundtrip), **STEP/STL** Export ([ADR-0014](../../adr/0014-step-stl-export-backend.md) OCC-DataExchange nativ, B-Rep **aller** 3D-Bauteile via 024a/b), **DXF** Import+Export ([ADR-0015](../../adr/0015-dxf-backend.md) 2D-Subset-Codec Option D + Kern-`ImporterMap`), **PDF** ([ADR-0016](../../adr/0016-pdf-png-backend.md) self-rolled Vektor-Maßstabsplan, [ACC-004](../../../../spec/lastenheft.md#7-abnahmekriterien)) + **PNG** (self-rolled Raster-Grundriss). Nebenbei **Dach-Volumen** ([LH-FA-ROF-006](../../../../spec/lastenheft.md#lh-fa-rof-006), erste Repo-Schema-Änderung) + **io-smoke** (CI-Sensor). **16 Slices** (019a–025c) in `done-archive/`, vier Backend-ADRs (0013–0016). **Meilenstein M4 erreicht.** Unabhängige Verifikation (0 HIGH, 1 LOW außerhalb Scope belassen) + Carveout-Audit (keine aktiven); `make gates` grün am HEAD (220/220, Coverage 90,7 %), `make schema-check` + `make io-smoke` grün. | [`../done/welle-4-results.md`](../done/welle-4-results.md)   |
+| welle-5-erweiterung | 2026-07-02 – 2026-07-27 | **M5 „Erweiterbar" erreicht** ([OBJ-004](../../../../spec/lastenheft.md#3-projektziele)): Plugins werden zur Laufzeit aus Shared Libraries geladen, versionierter ABI-Handshake lehnt unpassende **vor jeder Wirkung** ab ([ADR-0017](../../adr/0017-plugin-api-abi.md)). **Daneben liefen — nicht meilenstein-bindend — vier Stränge:** DRW/2D-Zeichnen (Hilfslinien + Layer + interaktiver Canvas, [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)/[ADR-0019](../../adr/0019-drw-2d-canvas.md)), Export (Refactor [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) → **keine** Adapter→Kern-Kante mehr, Provenance, Golden-Netz), GUI-Bedienbarkeit ([LH-FA-BLD-001](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen)/002/003 erstmals in der Oberfläche erfüllbar) und **sechs** harness-steering-Quergewerke (zwölf neue MRs). **29 Slices** in `done/`. **Die Welle lief 24 Tage über ihren erfüllten Meilenstein hinaus** — der Befund und seine Lehre stehen in der Closure-Notiz §0/§5. Carveout-Audit: keine aktiven; `make gates` grün am HEAD (352/352, Coverage 91,8 %). | [`../done/welle-5-results.md`](../done/welle-5-results.md) |
 
 ## Historische Trigger-Verschiebungen
 

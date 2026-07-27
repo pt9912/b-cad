@@ -5,6 +5,60 @@
 
 ---
 
+## 2026-07-27 (5) — welle-5 geschlossen, **welle-6 geschnitten**
+
+Der Planungs-Punkt „viele Slices, keine Wellen" vom 2026-07-26 ist entschieden und vollzogen
+(Projektinhaber-Wahl: **welle-5 schließen und eine neue Welle schneiden**).
+
+### Was gebucht wurde
+
+- **[`done/welle-5-results.md`](../done/welle-5-results.md)** geschrieben (6 Abschnitte, Muster
+  welle-1..4). **M5 „Erweiterbar" ist erreicht** — inhaltlich seit dem 2026-07-03 mit dem
+  Plugin-Strang, festgestellt in [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md):15; die
+  Roadmap-Zeile stand bis heute gegen diese `Accepted`-ADR auf „offen".
+- **Der Befund steht im Closure-Dokument selbst** (§0), nicht nur hier: die Welle lief **24 Tage über
+  ihren erfüllten Meilenstein hinaus** und sammelte am Ende **31 Slice-Pläne** unter einem Label.
+  §2 gliedert den Umfang deshalb nach **Strängen** (Plugin · DRW · Export · GUI-Bedienbarkeit ·
+  harness-steering), nicht als eine Wellen-Leistung — das ist die ehrliche Beschreibung dessen, was
+  passiert ist. Carveout-Audit: keine aktiven; die Welle hat **verschärft**, nicht gelockert.
+
+### welle-6-interaktiv-planen — mit Trigger, nicht nur mit Thema
+
+**Ziel:** [OBJ-001](../../../../spec/lastenheft.md#3-projektziele) — der Benutzer legt **Bauteile in
+der Oberfläche** an und bearbeitet sie. **Trigger:** eine **Wand** ist im 2D-Canvas **zeichenbar und
+parametrisch änderbar**, ohne Kommandozeile. Neuer Meilenstein **M6 „Interaktiv planbar"**.
+
+**Die Lehre aus welle-5 steht im Wellen-Block selbst:** diese Welle ist zu schließen, **sobald der
+Trigger erfüllt ist — nicht, wenn die Arbeit ausgeht**. Was daneben läuft (harness-steering,
+Alt-Bestand), ist ausdrücklich **nicht** wellen-bindend und verlängert sie nicht.
+
+**Warum dieses Ziel:** das Benutzerhandbuch führt „ein Gebäude selbst planen" bis heute unter „In
+dieser Version noch **NICHT** möglich" und nennt es „den nächsten großen Ausbauschritt". Es ist der
+größte Abstand zwischen Produkt-Zweck und Ist-Stand — und die Welle baut direkt auf dem auf, was
+gerade fertig wurde: dem interaktiven Canvas (`slice-043`) und der GUI-Kette, die dem Fenster
+erstmals Sensoren gegeben hat.
+
+### Eine Kleinigkeit, bewusst nicht still geregelt
+
+[`slice-044b`](../open/slice-044b-golden-import-fremd.md) und
+[`slice-051`](../open/slice-051-review-artefakt-pflicht.md) tragen weiter
+`welle: welle-5-erweiterung` im Frontmatter, obwohl die Welle zu ist. Ich habe das **nicht**
+umgeschrieben: beide wurden während welle-5 geschnitten (Provenance), und keiner von beiden ist
+welle-6-bindend — sie in die neue Welle zu ziehen wäre genau die Sammelbecken-Bewegung, die dieser
+Schritt beendet. Die welle-5-Closure führt sie in §6 als „übernommen, nicht erledigt".
+**Falls du das Frontmatter-Feld lieber nachgezogen hättest: sag Bescheid, es sind zwei Zeilen.**
+
+### Startbare Fäden in welle-6
+
+- **`slice-048b`** (DRW-001-Implementierung, Fang-Punkte) — Plan noch nicht in `open/`; gehört
+  inhaltlich hierher, weil Fangen die erste Voraussetzung für präzises Zeichnen ist.
+- Der eigentliche Wellen-Kern — **Wand zeichnen im Canvas** — hat noch keinen Plan.
+
+**Nicht wellen-bindend, weiter offen:** `slice-051` (Review-Artefakt-Pflicht), `slice-044b`,
+`slice-006`, `039a/b`, `040a`.
+
+---
+
 ## 2026-07-27 (4) — slice-052b geschlossen: **die Vierer-Kette ist komplett**
 
 `make gates` **EXIT=0** (docs-check 0 Befunde / 260 Dateien · a-check 0 · arch-check ok ·
