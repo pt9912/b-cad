@@ -30,8 +30,7 @@ Finding F1):
 Plugin-Strang ist inhaltlich geliefert; die Welle trägt daneben nicht meilenstein-bindende Stränge
 (DRW-Zeichenwerkzeuge, GUI-Bedienbarkeit, harness-steering).
 
-**In Arbeit:** [`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) — Sitzungs-Zustand,
-„Speichern“ + Rückfrage vor Datenverlust (Kette 054 ✓ → 053 ✓ → 052a → 052b).
+Keine offenen Slices.
 
 ## Nächste Wellen
 

@@ -9,13 +9,13 @@ adr_refs: [[ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009]
 
 # Slice 052b: „Neues Projekt"
 
-**Status:** open — **abhängig von [`slice-052a`](../in-progress/slice-052a-sitzungs-zustand-und-speichern.md)**
+**Status:** open — **abhängig von [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md)**
 (Sitzungs-Zustand + Verdikt-Maschinerie). Eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 **2026-07-26 gefahren: 1 HIGH / 11 MEDIUM / 5 LOW / 2 INFO → nicht startbar**
 ([Report](../../../reviews/2026-07-26-slice-052b-plan.md)); alle Findings eingearbeitet (§12).
 **Ein zweiter Lauf vor dem Start.** Zusätzlich hängt die Startbarkeit an
-[`slice-052a`](../in-progress/slice-052a-sitzungs-zustand-und-speichern.md) (Sitzungs-Zustand) und mittelbar an
+[`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) (Sitzungs-Zustand) und mittelbar an
 [`slice-053`](../done/slice-053-fenster-als-adapter.md) (testbares Fenster).
 
 **Welle:** welle-5-erweiterung. **Autor:** Dietmar Burkard (AI-Harness-Lauf). **Datum:** 2026-07-26.
@@ -130,7 +130,7 @@ empfiehlt **dreiwertig** (Konsistenz über alle drei Auslöser); die Entscheidun
 
 ## 5. Bewusst NICHT Teil
 
-- **Der Sitzungs-Zustand selbst** → [`slice-052a`](../in-progress/slice-052a-sitzungs-zustand-und-speichern.md).
+- **Der Sitzungs-Zustand selbst** → [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md).
   Dieser Slice **benutzt** Verdikt, `saveTarget()` und Antwort-Auswertung; er baut sie nicht.
 - **Zuletzt-geöffnet-Liste**, **GUI-Export**, **Projektvorlagen** — eigene Schnitte.
 - **Projektversionierung** ([`LH-FA-BLD-004`](../../../../spec/lastenheft.md#lh-fa-bld-004--projektversionierung)).
@@ -160,7 +160,7 @@ Geprüft wird deshalb gegen die **benannte Konstante**, und die Gegenprobe ände
 Entscheidung ins Leere läuft.
 
 **Benannte Grenze:** die modalen Dialoge — wie in
-[`slice-052a`](../in-progress/slice-052a-sitzungs-zustand-und-speichern.md), mit derselben Auflage: **in der
+[`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md), mit derselben Auflage: **in der
 Verdrahtung steht keine Entscheidung.**
 
 ## 7. Definition of Done
@@ -168,7 +168,7 @@ Verdrahtung steht keine Entscheidung.**
 - [ ] **Projekt-Erzeugung als Kern-Funktion** (L4): leeres `Building` mit genau einem Geschoss,
       Höhe aus der **benannten** Default-Konstante der Spezifikation — **nicht** in `main.cpp`.
 - [ ] **Sitzungs-Reset** (L1) **auf `ProjectSession`** (`src/hexagon/services/project_session.*`, aus
-      [`slice-052a`](../in-progress/slice-052a-sitzungs-zustand-und-speichern.md) **erweitert** — dessen Oberfläche
+      [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) **erweitert** — dessen Oberfläche
       führt bewusst keinen Reset; eigener Lauf MEDIUM-9): „Neu" setzt gemerkte Datei **und**
       Vergleichs-Basis zurück. Orakel §6-1/2.
 - [ ] **Zeichen-Ziel neu auflösen** (L2): dieselbe Naht wie beim Öffnen (slice-047

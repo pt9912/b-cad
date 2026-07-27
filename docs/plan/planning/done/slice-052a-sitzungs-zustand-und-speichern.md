@@ -1,7 +1,7 @@
 ---
 id: slice-052a
 titel: Sitzungs-Zustand + „Speichern" + Ungesichert-Rückfrage bei Öffnen/Beenden
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern), [LH-FA-BLD-003](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)]
 adr_refs: [[ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]

@@ -5,6 +5,49 @@
 
 ---
 
+## 2026-07-27 (3) — slice-052a geschlossen: die Kette ist bis auf 052b durch
+
+`make gates` **EXIT=0** (docs-check 0 Befunde / 259 Dateien · a-check 0 · arch-check ok ·
+**341/341** Tests · Coverage 91,7 %), `make io-smoke` EXIT=0, `make schema-check` EXIT=0.
+`in-progress/` ist leer, der Ruhe-Sentinel steht.
+
+**[`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) done** (`f11d76d`
+Review-Lauf-4-Einarbeitung → `cd428cd` Start → `acbeddb` Implementierung → Closure). Neuer
+`ProjectSessionPort` + `ProjectSessionService`, `= default`-Gleichheit auf allen 13 Modell-Werttypen,
+„Speichern" auf die bekannte Datei, dreiwertige Rückfrage vor Öffnen und Beenden. **Lastenheft
+0.1.18**, **Benutzerhandbuch 1.2**, Spezifikations-Sammelblock `BLD-002.b`/`003.b`.
+
+**Die Lehre des Tages steckt in einer Gegenprobe, die NICHTS rot machte.** Orakel-Zeile 6
+(„gescheitertes Speichern lässt ungesichert") war belegt — dachte ich. Die Gegenprobe
+„`markPersisted` **vor** statt nach dem Schreiben" ließ **alle 339 Tests grün**: der Test prüfte den
+Sitzungs-Service **isoliert**, während die Zusage an der **Reihenfolge zwischen zwei Komponenten**
+hängt (`ManageProjectService` → `ProjectSessionService`). Behoben durch zwei Tests, die den
+Fehlschlag durch den **echten** Use-Case führen; danach ist die Gegenprobe rot.
+
+> **Regel-Kandidat:** eine Zusage über eine **Reihenfolge zwischen zwei Komponenten** kann kein Test
+> einer einzelnen Komponente belegen — auch wenn er exakt die richtige Eigenschaft prüft. Der
+> Orakel-Schnitt hatte die Zeile korrekt benannt; sie lag nur am falschen **Ort**. Das ist die zweite
+> Wiederholung dieser Bauart (053: „eingearbeitet ≠ entschieden"; hier: „geprüft ≠ am richtigen Ort
+> geprüft"). Beim dritten Mal gehört daraus eine MR.
+
+**Zweite Lehre — beim Bauen entschieden, im Plan abweichend protokolliert:** die Verwerf-Komposition
+(Verdikt → fragen → auswerten → ggf. speichern) sollte laut Plan in `main.cpp` liegen. Genau dort
+wäre sie wieder orakel-los gewesen. Sie ist als `ProjectMenuHandler::mayDiscard(ask, ask_target)` in
+den geprüften Adapter gewandert; `main.cpp` reicht nur die zwei **Dialoge** herein.
+
+**Weiter in der Kette:** ▶ **[`slice-052b`](../open/slice-052b-neues-projekt.md)** („Neues Projekt",
+macht [`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen) erstmals
+benutzer-erfüllbar) — **zweiter
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
+offen**, und er muss dieselbe Frage stellen wie die Läufe zu 053 und 052a: bucht 052b auf dem, was
+054/053/052a **wirklich** geliefert haben? Bekannt ist bereits, dass 052b noch auf
+`src/adapters/ui/view/main_window.*` als zu ändernde Datei zeigt; dazu kommen jetzt der
+`ProjectSessionPort` (Reset der Baseline bei „Neu") und die `FileActions`-Erweiterung.
+
+**Unberührt geblieben:** der Planungs-Punkt „viele Slices, keine Wellen" (unten, 2026-07-26).
+
+---
+
 ## 2026-07-27 (2) — slice-053 geschlossen: das Fenster hat einen Sensor
 
 `make gates` **EXIT=0** (docs-check 0 Befunde / 258 Dateien · a-check 0 · arch-check ok ·
@@ -35,7 +78,7 @@ Senken nicht sieht, kam Orakel-Zeile 6 dazu.
 3. **Ein Plan, der vor seinem Vorläufer geschrieben wurde, muss gegen das Gelieferte geprüft werden**
    — nicht gegen das Erwartete. Genau dafür war Lauf 2 da, und er hat sich gelohnt.
 
-**Weiter in der Kette:** ▶ **[`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md)**
+**Weiter in der Kette:** ▶ **[`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md)**
 (Sitzungs-Zustand + „Speichern" + Rückfrage) — **vierter
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
 offen**. Er muss dieselbe Frage stellen wie Lauf 2 zu 053: bucht 052a auf dem, was 053 **wirklich**
@@ -157,7 +200,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 
 **Sequenz: [`slice-054`](../done/slice-054-manage-project-port.md) →
 [`slice-053`](../done/slice-053-fenster-als-adapter.md) →
-[`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) →
+[`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](../open/slice-052b-neues-projekt.md).**
 
 Alle vier stammen aus dem **Validations-Rest von slice-047** („Speichern" auf die offene Datei +
