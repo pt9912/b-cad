@@ -5,6 +5,48 @@
 
 ---
 
+## 2026-07-27 (2) — slice-053 geschlossen: das Fenster hat einen Sensor
+
+`make gates` **EXIT=0** (docs-check 0 Befunde / 258 Dateien · a-check 0 · arch-check ok ·
+**301/301** Tests · Coverage 91,5 %), `make io-smoke` EXIT=0, **`make acc-002-beleg` EXIT=0**
+(1276×753, 9 Wand-Netze). `in-progress/` ist wieder leer, der Ruhe-Sentinel steht.
+
+**[`slice-053`](../done/slice-053-fenster-als-adapter.md) done** (`77f7455` Review-Lauf-2-Einarbeitung
+→ `826b3e5` Start → `6c44d73` Implementierung → Closure). `MainWindow` (`ui/view/`, port-frei) +
+`ProjectMenuHandler` (`ui/command/`, am 054-Port). Damit existiert die **erste reale
+`ui_command`-Datei am Port** — den architektonischen Beleg, den 054 offen ließ, führt jetzt `a-check`
+an einem Artefakt.
+
+**Der zweite Review-Lauf hat eine stille Falle gefangen, die ich selbst gelegt hatte.** Der 054-Port
+trug `sinks = {}`. Ein Handler, der die Senken vergisst, hätte kompiliert und eine gültige
+`Resolution` geliefert — der Verlust der Zeichen-Ziel-Neuauflösung (**slice-047-Verify-B4, exakt
+derselbe Fehler**) wäre unter **allen** zugesagten Orakeln grün geblieben. Der Default ist gefallen;
+gemessen ist das Weglassen jetzt ein **Compile-Fehler**. Weil der Compiler das Durchreichen *leerer*
+Senken nicht sieht, kam Orakel-Zeile 6 dazu.
+
+**Netz-Lehren:**
+
+1. **Ein Default-Argument kann ein Orakel aushebeln.** `= {}` an einem Port-Parameter macht das
+   Vergessen unsichtbar. Wo ein Parameter *verhaltenstragend* ist, ist der fehlende Default der
+   billigste und schärfste Sensor, den es gibt — er kostet nichts und wirkt vor jedem Test.
+2. **„Eingearbeitet" ist nicht „entschieden".** Lauf-1-MEDIUM-4 galt als erledigt, hatte die
+   Entscheidung aber nur in den Vollzug verschoben („Die Antworten stehen im Plan-Vollzug"). Der
+   zweite Lauf hat das gefangen. **Eine Finding-Behandlung, die auf später zeigt, ist keine.**
+3. **Ein Plan, der vor seinem Vorläufer geschrieben wurde, muss gegen das Gelieferte geprüft werden**
+   — nicht gegen das Erwartete. Genau dafür war Lauf 2 da, und er hat sich gelohnt.
+
+**Weiter in der Kette:** ▶ **[`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md)**
+(Sitzungs-Zustand + „Speichern" + Rückfrage) — **vierter
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
+offen**. Er muss dieselbe Frage stellen wie Lauf 2 zu 053: bucht 052a auf dem, was 053 **wirklich**
+geliefert hat? Konkret nachzuziehen (bewusst nicht auf Vorrat erledigt): 052a verweist noch auf
+`src/adapters/ui/view/main_window.*` als zu ändernde Datei und auf den verworfenen
+`sendEvent`-Mechanismus; die `CloseGuard`-Naht heißt jetzt so und ist unbesetzt. Danach 052b.
+
+**Unberührt geblieben:** der Planungs-Punkt „viele Slices, keine Wellen" (unten, 2026-07-26).
+
+---
+
 ## 2026-07-27 — slice-054 geschlossen (die Wurzel der GUI-Findings-Klasse)
 
 `make gates` **EXIT=0** (docs-check 0 Befunde / 257 Dateien · a-check 0 · arch-check ok ·
@@ -36,7 +78,7 @@ Slice mit rotem `make a-check` gegen die Wand gelaufen.
    **falsch** — gemessen: der explizite Pfad meldet `codepath-missing`, weil `codepaths.roots` `src`
    enthält. Die Klammer ist das Ventil für geplante Dateien. Widerlegt statt eingearbeitet.
 
-**Weiter in der Kette:** ▶ **[`slice-053`](slice-053-fenster-als-adapter.md)** (Hauptfenster als
+**Weiter in der Kette:** ▶ **[`slice-053`](../done/slice-053-fenster-als-adapter.md)** (Hauptfenster als
 testbarer Adapter) — **zweiter [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
 noch offen**; er muss zusätzlich prüfen, ob 053 auf dem Port aufsetzt, den 054 **tatsächlich**
 geliefert hat (Sinks als Methoden-Parameter, `save` ohne `Building`). Danach 052a → 052b.
@@ -114,7 +156,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 ### Was offen in `open/` liegt — und in welcher Reihenfolge
 
 **Sequenz: [`slice-054`](../done/slice-054-manage-project-port.md) →
-[`slice-053`](slice-053-fenster-als-adapter.md) →
+[`slice-053`](../done/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](../open/slice-052b-neues-projekt.md).**
 

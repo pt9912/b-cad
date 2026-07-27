@@ -11,7 +11,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../.
 
 **Status:** done (2026-07-27) — **Struktur-Vorläufer**, verhaltens-invariant. Eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-vor dem Start. **Sequenz: 054 → [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md) →
+vor dem Start. **Sequenz: 054 → [`slice-053`](../done/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](../open/slice-052b-neues-projekt.md).**
 
@@ -43,7 +43,7 @@ das: **Services ohne Port**. Damit ist `main.cpp` der **einzige** Ort, der sie a
 > Treiber sie braucht.**
 
 **Der Bedarf des zweiten Treibers ist belegt — eingetreten ist die Bedingung erst mit
-[`slice-053`](../in-progress/slice-053-fenster-als-adapter.md).** 053 legt `src/adapters/ui/command/`-Handler an, die
+[`slice-053`](../done/slice-053-fenster-als-adapter.md).** 053 legt `src/adapters/ui/command/`-Handler an, die
 Öffnen und Speichern rufen; ohne Port bleibt ihnen nur die Kante, die
 [`.a-check.yml`](../../../../.a-check.yml) verbietet — das ist genau HIGH-1 des
 [053-Plan-Reviews](../../../reviews/2026-07-26-slice-053-plan.md). 054 ist der **Vorläufer, der diesen
@@ -65,7 +65,7 @@ Die Projekt-Use-Cases stehen hinter einem **Driving Port** `ManageProjectPort`
 einem Adapter her** — die Kante `ui_command → ports_driving` besteht in
 [`.a-check.yml`](../../../../.a-check.yml):32, und der Port-Vertrag ist so geschnitten, dass ein
 `ui/command/`-Handler ihn **ohne** `StructureEditService` und **ohne** `ProjectRepositoryPort` rufen
-kann (§2.1). **Den Beleg dafür führt [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)**, das den Handler
+kann (§2.1). **Den Beleg dafür führt [`slice-053`](../done/slice-053-fenster-als-adapter.md)**, das den Handler
 anlegt und ihn schon heute als eigene Orakel-Zeile führt; erst dort sieht `make a-check` eine reale
 `ui_command`-Datei am Port. 054 behauptet den Adapter-Beleg **nicht** — sein Binary `bcad_tests` linkt
 nur `bcad_hexagon` (`tests/CMakeLists.txt`:9–29), und a-check scannt keine Tests
@@ -253,7 +253,7 @@ eigene Regression nicht mehr zeigen (R3). Der **Port-Weg** bekommt seine eigene 
   Funktionen entfernt oder ihre Semantik verschiebt, verliert ihn.** Der `using`-Alias (§2.1) ist der
   Mechanismus, der die Wortgleichheit trägt; bricht er, ist der Schnitt falsch.
 - **R4 — der Port ist nach 054 einfach-getrieben** (nur der GUI-Composition-Root). Der zweite Treiber
-  kommt erst mit [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md). Bleibt 053 liegen, steht ein Port mit
+  kommt erst mit [`slice-053`](../done/slice-053-fenster-als-adapter.md). Bleibt 053 liegen, steht ein Port mit
   einem Treiber — vertretbar (die Testbarkeit ist der Gewinn), aber die Roadmap-Buchung muss das sagen.
 
 ## 7. Trigger
@@ -369,6 +369,6 @@ Modell-Ersetzung, Zeichen-Ziel) ist damit an unverändertem Maßstab belegt.
 
 Die Kante `ui_command → ports_driving` ist in `.a-check.yml` deklariert, aber **noch von keiner realen
 Datei begangen** — 054 legt keinen Adapter an. Den architektonischen Beleg führt
-[`slice-053`](../in-progress/slice-053-fenster-als-adapter.md); erst dort sieht `make a-check` einen
+[`slice-053`](../done/slice-053-fenster-als-adapter.md); erst dort sieht `make a-check` einen
 `ui/command/`-Handler am Port. Der Port hat nach diesem Slice **einen** Treiber (den
 Composition-Root), nach 053 den zweiten (R4).

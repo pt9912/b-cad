@@ -1,7 +1,7 @@
 ---
 id: slice-053
 titel: Hauptfenster als testbarer Adapter — Menü und Schließ-Behandlung raus aus dem Composition-Root
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 053: Hauptfenster als testbarer Adapter (Struktur-Vorläufer)
 
-**Status:** open — **Struktur-Vorläufer**, verhaltens-invariant. **Zwei
+**Status:** done (2026-07-27) — **Struktur-Vorläufer**, verhaltens-invariant. **Zwei
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
 gefahren:** Lauf 1 (2026-07-26, 2 HIGH / 6 MED / 5 LOW / 2 INFO,
 [Report](../../../reviews/2026-07-26-slice-053-plan.md)) → §9; Lauf 2 (2026-07-27, **1 HIGH** / 5 MED /

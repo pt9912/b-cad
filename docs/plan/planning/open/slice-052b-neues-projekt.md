@@ -16,7 +16,7 @@ adr_refs: [[ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009]
 ([Report](../../../reviews/2026-07-26-slice-052b-plan.md)); alle Findings eingearbeitet (§12).
 **Ein zweiter Lauf vor dem Start.** Zusätzlich hängt die Startbarkeit an
 [`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) (Sitzungs-Zustand) und mittelbar an
-[`slice-053`](../in-progress/slice-053-fenster-als-adapter.md) (testbares Fenster).
+[`slice-053`](../done/slice-053-fenster-als-adapter.md) (testbares Fenster).
 
 **Welle:** welle-5-erweiterung. **Autor:** Dietmar Burkard (AI-Harness-Lauf). **Datum:** 2026-07-26.
 
@@ -138,7 +138,7 @@ empfiehlt **dreiwertig** (Konsistenz über alle drei Auslöser); die Entscheidun
 ## 6. Orakel-Schnitt
 
 Jede Zeile ist **außerhalb** des coverage-ausgenommenen `main` prüfbar — die Fenster-Zeilen über die
-[`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)-Naht.
+[`slice-053`](../done/slice-053-fenster-als-adapter.md)-Naht.
 
 | # | Zusicherung | Diskriminierende Gegenprobe | Herkunft |
 |---|---|---|---|
@@ -206,7 +206,7 @@ Verdrahtung steht keine Entscheidung.**
 |---|---|---|
 | `src/hexagon/services/project_session.{h,cpp}` | ändern | Reset von Pfad + Vergleichs-Basis (L1) — die Oberfläche kommt aus 052a und wird hier **erweitert** |
 | `src/hexagon/services/manage_project.{h,cpp}` (o. neue Kern-Datei) | ändern | Erzeugung des leeren Projekts als Kern-Funktion (L4) + Zeichen-Ziel-Auflösung (L2) |
-| `src/adapters/ui/view/main_window.*` (aus [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)) | ändern | Menü-Aktion **Neu**, Titel-Reset (L5) — hier, weil nur hier prüfbar |
+| `src/adapters/ui/view/main_window.*` (aus [`slice-053`](../done/slice-053-fenster-als-adapter.md)) | ändern | Menü-Aktion **Neu**, Titel-Reset (L5) — hier, weil nur hier prüfbar |
 | `src/main.cpp` | ändern | Verdrahtung + Dialog (**keine** Entscheidung) |
 | `tests/hexagon/test_project_session.cpp` | ändern | §6-Zeilen 1, 2, 5, 6 |
 | `tests/hexagon/test_manage_project.cpp` | ändern | §6-Zeilen 3, 8 (Erzeugung + L3-Ausgang) |
