@@ -5,6 +5,47 @@
 
 ---
 
+## 2026-07-27 — slice-054 geschlossen (die Wurzel der GUI-Findings-Klasse)
+
+`make gates` **EXIT=0** (docs-check 0 Befunde / 257 Dateien · a-check 0 · arch-check ok ·
+**291/291** Tests · Coverage 91,5 %), `make io-smoke` EXIT=0, `make schema-check` EXIT=0.
+`in-progress/` trägt **keinen** Slice mehr — der Ruhe-Sentinel steht wieder.
+
+**[`slice-054`](../done/slice-054-manage-project-port.md) done** (`8546bac` Review-Einarbeitung →
+`4f9aeeb` Start → `3ee4dd2` Implementierung → Closure): der `ManageProjectPort` ist realisiert. Die
+vierfach wiederholte Findings-Klasse (047-B4 · 052 · 052a · 053) ist damit an der **Wurzel** erledigt,
+nicht zum fünften Mal einzeln behandelt.
+
+**Der [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
+hat den Slice gerettet, nicht nur kommentiert** ([Report](../../../reviews/2026-07-27-slice-054-plan.md),
+2 HIGH · 5 MED · 4 LOW · 2 INFO, Verdikt „nicht startbar"): der Plan hätte einen Port-Header mit
+`ProjectRepositoryPort`- und `StructureEditService`-Parametern gebaut — `ports_driving` darf nur `model`
+importieren. Die Gegenprobe der Closure hat es dann **gemessen**:
+`manage_project_port.h:7: wrong-direction: ports_driving -> ports_driven`. Ohne das Review wäre der
+Slice mit rotem `make a-check` gegen die Wand gelaufen.
+
+**Netz-Lehren:**
+
+1. **Ein Driving Port zwingt die Infrastruktur in den Konstruktor.** Das ist keine Stilfrage — es ist
+   die einzige gate-legale Form, und **genau sie** macht den Vertrag adapter-tauglich. Wer die
+   Abhängigkeiten in der Signatur lässt, baut einen Port, den kein Adapter rufen darf.
+2. **Der stärkere Invarianz-Beleg ist Nicht-Änderung.** Die fünf Bestands-Testdateien blieben
+   **byte-unverändert** (der `using`-Alias trägt die Wortgleichheit). Ein Test, der im selben Slice
+   mitumgebaut wird, kann seine eigene Regression nicht mehr zeigen.
+3. **Reviewer-Befunde sind Hypothesen, keine Urteile.** LOW-2 („Klammerform `.{h}` uneinheitlich") war
+   **falsch** — gemessen: der explizite Pfad meldet `codepath-missing`, weil `codepaths.roots` `src`
+   enthält. Die Klammer ist das Ventil für geplante Dateien. Widerlegt statt eingearbeitet.
+
+**Weiter in der Kette:** ▶ **[`slice-053`](../open/slice-053-fenster-als-adapter.md)** (Hauptfenster als
+testbarer Adapter) — **zweiter [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
+noch offen**; er muss zusätzlich prüfen, ob 053 auf dem Port aufsetzt, den 054 **tatsächlich**
+geliefert hat (Sinks als Methoden-Parameter, `save` ohne `Building`). Danach 052a → 052b.
+
+**Unberührt geblieben:** der Planungs-Punkt „viele Slices, keine Wellen" (unten, 2026-07-26) — er
+wartet weiter auf die Projektinhaber-Entscheidung.
+
+---
+
 ## Tagesabschluss 2026-07-26 — Stand + nächste-Sitzung-Zeiger
 
 `make gates` **EXIT=0** (docs-check **0 Befunde / 256 Dateien** · a-check 0 · arch-check ok ·
@@ -72,7 +113,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 
 ### Was offen in `open/` liegt — und in welcher Reihenfolge
 
-**Sequenz: [`slice-054`](slice-054-manage-project-port.md) →
+**Sequenz: [`slice-054`](../done/slice-054-manage-project-port.md) →
 [`slice-053`](../open/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](../open/slice-052b-neues-projekt.md).**

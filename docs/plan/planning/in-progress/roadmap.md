@@ -30,8 +30,7 @@ Finding F1):
 Plugin-Strang ist inhaltlich geliefert; die Welle trägt daneben nicht meilenstein-bindende Stränge
 (DRW-Zeichenwerkzeuge, GUI-Bedienbarkeit, harness-steering).
 
-**In Arbeit:** [`slice-054`](slice-054-manage-project-port.md) — `ManageProjectPort` realisieren
-(Struktur-Vorläufer der Kette 054 → 053 → 052a → 052b).
+Keine offenen Slices.
 
 ## Nächste Wellen
 

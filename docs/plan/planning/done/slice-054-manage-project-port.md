@@ -1,7 +1,7 @@
 ---
 id: slice-054
 titel: ManageProjectPort realisieren — die deklarierte Ziel-Form des Projekt-Use-Case
-status: open
+status: done
 welle: welle-5-erweiterung
 lastenheft_refs: [[LH-FA-BLD-002](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern), [LH-FA-BLD-003](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden), [ACC-005](../../../../spec/lastenheft.md#7-abnahmekriterien)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../../adr/0012-evaluations-architektur.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0012](../.
 
 # Slice 054: `ManageProjectPort` realisieren (Struktur-Vorläufer)
 
-**Status:** open — **Struktur-Vorläufer**, verhaltens-invariant. Eigenes
+**Status:** done (2026-07-27) — **Struktur-Vorläufer**, verhaltens-invariant. Eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 vor dem Start. **Sequenz: 054 → [`slice-053`](../open/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
@@ -205,7 +205,7 @@ eigene Regression nicht mehr zeigen (R3). Der **Port-Weg** bekommt seine eigene 
       `make schema-check` byte-unberührt.
 - [ ] **Ruhe-Marker-Toggle** ([MR-017](../../../../harness/conventions.md)): 054 ist der **erste**
       Slice in `in-progress/` seit der slice-049-Closure — der reservierte Sentinel im
-      `## Aktuelle Welle`-Block von [`roadmap.md`](roadmap.md) wird **im selben Commit
+      `## Aktuelle Welle`-Block von [`roadmap.md`](../in-progress/roadmap.md) wird **im selben Commit
       wie der `git mv`** entfernt und bei der Closure wieder gesetzt; `planning-drift` ist
       `make gates`-Member. (Zeile aus [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf 1, LOW-3.)
 
