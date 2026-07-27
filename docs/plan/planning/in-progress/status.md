@@ -35,7 +35,7 @@ Senken nicht sieht, kam Orakel-Zeile 6 dazu.
 3. **Ein Plan, der vor seinem Vorläufer geschrieben wurde, muss gegen das Gelieferte geprüft werden**
    — nicht gegen das Erwartete. Genau dafür war Lauf 2 da, und er hat sich gelohnt.
 
-**Weiter in der Kette:** ▶ **[`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md)**
+**Weiter in der Kette:** ▶ **[`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md)**
 (Sitzungs-Zustand + „Speichern" + Rückfrage) — **vierter
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
 offen**. Er muss dieselbe Frage stellen wie Lauf 2 zu 053: bucht 052a auf dem, was 053 **wirklich**
@@ -157,7 +157,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 
 **Sequenz: [`slice-054`](../done/slice-054-manage-project-port.md) →
 [`slice-053`](../done/slice-053-fenster-als-adapter.md) →
-[`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
+[`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](../open/slice-052b-neues-projekt.md).**
 
 Alle vier stammen aus dem **Validations-Rest von slice-047** („Speichern" auf die offene Datei +
