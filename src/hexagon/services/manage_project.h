@@ -57,6 +57,20 @@ DrawingTargetResolution openProject(
     const ports::driven::ProjectRepositoryPort& repository,
     const std::filesystem::path& path, const DrawingTargetSinks& sinks = {});
 
+// Baut ein **neues, leeres Projekt** (slice-052b, LH-FA-BLD-001) — reine
+// Kern-Funktion, damit die fachliche Regel nicht im coverage-ausgenommenen
+// Composition-Root landet:
+//
+// - **genau ein Geschoss** mit `model::kDefaultStoreyHeightMm` (spez. §3),
+// - **eine Zeichen-Ebene**, damit die einzige heute erreichbare
+//   Benutzer-Mutation (Hilfslinie) möglich ist — ein neues Projekt darf keine
+//   Sackgasse sein (L3-Entscheidung des Slice).
+//
+// Kein Widerspruch zu „Öffnen ist lesend": jene Regel schützt den Inhalt einer
+// **fremden Datei** vor stiller Ergänzung. Hier gibt es keine Datei — b-cad
+// definiert, was ein neues Projekt enthält.
+model::Building newProjectModel();
+
 // Erfüllt den `ManageProjectPort` (slice-054) — die seit dem Bootstrap in
 // `spec/architecture.md` §1.1 deklarierte Ziel-Form der Projekt-Use-Cases.
 //
@@ -87,6 +101,11 @@ public:
 
     DrawingTargetResolution openProject(
         const std::filesystem::path& path,
+        const DrawingTargetSinks& sinks) override;
+
+    // slice-052b: legt `newProjectModel()` als Sitzungs-Stand an, setzt die
+    // Sitzung zurueck (Pfad weg) und loest das Zeichen-Ziel neu auf.
+    DrawingTargetResolution newProject(
         const DrawingTargetSinks& sinks) override;
 
     // Speichert den Stand, den der **Struktur-Service** hält — deshalb braucht

@@ -41,6 +41,7 @@ public:
     using Action = std::function<void(QWidget* dialog_parent)>;
 
     struct FileActions {
+        Action new_project;  // slice-052b (LH-FA-BLD-001)
         Action open;
         Action save;     // slice-052a: auf die bekannte Datei (LH-FA-BLD-002)
         Action save_as;
@@ -62,6 +63,7 @@ public:
     // Objektnamen der Menü-Aktionen — Tests lösen sie darüber aus
     // (`findChild<QAction*>`), statt sich auf Menü-Reihenfolge oder
     // Beschriftungen zu verlassen.
+    static constexpr auto kNewActionName = "action_new";
     static constexpr auto kOpenActionName = "action_open";
     static constexpr auto kSaveActionName = "action_save";
     static constexpr auto kSaveAsActionName = "action_save_as";

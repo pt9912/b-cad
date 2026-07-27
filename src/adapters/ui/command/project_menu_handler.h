@@ -56,6 +56,7 @@ public:
     // Speichert den Sitzungs-Stand unter `path` (LH-FA-BLD-002); wirft neutral.
     void saveAs(const std::filesystem::path& path);
 
+
     // --- slice-052a ---------------------------------------------------------
 
     // Verdikt vor einer verwerfenden Aktion (Öffnen, Fenster schließen): muss
@@ -90,6 +91,15 @@ public:
     using SaveTargetAsk =
         std::function<std::optional<std::filesystem::path>()>;
     bool mayDiscard(const DiscardAsk& ask, const SaveTargetAsk& ask_target);
+
+    // slice-052b: legt ein neues, leeres Projekt an (LH-FA-BLD-001) —
+    // **hinter** der Rückfrage. Gibt `false` zurück, wenn der Benutzer
+    // abgebrochen hat (oder ein vorgeschaltetes Speichern scheiterte); dann
+    // bleibt das alte Projekt **vollständig** stehen.
+    //
+    // Die Rückfrage-Kette ist dieselbe wie beim Öffnen und beim Schließen —
+    // `mayDiscard` wird **nicht** ein zweites Mal geschrieben.
+    bool newProject(const DiscardAsk& ask, const SaveTargetAsk& ask_target);
 
 private:
     hexagon::ports::driving::ManageProjectPort& project_;

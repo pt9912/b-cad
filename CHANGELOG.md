@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-052b — **„Neues Projekt"** (`Datei → Neu`, **LH-FA-BLD-001 erstmals benutzer-erfüllbar**;
+  **Lastenheft 0.1.19**, **Benutzerhandbuch 1.3**). Das neue Projekt trägt **ein Geschoss** mit der
+  Default-Höhe der Spezifikation und **eine Zeichen-Ebene** — ohne sie wäre die einzige heute
+  erreichbare Zeichen-Mutation (Hilfslinie) abgelehnt und das neue Projekt eine Sackgasse. Kein
+  Widerspruch zu „Öffnen ist lesend": jene Regel schützt den Inhalt einer **vorhandenen Datei**; beim
+  Anlegen gibt es keine, hier definiert b-cad den Anfangsinhalt.
+  **Der Datenverlust-Pfad ist geschlossen:** nach „Neu" ist **keine Projektdatei mehr bekannt**. Ohne
+  diesen Reset hätte ein anschließendes „Speichern" per Zusage **dialoglos** in die zuvor geöffnete
+  Datei geschrieben und sie mit dem leeren neuen Projekt überschrieben. Dafür bekam der
+  `ProjectSessionPort` ein **`reset(baseline)`** — `markPersisted` taugt nicht, es **verlangt** einen
+  Pfad. Der `ManageProjectPort` bekam **`newProject(sinks)`**, die Stelle, die slice-054 dafür
+  vorgemerkt hatte.
+  Die Rückfrage vor Datenverlust gilt jetzt an **drei** Auslösern (Öffnen, Beenden, Neu) — dieselbe
+  geprüfte Kette aus slice-052a, nicht neu geschrieben. **Abbrechen** oder ein **gescheitertes**
+  Speichern lassen das bisherige Projekt vollständig stehen.
+  **Anforderungs-Korrektur:** die `E-IO-001`-Klausel der BLD-001-Negative-AK ist entfallen — sie
+  setzte einen Default-Projektpfad voraus, in den beim Anlegen geschrieben wird; das Anlegen ist
+  **speicher-resident**. Der eigentliche Schutz („kein leerer Projektzustand mit verlorenem
+  Vorgänger") bleibt und zeigt jetzt auf den real erreichbaren Auslöser.
 - slice-052a — **„Speichern" und die Rückfrage vor Datenverlust** (LH-FA-BLD-002/003,
   **Lastenheft 0.1.18**, **Benutzerhandbuch 1.2**). Das GUI kannte bisher nur „Speichern unter…" und
   warnte **nie** vor dem Verlust ungesicherter Änderungen — der Validations-Rest von slice-047.

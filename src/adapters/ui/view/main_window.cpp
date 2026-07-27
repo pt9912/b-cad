@@ -20,6 +20,15 @@ MainWindow::MainWindow(QWidget* central, FileActions actions,
 
     QMenu* file_menu = menuBar()->addMenu(QStringLiteral("&Datei"));
 
+    QAction* new_project = file_menu->addAction(QStringLiteral("&Neu"));
+    new_project->setObjectName(QString::fromLatin1(kNewActionName));
+    if (actions.new_project) {
+        QObject::connect(new_project, &QAction::triggered, this,
+                         [this, handler = std::move(actions.new_project)]() {
+                             handler(this);
+                         });
+    }
+
     QAction* open = file_menu->addAction(QStringLiteral("&Oeffnen..."));
     open->setObjectName(QString::fromLatin1(kOpenActionName));
     if (actions.open) {

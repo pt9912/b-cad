@@ -46,6 +46,7 @@ public:
     DiscardOutcome evaluate(DiscardAnswer answer) const override;
     void markPersisted(const std::filesystem::path& path,
                        const model::Building& persisted) override;
+    void reset(const model::Building& baseline) override;
     std::optional<std::filesystem::path> path() const override;
 
 private:

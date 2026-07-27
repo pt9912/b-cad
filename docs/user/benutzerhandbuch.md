@@ -1,7 +1,7 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.2
+Handbuch-Version: 1.3
 Stand: 2026-07-26
 
 ---
@@ -30,6 +30,8 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
 - **Hilfslinien** im Grundriss zeichnen,
 - in Formate **exportieren** (IFC/DXF/STEP/STL/PDF/PNG),
 - ein Projekt **speichern** und **öffnen** (Menü **Datei** oder Kommandozeile),
+- ein **neues, leeres Projekt anlegen** (Menü **Datei → Neu**) — mit einem
+  Geschoss und einer Zeichen-Ebene, sofort bezeichenbar,
 - Fremdformate **importieren** (IFC/DXF).
 
 **In dieser Version noch NICHT möglich:**
@@ -103,6 +105,7 @@ Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 - **3D drehen:** Im Reiter **3D** mit der Maus ziehen.
 - **Hilfslinie zeichnen:** Im Reiter **2D** mit gedrückter linker Maustaste ziehen
   (siehe Abschnitt 4.2).
+- **Neues Projekt:** Menü **Datei** → **Neu** (siehe Abschnitt 4.3).
 - **Projekt speichern/öffnen:** Menü **Datei** → **Speichern**,
   **Speichern unter…** bzw. **Öffnen…** (siehe Abschnitt 4.3).
 - **Ungesicherte Änderungen:** Wenn Sie ein Projekt öffnen oder b-cad beenden,
@@ -114,12 +117,15 @@ Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 ## 3. Ein Gebäude in b-cad bekommen und ansehen
 
 Da Sie ein Gebäude in dieser Version **nicht selbst planen** (siehe Abschnitt 1),
-gibt es **drei** Wege, mit einem Gebäude zu arbeiten:
+gibt es **vier** Wege, mit einem Gebäude zu arbeiten:
 
 1. **Das mitgelieferte Beispiel** — nach dem Start ist es sofort da (Abschnitt 2).
 2. **Ein importiertes Gebäude** — aus einer IFC- oder DXF-Datei (Abschnitt 4.5).
 3. **Ein geöffnetes Projekt** — eine zuvor gespeicherte `.bcad`-Datei; über
    **Datei → Öffnen…** in der Oberfläche (Abschnitt 4.3).
+4. **Ein neues, leeres Projekt** — über **Datei → Neu** (Abschnitt 4.3). Es
+   enthält ein Geschoss und eine Zeichen-Ebene; Bauteile lassen sich in dieser
+   Version noch nicht interaktiv anlegen, Hilfslinien schon.
 
 ### Das geladene Gebäude ansehen
 
@@ -149,6 +155,7 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 |---|---|
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
 | Hilfslinie zeichnen | Oberfläche, Reiter 2D (4.2) |
+| Neues Projekt anlegen | Oberfläche, Menü **Datei → Neu** (4.3) |
 | Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
 | Ungesicherte Änderungen sichern | Rückfrage beim Öffnen/Beenden (4.3) |
 | Modell exportieren (IFC/DXF/STEP/STL/PDF/PNG) | Kommandozeile (4.5) |
@@ -201,11 +208,22 @@ Datei ist danach die bekannte.
 Schreibrecht), bleibt eine **vorhandene** Datei unverändert — es entsteht **kein**
 halb geschriebenes Projekt. Ein Fehler wird als Meldung angezeigt.
 
+#### Ein neues Projekt anlegen
+
+1. Öffnen Sie das Menü **Datei** und wählen Sie **Neu**.
+2. Haben Sie ungesicherte Änderungen, erscheint zuerst die Rückfrage (siehe
+   unten).
+
+**Ergebnis:** Sie arbeiten in einem neuen Projekt mit **einem Geschoss** und
+**einer Zeichen-Ebene** — Hilfslinien lassen sich sofort zeichnen. Es ist noch
+**keine Datei zugeordnet**: das nächste **Speichern** fragt nach dem Ziel und
+überschreibt **nicht** das zuvor geöffnete Projekt.
+
 #### Ungesicherte Änderungen — die Rückfrage
 
 b-cad vergleicht Ihren aktuellen Stand mit dem zuletzt gespeicherten. Weicht er
-ab, erscheint vor jeder Aktion, die ihn verwerfen würde (**Öffnen**, **b-cad
-beenden**), eine Rückfrage mit drei Möglichkeiten:
+ab, erscheint vor jeder Aktion, die ihn verwerfen würde (**Neu**, **Öffnen**,
+**b-cad beenden**), eine Rückfrage mit drei Möglichkeiten:
 
 | Antwort | Was passiert |
 |---|---|
@@ -488,5 +506,6 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.3 | 0.1.0 | 2026-07-27 | **Datei → Neu** aufgenommen: eigener Unterabschnitt in 4.3 (Inhalt des neuen Projekts — ein Geschoss, eine Zeichen-Ebene, sofort bezeichenbar — und die Zusage, dass **keine Datei zugeordnet** ist, das nächste Speichern also nach dem Ziel fragt statt das zuvor geöffnete Projekt zu überschreiben); „Neu" als dritter Auslöser der Rückfrage ergänzt; §1 „Heute möglich", §2.3, die 4.1-Aufgaben-Tabelle und die Wege-Zählung in §3 (**drei → vier**) nachgezogen. |
 | 1.2 | 0.1.0 | 2026-07-27 | **Speichern** (auf die bekannte Projektdatei, ohne erneute Ziel-Abfrage) und die **Rückfrage vor ungesicherten Änderungen** aufgenommen: neuer Unterabschnitt in 4.3 mit der dreiwertigen Antwort (speichern/verwerfen/**abbrechen ⇒ es passiert nichts**), Ergänzung in 2.3, neue Zeile in der 4.1-Aufgaben-Tabelle und zwei FAQ-Einträge — die frühere FAQ-Aussage „Ein ‚Speichern' auf die zuletzt geöffnete Datei gibt es noch nicht" ist damit überholt und ersetzt. |
 | 1.1 | 0.1.0 | 2026-07-26 | Menü **Datei** (Speichern unter…/Öffnen…) als neuer Abschnitt 4.3 aufgenommen — das Handbuch beschrieb Speichern/Öffnen bis dahin als reine Kommandozeilen-Aufgabe und die FAQ verneinte ein Datei-Menü. Der Unterschied der beiden Wege ist jetzt benannt: im Menü ist Öffnen ein **Sitzungs-Wechsel**, auf der Kommandozeile ist `--open` eine **Export-Quelle**. Frühere 4.3/4.4 zu 4.4/4.5 verschoben. |

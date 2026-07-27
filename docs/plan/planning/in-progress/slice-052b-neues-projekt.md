@@ -396,4 +396,59 @@ Entscheidungen (Port-Verortung, L3) getroffen.
 
 ## 15. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Ausgeführt 2026-07-27.** `make gates` **EXIT=0** (docs-check 0 Befunde / 260 Dateien · a-check 0 ·
+arch-check ok · **352/352** Tests · Coverage 91,8 %), `make io-smoke` EXIT=0, `make schema-check`
+EXIT=0 (byte-unberührt).
+
+### Was entstanden ist
+
+- **`ManageProjectPort::newProject(sinks)`** und **`ProjectSessionPort::reset(baseline)`** — je eine
+  Methode, beide Header weiterhin nur `<std>` + `model/`.
+- **`services::newProjectModel()`** — die fachliche Regel im Kern: ein Geschoss mit
+  `kDefaultStoreyHeightMm`, eine Zeichen-Ebene.
+- **`resolveDrawingTarget`** aus `openProject` herausgelöst (interne Bindung), weil „Neu" denselben
+  Schritt braucht — Verhalten unverändert, die 047b/054-Orakel bleiben der Maßstab.
+- **`ProjectMenuHandler::newProject(ask, ask_target)`** — ruft `mayDiscard` aus 052a und legt erst
+  danach an. Die Rückfrage-Kette wurde **nicht** neu geschrieben.
+- **`MainWindow`**: vierter `FileActions`-Eintrag + `kNewActionName`. Sonst unverändert.
+- **`main.cpp`**: `newProjectWithTitleReset` (Dialoge + Titel-Reset), sonst Verdrahtung.
+
+### Orakel §6 — je mit roter Gegenprobe (gemessen)
+
+| Zeile | Gegenprobe | Ergebnis |
+|---|---|---|
+| 1/2 | `session_->reset(...)` in `newProject` entfernt | **1 rot**: `NeuesProjektVergisstDieGemerkteDateiUndIstSauber` |
+| 3 | `kDefaultStoreyHeightMm` auf 2600 geändert | **2 rot**: `NeuesProjektHatEinGeschossMitSpezifikationsHoehe` + ein IFC-Import-Test |
+| 4 | (durch Zeile 1/2 mitgedeckt; eigener Test `NeuesProjektLoestDasZeichenZielNeuAuf`) | grün, diskriminiert über die Sink-Zusicherungen |
+| 5/6 | `mayDiscard`-Aufruf in `newProject` übersprungen | **3 rot**: `NeuAbbrechenLaesstDasAlteProjektStehen`, `NeuLegtNichtAnWennDasSpeichernScheitert`, `NeuMitSpeichernSpeichertZuerst` |
+| 8 | die Zeichen-Ebene aus `newProjectModel()` entfernt | **1 rot**: `NeuesProjektHatEineZeichenEbene` |
+
+Zeile 3 diskriminiert jetzt tatsächlich: der Test führt **2500.0 als eigenes Literal**. Nach der
+Lauf-1-Nachbesserung („gegen die benannte Konstante prüfen") wäre er mit der Konstante mitgewandert —
+das war Lauf-2-MEDIUM-1.
+
+**Zeile 7 (Fenstertitel) hat wie geplant kein Orakel** — sie ist benannte Grenze (Lauf-2-HIGH-2):
+`main_window.h` schließt den Titel per Vertrag aus, 053 hat ihn in `main.cpp` belassen. Der
+Titel-Reset ist implementiert und sichtgeprüft, nicht orakel-gedeckt.
+
+### Anforderungs-Ebene
+
+**Lastenheft 0.1.19** — alle **drei** BLD-001-AK geschärft: „EG" entfällt (ein Geschoss trägt im
+Modell keinen Namen), „leerer Modellbaum" wird zu „ein Geschoss + eine Zeichen-Ebene, sonst ohne
+Bauteile" samt der Folge „sofort bezeichenbar", die Boundary wird **dreiwertig**, und die
+[`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Klausel entfällt — sie setzte einen Default-Projektpfad voraus, in den beim Anlegen
+geschrieben wird; das Anlegen ist speicher-resident. **Der eigentliche Schutz bleibt** und zeigt jetzt
+auf den real erreichbaren Auslöser (gescheitertes/abgebrochenes Speichern im Verwerf-Ablauf).
+
+**Spezifikation:** neuer §1-Block [`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen)`.a` **und** — wie Lauf-2-MEDIUM-2 verlangt — der
+052a-Block [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)`.b`/`003.b` **erweitert** (dritter Auslöser, dritte Baseline-Quelle), dazu
+die [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Bedingung in §4. `architecture.md`: Port-Zeile („anlegen" ist jetzt im Vertrag),
+`ProjectSessionPort`-Zeile, §2.1-Baum. **Benutzerhandbuch 1.3** an allen fünf zugesagten Stellen,
+inklusive der Wege-Zählung in §3 (drei → **vier**).
+
+### Was dieser Slice abschließt
+
+Mit 052b ist die **Vierer-Kette aus dem slice-047-Validations-Rest** vollständig: 054 (Port) → 053
+(Fenster/Handler als Adapter) → 052a (Sitzungs-Zustand + Speichern) → 052b („Neu").
+[`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen) ist erstmals
+benutzer-erfüllbar.

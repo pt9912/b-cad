@@ -45,9 +45,9 @@ enum class DrawingTargetResolution {
 //
 // **Zuschnitt:** `architecture.md` nennt vier Aufgaben (anlegen, speichern,
 // laden, versionieren); der Port deklariert die **zwei, die es gibt**
-// (LH-FA-BLD-002/003). Ein Port mit unimplementierten Methoden wäre eine Lüge
-// im Vertrag — „Neues Projekt" (LH-FA-BLD-001) kommt mit slice-052b,
-// Versionierung (LH-FA-BLD-004) später.
+// (LH-FA-BLD-002/003) — seit slice-052b **drei** (LH-FA-BLD-001 „anlegen"
+// kam dort dazu). Ein Port mit unimplementierten Methoden wäre eine Lüge im
+// Vertrag; Versionierung (LH-FA-BLD-004) folgt später.
 //
 // **Signatur-Schnitt:** die Infrastruktur (Repository, Struktur-Service) hält
 // die Implementierung als Konstruktor-Abhängigkeit, NICHT der Vertrag — ein
@@ -77,6 +77,26 @@ public:
     // (CLI, Kern-Tests), reicht sichtbar `{}`.
     virtual DrawingTargetResolution openProject(
         const std::filesystem::path& path,
+        const DrawingTargetSinks& sinks) = 0;
+
+    // Legt ein **neues, leeres Projekt** an und macht es zum Sitzungs-Stand
+    // (LH-FA-BLD-001). Der bisherige Stand wird ersetzt — die Rückfrage davor
+    // ist Sache des Aufrufers (`ProjectMenuHandler::mayDiscard`).
+    //
+    // Was „leer" heißt, entscheidet der Kern, nicht der Aufrufer: **genau ein
+    // Geschoss** mit der Default-Höhe aus der Spezifikation und **eine**
+    // Zeichen-Ebene. Ohne die Ebene wäre die einzige heute erreichbare
+    // Benutzer-Mutation (Hilfslinie zeichnen) unmöglich — ein neues Projekt
+    // darf keine Sackgasse sein (slice-052b, L3).
+    //
+    // **Speicher-resident:** es wird nichts geschrieben, also gibt es hier
+    // keinen Datei-Fehler. Der Sitzungs-Zustand wird zurückgesetzt (kein
+    // gemerkter Pfad mehr) — sonst schriebe ein anschließendes „Speichern"
+    // dialoglos in die **vorige** Datei (slice-052b, L1: ein Datenverlust-Pfad).
+    //
+    // Wie beim Öffnen wird das Zeichen-Ziel neu aufgelöst und über `sinks`
+    // gemeldet; `sinks` hat auch hier **keinen Default**.
+    virtual DrawingTargetResolution newProject(
         const DrawingTargetSinks& sinks) = 0;
 
     // Speichert den aktuellen Sitzungs-Stand **atomar** unter `path`

@@ -64,6 +64,8 @@ public:
     void markPersisted(const fs::path&, const model::Building&) override {
         ++mark_calls;
     }
+    void reset(const model::Building&) override { ++reset_calls; }
+    int reset_calls = 0;
     std::optional<fs::path> path() const override { return std::nullopt; }
 
     bool dirty = false;
@@ -114,6 +116,18 @@ public:
         }
         return driving::DrawingTargetResolution::Resolved;
     }
+
+    driving::DrawingTargetResolution newProject(
+        const driving::DrawingTargetSinks& sinks) override {
+        ++new_calls;
+        new_sinks_had_active_storey = static_cast<bool>(sinks.set_active_storey);
+        if (sinks.set_active_storey) {
+            sinks.set_active_storey(model::StoreyId{1});
+        }
+        return driving::DrawingTargetResolution::Resolved;
+    }
+    int new_calls = 0;
+    bool new_sinks_had_active_storey = false;
 
     void saveProject(const fs::path& path) override {
         ++save_calls;
@@ -383,6 +397,122 @@ TEST(ProjectMenuHandler, AbgebrocheneZielAbfrageUnterlaesstDieAktion) {
         []() { return driving::DiscardAnswer::Save; },
         []() { return std::optional<fs::path>{}; }));
     EXPECT_EQ(port.save_calls, 0);
+}
+
+// --- slice-052b, §6-5 / §6-6: "Neu" hinter der Rueckfrage ----------------
+//
+// Die Kette ist dieselbe wie beim Oeffnen und Schliessen (mayDiscard aus
+// 052a). Geprueft wird HIER, am Handler — nicht am Sitzungs-Service: dort
+// liegt die Kette nicht, und ein Test der falschen Komponente bliebe gruen
+// (Plan-Review Lauf 2, HIGH-3; dieselbe Bauart wie der 052a-Fund).
+
+TEST(ProjectMenuHandler, NeuBeiSauberemProjektLegtDirektAn) {
+    RecordingPort port;
+    RecordingSession session;
+    session.verdict = driving::DiscardVerdict::Proceed;
+    ProjectMenuHandler handler = baueHandler(port, session);
+
+    int gefragt = 0;
+    EXPECT_TRUE(handler.newProject(
+        [&gefragt]() {
+            ++gefragt;
+            return driving::DiscardAnswer::Cancel;
+        },
+        []() { return std::optional<fs::path>{}; }));
+
+    EXPECT_EQ(gefragt, 0) << "ohne ungesicherten Stand keine Rueckfrage";
+    EXPECT_EQ(port.new_calls, 1);
+}
+
+// §6-5 — die Zusage der AK-Boundary: "abbrechen" laesst das alte Projekt
+// VOLLSTAENDIG stehen. Nichts wird angelegt.
+TEST(ProjectMenuHandler, NeuAbbrechenLaesstDasAlteProjektStehen) {
+    RecordingPort port;
+    RecordingSession session;
+    session.verdict = driving::DiscardVerdict::AskFirst;
+    session.outcome = driving::DiscardOutcome::Abort;
+    ProjectMenuHandler handler = baueHandler(port, session);
+
+    EXPECT_FALSE(handler.newProject(
+        []() { return driving::DiscardAnswer::Cancel; },
+        []() { return std::optional<fs::path>{}; }));
+
+    EXPECT_EQ(port.new_calls, 0) << "abbrechen legt NICHTS an";
+    EXPECT_EQ(port.save_calls, 0);
+}
+
+TEST(ProjectMenuHandler, NeuVerwerfenLegtOhneSpeichernAn) {
+    RecordingPort port;
+    RecordingSession session;
+    session.verdict = driving::DiscardVerdict::AskFirst;
+    session.outcome = driving::DiscardOutcome::Proceed;
+    ProjectMenuHandler handler = baueHandler(port, session);
+
+    EXPECT_TRUE(handler.newProject(
+        []() { return driving::DiscardAnswer::Discard; },
+        []() { return std::optional<fs::path>{}; }));
+
+    EXPECT_EQ(port.new_calls, 1);
+    EXPECT_EQ(port.save_calls, 0);
+}
+
+// §6-6: "speichern" als Antwort ⇒ erst speichern, dann anlegen.
+TEST(ProjectMenuHandler, NeuMitSpeichernSpeichertZuerst) {
+    RecordingPort port;
+    RecordingSession session;
+    session.verdict = driving::DiscardVerdict::AskFirst;
+    session.outcome = driving::DiscardOutcome::SaveThenProceed;
+    session.target = {driving::SaveTargetKind::KnownPath, fs::path{"alt.bcad"}};
+    ProjectMenuHandler handler = baueHandler(port, session);
+
+    EXPECT_TRUE(handler.newProject(
+        []() { return driving::DiscardAnswer::Save; },
+        []() { return std::optional<fs::path>{}; }));
+
+    EXPECT_EQ(port.save_calls, 1);
+    EXPECT_EQ(port.saved_path, fs::path{"alt.bcad"});
+    EXPECT_EQ(port.new_calls, 1);
+}
+
+// §6-6, zweite Haelfte — DIE Zusage: scheitert das Speichern, wird NICHT
+// angelegt. Sonst waere der ungesicherte Stand weg, obwohl der Benutzer ihn
+// ausdruecklich retten wollte.
+TEST(ProjectMenuHandler, NeuLegtNichtAnWennDasSpeichernScheitert) {
+    RecordingPort port;
+    port.fail_save = true;
+    RecordingSession session;
+    session.verdict = driving::DiscardVerdict::AskFirst;
+    session.outcome = driving::DiscardOutcome::SaveThenProceed;
+    session.target = {driving::SaveTargetKind::KnownPath, fs::path{"alt.bcad"}};
+    ProjectMenuHandler handler = baueHandler(port, session);
+
+    EXPECT_FALSE(handler.newProject(
+        []() { return driving::DiscardAnswer::Save; },
+        []() { return std::optional<fs::path>{}; }));
+
+    EXPECT_EQ(port.new_calls, 0)
+        << "gescheitertes Speichern ⇒ nicht anlegen (AK Negative, R1)";
+}
+
+// Und die Senken werden auch beim Anlegen durchgereicht (B4-Klasse).
+TEST(ProjectMenuHandler, NeuReichtDieSenkenDurch) {
+    RecordingPort port;
+    RecordingSession session;
+    session.verdict = driving::DiscardVerdict::Proceed;
+    int gemeldet = 0;
+    ProjectMenuHandler handler = baueHandler(
+        port, session,
+        driving::DrawingTargetSinks{
+            [&gemeldet](model::StoreyId) { ++gemeldet; },
+            [](model::StoreyId, model::LayerId) {},
+        });
+
+    EXPECT_TRUE(handler.newProject(
+        []() { return driving::DiscardAnswer::Discard; },
+        []() { return std::optional<fs::path>{}; }));
+
+    EXPECT_TRUE(port.new_sinks_had_active_storey);
+    EXPECT_EQ(gemeldet, 1);
 }
 
 }  // namespace

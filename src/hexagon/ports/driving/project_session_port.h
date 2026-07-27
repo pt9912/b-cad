@@ -81,6 +81,16 @@ public:
     virtual void markPersisted(const std::filesystem::path& path,
                                const model::Building& persisted) = 0;
 
+    // Beginnt eine **neue** Sitzung über `baseline`: Vergleichs-Basis neu,
+    // **kein** gemerkter Pfad mehr (slice-052b).
+    //
+    // **`markPersisted` taugt dafür nicht** — es verlangt einen Pfad, den ein
+    // neues Projekt nicht hat, und würde den **vorigen** stehen lassen. Genau
+    // dieses Weiterzeigen ist der Datenverlust-Pfad: „Speichern" schreibt per
+    // Zusage dialoglos in die bekannte Datei und überschriebe damit das zuvor
+    // geöffnete Projekt mit dem leeren neuen.
+    virtual void reset(const model::Building& baseline) = 0;
+
     // Der zuletzt persistierte Pfad, falls es einen gibt.
     virtual std::optional<std::filesystem::path> path() const = 0;
 };

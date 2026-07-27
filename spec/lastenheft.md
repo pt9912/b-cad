@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.18
+**Version:** 0.1.19
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -60,15 +60,19 @@ jeweiligen Slice auf Akzeptanz-Niveau geschärft.
 
 **Akzeptanzkriterien:**
 
-- **Happy Path:** Given keine offene Datei, when „Neues Projekt", then
-  ein leeres Projekt mit genau einem Geschoss (EG, Default-Höhe aus
-  [`spezifikation.md`](spezifikation.md)) und einem leeren Modellbaum.
-- **Boundary:** Given ein bereits geöffnetes, ungespeichertes Projekt,
-  when „Neues Projekt", then Rückfrage „Änderungen verwerfen?" vor dem
-  Anlegen.
-- **Negative:** Given kein Schreibrecht im Default-Projektpfad, when
-  Projekt anlegen, then Fehler-Code [`E-IO-001`](spezifikation.md#4-fehler-codes-und-logging-felder), kein leerer
-  Projektzustand mit verlorenem Vorgänger.
+- **Happy Path:** Given ein laufendes b-cad, when „Neues Projekt", then
+  ein neues Projekt mit **genau einem Geschoss** (Default-Höhe aus
+  [`spezifikation.md`](spezifikation.md)) und **einer Zeichen-Ebene**, sonst
+  ohne Bauteile; es ist der Arbeitsstand, und der Benutzer kann sofort in ihm
+  zeichnen.
+- **Boundary:** Given ein bereits geöffnetes Projekt mit ungesicherten
+  Änderungen, when „Neues Projekt", then Rückfrage vor dem Anlegen; der
+  Benutzer kann **speichern**, **verwerfen** oder die Aktion **abbrechen** —
+  bei „abbrechen" bleibt das bisherige Projekt vollständig erhalten.
+- **Negative:** Given ungesicherte Änderungen und die Antwort „speichern",
+  when das Speichern scheitert oder abgebrochen wird, then wird **kein** neues
+  Projekt angelegt und der bisherige Stand bleibt unverändert — es entsteht
+  **kein** leerer Projektzustand mit verlorenem Vorgänger.
 
 **Out-of-Scope:** Projektvorlagen-Galerie (spätere Ausbaustufe).
 

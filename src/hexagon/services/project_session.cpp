@@ -45,6 +45,13 @@ void ProjectSessionService::markPersisted(const std::filesystem::path& path,
     baseline_ = persisted;
 }
 
+void ProjectSessionService::reset(const model::Building& baseline) {
+    // Pfad WEG (nicht: unveraendert lassen) — sonst schriebe "Speichern" nach
+    // "Neu" dialoglos in die vorige Datei (slice-052b, L1).
+    path_.reset();
+    baseline_ = baseline;
+}
+
 std::optional<std::filesystem::path> ProjectSessionService::path() const {
     return path_;
 }

@@ -3,12 +3,20 @@
 #include <stdexcept>
 #include <utility>
 
+#include "hexagon/model/constants.h"
+#include "hexagon/model/layer.h"
 #include "hexagon/model/persisted_derivations.h"
+#include "hexagon/model/storey.h"
 #include "hexagon/model/stair.h"
 #include "hexagon/model/storey_query.h"
 #include "hexagon/services/geometry/stair_geometry.h"
 
 namespace bcad::hexagon::services {
+
+namespace {
+DrawingTargetResolution resolveDrawingTarget(StructureEditService& service,
+                                             const DrawingTargetSinks& sinks);
+}  // namespace
 
 void saveProject(const ports::driven::ProjectRepositoryPort& repository,
                  const model::Building& building,
@@ -41,15 +49,21 @@ DrawingTargetResolution openProject(
     model::Building loaded = repository.load(path);
     service.replaceBuilding(std::move(loaded));
 
-    // Zeichen-Ziel neu aufloesen (slice-047b HIGH-3): die Sichten halten das
-    // aktive Geschoss / die Hilfslinien-Ebene by-value aus dem ALTEN Modell.
-    //
-    // WICHTIG: hier wird nichts angelegt. Frueher legte der GUI-Pfad eine Ebene
-    // "Canvas" an, wenn die geoeffnete Datei keine hatte — damit wich der Stand
-    // im Speicher vom Dateiinhalt ab und ein anschliessendes Speichern schrieb
-    // die Zusatz-Ebene mit (Code-Review MEDIUM-8, gegen LH-FA-BLD-003
-    // "vollstaendig wiederhergestellt"). Fehlt etwas, meldet der Rueckgabewert
-    // es dem Aufrufer, der es dem Benutzer zeigt.
+    return resolveDrawingTarget(service, sinks);
+}
+
+// slice-052b: aus `openProject` herausgeloest, weil "Neu" denselben Schritt
+// braucht — es ersetzt den Modellstand genauso. Verhalten unveraendert; die
+// bestehenden Orakel von slice-047b/054 bleiben der Massstab.
+//
+// WICHTIG: hier wird nichts angelegt. Frueher legte der GUI-Pfad eine Ebene
+// "Canvas" an, wenn die geoeffnete Datei keine hatte — damit wich der Stand im
+// Speicher vom Dateiinhalt ab und ein anschliessendes Speichern schrieb die
+// Zusatz-Ebene mit (Code-Review MEDIUM-8, gegen LH-FA-BLD-003 "vollstaendig
+// wiederhergestellt"). Fehlt etwas, meldet der Rueckgabewert es dem Aufrufer.
+namespace {
+DrawingTargetResolution resolveDrawingTarget(StructureEditService& service,
+                                             const DrawingTargetSinks& sinks) {
     const model::Building& current = service.building();
     if (current.storeys.empty()) {
         return DrawingTargetResolution::NoStorey;
@@ -69,6 +83,23 @@ DrawingTargetResolution openProject(
     }
     return DrawingTargetResolution::Resolved;
 }
+}  // namespace
+
+// slice-052b (LH-FA-BLD-001): was ein NEUES Projekt enthaelt — eine fachliche
+// Regel, deshalb im Kern und nicht im Composition-Root.
+model::Building newProjectModel() {
+    model::Building neu;
+    model::Storey eg;
+    eg.id = model::StoreyId{1};
+    eg.height_mm = model::kDefaultStoreyHeightMm;  // spez. §3
+    neu.storeys.push_back(eg);
+
+    model::Layer ebene;
+    ebene.id = model::LayerId{1};
+    ebene.name = "Ebene 1";
+    neu.layers.push_back(ebene);
+    return neu;
+}
 
 // --- ManageProjectService: die Port-Naht (slice-054) ----------------------
 //
@@ -87,6 +118,17 @@ DrawingTargetResolution ManageProjectService::openProject(
         session_->markPersisted(path, service_.building());
     }
     return resolution;
+}
+
+DrawingTargetResolution ManageProjectService::newProject(
+    const DrawingTargetSinks& sinks) {
+    service_.replaceBuilding(newProjectModel());
+    if (session_ != nullptr) {
+        // reset statt markPersisted: es gibt keinen Pfad, und der VORIGE darf
+        // nicht stehen bleiben (slice-052b, L1 — Datenverlust-Pfad).
+        session_->reset(service_.building());
+    }
+    return resolveDrawingTarget(service_, sinks);
 }
 
 void ManageProjectService::saveProject(const std::filesystem::path& path) {

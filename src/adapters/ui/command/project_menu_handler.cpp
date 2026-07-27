@@ -30,6 +30,15 @@ hexagon::ports::driving::DiscardOutcome ProjectMenuHandler::evaluate(
     return session_.evaluate(answer);
 }
 
+bool ProjectMenuHandler::newProject(const DiscardAsk& ask,
+                                   const SaveTargetAsk& ask_target) {
+    if (!mayDiscard(ask, ask_target)) {
+        return false;  // abgebrochen ODER Speichern gescheitert -> nichts tun
+    }
+    project_.newProject(sinks_);  // die Senken wie beim Oeffnen durchreichen
+    return true;
+}
+
 bool ProjectMenuHandler::mayDiscard(const DiscardAsk& ask,
                                    const SaveTargetAsk& ask_target) {
     using Verdict = hexagon::ports::driving::DiscardVerdict;

@@ -32,6 +32,7 @@
 #include "hexagon/ports/driving/manage_project_port.h"
 #include "hexagon/services/geometry/stair_geometry.h"
 #include "hexagon/services/manage_project.h"
+#include "hexagon/services/project_session.h"
 #include "hexagon/services/structure_edit_service.h"
 
 #include "analytic_geometry_double.h"
@@ -242,6 +243,114 @@ TEST(ManageProjectPort, ServiceIsUsableThroughThePortReference) {
     driving::ManageProjectPort& port = concrete;
     EXPECT_EQ(port.openProject("quelle.bcad", {}),
               driving::DrawingTargetResolution::Resolved);
+}
+
+// --- slice-052b: "Neues Projekt" (LH-FA-BLD-001) -------------------------
+
+// §6-3: das neue Projekt hat GENAU EIN Geschoss mit der Hoehe aus der
+// Spezifikation. Der erwartete Wert steht hier als EIGENES LITERAL — laese der
+// Test dieselbe Konstante wie die Produktion, wanderten beide gemeinsam und die
+// Gegenprobe "Konstante geaendert" bliebe gruen (Plan-Review Lauf 2, MEDIUM-1).
+// 2500.0 ist der Wert aus spec/spezifikation.md §3.
+TEST(ManageProjectPort, NeuesProjektHatEinGeschossMitSpezifikationsHoehe) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
+    services::ManageProjectService port(svc, repo, nullptr);
+
+    port.newProject({});
+
+    ASSERT_EQ(svc.building().storeys.size(), 1U);
+    EXPECT_DOUBLE_EQ(svc.building().storeys.front().height_mm, 2500.0)
+        << "Default-Geschosshoehe der Spezifikation (§3)";
+}
+
+// §6-8: die L3-Entscheidung ist beobachtbar umgesetzt — das neue Projekt hat
+// eine Zeichen-Ebene, sonst waere die einzige heute erreichbare
+// Benutzer-Mutation (Hilfslinie) unmoeglich.
+TEST(ManageProjectPort, NeuesProjektHatEineZeichenEbene) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
+    services::ManageProjectService port(svc, repo, nullptr);
+
+    const auto resolution = port.newProject({});
+
+    ASSERT_EQ(svc.building().layers.size(), 1U)
+        << "ohne Ebene waere das neue Projekt eine Sackgasse (L3)";
+    EXPECT_EQ(resolution, driving::DrawingTargetResolution::Resolved)
+        << "Geschoss UND Ebene sind da -> das Zeichen-Ziel ist vollstaendig";
+}
+
+// Und es ist wirklich LEER bis auf diese beiden — kein Rest des Vorgaengers.
+TEST(ManageProjectPort, NeuesProjektTraegtNichtsVomVorgaenger) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
+    services::ManageProjectService port(svc, repo, nullptr);
+
+    port.openProject("quelle.bcad", {});
+    ASSERT_FALSE(svc.building().stairs.empty()) << "Vorgaenger hat eine Treppe";
+
+    port.newProject({});
+
+    EXPECT_TRUE(svc.building().stairs.empty());
+    EXPECT_TRUE(svc.building().walls.empty());
+    EXPECT_TRUE(svc.building().guide_lines.empty());
+}
+
+// §6-4: nach "Neu" zeigt das Zeichen-Ziel auf das NEUE Geschoss/die neue Ebene
+// — dieselbe B4-Klasse wie beim Oeffnen (slice-047-Verify).
+TEST(ManageProjectPort, NeuesProjektLoestDasZeichenZielNeuAuf) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
+    services::ManageProjectService port(svc, repo, nullptr);
+
+    port.openProject("quelle.bcad", {});  // Ziel steht auf Storey 7 / Layer 9
+
+    auto seen_storey = model::StoreyId{7};
+    auto target_storey = model::StoreyId{7};
+    auto target_layer = model::LayerId{9};
+    const driving::DrawingTargetSinks sinks{
+        [&seen_storey](model::StoreyId s) { seen_storey = s; },
+        [&target_storey, &target_layer](model::StoreyId s, model::LayerId l) {
+            target_storey = s;
+            target_layer = l;
+        },
+    };
+
+    port.newProject(sinks);
+
+    const auto neues_geschoss = svc.building().storeys.front().id;
+    const auto neue_ebene = svc.building().layers.front().id;
+    EXPECT_EQ(seen_storey, neues_geschoss);
+    EXPECT_EQ(target_storey, neues_geschoss);
+    EXPECT_EQ(target_layer, neue_ebene)
+        << "sonst zeigten die Sichten auf einen Stand, den es nicht mehr gibt";
+}
+
+// §6-1 + §6-2 — DER Datenverlust-Pfad (L1): nach "Neu" ist KEINE Datei mehr
+// gemerkt, und die Sitzung ist sauber. Ohne den Reset schriebe ein
+// anschliessendes "Speichern" dialoglos in das ZUVOR GEOEFFNETE Projekt.
+TEST(ManageProjectPort, NeuesProjektVergisstDieGemerkteDateiUndIstSauber) {
+    const AnalyticGeometry geometry;
+    services::StructureEditService svc(geometry);
+    const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
+    services::ProjectSessionService session(svc.building());
+    services::ManageProjectService port(svc, repo, &session);
+
+    port.openProject("alt.bcad", {});
+    ASSERT_EQ(session.saveTarget().kind, driving::SaveTargetKind::KnownPath)
+        << "nach dem Oeffnen ist die Datei gemerkt";
+
+    port.newProject({});
+
+    EXPECT_EQ(session.saveTarget().kind, driving::SaveTargetKind::AskUser)
+        << "nach Neu muss das Ziel wieder erfragt werden (L1)";
+    EXPECT_FALSE(session.path().has_value());
+    EXPECT_FALSE(session.isDirty(svc.building()))
+        << "die Baseline ist das neue Projekt";
 }
 
 }  // namespace

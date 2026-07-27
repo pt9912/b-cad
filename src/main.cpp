@@ -342,6 +342,26 @@ void saveToKnownOrAsk(QWidget* parent,
     }
 }
 
+// slice-052b: "Neu" laeuft hinter derselben Rueckfrage wie Oeffnen und
+// Schliessen — die Kette liegt im Handler, hier stehen nur die Dialoge. Der
+// Fenstertitel folgt dem Wechsel (L5): benannte Grenze ohne Orakel, weil
+// main_window.h den Titel per Vertrag ausschliesst (slice-053).
+void newProjectWithTitleReset(
+    QWidget* parent, bcad::adapters::ui::command::ProjectMenuHandler& handler) {
+    const bool angelegt = handler.newProject(
+        [parent]() { return askDiscard(parent); },
+        [parent]() -> std::optional<std::filesystem::path> {
+            const std::optional<std::string> ziel = askSaveTarget(parent);
+            if (!ziel) {
+                return std::nullopt;
+            }
+            return std::filesystem::path{*ziel};
+        });
+    if (angelegt && parent != nullptr) {
+        parent->setWindowTitle(QStringLiteral("b-cad"));
+    }
+}
+
 bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
     bcad::adapters::ui::command::ProjectMenuHandler& handler) {
     // Ein unvollstaendig aufgeloestes Ziel ist kein Fehler, aber der Benutzer
@@ -368,6 +388,14 @@ bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
     };
 
     bcad::adapters::ui::view::MainWindow::FileActions actions;
+
+    // slice-052b: "Neu" laeuft hinter derselben Rueckfrage wie Oeffnen und
+    // Schliessen — die Kette liegt im Handler, hier stehen nur die Dialoge.
+    // Der Fenstertitel folgt dem Wechsel (L5): benannte Grenze, ohne Orakel,
+    // weil main_window.h den Titel per Vertrag ausschliesst (slice-053).
+    actions.new_project = [&handler](QWidget* parent) {
+        newProjectWithTitleReset(parent, handler);
+    };
 
     actions.open = [&handler, hint_for](QWidget* parent) {
         // slice-052a: erst fragen, dann verwerfen (LH-FA-BLD-003).

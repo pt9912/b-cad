@@ -43,6 +43,10 @@ public:
         const bcad::hexagon::ports::driving::DrawingTargetSinks&) override {
         return bcad::hexagon::ports::driving::DrawingTargetResolution::Resolved;
     }
+    bcad::hexagon::ports::driving::DrawingTargetResolution newProject(
+        const bcad::hexagon::ports::driving::DrawingTargetSinks&) override {
+        return bcad::hexagon::ports::driving::DrawingTargetResolution::Resolved;
+    }
     void saveProject(const std::filesystem::path&) override {}
 };
 
@@ -74,6 +78,7 @@ TEST(MainWindow, IsConstructibleHeadlessWithCentralWidget) {
         << "das Fenster uebernimmt das gereichte Widget (Qt-Ownership)";
     // Die beiden Menue-Aktionen existieren, auch ohne verdrahtete Handler.
     EXPECT_NE(actionNamed(window, MainWindow::kOpenActionName), nullptr);
+    EXPECT_NE(actionNamed(window, MainWindow::kNewActionName), nullptr);
     EXPECT_NE(actionNamed(window, MainWindow::kSaveActionName), nullptr);
     EXPECT_NE(actionNamed(window, MainWindow::kSaveAsActionName), nullptr);
 }
@@ -84,15 +89,23 @@ TEST(MainWindow, TriggeringMenuActionsCallsTheInjectedHandlers) {
     int opened = 0;
     int saved = 0;
     int saved_as = 0;
+    int created = 0;
     QWidget* open_parent = nullptr;
     MainWindow window(nullptr,
-                      {[&opened, &open_parent](QWidget* parent) {
+                      {[&created](QWidget*) { ++created; },
+                       [&opened, &open_parent](QWidget* parent) {
                            ++opened;
                            open_parent = parent;
                        },
                        [&saved](QWidget*) { ++saved; },
                        [&saved_as](QWidget*) { ++saved_as; }},
                       {});
+
+    // slice-052b: "Neu" ist eine EIGENE Aktion — eine Vertauschung mit
+    // "Oeffnen" waere ein Datenverlust ohne Datei-Dialog.
+    actionNamed(window, MainWindow::kNewActionName)->trigger();
+    EXPECT_EQ(created, 1);
+    EXPECT_EQ(opened, 0);
 
     actionNamed(window, MainWindow::kOpenActionName)->trigger();
     EXPECT_EQ(opened, 1);

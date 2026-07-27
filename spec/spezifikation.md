@@ -797,7 +797,7 @@ Ausbaustufen ergänzen. Beobachtbar ist das daran, dass die Rückfrage **für je
 Hilfslinien, Materialien).
 
 **Baseline.** Der Vergleichs-Maßstab ist der Stand **bei Sitzungs-Beginn** und danach jeweils der
-Stand **nach** einem erfolgreichen Speichern oder Öffnen. Eine frisch gestartete Sitzung ist damit
+Stand **nach** einem erfolgreichen Speichern, Öffnen **oder Anlegen**. Eine frisch gestartete Sitzung ist damit
 **nicht** ungesichert, solange der Benutzer nichts ändert.
 
 **Rücksetz-Regel — fail-closed.** Der Maßstab wird **erst nach** dem erfolgreichen Schreiben bzw.
@@ -809,8 +809,8 @@ schreibt „Speichern" **ohne** erneute Ziel-Abfrage dorthin. Ist keine bekannt,
 **einmalig** erfragt und ist danach bekannt. „Speichern unter…" erfragt das Ziel immer und macht das
 gewählte zum bekannten.
 
-**Die Rückfrage ist dreiwertig.** Vor jeder Aktion, die den Arbeitsstand verwirft (Öffnen, Beenden),
-gilt bei ungesichertem Stand: **speichern** → erst schreiben, dann die Aktion ausführen;
+**Die Rückfrage ist dreiwertig.** Vor jeder Aktion, die den Arbeitsstand verwirft (Öffnen, Beenden,
+**Neues Projekt**), gilt bei ungesichertem Stand: **speichern** → erst schreiben, dann die Aktion ausführen;
 **verwerfen** → Aktion ohne Schreiben ausführen; **abbrechen** → die auslösende Aktion **unterbleibt**
 und der Stand bleibt unverändert.
 
@@ -822,6 +822,32 @@ erhalten. Kein Verlust ohne ausdrückliche Entscheidung des Benutzers.
 ([`LH-QA-003`](lastenheft.md#lh-qa-003--undoredo)) und die Projektversionierung
 ([`LH-FA-BLD-004`](lastenheft.md#lh-fa-bld-004--projektversionierung)) — „ungesichert" ist eine
 Aussage über den Vergleich zum Dateistand, nicht über eine Änderungshistorie.
+
+### LH-FA-BLD-001.a — Neues Projekt anlegen (Inhalt und Sitzungs-Wirkung)
+
+Bezug: [`LH-FA-BLD-001`](lastenheft.md#lh-fa-bld-001--projekt-anlegen).
+
+**Was ein neues Projekt enthält.** Genau **ein Geschoss** mit der Default-Geschosshöhe (§3) und
+**eine Zeichen-Ebene**; keine Wände, Öffnungen, Dächer, Platten, Treppen, Materialien oder
+Hilfslinien. Die Ebene ist kein Zufall, sondern Zusage: ohne sie wäre die einzige heute erreichbare
+Zeichen-Mutation (Hilfslinie, [`LH-FA-DRW-005`](lastenheft.md#lh-fa-drw-005)) abgelehnt und das neue
+Projekt eine Sackgasse.
+
+**Abgrenzung zu „Öffnen ist lesend".** Die Regel, dass ein geöffnetes Projekt **nicht** still ergänzt
+wird ([`LH-FA-BLD-003`](lastenheft.md#lh-fa-bld-003--projekt-laden)`.a`), schützt den Inhalt einer **vorhandenen Datei**. Beim Anlegen gibt es keine
+Datei — hier **definiert** das Produkt den Anfangsinhalt. Beides steht nicht im Widerspruch.
+
+**Speicher-resident.** Das Anlegen schreibt **nichts**. Es gibt keinen Default-Projektpfad und damit
+beim Anlegen auch keinen Schreibfehler (§4).
+
+**Wirkung auf die Sitzung.** Nach dem Anlegen ist **keine Projektdatei mehr bekannt** — ein
+anschließendes „Speichern" fragt nach dem Ziel, statt in die zuvor geöffnete Datei zu schreiben. Der
+neue Stand ist zugleich die neue Vergleichs-Basis, die Sitzung gilt also als gesichert. Das
+Zeichen-Ziel der Ansichten wird auf den neuen Stand aufgelöst.
+
+**Rückfrage.** Sind zum Zeitpunkt des Anlegens Änderungen ungesichert, gilt der dreiwertige Ablauf aus
+[`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern)`.b`/`003.b`. **Abbrechen** oder ein **gescheitertes** Speichern lassen das bisherige
+Projekt **vollständig** stehen; es wird dann **kein** neues angelegt.
 
 ### LH-FA-PLG-001.a — Plugin-System (Host-Mapping, Teilumfang)
 
@@ -1194,7 +1220,7 @@ fordert eine Default-Stärke, §3 nannte keinen Wert).
 
 | Code | Bedingung | Aktion |
 |---|---|---|
-| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt anlegen/speichern, IFC-/STEP-/STL-/DXF-/PDF-/PNG-Export) | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
+| `E-IO-001` | Kein Schreibrecht im Zielpfad (Projekt **speichern**, IFC-/STEP-/STL-/DXF-/PDF-/PNG-Export). **Nicht** beim Projekt-**Anlegen**: das ist speicher-resident und schreibt nichts | Fehlerdialog, kein Zustandsverlust, Log `event=io_no_permission` |
 | `E-IO-002` | Zielmedium voll / Schreibfehler | vorheriger Stand intakt (atomar), Log `event=persist_error` |
 | `E-IO-003` | Import-Format nicht erkannt / invalide | kein Teil-Import, Log `event=import_rejected` |
 | `E-VAL-001` | Parameter außerhalb des Wertebereichs **oder strukturell ungültige Mutation** (z. B. entartete Hilfslinie [Anfang = Ende], leerer Ebenen-Name, Löschen einer referenzierten Ebene) | Wertebereich → **auf Grenzwert geklemmt**; strukturell ungültig → **hart abgelehnt, Modell unverändert** (`restrict`, kein stiller Verlust). Hinweis, Log `event=validation_rejected` |
