@@ -63,6 +63,15 @@ Sitzung macht**; **L4** ist die Ausnahme — es ist die Mechanik des Anlegens se
   Der Slice erzeugte damit einen Zustand, in dem der Benutzer nichts tun kann. Ob das Neu-Projekt eine
   Ebene bekommt (und ob das mit „Öffnen ist lesend" aus slice-047 kollidiert) ist eine **Entscheidung,
   die dieser Plan treffen muss**, keine Nebenwirkung.
+
+  > **Entschieden 2026-07-27 (Lauf-2-MEDIUM-6): das neue Projekt bekommt genau eine Zeichen-Ebene.**
+  > Kein Widerspruch zu „Öffnen ist lesend": jene Regel schützt den **Inhalt einer fremden Datei**
+  > davor, still ergänzt zu werden. Hier gibt es keine Datei — b-cad **definiert**, was ein neues
+  > Projekt enthält, so wie es auch das eine Geschoss definiert (L4). Die Alternative („ohne Ebene,
+  > dafür Meldung") liefert einen Zustand, in dem die **einzige** heute erreichbare Benutzer-Mutation
+  > unmöglich ist; ein Slice, der eine Anforderung erstmals benutzer-erfüllbar macht, darf nicht mit
+  > einer Sackgasse enden. Die Ebene gehört damit in den **Happy-AK-Wortlaut** (§4), nicht in eine
+  > Implementierungs-Fußnote.
 - **L4 — die Projekt-Erzeugung ist Mechanik (Lauf-2-MEDIUM-6b).** „Leeres Projekt mit genau **einem**
   Geschoss, Default-Höhe aus der Spezifikation" ist eine fachliche Regel. Sie gehört **nicht** in den
   orakel-losen Composition-Root — dieselbe Auflage wie in slice-047: „Was in `main` bleiben darf, ist
@@ -72,6 +81,33 @@ Sitzung macht**; **L4** ist die Ausnahme — es ist die Mechanik des Anlegens se
   Dateinamen beim Öffnen in den Titel (`main.cpp`:308–309), der Start setzt ihn auf „b-cad" (:483). Nach
   „Neu" behauptet die Oberfläche also weiterhin, das zuvor geöffnete Projekt zu zeigen — dieselbe
   Fehl-Aussage wie L1, nur sichtbar statt folgenschwer. Gehört zur selben Reset-Zusage.
+
+## 2.1 Wo „Neu" liegt — entschieden 2026-07-27 (Lauf-2-HIGH-1)
+
+Der Plan-Körper stammt vom 2026-07-26 und wurde seither **nicht** nachgezogen: `Port`,
+`ManageProject`, `ProjectMenuHandler`, `FileActions`, `CloseGuard` und `slice-054` hatten darin **null**
+Fundstellen — obwohl alle drei Vorläufer inzwischen `done` sind. Das ist keine Formalie: unter
+`.a-check.yml` darf **kein** Adapter `hexagon/services/` rufen. Weder die Aktion „Neu" noch der
+L1-Reset wären ohne Port aus einem Adapter erreichbar; übrig bliebe der **sensorlose `main.cpp`** —
+bei einem **Datenverlust-Pfad** (R1). Das wäre das sechste Auftreten derselben Klasse.
+
+**Entscheidung (Projektinhaber 2026-07-27): beide bestehenden Ports werden um je eine Methode
+erweitert** — kein dritter Port, keine neue Schicht-Kante.
+
+| Port | Ergänzung | Warum dort |
+|---|---|---|
+| `ManageProjectPort` | `newProject()` | **slice-054 hat die Stelle ausdrücklich vorgemerkt** („‚Neues Projekt' ([`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen)) kommt mit slice-052b"). `architecture.md` führt anlegen/speichern/laden/versionieren als **eine** Familie |
+| `ProjectSessionPort` | `reset(baseline)` | `markPersisted(path, building)` taugt **nicht**: es **verlangt** einen Pfad, den ein neues Projekt nicht hat — und genau das Weiterzeigen des alten Pfads ist L1 |
+
+**Der Aufrufer ist der `ProjectMenuHandler`** (`ui/command/`), nicht `main`: `newProject()` läuft dort
+hinter demselben `mayDiscard(ask, ask_target)`, das
+[`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) für Öffnen und Schließen gebaut
+hat — die Rückfrage-Kette ist damit **schon geprüft** und wird nicht ein zweites Mal geschrieben.
+`main.cpp` liefert nur den Dialog.
+
+**Nachzuziehen ist damit auch `spec/architecture.md`** (Lauf-2-MEDIUM-3): dort steht heute begründet,
+„anlegen" sei **nicht** im `ManageProjectPort`-Vertrag. Mit `newProject()` wird die Aussage falsch —
+sie ist Teil dieses Slice, nicht Nebenwirkung.
 
 ## 3. „EG" ist keine Modell-Eigenschaft (MR-006-HIGH-1)
 
@@ -146,20 +182,35 @@ Jede Zeile ist **außerhalb** des coverage-ausgenommenen `main` prüfbar — die
 | 2 | **Nach „Neu" ist die Sitzung sauber** (Baseline = das neue leere Projekt) | Baseline nicht zurückgesetzt ⇒ rot | L1 |
 | 3 | **Das neue Projekt hat genau ein Geschoss** mit der **benannten Default-Konstante** der Spezifikation | die Konstante durch einen **abweichenden** Wert ersetzt ⇒ rot | AK Happy / L4 |
 | 4 | **Nach „Neu" zeigt das Zeichen-Ziel auf das neue Geschoss** — und, **falls L3 „mit Ebene" ergibt**, wird eine Hilfslinie angenommen; ergibt L3 „ohne Ebene", wird sie **vertragsgemäß abgelehnt und gemeldet** | Neu-Auflösung entfernt ⇒ rot | **L2 (B4-Klasse)** |
-| 5 | **Ungesicherter Stand + „Neu" ⇒ `AskFirst`**; „abbrechen" ⇒ das alte Projekt bleibt **vollständig** | Verdikt übersprungen ⇒ rot | AK Boundary |
-| 6 | **„speichern" als Antwort am Auslöser „Neu"** ⇒ erst speichern, dann anlegen; scheitert das Speichern ⇒ **nicht** anlegen | Fehler geschluckt und trotzdem angelegt ⇒ rot | eigener Lauf MEDIUM-7 |
-| 7 | **Der Fenstertitel folgt dem Wechsel** (kein Verweis mehr auf die alte Datei) | Titel-Reset entfernt ⇒ rot | **L5** |
+| 5 | **Ungesicherter Stand + „Neu" ⇒ `AskFirst`**; „abbrechen" ⇒ das alte Projekt bleibt **vollständig** — geprüft am **`ProjectMenuHandler`** (dort liegt die Rückfrage-Kette seit 052a), nicht am Sitzungs-Service allein | Verdikt übersprungen ⇒ rot | AK Boundary / **Lauf-2-HIGH-3** |
+| 6 | **„speichern" als Antwort am Auslöser „Neu"** ⇒ erst speichern, dann anlegen; scheitert das Speichern ⇒ **nicht** anlegen — ebenfalls am `ProjectMenuHandler` | Fehler geschluckt und trotzdem angelegt ⇒ rot | Lauf-1-MED-7 / **Lauf-2-HIGH-3** |
+| 7 | *(entfällt als Orakel — s. u., Lauf-2-HIGH-2; die Zusage bleibt als benannte Grenze)* | — | **L5** |
 | 8 | **Die L3-Entscheidung ist beobachtbar umgesetzt** (Ebene vorhanden **oder** Meldung an den Benutzer, analog `spezifikation.md` „Öffnen ist lesend") | die gewählte Zusage entfernt ⇒ rot | eigener Lauf MEDIUM-7 |
 
-**Zeile 3, präzisiert** (eigener Lauf, MEDIUM-5): die frühere Gegenprobe „Default-Höhe **hart kodiert**
-⇒ rot" diskriminierte **nicht** — ein Literal `2500.0` ist vom Konstanten-Wert nicht unterscheidbar.
-Geprüft wird deshalb gegen die **benannte Konstante**, und die Gegenprobe ändert ihren **Wert**.
+**Zeile 3, zweimal präzisiert.** Lauf 1 verwarf die Gegenprobe „Default-Höhe **hart kodiert** ⇒ rot"
+— ein Literal `2500.0` ist vom Konstanten-Wert nicht unterscheidbar. Die Nachbesserung („gegen die
+**benannte Konstante** prüfen, die Gegenprobe ändert ihren Wert") diskriminiert aber **ebenso wenig**
+(Lauf-2-MEDIUM-1): liest der Test dieselbe Konstante wie die Produktion, wandern beide gemeinsam und
+der Test bleibt grün. **Auflösung: der Test führt den Wert der Spezifikation als eigenes Literal.**
+Wer die Konstante ändert, ohne die Spezifikation zu ändern, wird rot — und genau das ist die Zusage
+(„Höhe **aus der Spezifikation**", nicht „irgendein Default").
 
 **Zeile 4 ist ausdrücklich von der L3-Entscheidung abhängig** (eigener Lauf, MEDIUM-6) — sie prüft in
 **beiden** Ausgängen etwas, aber Verschiedenes. Ohne diese Markierung wäre sie eine Zusage, die je nach
 Entscheidung ins Leere läuft.
 
-**Benannte Grenze:** die modalen Dialoge — wie in
+**Zeile 7 entfällt als Orakel — der Fenstertitel ist nicht dort prüfbar, wo der Plan ihn buchte**
+(Lauf-2-HIGH-2). `main_window.h` schließt den Fenstertitel **per Vertrag** aus der Fenster-Klasse aus,
+und [`slice-053`](../done/slice-053-fenster-als-adapter.md) hat ihn als benannte Grenze in `main.cpp`
+belassen — ausdrücklich unter Nennung von „052b-L5". Die **Zusage bleibt** (nach „Neu" darf der Titel
+nicht weiter die alte Datei behaupten), sie wird nur als **Grenze** geführt statt als Orakel. Ein
+Orakel dafür verlangte, den Titel in die Fenster-Klasse zu ziehen — eine Architektur-Änderung, die
+dieser Slice nicht trägt und die 053 begründet abgelehnt hat.
+
+**Benannte Grenze — vollständige Aufzählung** (nachgezogen auf die von 053/052a hinterlassene):
+(1) die **modalen Dialoge** selbst; (2) **welcher** Dialog mit welchem **Meldungstext** erscheint;
+(3) der **Fenstertitel** samt seinem Reset nach „Neu" (L5, s. o.); (4) die `.bcad`-**Suffix-Ergänzung**;
+(5) der **Fenster-Aufbau**. Wie in
 [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md), mit derselben Auflage: **in der
 Verdrahtung steht keine Entscheidung.**
 
@@ -167,28 +218,45 @@ Verdrahtung steht keine Entscheidung.**
 
 - [ ] **Projekt-Erzeugung als Kern-Funktion** (L4): leeres `Building` mit genau einem Geschoss,
       Höhe aus der **benannten** Default-Konstante der Spezifikation — **nicht** in `main.cpp`.
-- [ ] **Sitzungs-Reset** (L1) **auf `ProjectSession`** (`src/hexagon/services/project_session.*`, aus
-      [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) **erweitert** — dessen Oberfläche
-      führt bewusst keinen Reset; eigener Lauf MEDIUM-9): „Neu" setzt gemerkte Datei **und**
+- [ ] **Die zwei Port-Ergänzungen** (§2.1): `ManageProjectPort::newProject()` und
+      `ProjectSessionPort::reset(baseline)` — je eine Methode, **nur `model/` + Standardbibliothek** im
+      Header, **keine** neue Schicht-Kante. Gegenprobe wie in
+      [`slice-054`](../done/slice-054-manage-project-port.md): Probe-Include aus `ports/driven/` ⇒
+      `make a-check` meldet `wrong-direction`.
+- [ ] **Sitzungs-Reset** (L1) im `ProjectSessionService`
+      (`src/hexagon/services/project_session.{h,cpp}`, aus
+      [`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) **erweitert** — dessen
+      Oberfläche führt bewusst keinen Reset; Lauf-1-MEDIUM-9): „Neu" setzt gemerkte Datei **und**
       Vergleichs-Basis zurück. Orakel §6-1/2.
+- [ ] **Menü-Aktion „Neu" im `ProjectMenuHandler`** (`ui/command/`): ruft `newProject()` **hinter**
+      dem vorhandenen `mayDiscard(ask, ask_target)` aus 052a — die Rückfrage-Kette wird **nicht neu
+      geschrieben**. `MainWindow::FileActions` bekommt einen vierten Eintrag samt Objektnamen.
+      Orakel §6-5/6.
 - [ ] **Zeichen-Ziel neu auflösen** (L2): dieselbe Naht wie beim Öffnen (slice-047
       `DrawingTargetSinks`); Orakel §6-4.
-- [ ] **Fenstertitel folgt dem Wechsel** (L5); Orakel §6-7.
-- [ ] **L3-Entscheidung getroffen, begründet und beobachtbar**: bekommt das Neu-Projekt eine
-      Zeichen-Ebene, oder bleibt der Benutzer bis zum manuellen Anlegen ohne Zeichen-Möglichkeit — mit
-      Meldung? Die Antwort steht im Plan, nicht im Code; sie zieht den Happy-AK-Wortlaut mit (§4).
-      Orakel §6-8.
-- [ ] **Menü-Aktion „Neu"** mit Rückfrage über die 052a-Maschinerie; **Abbrechen** unterlässt,
-      **„speichern"** speichert erst (Orakel §6-5/6).
+- [ ] **Fenstertitel folgt dem Wechsel** (L5) — in `main.cpp`, als **benannte Grenze ohne Orakel**
+      (Lauf-2-HIGH-2: `main_window.h` schließt den Titel per Vertrag aus, 053 hat ihn dort belassen).
+      Die Zusage steht, der Beleg ist Sichtprüfung.
+- [ ] **L3 ist entschieden** (§2, Kasten): das neue Projekt bekommt **genau eine Zeichen-Ebene**.
+      Sie gehört in den Happy-AK-Wortlaut (§4) und in den §1-Spezifikations-Block. Orakel §6-8.
+- [ ] **`spec/architecture.md`**: die §1.1-Port-Zeile sagt heute, „anlegen" sei **nicht** im
+      `ManageProjectPort`-Vertrag — mit `newProject()` wird das falsch und ist nachzuziehen; dazu der
+      neue `ProjectSessionPort`-Eintrag und der §2.1-Baum (Lauf-2-MEDIUM-3).
 - [ ] **Lastenheft:** Happy-AK („EG" → beschreibend, Modellbaum-Wortlaut) und Negative-AK
       ([`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Klausel) geschärft; Boundary-Wertigkeit entschieden. Header-Version +
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md)
       ([MR-010](../../../../harness/conventions.md#mr-010--lastenheft-header-version--oberste-9-historie-zeile)).
 - [ ] **Spezifikation:** §1-Block für die „Neu"-Mechanik mit **eigenem Anforderungs-Anker**
-      (Lauf-2-LOW-3) **und** Nachzug der [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Bedingung in §4 (eigener Lauf MEDIUM-2) +
+      (Lauf-1-LOW-3) **und** Nachzug der [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Bedingung in §4 (Lauf-1-MEDIUM-2) +
       Provenance-Zeile in [`spezifikation-historie.md`](../../../../spec/spezifikation-historie.md).
-- [ ] **`spec/architecture.md`** §2.1-Baum: die neue Kern-Funktion nennen (eigener Lauf MEDIUM-11 — der
-      Baum führt die Kern-Use-Cases namentlich; 052a hat dieselbe Zeile).
+      **Zusätzlich (Lauf-2-MEDIUM-2): der von 052a gelieferte Block [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)`.b`/`003.b` zählt
+      die Auslöser der Rückfrage („Öffnen, Beenden") und die Baseline-Quellen abschließend auf** —
+      „Neu" ist ein dritter Auslöser und eine dritte Baseline-Quelle. Der Bestandsblock wird
+      **erweitert**, nicht nur ein neuer danebengestellt; sonst widersprechen sich zwei §1-Blöcke.
+- [ ] **Boundary-Wertigkeit: entschieden, nicht offen** (Lauf-2-MEDIUM-5) — **dreiwertig**
+      (speichern / verwerfen / abbrechen). Seit 052a tragen
+      [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)/[`003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden)
+      und der §1-Block das normativ; „Neu" weicht davon nicht ab.
 - [ ] **Benutzerhandbuch** an den Stellen, die den Funktionsstand aufzählen: **§1 „Heute möglich"**,
       **§3 „drei Wege"** (die Zählung wird falsch), **§4.1-Tabelle**, **§2.3** und **4.3**.
       Handbuch-Version + Änderungshistorie. **Reihenfolge beachten** (eigener Lauf LOW-4): 052a führt
@@ -204,22 +272,28 @@ Verdrahtung steht keine Entscheidung.**
 
 | Datei / Komponente | Art | Begründung |
 |---|---|---|
-| `src/hexagon/services/project_session.{h,cpp}` | ändern | Reset von Pfad + Vergleichs-Basis (L1) — die Oberfläche kommt aus 052a und wird hier **erweitert** |
-| `src/hexagon/services/manage_project.{h,cpp}` (o. neue Kern-Datei) | ändern | Erzeugung des leeren Projekts als Kern-Funktion (L4) + Zeichen-Ziel-Auflösung (L2) |
-| `src/adapters/ui/view/main_window.*` (aus [`slice-053`](../done/slice-053-fenster-als-adapter.md)) | ändern | Menü-Aktion **Neu**, Titel-Reset (L5) — hier, weil nur hier prüfbar |
-| `src/main.cpp` | ändern | Verdrahtung + Dialog (**keine** Entscheidung) |
-| `tests/hexagon/test_project_session.cpp` | ändern | §6-Zeilen 1, 2, 5, 6 |
-| `tests/hexagon/test_manage_project.cpp` | ändern | §6-Zeilen 3, 8 (Erzeugung + L3-Ausgang) |
-| `tests/adapters/test_main_window.cpp` | ändern | §6-Zeilen 4, 7 (Zeichen-Ziel, Titel) |
+| `src/hexagon/ports/driving/manage_project_port.{h}` | **ändern** | `newProject()` (§2.1) |
+| `src/hexagon/ports/driving/project_session_port.{h}` | **ändern** | `reset(baseline)` (§2.1) — `markPersisted` verlangt einen Pfad und taugt nicht |
+| `src/hexagon/services/project_session.{h,cpp}` | ändern | Reset von Pfad + Vergleichs-Basis (L1) |
+| `src/hexagon/services/manage_project.{h,cpp}` | ändern | Erzeugung des leeren Projekts als Kern-Funktion (L4) + Sitzungs-Reset + Zeichen-Ziel-Auflösung (L2) |
+| `src/adapters/ui/command/project_menu_handler.{h,cpp}` | **ändern** | `newProject()` hinter dem vorhandenen `mayDiscard` (§2.1) — der Aufrufer, den der Plan bisher nicht hatte |
+| `src/adapters/ui/view/main_window.{h,cpp}` | **ändern (klein)** | **nur** ein vierter `FileActions`-Eintrag „Neu" + Objektname. **Nicht** der Titel-Reset (Lauf-2-HIGH-2) |
+| `src/adapters/CMakeLists.txt` | ändern | falls eine neue Adapter-Datei entsteht (Lauf-2-MEDIUM-4) |
+| `src/main.cpp` | ändern | Verdrahtung + Dialog + Titel-Reset (**keine** Entscheidung) |
+| `tests/hexagon/test_project_session.cpp` | ändern | §6-Zeilen 1, 2 (Reset am Service) |
+| `tests/hexagon/test_manage_project_port.cpp` | **ändern** | §6-Zeilen 3, 8 (Erzeugung + Ebene, über den Port) |
+| `tests/adapters/test_project_menu_handler.cpp` | **ändern** | §6-Zeilen 5, 6 (Rückfrage-Kette am Auslöser „Neu", Lauf-2-HIGH-3) |
+| `tests/adapters/test_main_window.cpp` | ändern | §6-Zeile 4 (Zeichen-Ziel) + die vierte Menü-Aktion |
 | `spec/lastenheft.md`, `spec/lastenheft-historie.md` | ändern | AK-Schärfungen + Header-Version |
 | `spec/spezifikation.md`, `spec/spezifikation-historie.md` | ändern | §1-Block + [`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Bedingung + Provenance |
 | `spec/architecture.md` | ändern | Kern-Funktion im §2.1-Baum |
 | `docs/user/benutzerhandbuch.md` | ändern | fünf Stellen (s. DoD) |
 | `CHANGELOG.md` | ändern | [Unreleased]-Eintrag |
-| `docs/reviews/`-Report zum zweiten Plan-Review | neu | das zweite [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) vor dem Start |
+| `docs/reviews/`-Reporte | **liegen** | [Lauf 1](../../../reviews/2026-07-26-slice-052b-plan.md) + [Lauf 2](../../../reviews/2026-07-27-slice-052b-plan-2.md) |
 
 **Nicht berührt:** `data-model.yaml`/`schema.sql` (kein persistenter Zustand, **kein** Geschoss-Namensfeld
-— §3), `.d-check.yml`/`.a-check.yml`, `docs/plan/adr/`.
+— §3), `.d-check.yml`/`.a-check.yml` (**keine** neue Kante — die zwei Port-Ergänzungen laufen über
+bestehende), `docs/plan/adr/`.
 
 ## 9. Risiken
 
@@ -271,7 +345,45 @@ hat, sind hier aufgenommen (MEDIUM-9, MEDIUM-11).
 | **INFO-1** (052b hängt an 052a, das selbst nicht startbar ist) | im Kopf deklariert; die Sequenz ist 053 → 052a → 052b. |
 | **INFO-2** (die §4-Wahl gehört dem Projektinhaber) | getroffen 2026-07-26, in §3/§4 protokolliert. |
 
-## 13. Sub-Area-Modus-Begründung
+## 13. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (zweiter Lauf, 2026-07-27)
+
+Report: [`2026-07-27-slice-052b-plan-2.md`](../../../reviews/2026-07-27-slice-052b-plan-2.md) —
+**3 HIGH / 6 MEDIUM / 5 LOW / 3 INFO, „nicht startbar"**. Unabhängiger Reviewer ≠ Plan-Autor ≠ Autor
+des Lauf-1-Reports.
+
+**Ausgangs-Befund, der alle drei HIGH erklärt:** der Plan-Körper war seit `51fd2d2` (2026-07-26)
+**inhaltlich unverändert** — die Folge-Commits zogen nur Lifecycle-Pfade der Nachbar-Pläne nach.
+`Port`, `ManageProject`, `ProjectMenuHandler`, `FileActions`, `CloseGuard` und `054` hatten **null**
+Fundstellen, obwohl [`slice-054`](../done/slice-054-manage-project-port.md),
+[`slice-053`](../done/slice-053-fenster-als-adapter.md) und
+[`slice-052a`](../done/slice-052a-sitzungs-zustand-und-speichern.md) inzwischen geliefert sind. **Alle
+drei HIGH sind Fortschreibungen von Lauf-1-MEDIUM, deren Behandlung nur am Text stattfand.**
+
+| # | Behandlung |
+|---|---|
+| **HIGH-1** (kein Port ⇒ „Neu" und der L1-Reset nur aus dem sensorlosen `main.cpp` erreichbar — bei einem **Datenverlust**-Pfad) | **§2.1 neu**: `ManageProjectPort::newProject()` + `ProjectSessionPort::reset(baseline)`, Aufrufer ist der `ProjectMenuHandler` hinter dem vorhandenen `mayDiscard`. DoD + Datei-Plan durchgezogen. |
+| **HIGH-2** (Titel-Reset auf `main_window.*` gebucht, das den Titel per Vertrag ausschließt) | Orakel-Zeile 7 **entfällt**; die Zusage bleibt als **benannte Grenze** in `main.cpp` — 053 hat genau das entschieden, unter Nennung von „052b-L5". |
+| **HIGH-3** (Zeilen 5/6 auf `test_project_session.cpp`, obwohl die Rückfrage-Kette seit 052a im `ProjectMenuHandler` liegt) | Zeilen 5/6 auf `tests/adapters/test_project_menu_handler.cpp` umgehängt. **Dieselbe Bauart wie der 052a-Fund**, dessen Gegenprobe grün blieb, weil ein Test die falsche Komponente prüfte. |
+| **MEDIUM-1** (Gegenprobe Zeile 3 diskriminiert weiterhin nicht) | der Test führt den Spezifikations-Wert als **eigenes Literal**; wandert die Konstante allein, wird er rot. |
+| **MEDIUM-2** (der 052a-§1-Block zählt Auslöser/Baseline-Quellen abschließend auf) | DoD verlangt jetzt die **Erweiterung** des Bestandsblocks, nicht nur einen neuen daneben. |
+| **MEDIUM-3** (`architecture.md` behauptet, „anlegen" sei nicht im Vertrag) | eigene DoD-Zeile: Port-Zeile **und** neuer `ProjectSessionPort`-Eintrag **und** §2.1-Baum. |
+| **MEDIUM-4** (Handler-Heimat + `src/adapters/CMakeLists.txt` fehlten) | im Datei-Plan ergänzt. |
+| **MEDIUM-5** (Boundary-Wertigkeit als offene Frage geführt) | **entschieden: dreiwertig** — seit 052a normativ getragen. |
+| **MEDIUM-6** (L3-Entscheidung fehlte im Plan, obwohl die DoD sie verlangt) | **entschieden: das neue Projekt bekommt eine Zeichen-Ebene** (§2, Kasten) — mit Begründung gegen „Öffnen ist lesend". |
+
+**Stand der Lauf-1-Findings** (vom Lauf-2-Reviewer am Artefakt geprüft, nicht an der §12-Tabelle):
+**11 von 19 bestätigt aufgelöst**, 4 teilweise, **4 nur scheinbar** — MEDIUM-5 → M-1, MEDIUM-7 →
+HIGH-3, MEDIUM-8 → HIGH-2, MEDIUM-9 → HIGH-1.
+
+**Positiv bestätigt** (nicht neu prüfen): L1/L2/L3/L4 beschreiben die Lieferung korrekt · das
+[`E-IO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Argument trägt · R2 („Öffnen ist lesend") ist nicht vorentschieden ·
+[MR-008](../../../../harness/conventions.md)/[MR-010](../../../../harness/conventions.md) gewahrt ·
+**`docs/user/` steht mit fünf existierenden Stellen ausdrücklich in der Doku-DoD**.
+
+**Startbar:** ja — alle drei HIGH sind aufgelöst, die MEDIUM eingearbeitet, die zwei offenen
+Entscheidungen (Port-Verortung, L3) getroffen.
+
+## 14. Sub-Area-Modus-Begründung
 
 ### Sub-Area: GUI-Sitzung / Persistenz-Bedienung
 
@@ -282,6 +394,6 @@ hat, sind hier aufgenommen (MEDIUM-9, MEDIUM-11).
 - **Risiko:** mittel-hoch — **L1** ist ein Datenverlust-Pfad; **L2** ist eine bereits einmal teuer
   bezahlte Klasse (slice-047 B4).
 
-## 14. Closure-Notiz
+## 15. Closure-Notiz
 
 _(bei Ausführung auszufüllen)_
