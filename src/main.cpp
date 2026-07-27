@@ -42,8 +42,10 @@
 #include "adapters/plugin/plugin_host.h"
 #include "adapters/ui/command/edit_drawing_guide_line_sink.h"
 #include "adapters/ui/command/plan_view_plan_source.h"
+#include "adapters/ui/command/project_menu_handler.h"
 #include "adapters/ui/command/view_model_mesh_source.h"
 #include "adapters/ui/view/canvas_widget.h"
+#include "adapters/ui/view/main_window.h"
 #include "adapters/ui/view/viewer_widget.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
@@ -258,28 +260,23 @@ std::optional<int> runHeadlessCli(
 // nicht mehr ueber die freien Service-Funktionen. Es sieht damit weder den
 // `StructureEditService` noch den `ProjectRepositoryPort` — genau die Sicht,
 // die ein `adapters/ui/command/`-Handler haben wird (slice-053).
-void installFileMenu(
-    QMainWindow& window, bcad::hexagon::ports::driving::ManageProjectPort& project,
-    bcad::adapters::ui::command::EditDrawingGuideLineSink& guide_sink,
-    bcad::adapters::ui::view::CanvasWidget& canvas) {
-    // Die Sichten als Senken (port-frei, Muster ADR-0019 Option A) — der Kern
-    // ruft sie nach dem Tausch mit den Ids des GELADENEN Stands.
-    const bcad::hexagon::services::DrawingTargetSinks sinks{
-        [&canvas](model::StoreyId storey) {
-            canvas.setActiveStorey(static_cast<int>(storey));
-        },
-        [&guide_sink](model::StoreyId storey, model::LayerId layer) {
-            guide_sink.setTarget(storey, layer);
-        },
-    };
-
+// slice-053: `main` baut nur noch die AKTIONEN — was sie tun, liegt im
+// `ui/command/`-Handler, wo es gerufen und geprueft werden kann; das Fenster
+// ist eine `ui/view/`-Adapter-Klasse. Hier bleiben genau die fuenf benannten
+// Grenz-Punkte (Plan §3): die modalen Dialoge, die Meldungstexte, der
+// Fenstertitel, die `.bcad`-Suffix-Ergaenzung und der Fenster-Aufbau.
+//
+// Das Eltern-Widget der Dialoge kommt beim Ausloesen vom Fenster selbst — die
+// Aktionen existieren vor ihm (es nimmt sie im Konstruktor).
+bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
+    bcad::adapters::ui::command::ProjectMenuHandler& handler) {
     // Ein unvollstaendig aufgeloestes Ziel ist kein Fehler, aber der Benutzer
     // muss es erfahren — sonst stuende er vor einer leeren Flaeche bzw. vor
     // einem Zeichnen, das ohne sichtbaren Grund abgelehnt wird (Code-Review
     // LOW-1). Leerer Text = alles aufgeloest.
     const auto hint_for =
-        [](bcad::hexagon::services::DrawingTargetResolution r) -> QString {
-        using Res = bcad::hexagon::services::DrawingTargetResolution;
+        [](bcad::hexagon::ports::driving::DrawingTargetResolution r) -> QString {
+        using Res = bcad::hexagon::ports::driving::DrawingTargetResolution;
         switch (r) {
             case Res::NoStorey:
                 return QStringLiteral(
@@ -296,55 +293,56 @@ void installFileMenu(
         return {};
     };
 
-    auto* file_menu = window.menuBar()->addMenu(QStringLiteral("&Datei"));
-    QObject::connect(
-        file_menu->addAction(QStringLiteral("&Oeffnen...")), &QAction::triggered,
-        &window, [&window, &project, sinks, hint_for]() {
-            const QString path = QFileDialog::getOpenFileName(
-                &window, QStringLiteral("Projekt oeffnen"), QString(),
-                QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
-            if (path.isEmpty()) {
-                return;  // abgebrochen — kein Zustandswechsel
-            }
-            try {
-                const QString hint =
-                    hint_for(project.openProject(path.toStdString(), sinks));
-                window.setWindowTitle(
+    bcad::adapters::ui::view::MainWindow::FileActions actions;
+
+    actions.open = [&handler, hint_for](QWidget* parent) {
+        const QString path = QFileDialog::getOpenFileName(
+            parent, QStringLiteral("Projekt oeffnen"), QString(),
+            QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
+        if (path.isEmpty()) {
+            return;  // abgebrochen — kein Zustandswechsel
+        }
+        try {
+            const QString hint = hint_for(handler.open(path.toStdString()));
+            if (parent != nullptr) {
+                parent->setWindowTitle(
                     QStringLiteral("b-cad — %1").arg(QFileInfo(path).fileName()));
-                if (!hint.isEmpty()) {
-                    QMessageBox::information(
-                        &window, QStringLiteral("Projekt geoeffnet"), hint);
-                }
-            } catch (const std::exception& e) {
-                // Fehler benutzer-sichtbar, kein Crash; das Modell ist
-                // unveraendert (openProject laedt erst, ersetzt dann).
-                QMessageBox::critical(&window,
-                                      QStringLiteral("Oeffnen fehlgeschlagen"),
-                                      QString::fromStdString(e.what()));
             }
-        });
-    QObject::connect(
-        file_menu->addAction(QStringLiteral("&Speichern unter...")),
-        &QAction::triggered, &window, [&window, &project]() {
-            QString path = QFileDialog::getSaveFileName(
-                &window, QStringLiteral("Projekt speichern"), QString(),
-                QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
-            if (path.isEmpty()) {
-                return;
+            if (!hint.isEmpty()) {
+                QMessageBox::information(
+                    parent, QStringLiteral("Projekt geoeffnet"), hint);
             }
-            // Ohne Endung entstuende eine Datei, die der Oeffnen-Dialog mit
-            // seinem Vorgabefilter nicht mehr anzeigt (Code-Review LOW-4).
-            if (QFileInfo(path).suffix().isEmpty()) {
-                path += QStringLiteral(".bcad");
-            }
-            try {
-                project.saveProject(path.toStdString());
-            } catch (const std::exception& e) {
-                QMessageBox::critical(&window,
-                                      QStringLiteral("Speichern fehlgeschlagen"),
-                                      QString::fromStdString(e.what()));
-            }
-        });
+        } catch (const std::exception& e) {
+            // Fehler benutzer-sichtbar, kein Crash; das Modell ist
+            // unveraendert (openProject laedt erst, ersetzt dann).
+            QMessageBox::critical(parent,
+                                  QStringLiteral("Oeffnen fehlgeschlagen"),
+                                  QString::fromStdString(e.what()));
+        }
+    };
+
+    actions.save_as = [&handler](QWidget* parent) {
+        QString path = QFileDialog::getSaveFileName(
+            parent, QStringLiteral("Projekt speichern"), QString(),
+            QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
+        if (path.isEmpty()) {
+            return;
+        }
+        // Ohne Endung entstuende eine Datei, die der Oeffnen-Dialog mit
+        // seinem Vorgabefilter nicht mehr anzeigt (Code-Review LOW-4).
+        if (QFileInfo(path).suffix().isEmpty()) {
+            path += QStringLiteral(".bcad");
+        }
+        try {
+            handler.saveAs(path.toStdString());
+        } catch (const std::exception& e) {
+            QMessageBox::critical(parent,
+                                  QStringLiteral("Speichern fehlgeschlagen"),
+                                  QString::fromStdString(e.what()));
+        }
+    };
+
+    return actions;
 }
 
 }  // namespace
@@ -477,23 +475,40 @@ int main(int argc, char** argv) {
 
     // Umschalt-Layout 3D↔2D (ADR-0019 E7): der Viewer ist Tab 0 (Default-Sicht),
     // sein GL-Kontext initialisiert beim show() → der ACC-002-Beleg bleibt heil.
-    QMainWindow window;
     auto* tabs = new QTabWidget;
     tabs->addTab(viewer, QStringLiteral("3D"));
     tabs->addTab(canvas, QStringLiteral("2D"));
-    window.setCentralWidget(tabs);  // Qt übernimmt das Widget-Ownership
-    window.resize(1280, 800);
-    window.setWindowTitle(QStringLiteral("b-cad"));
 
-    // Datei-Menue (LH-FA-BLD-002/003, slice-047b) — ausgelagert, damit die
-    // Kognitive Komplexitaet von `main` unter der lint-Schwelle bleibt
-    // (Muster runHeadlessCli).
     // slice-054: die Projekt-Use-Cases hinter ihrem Driving Port. Der
-    // Composition-Root verdrahtet die Infrastruktur EINMAL hier; das Menue
-    // (und ab slice-053 der ui/command/-Handler) sieht nur noch den Vertrag.
+    // Composition-Root verdrahtet die Infrastruktur EINMAL hier; der Handler
+    // darunter sieht nur noch den Vertrag.
     bcad::hexagon::services::ManageProjectService manage_project(service,
                                                                 repository);
-    installFileMenu(window, manage_project, guide_sink, *canvas);
+
+    // slice-053: die Sichten als Senken (port-frei, Muster ADR-0019 Option A).
+    // Sie gehoeren jetzt dem HANDLER — er reicht sie bei jedem Oeffnen durch,
+    // damit das Zeichen-Ziel nach einem Projekt-Laden auf die Ids des GELADENEN
+    // Stands zeigt (slice-047-Verify-B4). Der Port hat dafuer bewusst keinen
+    // Default: Vergessen waere ein Compile-Fehler.
+    bcad::adapters::ui::command::ProjectMenuHandler project_handler(
+        manage_project,
+        bcad::hexagon::ports::driving::DrawingTargetSinks{
+            [canvas](model::StoreyId storey) {
+                canvas->setActiveStorey(static_cast<int>(storey));
+            },
+            [&guide_sink](model::StoreyId storey, model::LayerId layer) {
+                guide_sink.setTarget(storey, layer);
+            },
+        });
+
+    // slice-053: das Fenster ist eine Adapter-Klasse. `main` uebergibt ihm die
+    // fertigen Tabs und die Aktionen; beim Ausloesen reicht es sich selbst als
+    // Eltern-Widget der Dialoge durch.
+    bcad::adapters::ui::view::MainWindow window(
+        tabs, makeFileActions(project_handler),
+        bcad::adapters::ui::view::MainWindow::CloseGuard{});
+    window.resize(1280, 800);
+    window.setWindowTitle(QStringLiteral("b-cad"));
 
     const QStringList args = QApplication::arguments();
     const int beleg_index = static_cast<int>(args.indexOf(

@@ -81,7 +81,7 @@ public:
 
     DrawingTargetResolution openProject(
         const std::filesystem::path& path,
-        const DrawingTargetSinks& sinks = {}) override;
+        const DrawingTargetSinks& sinks) override;
 
     // Speichert den Stand, den der **Struktur-Service** hält — deshalb braucht
     // der Vertrag kein `Building` und ein `ui_command`-Handler keinen

@@ -68,9 +68,16 @@ public:
     // unverändert (erst laden, dann ersetzen). Anschließend wird das
     // Zeichen-Ziel neu aufgelöst und über `sinks` gemeldet; der Rückgabewert
     // sagt, wie vollständig das gelang.
+    //
+    // **`sinks` hat bewusst KEINEN Default** (slice-053 §1.1): mit `= {}` wäre
+    // ein Treiber, der die Senken vergisst, still übersetzbar gewesen und hätte
+    // eine gültige Resolution geliefert — der Verlust der Zeichen-Ziel-
+    // Neuauflösung (slice-047-Verify-B4) bliebe unter jedem Orakel grün. Ohne
+    // Default ist das Vergessen ein **Compile-Fehler**. Wer keine Sichten hat
+    // (CLI, Kern-Tests), reicht sichtbar `{}`.
     virtual DrawingTargetResolution openProject(
         const std::filesystem::path& path,
-        const DrawingTargetSinks& sinks = {}) = 0;
+        const DrawingTargetSinks& sinks) = 0;
 
     // Speichert den aktuellen Sitzungs-Stand **atomar** unter `path`
     // (LH-FA-BLD-002). **Fail-closed:** ein inkonsistentes Modell (danglendes

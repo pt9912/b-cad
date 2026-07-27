@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- slice-053 — **Hauptfenster und Menü-Handler sind Adapter-Klassen** (Struktur, **verhaltens-invariant**):
+  [`src/adapters/ui/view/main_window.{h,cpp}`](src/adapters/ui/view/main_window.h) (port-frei,
+  `QMainWindow` mit Menü-Aufbau und `closeEvent`) und
+  [`src/adapters/ui/command/project_menu_handler.{h,cpp}`](src/adapters/ui/command/project_menu_handler.h)
+  (ruft den slice-054-`ManageProjectPort`). Bis hierher lebte beides als lokale Variablen und Lambdas
+  im coverage-ausgenommenen `src/main.cpp`, das in **kein** Testbinary gelinkt ist — Menü-Auslösung
+  und Schließ-Ereignis hatten damit **überhaupt keinen Sensor**. Genau daran war die
+  Ungesichert-Rückfrage von slice-052a gescheitert.
+  **`main.cpp` behält bewusst:** die modalen Dialoge, die Meldungstexte, den Fenstertitel, die
+  `.bcad`-Suffix-Ergänzung und den Fenster-Aufbau — der Umzug ist klein, der Gewinn ist der **Sensor**.
+  **Gehärtet:** `ManageProjectPort::openProject` hat **keinen Default** mehr für die
+  `DrawingTargetSinks` — wer sie vergisst, bekommt einen **Compile-Fehler** statt einer still
+  verlorenen Zeichen-Ziel-Neuauflösung (die Regression, die slice-047 als Verify-B4 gefunden hatte).
+  Der Handler reicht sie durch; ein eigenes Orakel belegt das, weil der Compiler das Durchreichen
+  **leerer** Senken nicht sieht.
+  **Kein neues Verhalten:** keine Rückfrage, kein neues Menü — die `CloseGuard`-Naht existiert, ist
+  aber unbesetzt (slice-052a hängt sich daran).
 - slice-054 — **`ManageProjectPort` realisiert** (Struktur, **verhaltens-invariant**): die
   Projekt-Use-Cases „speichern"/„öffnen" stehen hinter einem Driving Port
   ([`src/hexagon/ports/driving/manage_project_port.h`](src/hexagon/ports/driving/manage_project_port.h)),

@@ -112,7 +112,7 @@ model::Building projectWithStair(model::StoreyId stair_from) {
 // nicht mehr, ist der Port-Zuschnitt kaputt.
 driving::DrawingTargetResolution openThenSaveThroughPortOnly(
     driving::ManageProjectPort& port, const fs::path& open_path,
-    const fs::path& save_path, const driving::DrawingTargetSinks& sinks = {}) {
+    const fs::path& save_path, const driving::DrawingTargetSinks& sinks) {
     const driving::DrawingTargetResolution resolution =
         port.openProject(open_path, sinks);
     port.saveProject(save_path);
@@ -127,7 +127,7 @@ TEST(ManageProjectPort, PortSightAloneOpensAndSaves) {
     services::ManageProjectService port(svc, repo);
 
     const auto resolution =
-        openThenSaveThroughPortOnly(port, "quelle.bcad", "ziel.bcad");
+        openThenSaveThroughPortOnly(port, "quelle.bcad", "ziel.bcad", {});
 
     EXPECT_EQ(resolution, driving::DrawingTargetResolution::Resolved);
     // Geoeffnet: der Sitzungs-Stand traegt das geladene Projekt.
@@ -152,7 +152,7 @@ TEST(ManageProjectPort, PortSaveWritesSessionStateNotAPassedModel) {
     const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
     services::ManageProjectService port(svc, repo);
 
-    port.openProject("quelle.bcad");
+    port.openProject("quelle.bcad", {});  // ohne Sichten: sichtbar leer (slice-053 §1.1)
     // Nach dem Oeffnen mutiert die Sitzung — der Port muss DIESEN Stand
     // schreiben, nicht den geladenen.
     const auto wall = svc.addWall(model::StoreyId{7},
@@ -175,7 +175,7 @@ TEST(ManageProjectPort, PortSaveIsFailClosedOnDanglingFromStorey) {
     const RecordingRepository repo{projectWithStair(model::StoreyId{99})};
     services::ManageProjectService port(svc, repo);
 
-    port.openProject("quelle.bcad");
+    port.openProject("quelle.bcad", {});  // ohne Sichten: sichtbar leer (slice-053 §1.1)
 
     EXPECT_THROW(port.saveProject("ziel.bcad"), std::runtime_error);
     EXPECT_FALSE(repo.save_called)
@@ -222,7 +222,7 @@ TEST(ManageProjectPort, PortOpenPropagatesNeutralErrorAndKeepsState) {
     const auto storeys_before = svc.building().storeys.size();
     repo.fail_load = true;
 
-    EXPECT_THROW((void)port.openProject("fehlt.bcad"), std::runtime_error);
+    EXPECT_THROW((void)port.openProject("fehlt.bcad", {}), std::runtime_error);
 
     ASSERT_EQ(svc.building().storeys.size(), storeys_before)
         << "gescheitertes Oeffnen laesst den bisherigen Stand unveraendert";
@@ -240,7 +240,7 @@ TEST(ManageProjectPort, ServiceIsUsableThroughThePortReference) {
     services::ManageProjectService concrete(svc, repo);
 
     driving::ManageProjectPort& port = concrete;
-    EXPECT_EQ(port.openProject("quelle.bcad"),
+    EXPECT_EQ(port.openProject("quelle.bcad", {}),
               driving::DrawingTargetResolution::Resolved);
 }
 

@@ -41,6 +41,8 @@ add_executable(bcad_adapter_tests
     adapters/test_project_open_handler.cpp  # slice-047b: Open-Handler + Voll-Refresh der Sichten
     adapters/test_viewer_widget.cpp
     adapters/test_canvas_widget.cpp    # slice-043: 2D-Canvas-Interaktions-AK (ADR-0019, Xvfb)
+    adapters/test_main_window.cpp      # slice-053: Fenster-Adapter — Menue-Ausloesung + Schliess-Veto (Xvfb)
+    adapters/test_project_menu_handler.cpp  # slice-053: Handler ruft den Port UND reicht die Senken durch
     adapters/test_ifc_spf_reader.cpp   # slice-019b Commit i: SPF-Codec (isoliert)
     adapters/test_ifc_import.cpp       # slice-019b Commit ii: Mapping-AK + Integration
     adapters/test_ifc_export.cpp       # slice-019c: Export-Roundtrip-AK + E-IO-001

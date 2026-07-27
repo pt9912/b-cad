@@ -325,4 +325,67 @@ wechseln keine Lösungsrichtung.
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Ausgeführt 2026-07-27.** `make gates` **EXIT=0** (docs-check 0 Befunde / 258 Dateien · a-check 0 ·
+arch-check ok · **301/301** Tests · Coverage 91,5 %), `make io-smoke` EXIT=0, **`make acc-002-beleg`
+EXIT=0** (`1276x753, 9 Wand-Netze` — die in slice-043 erarbeitete Reihenfolge
+`setCurrentWidget(viewer)` **vor** `show()` hat den Umzug überlebt, R1).
+
+### Was entstanden ist
+
+- **`src/adapters/ui/view/main_window.{h,cpp}`** — `MainWindow` (`QMainWindow`), port-frei: Menü-Aufbau
+  + `closeEvent`. Aktionen sind injizierte `std::function`s, das Schließ-Veto ein injizierter
+  `CloseGuard`. **Kein** Port-Include, **kein** `command/`-Include.
+- **`src/adapters/ui/command/project_menu_handler.{h,cpp}`** — `ProjectMenuHandler` am
+  `ManageProjectPort`. **Die erste reale `ui_command`-Datei am Port** — damit sieht `make a-check` die
+  Kante `ui_command → ports_driving` an einem Artefakt statt nur in der Konfiguration. Das ist der
+  Beleg, den slice-054 ausdrücklich offen gelassen hatte (054 §1).
+- **`src/main.cpp`** — `installFileMenu` ist zu `makeFileActions` geworden: Dialoge, Meldungstexte,
+  Titel, Suffix und `try/catch` bleiben, der Port-Aufruf zieht in den Handler.
+- **`tests/adapters/test_main_window.cpp`** (5 Tests) + **`test_project_menu_handler.cpp`** (5 Tests),
+  beide in `bcad_adapter_tests`; Build-Listen in `src/adapters/CMakeLists.txt` und
+  `tests/CMakeLists.txt` nachgezogen.
+- **Port gehärtet** (§1.1): `openProject(path, sinks)` ohne Default.
+
+### Orakel §3 — je mit roter Gegenprobe (gemessen)
+
+| # | Gegenprobe | Ergebnis |
+|---|---|---|
+| 1 | — (Voraussetzung; belegt durch `IsConstructibleHeadlessWithCentralWidget`) | grün |
+| 2/3 | `closeEvent`-Behandlung entfernt | **2 rot**: `CloseRunsTheCloseGuard`, `CloseGuardVetoKeepsTheWindowVisible` |
+| 4 | Menü-Verdrahtung der Öffnen-Aktion entfernt | **1 rot**: `TriggeringMenuActionsCallsTheInjectedHandlers` |
+| 5 | Handler ruft `saveProject` nicht mehr | **2 rot**: `SaveAsCallsThePortWithTheGivenPath`, `ErrorsPropagateNeutrally` |
+| 6 | Handler reicht `{}` statt der gehaltenen Senken durch | **2 rot**: `HandlerForwardsTheDrawingTargetSinks`, `SinksAreForwardedOnEveryOpen` |
+| §1.1 | Senken beim Port-Aufruf **weggelassen** | **Compile-Fehler** (gemessen): `project_menu_handler.cpp:10:32: error: no matching function for call to '…ManageProjectPort::openProject(const std::filesystem::path&)'` |
+
+Die letzte Zeile ist der Beleg, dass die Härtung wirkt: was der zweite Plan-Review als still
+verlierbar identifiziert hat, ist jetzt nicht mehr übersetzbar.
+
+### Abweichung vom Plan — eine, benannt
+
+Der Plan sagte für den `--acc-002-beleg`-Zweig einen „schmalen Zugriff auf den aktiven Tab" zu. **Der
+wurde nicht gebraucht:** der Composition-Root erzeugt `tabs`, `viewer` und `canvas` selbst und behält
+seine Zeiger; das Fenster bekommt die fertigen Tabs nur injiziert. Die Ownership-Entscheidung (§4)
+gilt damit unverändert — sie brauchte weniger Mechanik als angenommen. **Kein** Accessor auf
+`MainWindow`.
+
+Zusätzlich: die `FileActions` reichen beim Auslösen das **Fenster selbst** als Dialog-Eltern durch
+(`std::function<void(QWidget*)>`). Die erste Fassung hielt stattdessen einen nachgereichten
+Zeiger-auf-Zeiger im Root — `misc-const-correctness` hat ihn im `lint`-Gate beanstandet, und die
+Auflösung ist die bessere Bauform: nur das Fenster kennt sich zum Auslöse-Zeitpunkt.
+
+### Was dieser Slice **nicht** belegt (unverändert aus §3)
+
+Einen **Vorher**-Sensor für den Menü-Teil gibt es nicht — die §3-Tabelle ist die **erste** Deckung
+dieses Codes. `make io-smoke` kehrt vor dem GUI-Aufbau zurück, `make acc-002-beleg` deckt den
+Fenster-**Aufbau**. Beide belegen die **umliegenden** Pfade, nicht den Umzug selbst. Coverage bleibt
+bei 91,5 % — der Code kam erstmals in den gemessenen Bereich (INFO-2 des ersten Laufs), ohne die Quote
+zu senken.
+
+### Doku
+
+`spec/architecture.md`: die GUI-Adapter-Zeile nennt jetzt **beide** Richtungen vollständig — `view/`
+deckt ausdrücklich Fenster/Widgets, deren Aktionen über injizierte Callables laufen, `command/` die
+Kommando-Handler an Driving Ports; dazu der Satz, dass die Richtungs-Regel eine Aussage über
+**Imports** ist (ein `view/`-Fenster darf ein Kommando *auslösen*, solange es den Port nicht *kennt*).
+§2.1-Baum entsprechend. `CHANGELOG` [Unreleased]. **Kein** Lastenheft-/Spezifikations-/Handbuch-Eintrag
+— geprüft und verneint: kein benutzer-sichtbares Verhalten ändert sich.
