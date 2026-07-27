@@ -72,7 +72,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 
 ### Was offen in `open/` liegt — und in welcher Reihenfolge
 
-**Sequenz: [`slice-054`](../open/slice-054-manage-project-port.md) →
+**Sequenz: [`slice-054`](slice-054-manage-project-port.md) →
 [`slice-053`](../open/slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](../open/slice-052b-neues-projekt.md).**

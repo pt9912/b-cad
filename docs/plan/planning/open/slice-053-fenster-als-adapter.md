@@ -14,7 +14,7 @@ adr_refs: [[ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr
 ([Report](../../../reviews/2026-07-26-slice-053-plan.md)); alle Findings eingearbeitet (§10).
 **Ein zweiter Lauf vor dem Start.**
 
-**Abhängigkeit: [`slice-054`](slice-054-manage-project-port.md) muss zuerst laufen** — HIGH-1 hat
+**Abhängigkeit: [`slice-054`](../in-progress/slice-054-manage-project-port.md) muss zuerst laufen** — HIGH-1 hat
 belegt, dass „Handler ziehen mit um" und „keine neue Kante" ohne den `ManageProjectPort` nicht
 gleichzeitig einlösbar sind. **Sequenz: 054 → 053 →
 [`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) →
@@ -53,13 +53,13 @@ Das Hauptfenster wird eine **Adapter-Klasse**; die Menü-**Handler** werden es e
 | Was | Wohin | Warum das trägt |
 |---|---|---|
 | **Fenster** (`QMainWindow`, Menü-Aufbau, `closeEvent`) | `src/adapters/ui/view/` (`ui_view`, driven) | Es importiert **keinen** Port: die Aktionen rufen injizierte `std::function`s. Präzedenz ist `CanvasWidget` — es löst seit slice-043 über eine `std::function` einen **Schreib**-Vorgang aus, ohne einen Driving-Port zu kennen ([ADR-0019](../../adr/0019-drw-2d-canvas.md) Option A). `architecture.md`:109 („kein Unterverzeichnis mischt beide Richtungen") ist eine Regel über **Imports**, und die bleibt gewahrt. |
-| **Handler** (was eine Aktion *tut*) | `src/adapters/ui/command/` (`ui_command`, driving) | Dort ist `→ ports_driving` erlaubt — und ab [`slice-054`](slice-054-manage-project-port.md) gibt es mit `ManageProjectPort` einen Port, den ein Handler rufen **darf**. |
+| **Handler** (was eine Aktion *tut*) | `src/adapters/ui/command/` (`ui_command`, driving) | Dort ist `→ ports_driving` erlaubt — und ab [`slice-054`](../in-progress/slice-054-manage-project-port.md) gibt es mit `ManageProjectPort` einen Port, den ein Handler rufen **darf**. |
 | **Verdrahtung + modale Dialoge** | `src/main.cpp` | Instanz erzeugen, Handler-Methoden als `std::function` ins Fenster geben, Dialoge stellen. **Keine Entscheidung.** |
 
 **Das war der HIGH-1 des ersten Laufs:** die Vorfassung wollte die Handler nach `ui_view` mitnehmen —
 sie rufen aber `hexagon/services/` (`main.cpp`:306/:337), und `ui_view` darf nur `model`/`ports_driven`
 (`.a-check.yml`:33–34). „Handler ziehen mit um" **und** „keine neue Kante" war zusammen unmöglich.
-Ohne [`slice-054`](slice-054-manage-project-port.md) bliebe nur die **leere Bauform** — dann verspräche
+Ohne [`slice-054`](../in-progress/slice-054-manage-project-port.md) bliebe nur die **leere Bauform** — dann verspräche
 053 weniger, als 052a/052b darauf buchen.
 
 **Verhaltens-invariant:** kein neues Menü, keine neue Aktion, keine geänderte Reaktion.
@@ -83,7 +83,7 @@ Ohne [`slice-054`](slice-054-manage-project-port.md) bliebe nur die **leere Bauf
 | 2 | **`close()` auf dem Fenster** ruft die Schließ-Behandlung (Beobachtung: ein injizierter Haken wird gerufen) | Behandlung entfernt ⇒ rot |
 | 3 | Sagt der Haken „nicht schließen", **bleibt das Fenster sichtbar** — die Naht, an der 052a sein „abbrechen" aufhängt | `ignore()` weggelassen ⇒ rot |
 | 4 | Eine **Menü-Aktion** ist über `trigger()` auslösbar und ruft ihre injizierte `std::function` | Verdrahtung entfernt ⇒ rot |
-| 5 | Der **Handler** (`ui/command/`) ruft für „Öffnen"/„Speichern" den [`slice-054`](slice-054-manage-project-port.md)-Port — geprüft gegen ein Port-Doppel | Aufruf entfernt ⇒ rot |
+| 5 | Der **Handler** (`ui/command/`) ruft für „Öffnen"/„Speichern" den [`slice-054`](../in-progress/slice-054-manage-project-port.md)-Port — geprüft gegen ein Port-Doppel | Aufruf entfernt ⇒ rot |
 
 **Zeile 2/3 sind gegenüber der Vorfassung präzisiert** (Lauf-1-MEDIUM-2): ein per `sendEvent`
 zugestelltes `QCloseEvent` prüft die Veto-Wirkung **nicht** — `ignore()` wirkt an `close()`. Geprüft
@@ -117,7 +117,7 @@ Sensor — **keine Entscheidung darunter**.
       laufen über injizierte `std::function`s ([ADR-0019](../../adr/0019-drw-2d-canvas.md) Option A,
       Präzedenz `CanvasWidget`).
 - [ ] **`src/adapters/ui/command/project_menu_handler.{h,cpp}`** (o. ä.): was eine Aktion **tut** —
-      ruft den [`slice-054`](slice-054-manage-project-port.md)-`ManageProjectPort`. Orakel §3-5.
+      ruft den [`slice-054`](../in-progress/slice-054-manage-project-port.md)-`ManageProjectPort`. Orakel §3-5.
 - [ ] **`src/main.cpp`**: nur noch Instanz, Verdrahtung, Dialoge und Meldungstexte. Die
       Handler-**Rümpfe** ziehen um; die Dialog-Aufrufe bleiben.
 - [ ] **Qt-Ownership und Lebensdauer entschieden, nicht nur benannt** (Lauf-1-MEDIUM-4): wem gehören
@@ -196,7 +196,7 @@ Report: [`2026-07-26-slice-053-plan.md`](../../../reviews/2026-07-26-slice-053-p
 
 | # | Behandlung |
 |---|---|
-| **HIGH-1** (Handler-Umzug vs. „keine neue Kante") | **[`slice-054`](slice-054-manage-project-port.md)** vorgeschaltet: mit `ManageProjectPort` darf ein `ui/command/`-Handler die Use-Cases rufen. §1 legt die Verortung jetzt **dreiteilig** fest (Fenster `view/` port-frei · Handler `command/` über den Port · `main` nur Verdrahtung). |
+| **HIGH-1** (Handler-Umzug vs. „keine neue Kante") | **[`slice-054`](../in-progress/slice-054-manage-project-port.md)** vorgeschaltet: mit `ManageProjectPort` darf ein `ui/command/`-Handler die Use-Cases rufen. §1 legt die Verortung jetzt **dreiteilig** fest (Fenster `view/` port-frei · Handler `command/` über den Port · `main` nur Verdrahtung). |
 | **HIGH-2** (Invarianz-Sensoren führen den Code nicht aus) | §3 sagt jetzt das Gegenteil der Vorfassung: einen **Vorher**-Sensor gibt es **nicht**; die §3-Tabelle ist die **erste** Deckung dieses Codes. Die drei Läufe belegen die **umliegenden** Pfade. |
 | **MEDIUM-1** (053 verspricht weniger, als 052a bucht) | **§3-Zeile 5** neu: der Handler ruft den Port — erst damit ist der „Nachweis der Verwendung" herstellbar. |
 | **MEDIUM-2** (`ignore()` nicht über `sendEvent` prüfbar) | §3-Zeilen 2/3 prüfen über **`close()`** und die **Sichtbarkeit** danach. |
