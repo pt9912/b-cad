@@ -14,6 +14,12 @@ namespace bcad::hexagon::model {
 // Punktfolge umlaufend.
 struct Footprint {
     std::vector<Point2D> points;
+
+    // slice-052a: **`= default` ist Pflicht, kein Stil.** Der compiler-generierte
+    // Vergleich nimmt jedes kuenftig ergaenzte Feld automatisch auf; ein
+    // handgeschriebener Operator wuerde es stillschweigend uebersehen — und genau
+    // das waere der stille Datenverlust, gegen den der Sitzungs-Vergleich steht.
+    auto operator==(const Footprint&) const -> bool = default;
 };
 
 }  // namespace bcad::hexagon::model

@@ -781,6 +781,48 @@ geöffneten Projekt etwas, das eine Sicht zum Arbeiten braucht (z. B. eine Zeich
 wird das dem Benutzer **gemeldet**, statt es still anzulegen; die betroffene Aktion bleibt bis dahin
 abgelehnt.
 
+### LH-FA-BLD-002.b / LH-FA-BLD-003.b — Sitzungs-Zustand und Rückfrage vor Verlust
+
+Bezug: [`LH-FA-BLD-002`](lastenheft.md#lh-fa-bld-002--projekt-speichern) (Speichern auf die bekannte
+Datei, Rückfrage beim Beenden) und [`LH-FA-BLD-003`](lastenheft.md#lh-fa-bld-003--projekt-laden)
+(Rückfrage beim Öffnen) — **Sammelblock** (deckt beide).
+
+**Was „ungesichert" heißt — als Eigenschaft, nicht als Mechanik.** Eine Sitzung gilt als ungesichert,
+wenn ihr **aktueller Modellstand von dem zuletzt persistierten abweicht**. Maßgeblich ist der
+**Zustand**, nicht die Vorgeschichte: wer eine Änderung wieder zurücknimmt, hat einen gesicherten
+Stand — es gibt keine „einmal berührt, immer schmutzig"-Semantik. Die Abweichung ist **feld- und
+element-vollständig**: jede Eigenschaft jedes Bauteils zählt, einschließlich derer, die künftige
+Ausbaustufen ergänzen. Beobachtbar ist das daran, dass die Rückfrage **für jede** benutzer-erreichbare
+Änderung erscheint — auch für solche, die keine Aktualisierung der Ansichten auslösen (Zeichen-Ebenen,
+Hilfslinien, Materialien).
+
+**Baseline.** Der Vergleichs-Maßstab ist der Stand **bei Sitzungs-Beginn** und danach jeweils der
+Stand **nach** einem erfolgreichen Speichern oder Öffnen. Eine frisch gestartete Sitzung ist damit
+**nicht** ungesichert, solange der Benutzer nichts ändert.
+
+**Rücksetz-Regel — fail-closed.** Der Maßstab wird **erst nach** dem erfolgreichen Schreiben bzw.
+Laden nachgezogen. Scheitert der Vorgang, bleibt die Sitzung ungesichert; ein Stand gilt nie als
+gesichert, weil ein Speichern *versucht* wurde.
+
+**Ziel-Wahl beim Speichern.** Ist eine Projektdatei bekannt (geöffnet oder zuvor gespeichert),
+schreibt „Speichern" **ohne** erneute Ziel-Abfrage dorthin. Ist keine bekannt, wird das Ziel
+**einmalig** erfragt und ist danach bekannt. „Speichern unter…" erfragt das Ziel immer und macht das
+gewählte zum bekannten.
+
+**Die Rückfrage ist dreiwertig.** Vor jeder Aktion, die den Arbeitsstand verwirft (Öffnen, Beenden),
+gilt bei ungesichertem Stand: **speichern** → erst schreiben, dann die Aktion ausführen;
+**verwerfen** → Aktion ohne Schreiben ausführen; **abbrechen** → die auslösende Aktion **unterbleibt**
+und der Stand bleibt unverändert.
+
+**Scheitert das Speichern innerhalb dieses Ablaufs** (nicht beschreibbares Ziel, abgebrochene
+Ziel-Abfrage), **unterbleibt die auslösende Aktion ebenfalls** — der ungesicherte Stand bleibt
+erhalten. Kein Verlust ohne ausdrückliche Entscheidung des Benutzers.
+
+**Nicht Gegenstand dieser Ausbaustufe:** eine Rückgängig-Funktion
+([`LH-QA-003`](lastenheft.md#lh-qa-003--undoredo)) und die Projektversionierung
+([`LH-FA-BLD-004`](lastenheft.md#lh-fa-bld-004--projektversionierung)) — „ungesichert" ist eine
+Aussage über den Vergleich zum Dateistand, nicht über eine Änderungshistorie.
+
 ### LH-FA-PLG-001.a — Plugin-System (Host-Mapping, Teilumfang)
 
 Bezug: [`LH-FA-PLG-001`](lastenheft.md#lh-fa-plg-001) (Dynamische Plugins),

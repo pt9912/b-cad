@@ -79,7 +79,14 @@ DrawingTargetResolution openProject(
 
 DrawingTargetResolution ManageProjectService::openProject(
     const std::filesystem::path& path, const DrawingTargetSinks& sinks) {
-    return services::openProject(service_, repository_, path, sinks);
+    const DrawingTargetResolution resolution =
+        services::openProject(service_, repository_, path, sinks);
+    // NACH dem Erfolg (openProject wirft bei Fehlern, dann bleibt die Sitzung
+    // unveraendert): der geladene Stand ist jetzt der persistierte.
+    if (session_ != nullptr) {
+        session_->markPersisted(path, service_.building());
+    }
+    return resolution;
 }
 
 void ManageProjectService::saveProject(const std::filesystem::path& path) {
@@ -87,6 +94,11 @@ void ManageProjectService::saveProject(const std::filesystem::path& path) {
     // aussen gereichtes `Building`. Deshalb kommt ein `ui_command`-Handler ohne
     // `StructureEditService` aus.
     services::saveProject(repository_, service_.building(), path);
+    // Erst nach dem Schreiben (saveProject wirft fail-closed) — ein Ruecksetzen
+    // davor wiese einen gescheiterten Schreibvorgang als "gesichert" aus.
+    if (session_ != nullptr) {
+        session_->markPersisted(path, service_.building());
+    }
 }
 
 }  // namespace bcad::hexagon::services

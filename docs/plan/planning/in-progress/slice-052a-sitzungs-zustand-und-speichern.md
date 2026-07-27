@@ -495,4 +495,68 @@ die einzige Lösungsrichtung, die neu entschieden werden musste; sie ist es (§2
 
 ## 16. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Ausgeführt 2026-07-27.** `make gates` **EXIT=0** (docs-check 0 Befunde / 259 Dateien · a-check 0 ·
+arch-check ok · **341/341** Tests · Coverage 91,7 %), `make io-smoke` EXIT=0, `make schema-check`
+EXIT=0 (byte-unberührt — kein persistenter Zustand).
+
+### Was entstanden ist
+
+- **`ProjectSessionPort`** (`src/hexagon/ports/driving/project_session_port.h`) — Verdikt, Ziel-Wahl,
+  Antwort-Auswertung, „ungesichert?", `markPersisted`. Nur `<std>` + `model/`.
+- **`ProjectSessionService`** (`src/hexagon/services/project_session.{h,cpp}`) erfüllt ihn.
+- **`operator== … = default`** auf **allen 13** Modell-Werttypen.
+- **`ManageProjectService`** meldet der Sitzung **nach** erfolgreichem Öffnen/Speichern.
+- **`ProjectMenuHandler`** erweitert: Verdikt/Ziel/Auswertung über den Port, `save()` auf die gemerkte
+  Datei — und **`mayDiscard(ask, ask_target)`**, s. u.
+- **`MainWindow`**: dritter `FileActions`-Eintrag „Speichern". Sonst unverändert.
+- **`main.cpp`**: stellt die Dialoge, besetzt die `CloseGuard`-Naht. Keine Entscheidung.
+
+### Eine Abweichung vom Plan — zugunsten der Prüfbarkeit
+
+Der Plan sah die Verwerf-**Komposition** (Verdikt holen → fragen → auswerten → ggf. speichern) in
+`main.cpp` vor, mit `verdictForDiscard`/`evaluate` als Handler-Methoden. Beim Bauen fiel auf: damit
+läge die Kette selbst wieder im coverage-ausgenommenen Root — dieselbe Klasse Finding, gegen die
+dieser Slice antritt. Sie ist deshalb als **`ProjectMenuHandler::mayDiscard(ask, ask_target)`** in den
+Adapter gewandert; `main.cpp` reicht nur noch die **zwei Dialoge** herein. Die Einzel-Methoden bleiben
+am Handler (Orakel §6-15), die Komposition ist zusätzlich gedeckt (§6-12/12a).
+
+### Orakel §3/§6 — je mit roter Gegenprobe (gemessen)
+
+| Zeile | Gegenprobe | Ergebnis |
+|---|---|---|
+| 1/2/7/11 | Vergleich entfernt (`isDirty` konstant `false`) | **10 rot**, u. a. `HilfslinieMachtDieSitzungUngesichert`, `ZurueckGeaendertIstWiederSauber`, `SchliessenMitUngesichertemStandUndAbbrechenHaeltDasFensterOffen` |
+| 3 | `Point2D::operator==` handgeschrieben, `y_mm` vergessen | **4 rot** (`Point2D`, `Segment`, `Wall`, `Stair`) |
+| 5 | `markPersisted` im Öffnen-Pfad entfernt | **1 rot** (`SpeichernSchreibtInDieGemerkteDatei`) |
+| 6 | `markPersisted` **vor** statt nach dem Schreiben | **1 rot** (`GescheitertesSpeichernLaesstDieSitzungUngesichert`) |
+| 9/10/15 | Ziel-Zweige vertauscht | **5 rot**, u. a. der Round-Trip am **echten** Repository |
+| 12 | „abbrechen" liefert `Proceed` | **2 rot** (`AntwortAuswertung`, der Schließ-Weg) |
+| 14 | (im Test selbst geführt) zweite Sitzung mit **leerer** Baseline | zeigt `AskFirst` statt `Proceed` |
+
+### Der Fund beim Gegenproben — und was er kostet
+
+**Die erste Fassung von Zeile 6 diskriminierte nicht.** Die Gegenprobe „`markPersisted` vor statt nach
+dem Schreiben" ließ **alle 339 Tests grün**: der Test prüfte den Sitzungs-Service *isoliert* (kein
+`markPersisted` gerufen), während die Zusage an der **Reihenfolge im `ManageProjectService`** hängt.
+Behoben durch zwei Tests, die den Fehlschlag durch den **echten Use-Case** führen
+(`GescheitertesSpeichernLaesstDieSitzungUngesichert` + Gegenstück). Danach ist die Gegenprobe rot.
+
+**Die Lehre:** eine Zusage über eine **Reihenfolge zwischen zwei Komponenten** kann kein Test einer
+einzelnen Komponente belegen — auch wenn er exakt die richtige Eigenschaft prüft. Der Orakel-Schnitt
+hatte die Zeile korrekt benannt; erst die Gegenprobe hat gezeigt, dass sie am falschen Ort lag.
+
+### Doku
+
+**Lastenheft 0.1.18** (zwei AK: [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)
+Happy „bekannte Datei ohne erneute Abfrage" + Boundary „Beenden";
+[`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden) Boundary „Öffnen"), **Spezifikation** §1-Sammelblock [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern)`.b`/`003.b`
+(„ungesichert" als Eigenschaft, Baseline, fail-closed-Rücksetzregel, Ziel-Wahl, Dreiwertigkeit),
+`architecture.md` (§1.1-Port-Tabelle + §2.1-Baum), **Benutzerhandbuch 1.2** an allen vier zugesagten
+Stellen (2.3 · 4.1-Tabelle · 4.3 mit neuem Rückfrage-Unterabschnitt · FAQ — die alte FAQ-Aussage
+„Ein ‚Speichern' … gibt es noch nicht" ist ersetzt), `CHANGELOG`.
+
+### Benannte Grenze — unverändert
+
+Ungeprüft bleiben die **modalen Dialoge** selbst, **welcher** Dialog mit welchem Text erscheint, der
+**Fenstertitel**, die **Suffix-Ergänzung** und der **Fenster-Aufbau**. Alles davon liegt in
+`main.cpp`; **keine Entscheidung darunter** — die Verwerf-Kette ist seit der Abweichung oben im
+geprüften Adapter.

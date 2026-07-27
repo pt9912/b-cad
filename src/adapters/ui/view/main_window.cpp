@@ -29,7 +29,16 @@ MainWindow::MainWindow(QWidget* central, FileActions actions,
                          });
     }
 
-    QAction* save_as = file_menu->addAction(QStringLiteral("&Speichern unter..."));
+    QAction* save = file_menu->addAction(QStringLiteral("&Speichern"));
+    save->setObjectName(QString::fromLatin1(kSaveActionName));
+    if (actions.save) {
+        QObject::connect(save, &QAction::triggered, this,
+                         [this, handler = std::move(actions.save)]() {
+                             handler(this);
+                         });
+    }
+
+    QAction* save_as = file_menu->addAction(QStringLiteral("Speichern &unter..."));
     save_as->setObjectName(QString::fromLatin1(kSaveAsActionName));
     if (actions.save_as) {
         QObject::connect(save_as, &QAction::triggered, this,

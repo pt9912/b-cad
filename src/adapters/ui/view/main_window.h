@@ -42,6 +42,7 @@ public:
 
     struct FileActions {
         Action open;
+        Action save;     // slice-052a: auf die bekannte Datei (LH-FA-BLD-002)
         Action save_as;
     };
 
@@ -62,6 +63,7 @@ public:
     // (`findChild<QAction*>`), statt sich auf Menü-Reihenfolge oder
     // Beschriftungen zu verlassen.
     static constexpr auto kOpenActionName = "action_open";
+    static constexpr auto kSaveActionName = "action_save";
     static constexpr auto kSaveAsActionName = "action_save_as";
 
 protected:

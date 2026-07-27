@@ -29,6 +29,12 @@ struct Stair {
     double width_mm{};                  // Laufbreite (LH-FA-STR-003)
     int step_count{};                   // Stufenanzahl (LH-FA-STR-002)
     double tread_mm{};                  // Auftritt / Stufentiefe
+
+    // slice-052a: **`= default` ist Pflicht, kein Stil.** Der compiler-generierte
+    // Vergleich nimmt jedes kuenftig ergaenzte Feld automatisch auf; ein
+    // handgeschriebener Operator wuerde es stillschweigend uebersehen — und genau
+    // das waere der stille Datenverlust, gegen den der Sitzungs-Vergleich steht.
+    auto operator==(const Stair&) const -> bool = default;
 };
 
 }  // namespace bcad::hexagon::model

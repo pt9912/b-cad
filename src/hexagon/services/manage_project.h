@@ -7,6 +7,7 @@
 #include "hexagon/model/wall.h"   // StoreyId
 #include "hexagon/ports/driven/project_repository_port.h"
 #include "hexagon/ports/driving/manage_project_port.h"
+#include "hexagon/ports/driving/project_session_port.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace bcad::hexagon::services {
@@ -75,9 +76,14 @@ DrawingTargetResolution openProject(
 // Repository überleben lassen (Muster der übrigen Kern-Services).
 class ManageProjectService : public ports::driving::ManageProjectPort {
 public:
+    // `session` darf `nullptr` sein (CLI/Tests ohne Sitzung) — aber **ohne
+    // Default** (Lehre aus slice-053: ein Default-Argument kann ein Orakel
+    // aushebeln; hier soll jede Aufrufstelle sichtbar sagen, ob sie eine
+    // Sitzung führt).
     ManageProjectService(StructureEditService& service,
-                         const ports::driven::ProjectRepositoryPort& repository)
-        : service_(service), repository_(repository) {}
+                         const ports::driven::ProjectRepositoryPort& repository,
+                         ports::driving::ProjectSessionPort* session)
+        : service_(service), repository_(repository), session_(session) {}
 
     DrawingTargetResolution openProject(
         const std::filesystem::path& path,
@@ -91,6 +97,11 @@ public:
 private:
     StructureEditService& service_;
     const ports::driven::ProjectRepositoryPort& repository_;
+    // slice-052a: nach **erfolgreichem** Öffnen/Speichern ist der neue Stand der
+    // persistierte. Der Use-Case meldet es selbst — läge die Meldung beim
+    // Aufrufer, könnte er sie vergessen, und der Sitzungs-Zustand wäre falsch,
+    // ohne dass ein Orakel es sieht.
+    ports::driving::ProjectSessionPort* session_;
 };
 
 }  // namespace bcad::hexagon::services

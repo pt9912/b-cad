@@ -74,6 +74,7 @@ nur dort werden Adapter-Instanzen injiziert.
 | Port | Verantwortung | Bezug |
 |---|---|---|
 | `ManageProjectPort` (**realisiert**, Teilumfang) | Projekt **speichern und laden** hinter dem Driving Port; ein Kern-Service erfüllt ihn und hält Repository + Struktur-Service als Konstruktor-Abhängigkeiten, sodass der Vertrag nur `model/` führt — ein Treiber-Adapter (`adapters/ui/command/`) kann ihn deshalb rufen, ohne `services/` oder `ports/driven/` zu sehen. **Nicht im Vertrag:** anlegen ([LH-FA-BLD-001](lastenheft.md#lh-fa-bld-001--projekt-anlegen)) und versionieren ([LH-FA-BLD-004](lastenheft.md#lh-fa-bld-004--projektversionierung)) — beides existiert als Verhalten noch nicht, und ein Port darf nichts deklarieren, was niemand erfüllt. | [LH-FA-BLD-001](lastenheft.md#lh-fa-bld-001--projekt-anlegen)..004, [ACC-005](lastenheft.md#7-abnahmekriterien) |
+| `ProjectSessionPort` | **Sitzungs-Zustand** einer laufenden Bearbeitung: weicht der aktuelle Modellstand vom zuletzt persistierten ab („ungesichert")? Verdikt vor verwerfenden Aktionen, Ziel-Wahl beim Speichern, Auswertung der Benutzer-Antwort (speichern/verwerfen/abbrechen). **Eigener Port neben `ManageProjectPort`**: dieser trägt die Datei-Use-Cases, jener den Zustand — zwei Verantwortungen, zwei Verträge | [LH-FA-BLD-002](lastenheft.md#lh-fa-bld-002--projekt-speichern), [LH-FA-BLD-003](lastenheft.md#lh-fa-bld-003--projekt-laden) |
 | `EditStructurePort` | Bauteile bearbeiten: Geschosse, Wände, Türen, Fenster, Treppen, Dach, Decken, Fundament (parametrisch); **projekt-eigene Materialien verwalten/zuweisen** (Material = Bauteil-Eigenschaft) | LH-FA-FLR/WAL/DOR/WIN/STR/ROF/SLB/FND-*, [LH-FA-MAT-001](lastenheft.md#lh-fa-mat-001--materialien-verwalten)/003, [OBJ-002](lastenheft.md#3-projektziele) |
 | `DetectRoomsPort` | Raum-Autoerkennung (geschlossene Wandzüge → Raumpolygone, Netto-Fläche je Raum als Auswertungs-Quelle) | [LH-FA-ROM-001](lastenheft.md#lh-fa-rom-001--raum-automatisch-erkennen)..003 |
 | `EvaluatePort` | Auswertungen **read-only** aus dem committeten Modell ableiten (pull, kein Geometrie-Erzeugen): Flächen (Shoelace-Raum-Netto), Volumen (analytisch im Kern), Wohnfläche, Material-/Tür-/Fensterlisten; **Material-Auflösung/-Liste** (Override-Auflösung je Bauteil als Quelle der Material-/Kostenlisten) | [LH-FA-EVL-001](lastenheft.md#lh-fa-evl-001--flächenberechnung)..006, [LH-FA-MAT-002](lastenheft.md#lh-fa-mat-002--materialbibliothek)/003 |
@@ -136,13 +137,15 @@ b-cad/
 │   │   │   ├── driving/             # EditStructurePort, EditDrawingPort,
 │   │   │   │                        #   DetectRoomsPort, ViewModelPort, ExchangeModelPort,
 │   │   │   │                        #   EvaluatePort, PlanViewPort,
-│   │   │   │                        #   ManageProjectPort (Teilumfang, s. §1.1)
+│   │   │   │                        #   ManageProjectPort (Teilumfang, s. §1.1),
+│   │   │   │                        #   ProjectSessionPort
 │   │   │   └── driven/              # GeometryKernelPort, ProjectRepositoryPort,
 │   │   │                            #   ModelImporterPort, ModelExporterPort,
 │   │   │                            #   ModelChangedPort, GreetingSourcePort
 │   │   └── services/                # StructureEditService, RoomDetectionService,
 │   │       │                        #   ExchangeService, GreetingService,
 │   │       │                        #   manage_project (Save-/Open-Use-Case),
+│   │       │                        #   project_session (Sitzungs-Zustand),
 │   │       │                        #   volume_geometry, bootstrap_info
 │   │       └── geometry/            # reine Berechnungs-Kerne (port-frei, model-only)
 │   └── adapters/

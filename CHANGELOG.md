@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- slice-052a — **„Speichern" und die Rückfrage vor Datenverlust** (LH-FA-BLD-002/003,
+  **Lastenheft 0.1.18**, **Benutzerhandbuch 1.2**). Das GUI kannte bisher nur „Speichern unter…" und
+  warnte **nie** vor dem Verlust ungesicherter Änderungen — der Validations-Rest von slice-047.
+  Jetzt: **Speichern** schreibt ohne erneute Ziel-Abfrage in die bekannte Projektdatei, und vor jeder
+  verwerfenden Aktion (Öffnen, Fenster schließen) erscheint bei abweichendem Stand eine
+  **dreiwertige** Rückfrage — speichern / verwerfen / **abbrechen ⇒ die Aktion unterbleibt**.
+  Scheitert das Speichern dabei oder wird die Ziel-Auswahl abgebrochen, unterbleibt die auslösende
+  Aktion **ebenfalls**: ohne ausdrückliche Entscheidung geht kein Stand verloren.
+  **Der Zustand kommt aus dem Vergleich, nicht aus Meldungen** — ein Beobachter der
+  `ModelChangedPort`-Meldungen hätte **keine** heute erreichbare GUI-Mutation gesehen (Hilfslinien,
+  Ebenen und Materialien melden nichts; „kein op" ist Entscheidung 2 der Accepted-ADR-0018), die
+  Warnung wäre also nie erschienen, während alle Orakel grün stehen. Der Wert-Vergleich ist dagegen
+  strukturell: `auto operator==(const T&) const = default;` auf allen **13** Modell-Werttypen nimmt
+  jedes künftig ergänzte Feld automatisch auf. „Zurück-geändert auf den Dateistand" ist dadurch wieder
+  **sauber** — ein Flag könnte das nicht.
+  Neuer Driving Port **`ProjectSessionPort`** (`src/hexagon/ports/driving/project_session_port.h`)
+  neben dem `ManageProjectPort`: dieser trägt die Datei-Use-Cases, jener den Zustand.
+
 ### Changed
 - slice-053 — **Hauptfenster und Menü-Handler sind Adapter-Klassen** (Struktur, **verhaltens-invariant**):
   [`src/adapters/ui/view/main_window.{h,cpp}`](src/adapters/ui/view/main_window.h) (port-frei,

@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.17
+**Version:** 0.1.18
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -85,6 +85,13 @@ Projektdatei (SQLite) gespeichert.
 - **Boundary:** Given Absturz während des Schreibens, when Neustart,
   then der letzte konsistente Stand ist intakt (kein halb geschriebenes
   Projekt — vgl. LH-QA-005).
+- **Happy Path:** Given ein Projekt mit bekannter Projektdatei, when
+  „Speichern", then wird ohne erneute Ziel-Abfrage in genau diese Datei
+  geschrieben; ohne bekannte Datei wird einmalig nach dem Ziel gefragt und sie
+  ist danach bekannt.
+- **Boundary:** Given ungesicherte Änderungen, when „Programm beenden", then
+  Rückfrage vor dem Beenden; der Benutzer kann speichern, verwerfen oder die
+  Aktion abbrechen — ohne seine Entscheidung geht kein Stand verloren.
 - **Negative:** Given Zielmedium voll, when „Speichern", then
   Fehler-Code [`E-IO-002`](spezifikation.md#4-fehler-codes-und-logging-felder), vorheriger Dateistand unverändert.
 
@@ -104,6 +111,9 @@ Materialzuordnungen werden vollständig wiederhergestellt.
   danach „Speichern", then ist der geschriebene Inhalt derselbe wie der
   geöffnete — das Öffnen ergänzt nichts; fehlt dem Projekt etwas, das eine
   Ansicht zum Arbeiten braucht, wird das gemeldet statt still angelegt.
+- **Boundary:** Given ungesicherte Änderungen, when „Öffnen", then Rückfrage
+  vor dem Ersetzen des Arbeitsstands; der Benutzer kann speichern, verwerfen
+  oder die Aktion abbrechen.
 - **Negative:** Given eine nicht vorhandene oder beschädigte Projektdatei,
   when „Öffnen", then bleibt der bisherige Arbeitsstand unverändert und der
   Fehler wird gemeldet — **kein** teilweise geladenes Projekt.

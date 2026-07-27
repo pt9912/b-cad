@@ -50,9 +50,11 @@
 #include "hexagon/model/segment.h"
 #include "hexagon/ports/driving/exchange_model_port.h"
 #include "hexagon/ports/driving/manage_project_port.h"
+#include "hexagon/ports/driving/project_session_port.h"
 #include "hexagon/services/bootstrap_info.h"
 #include "hexagon/services/exchange_service.h"
 #include "hexagon/services/manage_project.h"
+#include "hexagon/services/project_session.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
@@ -268,6 +270,78 @@ std::optional<int> runHeadlessCli(
 //
 // Das Eltern-Widget der Dialoge kommt beim Ausloesen vom Fenster selbst — die
 // Aktionen existieren vor ihm (es nimmt sie im Konstruktor).
+// slice-052a: Ziel-Dialog + Suffix — beides gehoert zur benannten Grenze
+// (Plan §6): Dialog und Meldungstext bleiben hier, die ENTSCHEIDUNG nicht.
+std::optional<std::string> askSaveTarget(QWidget* parent) {
+    QString path = QFileDialog::getSaveFileName(
+        parent, QStringLiteral("Projekt speichern"), QString(),
+        QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
+    if (path.isEmpty()) {
+        return std::nullopt;  // abgebrochen
+    }
+    // Ohne Endung entstuende eine Datei, die der Oeffnen-Dialog mit seinem
+    // Vorgabefilter nicht mehr anzeigt (Code-Review LOW-4).
+    if (QFileInfo(path).suffix().isEmpty()) {
+        path += QStringLiteral(".bcad");
+    }
+    return path.toStdString();
+}
+
+// slice-052a: die Rueckfrage vor Datenverlust. `main` STELLT sie und reicht die
+// Antwort zurueck — WAS daraus folgt, wertet der Kern aus (Orakel-Zeile 12).
+bcad::hexagon::ports::driving::DiscardAnswer askDiscard(QWidget* parent) {
+    using Answer = bcad::hexagon::ports::driving::DiscardAnswer;
+    const auto button = QMessageBox::question(
+        parent, QStringLiteral("Ungesicherte Aenderungen"),
+        QStringLiteral("Das Projekt hat ungesicherte Aenderungen. "
+                       "Vor dem Fortfahren speichern?"),
+        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+        QMessageBox::Save);
+    switch (button) {
+        case QMessageBox::Save:
+            return Answer::Save;
+        case QMessageBox::Discard:
+            return Answer::Discard;
+        default:
+            return Answer::Cancel;
+    }
+}
+
+// slice-052a: `main` reicht dem Handler nur die zwei DIALOGE herein — die
+// Komposition (Verdikt holen, Antwort auswerten, ggf. speichern, Fehler
+// behandeln) liegt im Handler und ist dort orakel-gedeckt. Laege sie hier,
+// waere sie sensorlos; genau diese Klasse Finding hat die Kette erzeugt.
+bool mayDiscardSession(QWidget* parent,
+                       bcad::adapters::ui::command::ProjectMenuHandler& handler) {
+    return handler.mayDiscard(
+        [parent]() { return askDiscard(parent); },
+        [parent]() -> std::optional<std::filesystem::path> {
+            const std::optional<std::string> target = askSaveTarget(parent);
+            if (!target) {
+                return std::nullopt;
+            }
+            return std::filesystem::path{*target};
+        });
+}
+
+// „Speichern": in die gemerkte Datei; ist keine bekannt, wird das Ziel einmalig
+// erfragt. Die Ziel-WAHL trifft der Kern (`saveTarget()`), nicht dieser Code.
+void saveToKnownOrAsk(QWidget* parent,
+                      bcad::adapters::ui::command::ProjectMenuHandler& handler) {
+    try {
+        if (handler.save()) {
+            return;  // in die gemerkte Datei geschrieben
+        }
+        const std::optional<std::string> target = askSaveTarget(parent);
+        if (target) {
+            handler.saveAs(*target);
+        }
+    } catch (const std::exception& e) {
+        QMessageBox::critical(parent, QStringLiteral("Speichern fehlgeschlagen"),
+                              QString::fromStdString(e.what()));
+    }
+}
+
 bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
     bcad::adapters::ui::command::ProjectMenuHandler& handler) {
     // Ein unvollstaendig aufgeloestes Ziel ist kein Fehler, aber der Benutzer
@@ -296,6 +370,10 @@ bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
     bcad::adapters::ui::view::MainWindow::FileActions actions;
 
     actions.open = [&handler, hint_for](QWidget* parent) {
+        // slice-052a: erst fragen, dann verwerfen (LH-FA-BLD-003).
+        if (!mayDiscardSession(parent, handler)) {
+            return;
+        }
         const QString path = QFileDialog::getOpenFileName(
             parent, QStringLiteral("Projekt oeffnen"), QString(),
             QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
@@ -321,20 +399,20 @@ bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
         }
     };
 
+    // slice-052a: "Speichern" schreibt in die GEMERKTE Datei; ist keine
+    // bekannt, wird das Ziel erfragt. Die Ziel-WAHL trifft der Kern
+    // (`saveTarget()`), nicht dieser Handler-Aufrufer.
+    actions.save = [&handler](QWidget* parent) {
+        saveToKnownOrAsk(parent, handler);
+    };
+
     actions.save_as = [&handler](QWidget* parent) {
-        QString path = QFileDialog::getSaveFileName(
-            parent, QStringLiteral("Projekt speichern"), QString(),
-            QStringLiteral("b-cad-Projekt (*.bcad);;Alle Dateien (*)"));
-        if (path.isEmpty()) {
+        const std::optional<std::string> target = askSaveTarget(parent);
+        if (!target) {
             return;
         }
-        // Ohne Endung entstuende eine Datei, die der Oeffnen-Dialog mit
-        // seinem Vorgabefilter nicht mehr anzeigt (Code-Review LOW-4).
-        if (QFileInfo(path).suffix().isEmpty()) {
-            path += QStringLiteral(".bcad");
-        }
         try {
-            handler.saveAs(path.toStdString());
+            handler.saveAs(*target);
         } catch (const std::exception& e) {
             QMessageBox::critical(parent,
                                   QStringLiteral("Speichern fehlgeschlagen"),
@@ -479,11 +557,17 @@ int main(int argc, char** argv) {
     tabs->addTab(viewer, QStringLiteral("3D"));
     tabs->addTab(canvas, QStringLiteral("2D"));
 
+    // slice-052a: der Sitzungs-Zustand. Die Baseline ist der Stand NACH dem
+    // Start-Aufbau (Orakel-Zeile 14) — mit einem leeren `Building` waere die
+    // frische Sitzung sofort "ungesichert" und jede Rueckfrage falsch.
+    bcad::hexagon::services::ProjectSessionService session(service.building());
+
     // slice-054: die Projekt-Use-Cases hinter ihrem Driving Port. Der
     // Composition-Root verdrahtet die Infrastruktur EINMAL hier; der Handler
-    // darunter sieht nur noch den Vertrag.
-    bcad::hexagon::services::ManageProjectService manage_project(service,
-                                                                repository);
+    // darunter sieht nur noch den Vertrag. Der Use-Case meldet der Sitzung
+    // selbst, wenn ein Oeffnen/Speichern GELUNGEN ist.
+    bcad::hexagon::services::ManageProjectService manage_project(
+        service, repository, &session);
 
     // slice-053: die Sichten als Senken (port-frei, Muster ADR-0019 Option A).
     // Sie gehoeren jetzt dem HANDLER — er reicht sie bei jedem Oeffnen durch,
@@ -491,7 +575,8 @@ int main(int argc, char** argv) {
     // Stands zeigt (slice-047-Verify-B4). Der Port hat dafuer bewusst keinen
     // Default: Vergessen waere ein Compile-Fehler.
     bcad::adapters::ui::command::ProjectMenuHandler project_handler(
-        manage_project,
+        manage_project, session,
+        [&service]() -> const model::Building& { return service.building(); },
         bcad::hexagon::ports::driving::DrawingTargetSinks{
             [canvas](model::StoreyId storey) {
                 canvas->setActiveStorey(static_cast<int>(storey));
@@ -504,9 +589,20 @@ int main(int argc, char** argv) {
     // slice-053: das Fenster ist eine Adapter-Klasse. `main` uebergibt ihm die
     // fertigen Tabs und die Aktionen; beim Ausloesen reicht es sich selbst als
     // Eltern-Widget der Dialoge durch.
+    // slice-052a: die von slice-053 gelieferte, bis hierher UNBESETZTE
+    // CloseGuard-Naht wird besetzt — Rueckfrage vor Datenverlust beim
+    // Fenster-Schliessen (Orakel-Zeile 13).
+    // Der Waechter braucht ein Eltern-Fenster fuer seinen Dialog, existiert aber
+    // vor dem Fenster (es nimmt ihn im Konstruktor) — deshalb der nachgereichte
+    // Zeiger. Die CloseGuard-SIGNATUR bleibt unveraendert: slice-052a besetzt
+    // eine vorhandene Naht, es baut die Fenster-Klasse nicht um.
+    QWidget* close_dialog_parent = nullptr;
     bcad::adapters::ui::view::MainWindow window(
         tabs, makeFileActions(project_handler),
-        bcad::adapters::ui::view::MainWindow::CloseGuard{});
+        [&close_dialog_parent, &project_handler]() {
+            return mayDiscardSession(close_dialog_parent, project_handler);
+        });
+    close_dialog_parent = &window;
     window.resize(1280, 800);
     window.setWindowTitle(QStringLiteral("b-cad"));
 

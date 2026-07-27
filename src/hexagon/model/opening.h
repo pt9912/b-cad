@@ -32,6 +32,12 @@ struct Opening {
     double height_mm{};
     double sill_height_mm{};  // 0 für Türen; Brüstung für Fenster (LH-FA-WIN-004)
     SwingDirection swing{SwingDirection::Left};  // nur Tür (LH-FA-DOR-003)
+
+    // slice-052a: **`= default` ist Pflicht, kein Stil.** Der compiler-generierte
+    // Vergleich nimmt jedes kuenftig ergaenzte Feld automatisch auf; ein
+    // handgeschriebener Operator wuerde es stillschweigend uebersehen — und genau
+    // das waere der stille Datenverlust, gegen den der Sitzungs-Vergleich steht.
+    auto operator==(const Opening&) const -> bool = default;
 };
 
 }  // namespace bcad::hexagon::model

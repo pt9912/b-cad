@@ -10,6 +10,12 @@ namespace bcad::hexagon::model {
 struct Segment {
     Point2D start{};
     Point2D end{};
+
+    // slice-052a: **`= default` ist Pflicht, kein Stil.** Der compiler-generierte
+    // Vergleich nimmt jedes kuenftig ergaenzte Feld automatisch auf; ein
+    // handgeschriebener Operator wuerde es stillschweigend uebersehen — und genau
+    // das waere der stille Datenverlust, gegen den der Sitzungs-Vergleich steht.
+    auto operator==(const Segment&) const -> bool = default;
 };
 
 }  // namespace bcad::hexagon::model

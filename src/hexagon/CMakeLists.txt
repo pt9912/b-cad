@@ -9,6 +9,7 @@ add_library(bcad_hexagon
     services/exchange_service.cpp
     services/greeting_service.cpp
     services/manage_project.cpp
+    services/project_session.cpp   # slice-052a: Sitzungs-Zustand (Vergleich statt Flag)
     services/geometry/opening_geometry.cpp
     services/geometry/plan_projection.cpp
     services/geometry/roof_geometry.cpp

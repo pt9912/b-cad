@@ -23,6 +23,12 @@ struct Material {
     std::optional<double> cost_per_m3;       // MAT-006
     std::optional<std::string> color_hex;
     std::optional<std::string> texture_path;  // MAT-004 (Sicht, welle-3 ungenutzt)
+
+    // slice-052a: **`= default` ist Pflicht, kein Stil.** Der compiler-generierte
+    // Vergleich nimmt jedes kuenftig ergaenzte Feld automatisch auf; ein
+    // handgeschriebener Operator wuerde es stillschweigend uebersehen — und genau
+    // das waere der stille Datenverlust, gegen den der Sitzungs-Vergleich steht.
+    auto operator==(const Material&) const -> bool = default;
 };
 
 }  // namespace bcad::hexagon::model

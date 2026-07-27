@@ -21,6 +21,12 @@ struct Layer {
     bool visible{true};
     bool locked{false};
     std::optional<std::string> color_hex;  // optional (DRW-006)
+
+    // slice-052a: **`= default` ist Pflicht, kein Stil.** Der compiler-generierte
+    // Vergleich nimmt jedes kuenftig ergaenzte Feld automatisch auf; ein
+    // handgeschriebener Operator wuerde es stillschweigend uebersehen — und genau
+    // das waere der stille Datenverlust, gegen den der Sitzungs-Vergleich steht.
+    auto operator==(const Layer&) const -> bool = default;
 };
 
 }  // namespace bcad::hexagon::model

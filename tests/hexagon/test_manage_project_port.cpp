@@ -124,7 +124,7 @@ TEST(ManageProjectPort, PortSightAloneOpensAndSaves) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
     const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
-    services::ManageProjectService port(svc, repo);
+    services::ManageProjectService port(svc, repo, nullptr);  // ohne Sitzung
 
     const auto resolution =
         openThenSaveThroughPortOnly(port, "quelle.bcad", "ziel.bcad", {});
@@ -150,7 +150,7 @@ TEST(ManageProjectPort, PortSaveWritesSessionStateNotAPassedModel) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
     const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
-    services::ManageProjectService port(svc, repo);
+    services::ManageProjectService port(svc, repo, nullptr);  // ohne Sitzung
 
     port.openProject("quelle.bcad", {});  // ohne Sichten: sichtbar leer (slice-053 §1.1)
     // Nach dem Oeffnen mutiert die Sitzung — der Port muss DIESEN Stand
@@ -173,7 +173,7 @@ TEST(ManageProjectPort, PortSaveIsFailClosedOnDanglingFromStorey) {
     services::StructureEditService svc(geometry);
     // Treppe zeigt auf ein Geschoss, das es nicht gibt.
     const RecordingRepository repo{projectWithStair(model::StoreyId{99})};
-    services::ManageProjectService port(svc, repo);
+    services::ManageProjectService port(svc, repo, nullptr);  // ohne Sitzung
 
     port.openProject("quelle.bcad", {});  // ohne Sichten: sichtbar leer (slice-053 §1.1)
 
@@ -189,7 +189,7 @@ TEST(ManageProjectPort, PortOpenResolvesDrawingTargetThroughMethodSinks) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
     const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
-    services::ManageProjectService port(svc, repo);
+    services::ManageProjectService port(svc, repo, nullptr);  // ohne Sitzung
 
     auto seen_storey = model::StoreyId{1};
     auto target_storey = model::StoreyId{1};
@@ -216,7 +216,7 @@ TEST(ManageProjectPort, PortOpenPropagatesNeutralErrorAndKeepsState) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
     RecordingRepository repo{projectWithStair(model::StoreyId{7})};
-    services::ManageProjectService port(svc, repo);
+    services::ManageProjectService port(svc, repo, nullptr);  // ohne Sitzung
 
     const auto storey_before = svc.addStorey(3000.0);
     const auto storeys_before = svc.building().storeys.size();
@@ -237,7 +237,7 @@ TEST(ManageProjectPort, ServiceIsUsableThroughThePortReference) {
     const AnalyticGeometry geometry;
     services::StructureEditService svc(geometry);
     const RecordingRepository repo{projectWithStair(model::StoreyId{7})};
-    services::ManageProjectService concrete(svc, repo);
+    services::ManageProjectService concrete(svc, repo, nullptr);
 
     driving::ManageProjectPort& port = concrete;
     EXPECT_EQ(port.openProject("quelle.bcad", {}),

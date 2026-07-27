@@ -16,6 +16,8 @@ add_executable(bcad_tests
     hexagon/test_greeting_service.cpp
     hexagon/test_manage_project.cpp   # slice-047a: Save-Use-Case (rise-Ableitung + fail-closed)
     hexagon/test_manage_project_port.cpp   # slice-054: die ManageProjectPort-Naht (Adapter-Sicht)
+    hexagon/test_model_equality.cpp   # slice-052a: Feld-Vollstaendigkeit der = default-Vergleiche
+    hexagon/test_project_session.cpp  # slice-052a: Sitzungs-Zustand (Vergleich, Verdikt, Auswertung)
     hexagon/test_material.cpp
     hexagon/test_model_change_notification.cpp
     hexagon/test_openings.cpp

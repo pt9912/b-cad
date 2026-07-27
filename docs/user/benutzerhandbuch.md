@@ -1,7 +1,7 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.1
+Handbuch-Version: 1.2
 Stand: 2026-07-26
 
 ---
@@ -103,8 +103,11 @@ Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 - **3D drehen:** Im Reiter **3D** mit der Maus ziehen.
 - **Hilfslinie zeichnen:** Im Reiter **2D** mit gedrückter linker Maustaste ziehen
   (siehe Abschnitt 4.2).
-- **Projekt speichern/öffnen:** Menü **Datei** → **Speichern unter…** bzw.
-  **Öffnen…** (siehe Abschnitt 4.3).
+- **Projekt speichern/öffnen:** Menü **Datei** → **Speichern**,
+  **Speichern unter…** bzw. **Öffnen…** (siehe Abschnitt 4.3).
+- **Ungesicherte Änderungen:** Wenn Sie ein Projekt öffnen oder b-cad beenden,
+  ohne Ihre Änderungen gespeichert zu haben, fragt b-cad nach — Sie können
+  **speichern**, **verwerfen** oder die Aktion **abbrechen** (Abschnitt 4.3).
 
 ---
 
@@ -147,6 +150,7 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
 | Hilfslinie zeichnen | Oberfläche, Reiter 2D (4.2) |
 | Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
+| Ungesicherte Änderungen sichern | Rückfrage beim Öffnen/Beenden (4.3) |
 | Modell exportieren (IFC/DXF/STEP/STL/PDF/PNG) | Kommandozeile (4.5) |
 | Projekt importieren (IFC/DXF) | Kommandozeile (4.5) |
 | Erweiterung (Plugin) laden | Kommandozeile (4.5) |
@@ -181,20 +185,47 @@ zuvor gespeichertes Projekt wieder zum Arbeitsstand machen.
 
 #### Speichern
 
-1. Öffnen Sie das Menü **Datei** und wählen Sie **Speichern unter…**.
-2. Wählen Sie Ordner und Dateinamen; die Endung `.bcad` wird ergänzt, wenn Sie
-   keine angeben.
-3. Bestätigen Sie mit **Speichern**.
+1. Öffnen Sie das Menü **Datei** und wählen Sie **Speichern**.
+2. Ist bereits eine Projektdatei bekannt — weil Sie das Projekt geöffnet oder
+   schon einmal gespeichert haben —, wird **ohne weitere Rückfrage genau
+   dorthin** geschrieben.
+3. Ist noch keine bekannt, fragt b-cad **einmalig** nach Ordner und Dateinamen;
+   die Endung `.bcad` wird ergänzt, wenn Sie keine angeben. Ab dann ist die
+   Datei bekannt.
+
+Mit **Speichern unter…** wählen Sie das Ziel **immer** selbst; die gewählte
+Datei ist danach die bekannte.
 
 **Ergebnis:** Die Projektdatei enthält den vollständigen Modellstand. Sie wird
 **atomar** geschrieben: Schlägt das Schreiben fehl (z. B. Medium voll oder kein
 Schreibrecht), bleibt eine **vorhandene** Datei unverändert — es entsteht **kein**
 halb geschriebenes Projekt. Ein Fehler wird als Meldung angezeigt.
 
+#### Ungesicherte Änderungen — die Rückfrage
+
+b-cad vergleicht Ihren aktuellen Stand mit dem zuletzt gespeicherten. Weicht er
+ab, erscheint vor jeder Aktion, die ihn verwerfen würde (**Öffnen**, **b-cad
+beenden**), eine Rückfrage mit drei Möglichkeiten:
+
+| Antwort | Was passiert |
+|---|---|
+| **Speichern** | Ihr Stand wird zuerst gesichert, danach läuft die Aktion. |
+| **Verwerfen** | Die Aktion läuft, Ihre Änderungen gehen verloren. |
+| **Abbrechen** | **Es passiert nichts** — die Aktion unterbleibt, Ihr Stand bleibt. |
+
+Schlägt das Speichern dabei fehl oder brechen Sie die Ziel-Auswahl ab, wird die
+auslösende Aktion **ebenfalls nicht** ausgeführt: ohne Ihre ausdrückliche
+Entscheidung geht kein Stand verloren.
+
+Nehmen Sie eine Änderung wieder zurück, sodass Ihr Stand dem gespeicherten
+entspricht, gilt er wieder als gesichert — dann fragt b-cad auch nicht nach.
+
 #### Öffnen
 
 1. Öffnen Sie das Menü **Datei** und wählen Sie **Öffnen…**.
-2. Wählen Sie eine `.bcad`-Datei und bestätigen Sie.
+2. Haben Sie ungesicherte Änderungen, erscheint zuerst die Rückfrage (siehe
+   oben).
+3. Wählen Sie eine `.bcad`-Datei und bestätigen Sie.
 
 **Ergebnis:** Der geladene Stand **ersetzt** Ihren bisherigen Arbeitsstand.
 3D-Ansicht und Grundriss zeigen danach das geöffnete Projekt, der Fenstertitel
@@ -395,10 +426,16 @@ das Zeichnen von Hilfslinien; das interaktive Bauteil-Zeichnen folgt in einer
 späteren Version.
 
 **Wie speichere/öffne ich über ein Menü?**
-Über das Menü **Datei** in der Oberfläche: **Öffnen…** und **Speichern unter…**
-(Abschnitt 4.3). Ein „Speichern" auf die zuletzt geöffnete Datei ohne erneute
-Pfad-Auswahl gibt es noch nicht — **Speichern unter…** fragt jedes Mal nach dem
-Ziel. Skriptbar bleibt der Weg über `--save`/`--open` (Abschnitt 4.5).
+Über das Menü **Datei** in der Oberfläche: **Speichern**, **Speichern unter…**
+und **Öffnen…** (Abschnitt 4.3). **Speichern** schreibt ohne erneute
+Pfad-Auswahl in die bekannte Projektdatei; **Speichern unter…** fragt immer nach
+dem Ziel. Skriptbar bleibt der Weg über `--save`/`--open` (Abschnitt 4.5).
+
+**Warnt mich b-cad, bevor ungesicherte Änderungen verloren gehen?**
+Ja. Beim **Öffnen** eines anderen Projekts und beim **Beenden** fragt b-cad
+nach, wenn Ihr Stand vom zuletzt gespeicherten abweicht — mit **Speichern**,
+**Verwerfen** und **Abbrechen** (Abschnitt 4.3). Abbrechen lässt alles, wie es
+ist.
 
 **Woran erkenne ich, aus welchem Stand ein Export stammt?**
 An der Herkunfts-Angabe (Version, Quelle, Datum) — sichtbar in PDF/PNG und im
@@ -451,4 +488,5 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.2 | 0.1.0 | 2026-07-27 | **Speichern** (auf die bekannte Projektdatei, ohne erneute Ziel-Abfrage) und die **Rückfrage vor ungesicherten Änderungen** aufgenommen: neuer Unterabschnitt in 4.3 mit der dreiwertigen Antwort (speichern/verwerfen/**abbrechen ⇒ es passiert nichts**), Ergänzung in 2.3, neue Zeile in der 4.1-Aufgaben-Tabelle und zwei FAQ-Einträge — die frühere FAQ-Aussage „Ein ‚Speichern' auf die zuletzt geöffnete Datei gibt es noch nicht" ist damit überholt und ersetzt. |
 | 1.1 | 0.1.0 | 2026-07-26 | Menü **Datei** (Speichern unter…/Öffnen…) als neuer Abschnitt 4.3 aufgenommen — das Handbuch beschrieb Speichern/Öffnen bis dahin als reine Kommandozeilen-Aufgabe und die FAQ verneinte ein Datei-Menü. Der Unterschied der beiden Wege ist jetzt benannt: im Menü ist Öffnen ein **Sitzungs-Wechsel**, auf der Kommandozeile ist `--open` eine **Export-Quelle**. Frühere 4.3/4.4 zu 4.4/4.5 verschoben. |

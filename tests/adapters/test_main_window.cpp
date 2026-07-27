@@ -18,11 +18,33 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+#include <optional>
+
+#include "adapters/ui/command/project_menu_handler.h"
 #include "adapters/ui/view/main_window.h"
+#include "hexagon/model/building.h"
+#include "hexagon/model/storey.h"
+#include "hexagon/ports/driving/manage_project_port.h"
+#include "hexagon/services/project_session.h"
 
 namespace {
 
+namespace model = bcad::hexagon::model;
+
 using bcad::adapters::ui::view::MainWindow;
+
+// Minimal-Doppel: der Schliess-Weg braucht keinen echten Projekt-Port.
+class StubManageProject final
+    : public bcad::hexagon::ports::driving::ManageProjectPort {
+public:
+    bcad::hexagon::ports::driving::DrawingTargetResolution openProject(
+        const std::filesystem::path&,
+        const bcad::hexagon::ports::driving::DrawingTargetSinks&) override {
+        return bcad::hexagon::ports::driving::DrawingTargetResolution::Resolved;
+    }
+    void saveProject(const std::filesystem::path&) override {}
+};
 
 // Qt erlaubt nur EINE QApplication pro Prozess; `gtest_discover_tests` startet
 // jeden Test als eigenen ctest-Prozess, also baut jeder Test seine eigene
@@ -52,6 +74,7 @@ TEST(MainWindow, IsConstructibleHeadlessWithCentralWidget) {
         << "das Fenster uebernimmt das gereichte Widget (Qt-Ownership)";
     // Die beiden Menue-Aktionen existieren, auch ohne verdrahtete Handler.
     EXPECT_NE(actionNamed(window, MainWindow::kOpenActionName), nullptr);
+    EXPECT_NE(actionNamed(window, MainWindow::kSaveActionName), nullptr);
     EXPECT_NE(actionNamed(window, MainWindow::kSaveAsActionName), nullptr);
 }
 
@@ -60,22 +83,31 @@ TEST(MainWindow, TriggeringMenuActionsCallsTheInjectedHandlers) {
     const QtFixture qt;
     int opened = 0;
     int saved = 0;
+    int saved_as = 0;
     QWidget* open_parent = nullptr;
     MainWindow window(nullptr,
                       {[&opened, &open_parent](QWidget* parent) {
                            ++opened;
                            open_parent = parent;
                        },
-                       [&saved](QWidget*) { ++saved; }},
+                       [&saved](QWidget*) { ++saved; },
+                       [&saved_as](QWidget*) { ++saved_as; }},
                       {});
 
     actionNamed(window, MainWindow::kOpenActionName)->trigger();
     EXPECT_EQ(opened, 1);
     EXPECT_EQ(saved, 0) << "die Aktionen sind nicht vertauscht";
 
+    // slice-052a: "Speichern" (bekannte Datei) und "Speichern unter..." sind
+    // ZWEI Aktionen — eine Vertauschung waere ein stiller Datenverlust.
+    actionNamed(window, MainWindow::kSaveActionName)->trigger();
+    EXPECT_EQ(saved, 1);
+    EXPECT_EQ(saved_as, 0);
+
     actionNamed(window, MainWindow::kSaveAsActionName)->trigger();
     EXPECT_EQ(opened, 1);
     EXPECT_EQ(saved, 1);
+    EXPECT_EQ(saved_as, 1);
 
     // Das Fenster reicht sich SELBST als Dialog-Eltern durch — sonst haetten
     // die modalen Dialoge im Composition-Root kein Eltern-Fenster.
@@ -119,6 +151,67 @@ TEST(MainWindow, WithoutGuardTheWindowClosesAsBefore) {
 
     EXPECT_TRUE(window.close());
     EXPECT_FALSE(window.isVisible());
+}
+
+// --- slice-052a, §6-13: Schliessen mit ungesichertem Stand ----------------
+//
+// Die Naht ist der `CloseGuard` (slice-053). Hier wird sie mit dem ECHTEN
+// Handler und dem ECHTEN Sitzungs-Service besetzt — geprueft wird die Kette
+// Fenster -> Handler -> Sitzung, nicht ein nachgebautes Verhalten. Ungeprueft
+// bleibt allein der modale Dialog (benannte Grenze).
+
+TEST(MainWindow, SchliessenMitUngesichertemStandUndAbbrechenHaeltDasFensterOffen) {
+    const QtFixture qt;
+    model::Building baseline;
+    baseline.storeys.push_back({model::StoreyId{1}, 2500.0});
+    bcad::hexagon::services::ProjectSessionService session(baseline);
+
+    model::Building aktuell = baseline;
+    aktuell.storeys.push_back({model::StoreyId{2}, 2700.0});  // ungesichert
+
+    StubManageProject project;
+    bcad::adapters::ui::command::ProjectMenuHandler handler(
+        project, session, [&aktuell]() -> const model::Building& { return aktuell; },
+        {});
+
+    MainWindow window(nullptr, {}, [&handler]() {
+        return handler.mayDiscard(
+            []() { return bcad::hexagon::ports::driving::DiscardAnswer::Cancel; },
+            []() { return std::optional<std::filesystem::path>{}; });
+    });
+    window.show();
+    ASSERT_TRUE(window.isVisible());
+
+    EXPECT_FALSE(window.close());
+    EXPECT_TRUE(window.isVisible())
+        << "abbrechen bei ungesichertem Stand haelt das Fenster offen";
+}
+
+// Gegenstueck: ist nichts ungesichert, schliesst das Fenster ohne Rueckfrage.
+TEST(MainWindow, SchliessenOhneUngesichertenStandFragtNicht) {
+    const QtFixture qt;
+    model::Building baseline;
+    baseline.storeys.push_back({model::StoreyId{1}, 2500.0});
+    bcad::hexagon::services::ProjectSessionService session(baseline);
+
+    StubManageProject project;
+    bcad::adapters::ui::command::ProjectMenuHandler handler(
+        project, session,
+        [&baseline]() -> const model::Building& { return baseline; }, {});
+
+    int gefragt = 0;
+    MainWindow window(nullptr, {}, [&handler, &gefragt]() {
+        return handler.mayDiscard(
+            [&gefragt]() {
+                ++gefragt;
+                return bcad::hexagon::ports::driving::DiscardAnswer::Cancel;
+            },
+            []() { return std::optional<std::filesystem::path>{}; });
+    });
+    window.show();
+
+    EXPECT_TRUE(window.close());
+    EXPECT_EQ(gefragt, 0);
 }
 
 }  // namespace

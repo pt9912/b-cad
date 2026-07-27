@@ -26,7 +26,9 @@
 #include "adapters/ui/view/viewer_scene.h"
 #include "hexagon/model/layer.h"
 #include "hexagon/model/segment.h"
+#include "adapters/ui/command/project_menu_handler.h"
 #include "hexagon/services/manage_project.h"
+#include "hexagon/services/project_session.h"
 #include "hexagon/services/structure_edit_service.h"
 
 namespace {
@@ -243,6 +245,59 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, OpeningDoesNotMutateLoadedModel) {
 
     fs::remove(path);
     fs::remove(again);
+}
+
+
+// --- slice-052a, Orakel-Zeile 10 -----------------------------------------
+//
+// "Speichern" schreibt in die GEMERKTE Datei — belegt am ECHTEN Repository,
+// nicht an einem Doppel: oeffnen, aendern, `save()` ohne Pfad-Angabe, und der
+// Dateiinhalt traegt die Aenderung. Der Pfad kommt allein aus der Sitzung, die
+// ihn beim Oeffnen gemerkt hat.
+TEST(ProjectSessionRoundTrip, SpeichernSchreibtInDieGemerkteDatei) {
+    const fs::path path =
+        fs::temp_directory_path() / "bcad_052a_gemerkte_datei.bcad";
+    fs::remove(path);
+
+    const bcad::adapters::persistence::SqliteProjectRepository repository;
+    bcad::adapters::geometry::OccGeometryAdapter geometry;
+
+    // Quelle: ein Projekt mit einer Wand, auf die Platte geschrieben.
+    {
+        services::StructureEditService source(geometry);
+        const auto storey = source.building().storeys.front().id;
+        source.addWall(storey, seg(0, 0, 4000, 0));
+        services::saveProject(repository, source.building(), path);
+    }
+
+    // Sitzung: oeffnen (merkt den Pfad), aendern, ueber den Handler speichern.
+    services::StructureEditService target(geometry);
+    services::ProjectSessionService session(target.building());
+    services::ManageProjectService project(target, repository, &session);
+    bcad::adapters::ui::command::ProjectMenuHandler handler(
+        project, session,
+        [&target]() -> const model::Building& { return target.building(); }, {});
+
+    ASSERT_NO_THROW((void)handler.open(path));
+    ASSERT_EQ(session.saveTarget().kind,
+              bcad::hexagon::ports::driving::SaveTargetKind::KnownPath)
+        << "das Oeffnen merkt den Pfad";
+
+    const auto storey = target.building().storeys.front().id;
+    const auto neue_wand = target.addWall(storey, seg(0, 0, 0, 3000));
+    ASSERT_TRUE(neue_wand.has_value());
+    ASSERT_TRUE(session.isDirty(target.building()));
+
+    ASSERT_TRUE(handler.save()) << "ohne Pfad-Argument in die gemerkte Datei";
+
+    // Der Dateiinhalt traegt die Aenderung.
+    const model::Building geladen = repository.load(path);
+    EXPECT_EQ(geladen.walls.size(), 2U)
+        << "die zweite Wand ist in der GEMERKTEN Datei gelandet";
+    EXPECT_FALSE(session.isDirty(target.building()))
+        << "nach dem Speichern ist die Sitzung sauber";
+
+    fs::remove(path);
 }
 
 }  // namespace

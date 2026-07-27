@@ -31,6 +31,12 @@ struct Building {
     std::vector<Material> materials;      // projekt-eigene Materialien (LH-FA-MAT-*)
     std::vector<Layer> layers;            // Zeichen-Ebenen (LH-FA-DRW-006, ADR-0018)
     std::vector<GuideLine> guide_lines;   // Hilfslinien (LH-FA-DRW-005, ADR-0018)
+
+    // slice-052a: **`= default` ist Pflicht, kein Stil.** Der compiler-generierte
+    // Vergleich nimmt jedes kuenftig ergaenzte Feld automatisch auf; ein
+    // handgeschriebener Operator wuerde es stillschweigend uebersehen — und genau
+    // das waere der stille Datenverlust, gegen den der Sitzungs-Vergleich steht.
+    auto operator==(const Building&) const -> bool = default;
 };
 
 }  // namespace bcad::hexagon::model
