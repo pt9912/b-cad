@@ -5,6 +5,76 @@
 
 ---
 
+## Tagesabschluss 2026-07-27 — Stand + nächste-Sitzung-Zeiger
+
+`make gates` **EXIT=0** (docs-check **0 Befunde / 263 Dateien** · a-check 0 · arch-check ok ·
+**352/352** Tests · Coverage 91,8 %), `make io-smoke` EXIT=0, `make schema-check` EXIT=0,
+`make acc-002-beleg` EXIT=0. **19 Commits, alle auf `origin/main`.** `in-progress/` trägt **keinen**
+Slice — der Ruhe-Sentinel steht.
+
+### Was heute abgeschlossen wurde
+
+| | |
+|---|---|
+| **Vierer-Kette komplett** | [054](../done/slice-054-manage-project-port.md) (`ManageProjectPort`) → [053](../done/slice-053-fenster-als-adapter.md) (Fenster + Handler als Adapter) → [052a](../done/slice-052a-sitzungs-zustand-und-speichern.md) (Sitzungs-Zustand, „Speichern", Rückfrage) → [052b](../done/slice-052b-neues-projekt.md) („Neues Projekt"). **[`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen)/002/003 erstmals in der Oberfläche erfüllbar.** Lastenheft 0.1.17 → **0.1.19**, Handbuch 1.1 → **1.3** |
+| **welle-5 geschlossen** | [`done/welle-5-results.md`](../done/welle-5-results.md), **M5 gebucht** (war seit dem 2026-07-03 inhaltlich erfüllt, die Roadmap sagte „offen") |
+| **welle-6 geschnitten** | `welle-6-interaktiv-planen`, Meilenstein **M6**; Ziel [OBJ-004→OBJ-001](../../../../spec/lastenheft.md#3-projektziele), Trigger: **eine Wand ist im 2D-Canvas zeichenbar und parametrisch änderbar** |
+| **Erster welle-6-Plan** | [`slice-048b`](../open/slice-048b-drw-001-fangpunkte-impl.md) (Fangpunkte), Review durch, **startbar** |
+
+**Elf [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
+an einem Tag, 22 HIGH — jeder Lauf fand etwas Echtes, keine Zeile Code ist deswegen gefallen.**
+
+### ▶ Nächste Sitzung: hier ansetzen
+
+**[`slice-048b`](../open/slice-048b-drw-001-fangpunkte-impl.md) ist startbar** — aber **R6 zuerst**:
+
+> Vor dem ersten Commit ist zu verifizieren, dass die `guide_lines`-Round-Trip-Orakel
+> ([032b](../done/slice-032b-drw-impl.md)) und die 2D-Export-Orakel
+> ([032c](../done/slice-032c-drw-export.md)) die Koordinaten **wertgleich** prüfen — nicht nur die
+> Anzahl. Ergeben sie das nicht, gehört Orakel-Zeile 10 als eigener Test ergänzt. **Nicht in den
+> Vollzug verschieben.**
+
+Danach: `snap.{h,cpp}` (reine Funktion, ohne Geschoss-Parameter), Aufruf an den zwei
+`screenToModel`-Stellen **mit `pull_()` an Ort und Stelle**, zehn Orakel-Zeilen mit Gegenprobe.
+
+**Danach offen in welle-6:** der eigentliche Wellen-Kern — **Wand zeichnen im Canvas** — hat noch
+keinen Plan. Und die **Fang-Anzeige** (R5: der Fang reicht über das dargestellte Geschoss hinaus,
+also sollte sichtbar sein, worauf gerastet wurde).
+
+### Die drei Lehren des Tages
+
+1. **Ein Default-Argument kann ein Orakel aushebeln.** `sinks = {}` hätte einen vergesslichen
+   Aufrufer still durchgelassen; der Verlust wäre unter **allen** Orakeln grün geblieben. Wo ein
+   Parameter verhaltenstragend ist, ist der **fehlende** Default der schärfste Sensor.
+2. **„Geprüft" heißt nicht „am richtigen Ort geprüft".** Dreimal blieb eine Gegenprobe grün, weil ein
+   Orakel die falsche Komponente prüfte (052a, 052b, und im 048b-Plan wäre es fast ein viertes Mal
+   passiert — MEDIUM-2). **Regel-Kandidat, 3×-Regel erfüllt**, s. u.
+3. **Ein Wellen-Label ohne Abschluss-Kriterium hört auf, etwas zu bedeuten — und niemand merkt es.**
+   welle-5 lief 24 Tage über ihren erfüllten Meilenstein. welle-6 trägt deshalb einen **beobachtbaren
+   Trigger** im Wellen-Block, und die Closure wird fällig, sobald er erfüllt ist.
+
+### Offene Entscheidungen für den Projektinhaber
+
+- **Regel-Kandidat als MR aufnehmen?** *Eine Orakel-Zeile benennt nicht nur die Zusicherung, sondern
+  die **Komponente**, an der sie diskriminiert; Zusagen über das Zusammenspiel zweier Komponenten
+  werden am **Zusammenspiel** belegt.* Dreimal belegt (053 · 052a · 052b), Sensor wäre die
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Linse
+  „reale Sensor-Deckung" — computational nicht prüfbar, wie [MR-020](../../../../harness/conventions.md).
+  **Das ist eine Regelwerk-Entscheidung, nicht meine.**
+- **M6 als Meilenstein** habe ich angelegt, weil die Meilenstein-Tabelle eine `Welle(n)`-Spalte führt
+  und welle-6 sonst ein Loch hinterlassen hätte. Falls du die Welle ohne Meilenstein willst: eine Zeile.
+- **`slice-044b` und `slice-051`** tragen weiter `welle: welle-5-erweiterung` (Provenance; keiner ist
+  welle-6-bindend). Bewusst nicht umgehängt.
+
+### Weiter offen, ohne Wellen-Bindung
+
+[`slice-051`](../open/slice-051-review-artefakt-pflicht.md) (Review-Artefakt-Pflicht als Gate — die
+Alt-Last aus 045/046a/046b/047 ist damit **nicht** geheilt, nur benannt) ·
+[`slice-044b`](../open/slice-044b-golden-import-fremd.md) ·
+[`slice-006`](../open/slice-006-drittanbieter-attribution.md) · `slice-039a/b` · `slice-040a`.
+
+---
+
 ## 2026-07-27 (5) — welle-5 geschlossen, **welle-6 geschnitten**
 
 Der Planungs-Punkt „viele Slices, keine Wellen" vom 2026-07-26 ist entschieden und vollzogen
