@@ -4,19 +4,21 @@ titel: Hauptfenster als testbarer Adapter — Menü und Schließ-Behandlung raus
 status: open
 welle: welle-5-erweiterung
 lastenheft_refs: [[ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)]
-adr_refs: [[ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
+adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
 ---
 
 # Slice 053: Hauptfenster als testbarer Adapter (Struktur-Vorläufer)
 
-**Status:** open — **Struktur-Vorläufer**, verhaltens-invariant. Eigenes [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-**2026-07-26 gefahren: 2 HIGH / 6 MEDIUM / 5 LOW / 2 INFO → nicht startbar**
-([Report](../../../reviews/2026-07-26-slice-053-plan.md)); alle Findings eingearbeitet (§10).
-**Ein zweiter Lauf vor dem Start.**
+**Status:** open — **Struktur-Vorläufer**, verhaltens-invariant. **Zwei
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
+gefahren:** Lauf 1 (2026-07-26, 2 HIGH / 6 MED / 5 LOW / 2 INFO,
+[Report](../../../reviews/2026-07-26-slice-053-plan.md)) → §9; Lauf 2 (2026-07-27, **1 HIGH** / 5 MED /
+4 LOW / 2 INFO, [Report](../../../reviews/2026-07-27-slice-053-plan-2.md)) → §10. **Beide eingearbeitet.**
 
-**Abhängigkeit: [`slice-054`](../done/slice-054-manage-project-port.md) muss zuerst laufen** — HIGH-1 hat
-belegt, dass „Handler ziehen mit um" und „keine neue Kante" ohne den `ManageProjectPort` nicht
-gleichzeitig einlösbar sind. **Sequenz: 054 → 053 →
+**Abhängigkeit erfüllt: [`slice-054`](../done/slice-054-manage-project-port.md) ist seit 2026-07-27
+`done`** — der `ManageProjectPort` existiert. Lauf-1-HIGH-1 hatte belegt, dass „Handler ziehen mit um"
+und „keine neue Kante" ohne ihn nicht gleichzeitig einlösbar sind. **Dieser Plan ist auf den
+tatsächlich gelieferten Port geprüft** (Lauf 2), nicht auf den erwarteten. **Sequenz: 054 → 053 →
 [`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](slice-052b-neues-projekt.md).**
 
@@ -57,10 +59,36 @@ Das Hauptfenster wird eine **Adapter-Klasse**; die Menü-**Handler** werden es e
 | **Verdrahtung + modale Dialoge** | `src/main.cpp` | Instanz erzeugen, Handler-Methoden als `std::function` ins Fenster geben, Dialoge stellen. **Keine Entscheidung.** |
 
 **Das war der HIGH-1 des ersten Laufs:** die Vorfassung wollte die Handler nach `ui_view` mitnehmen —
-sie rufen aber `hexagon/services/` (`main.cpp`:306/:337), und `ui_view` darf nur `model`/`ports_driven`
+sie riefen damals `hexagon/services/`, und `ui_view` darf nur `model`/`ports_driven`
 (`.a-check.yml`:33–34). „Handler ziehen mit um" **und** „keine neue Kante" war zusammen unmöglich.
-Ohne [`slice-054`](../done/slice-054-manage-project-port.md) bliebe nur die **leere Bauform** — dann verspräche
-053 weniger, als 052a/052b darauf buchen.
+**Seit slice-054 ist es möglich:** das Menü ruft heute `project.openProject(...)` (`main.cpp`:311) und
+`project.saveProject(...)` (:341) über den Port — die Zeilen-Belege der Vorfassung (:306/:337) sind
+überholt (Lauf-2-MEDIUM-1).
+
+## 1.1 Die Senken — die eine Verdrahtung, die 054 an 053 delegiert hat (Lauf-2-HIGH-1)
+
+`openProject` nimmt die **`DrawingTargetSinks`** als **Methoden-Parameter**
+(`src/hexagon/ports/driving/manage_project_port.h`); slice-054 hat das ausdrücklich so entschieden und
+die Weitergabe an 053 delegiert (054 §2.1/R2). **Die Vorfassung dieses Plans erwähnte sie mit keinem
+Wort** — und genau daran hing der gefährlichste Befund des zweiten Laufs:
+
+> Der Port trug einen **Default** (`sinks = {}`). Ein Handler, der die Senken vergisst, hätte
+> kompiliert und eine gültige `DrawingTargetResolution` geliefert; §3-Zeile 5 prüft nur, **dass** der
+> Port gerufen wird, und das einzige bestehende Adapter-Orakel
+> (`tests/adapters/test_project_open_handler.cpp`:177–193) baut seine Senken **selbst**. Der Verlust
+> der Zeichen-Ziel-Neuauflösung — **slice-047-Verify-B4, derselbe Fehler** — wäre unter **allen**
+> zugesagten Sensoren grün geblieben. In dem Slice, dessen Zweck Prüfbarkeit ist.
+
+**Entschieden (Projektinhaber 2026-07-27) — beide Hälften:**
+
+1. **Der Default fällt.** `openProject(path, sinks)` ohne `= {}` — Vergessen wird ein
+   **Compile-Fehler**, der stärkste verfügbare Sensor. Ein Eingriff in das Artefakt eines
+   geschlossenen Slice, bewusst und hier protokolliert: er **verschärft** den Vertrag, ändert kein
+   Verhalten, und die zwei Aufrufstellen ohne Senken (in `tests/hexagon/test_manage_project_port.cpp`)
+   reichen künftig explizit `{}` — sichtbar statt stillschweigend.
+2. **Der Handler führt die Senken** (Konstruktor) **und reicht sie durch**; das Fenster kennt sie
+   nicht. Dafür **§3-Zeile 6** mit roter Gegenprobe — ein Compile-Fehler deckt nur das Vergessen, nicht
+   das Durchreichen **leerer** Senken.
 
 **Verhaltens-invariant:** kein neues Menü, keine neue Aktion, keine geänderte Reaktion.
 
@@ -84,6 +112,7 @@ Ohne [`slice-054`](../done/slice-054-manage-project-port.md) bliebe nur die **le
 | 3 | Sagt der Haken „nicht schließen", **bleibt das Fenster sichtbar** — die Naht, an der 052a sein „abbrechen" aufhängt | `ignore()` weggelassen ⇒ rot |
 | 4 | Eine **Menü-Aktion** ist über `trigger()` auslösbar und ruft ihre injizierte `std::function` | Verdrahtung entfernt ⇒ rot |
 | 5 | Der **Handler** (`ui/command/`) ruft für „Öffnen"/„Speichern" den [`slice-054`](../done/slice-054-manage-project-port.md)-Port — geprüft gegen ein Port-Doppel | Aufruf entfernt ⇒ rot |
+| 6 | Der Handler **reicht die `DrawingTargetSinks` durch**: das Port-Doppel bekommt beim Öffnen **gesetzte** Callables und meldet die Ids des geladenen Stands an die injizierten Senken (§1.1) | Handler reicht `{}` statt der geführten Senken ⇒ rot. **Nicht** ausreichend als alleiniger Schutz: das reine *Weglassen* fängt seit §1.1-Entscheidung 1 bereits der Compiler |
 
 **Zeile 2/3 sind gegenüber der Vorfassung präzisiert** (Lauf-1-MEDIUM-2): ein per `sendEvent`
 zugestelltes `QCloseEvent` prüft die Veto-Wirkung **nicht** — `ignore()` wirkt an `close()`. Geprüft
@@ -92,6 +121,9 @@ wird deshalb über `close()` und die **Sichtbarkeit** danach.
 **Zeile 5 ist neu** (Lauf-1-MEDIUM-1): ohne sie verspräche 053 nur „die Aktion ruft *irgendeinen*
 Handler", während [`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) darauf den **Nachweis
 der Verwendung** bucht. Erst mit dem Port ist das prüfbar.
+
+**Zeile 6 ist neu** (Lauf-2-HIGH-1, s. §1.1) — und sie ist die Zeile, die diesen Slice vor der
+Wiederholung von slice-047-B4 bewahrt: der Aufruf allein sagt nichts darüber, **womit** gerufen wird.
 
 **Zur Verhaltens-Invarianz, ehrlich** (Lauf-1-**HIGH-2**): einen **Vorher**-Sensor für den Menü-Teil
 gibt es **nicht** — `make io-smoke` kehrt vor dem GUI-Aufbau zurück (`main.cpp`:432–434, so auch im
@@ -110,6 +142,14 @@ Reviewer-Pflege-Signal, deshalb hier einzeln): (1) die **modalen Dialoge** selbs
 **Fenster-Aufbau** in `main` (Tabs, Größe, Titel beim Start). Alles davon bleibt in `main.cpp` und ohne
 Sensor — **keine Entscheidung darunter**.
 
+**Was der Umzug damit tatsächlich ist — ehrlich beziffert** (Lauf-2-MEDIUM-5): zieht man die fünf
+Grenz-Punkte ab, wandern aus den beiden Menü-Lambdas im Kern **zwei Port-Aufrufe** samt der
+Senken-Weitergabe (§1.1) und der Ergebnis-Auswertung in den Handler. Dialog-Aufruf, Abbruch-Prüfung
+(`path.isEmpty()`), Suffix-Ergänzung, Meldungstexte, Titel-Setzung und die `try/catch`-Anzeige bleiben
+in `main.cpp`. **Der Gewinn dieses Slice ist nicht die Menge des verschobenen Codes, sondern dass das
+Verschobene erstmals einen Sensor hat** — plus die Träger-Klasse für das Schließ-Ereignis, an der 052a
+seine Rückfrage aufhängt. Wer mehr erwartet, erwartet 052a/052b.
+
 ## 4. Definition of Done
 
 - [ ] **`src/adapters/ui/view/main_window.{h,cpp}`**: `QMainWindow`-Ableitung mit Menü-Aufbau und
@@ -120,28 +160,48 @@ Sensor — **keine Entscheidung darunter**.
       ruft den [`slice-054`](../done/slice-054-manage-project-port.md)-`ManageProjectPort`. Orakel §3-5.
 - [ ] **`src/main.cpp`**: nur noch Instanz, Verdrahtung, Dialoge und Meldungstexte. Die
       Handler-**Rümpfe** ziehen um; die Dialog-Aufrufe bleiben.
-- [ ] **Qt-Ownership und Lebensdauer entschieden, nicht nur benannt** (Lauf-1-MEDIUM-4): wem gehören
-      `QTabWidget`, Viewer und Canvas nach dem Umzug; wo läuft das
-      [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)-`unsubscribe` (heute `main.cpp`:519–520,
-      **vor** der Widget-Zerstörung); und wie erreicht der `--acc-002-beleg`-Zweig
-      (`main.cpp`:499/:502/:511) das Fenster. Die Antworten stehen im Plan-Vollzug, nicht im Diff.
+- [ ] **Qt-Ownership und Lebensdauer — hier entschieden, nicht im Vollzug** (Lauf-1-MEDIUM-4,
+      Lauf-2-MEDIUM-3: die Vorfassung hatte die Entscheidung nur *verschoben*, und das Plan-Review
+      prüft **vor** dem Start). Die drei Antworten:
+  - **Widgets:** unverändert. `MainWindow` bekommt die fertigen `QTabWidget`-Kinder vom
+    Composition-Root **injiziert** (`setCentralWidget` überträgt das Ownership wie heute an das
+    Fenster, `main.cpp`:481–487). 053 baut die Widgets **nicht** selbst — sonst zöge der 3D-/2D-Aufbau
+    in einen Slice, der ihn laut §2 ausdrücklich nicht anfasst.
+  - **`unsubscribe`:** bleibt im Composition-Root (`main.cpp`:527–528, **vor** der Widget-Zerstörung,
+    [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md) #5). Begründung: der
+    `StructureEditService` gehört dem Root und **überlebt** das Fenster; ein Abmelden im Fenster-Dtor
+    würde die Reihenfolge umkehren und die Invariante an eine Qt-Zerstörungsreihenfolge binden.
+  - **`--acc-002-beleg`:** der Zweig braucht `setCurrentWidget(viewer)` **vor** `show()` (`main.cpp`:507
+    f., in slice-043 teuer erarbeitet). `MainWindow` bekommt dafür einen schmalen Zugriff auf den
+    aktiven Tab; die Reihenfolge selbst bleibt im Root. R1 bleibt damit ein Risiko der **Reihenfolge**,
+    nicht der **Erreichbarkeit**.
 - [ ] **`tests/adapters/test_main_window.cpp`** + **`tests/adapters/test_project_menu_handler.cpp`**:
-      §3-Zeilen 1–5, **je mit roter Gegenprobe** im Closure-Text.
+      §3-Zeilen 1–6, **je mit roter Gegenprobe** im Closure-Text.
+- [ ] **Der Port-Default fällt** (§1.1): `openProject(path, sinks)` ohne `= {}` in
+      `src/hexagon/ports/driving/manage_project_port.h`; die zwei senkenlosen Aufrufe in
+      `tests/hexagon/test_manage_project_port.cpp` reichen explizit `{}`. **Verschärfung des Vertrags,
+      keine Verhaltensänderung** — und kein Gate wird gelockert
+      (AGENTS [§2.6](../../../../AGENTS.md) n/a).
 - [ ] **Build-Listen nachgezogen** (Lauf-1-MEDIUM-5): `src/adapters/CMakeLists.txt` und
       `tests/CMakeLists.txt` zählen Dateien **explizit** auf — genau die Linkage-Tatsache, aus der
       dieser Slice entstand.
 - [ ] **`make a-check` grün ohne neue Kante**: `ui_view` importiert nur `model`, `ui_command` nur
       `model`/`ports_driving`. Entsteht eine Kante, ist der Schnitt falsch — **nicht** die Regel
       (AGENTS [§2.6](../../../../AGENTS.md)).
-- [ ] **`spec/architecture.md`**: die GUI-Adapter-Zeile (:109) nennt für `command/` heute nur die
-      „`MeshSource`-Naht" — sie ist um die **Kommando-Handler** zu ergänzen, und der `view/`-Zweig
-      des §2.1-Baums um das Fenster (Lauf-1-MEDIUM-6: der Baum zählt die Widgets **nicht** auf, die
-      Behauptung der Vorfassung war falsch).
+- [ ] **`spec/architecture.md` — beide Hälften der GUI-Adapter-Zeile** (:109; Lauf-1-MEDIUM-6 +
+      Lauf-2-MEDIUM-4): (a) `command/` nennt heute nur die „`MeshSource`-Naht" → um die
+      **Kommando-Handler** ergänzen; (b) **`view/` ist als „driven: Beobachter-Implementierungen …
+      + Rendering" beschrieben — ein Menü-Fenster ist weder das eine noch das andere.** Die
+      Verantwortlichkeit ist so zu fassen, dass sie das port-freie Fenster **deckt**, ohne die
+      Richtungs-Regel aufzuweichen (die bleibt eine Aussage über **Imports**). Dazu der `view/`-Zweig
+      des §2.1-Baums.
 - [ ] **CHANGELOG** [Unreleased]-Eintrag (Struktur, verhaltens-invariant).
 - [ ] **Kein** Lastenheft-/Spezifikations-/Handbuch-Eintrag — nichts wird benutzer-sichtbar. (Geprüft
       und **verneint**, nicht vergessen — Lehre aus slice-047 V1.)
-- [ ] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv` — 053 wäre der erste
-      `in-progress`-Slice, [MR-017](../../../../harness/conventions.md), Lauf-1-LOW-2);
+- [ ] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`: nach der 054-Closure ist
+      `in-progress/` wieder leer und der Sentinel gesetzt — 053 ist damit erneut der **erste**
+      Slice und entfernt ihn im selben Commit, [MR-017](../../../../harness/conventions.md);
+      Lauf-1-LOW-2, Begründung nach Lauf-2-LOW-1 richtiggestellt);
       **`make io-smoke` grün**; **`make acc-002-beleg`** erzeugt ein Bild
       ([ADR-0010](../../adr/0010-headless-gl-xvfb.md)). **Diese drei belegen die umliegenden Pfade,
       nicht den Umzug selbst** (§3).
@@ -155,15 +215,29 @@ Sensor — **keine Entscheidung darunter**.
 | `src/adapters/ui/view/main_window.{h,cpp}` | neu | Fenster als Adapter-Klasse, port-frei |
 | `src/adapters/ui/command/project_menu_handler.{h,cpp}` | neu | was die Aktionen tun; ruft den 054-Port |
 | `src/adapters/CMakeLists.txt`, `tests/CMakeLists.txt` | ändern | explizite Datei-Listen |
-| `src/main.cpp` | ändern | Instanz + Verdrahtung + Dialoge; Handler-Rümpfe raus |
+| `src/main.cpp` | ändern | Instanz + Verdrahtung + Dialoge; die **zwei Port-Aufrufe** raus (§3, Umfang ehrlich beziffert) |
+| `src/hexagon/ports/driving/manage_project_port.h` | **ändern** | der Default `sinks = {}` fällt (§1.1) — Vergessen wird Compile-Fehler |
+| `tests/hexagon/test_manage_project_port.cpp` | **ändern** | die zwei senkenlosen Aufrufe reichen explizit `{}` |
 | `tests/adapters/test_main_window.cpp` | neu | §3-Zeilen 1–4 |
-| `tests/adapters/test_project_menu_handler.cpp` | neu | §3-Zeile 5 |
-| `spec/architecture.md` | ändern | GUI-Adapter-Zeile + §2.1-Baum |
+| `tests/adapters/test_project_menu_handler.cpp` | neu | §3-Zeilen 5 **und 6** |
+| `spec/architecture.md` | ändern | GUI-Adapter-Zeile (**`command/` und `view/`**) + §2.1-Baum |
 | `CHANGELOG.md` | ändern | [Unreleased] |
-| `docs/reviews/`-Report zum zweiten Plan-Review | neu | Lauf-1-LOW-5 |
+| `docs/reviews/`-Reporte | **liegen** | [Lauf 1](../../../reviews/2026-07-26-slice-053-plan.md) + [Lauf 2](../../../reviews/2026-07-27-slice-053-plan-2.md) (Lauf-1-LOW-5) |
 
-**Nicht berührt:** `.a-check.yml` (keine neue Kante), `spec/lastenheft.md`, `spec/spezifikation.md`,
-`docs/user/`, `data-model.yaml`/`schema.sql`, `docs/plan/adr/`.
+**Nicht berührt — begründet:**
+
+- `.a-check.yml` (keine neue Kante), `spec/lastenheft.md`, `spec/spezifikation.md`, `docs/user/`,
+  `data-model.yaml`/`schema.sql`, `docs/plan/adr/`.
+- **`tests/adapters/test_project_open_handler.cpp`** (Lauf-2-LOW-3) — es prüft den **Kern**-Use-Case
+  über die freien Funktionen und baut seine Senken selbst; der neue Handler-Test tritt **daneben**,
+  nicht an seine Stelle. Genannt, damit die Nicht-Berührung geprüft und nicht übersehen ist.
+- **`slice-052a`/`slice-052b`** (Lauf-2-MEDIUM-2) — beide buchen noch auf
+  `src/adapters/ui/view/main_window.*` bzw. auf dem verworfenen `sendEvent`-Mechanismus, und die von
+  053 geschaffene Handler-Heimat kommt bei ihnen nicht vor. **Entscheidung (Projektinhaber
+  2026-07-27): nachgezogen wird beim Start des jeweiligen Slice** — ihr eigener
+  [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
+  steht ohnehin aus (052a: vierter, 052b: zweiter) und prüft dann gegen das, was 053 **geliefert** hat.
+  Dasselbe Muster, das diesen Lauf 2 nötig gemacht hat — kein Pflegeaufwand auf Vorrat.
 
 ## 6. Risiken
 
@@ -186,7 +260,7 @@ Sensor — **keine Entscheidung darunter**.
 
 ## 8. Closure-Trigger
 
-- §3-Zeilen 1–5 grün + je einmal diskriminierend belegt; die drei Regressions-Läufe grün;
+- §3-Zeilen 1–6 grün + je einmal diskriminierend belegt; die drei Regressions-Läufe grün;
   `make gates` + `make io-smoke` + `make acc-002-beleg` grün; Closure-Notiz.
 
 ## 9. MR-006-Einarbeitung (erster Lauf, 2026-07-26)
@@ -212,15 +286,43 @@ Report: [`2026-07-26-slice-053-plan.md`](../../../reviews/2026-07-26-slice-053-p
 | **INFO-1** (vierte Wiederholung „Grenze als vollständig deklariert") | die Aufzählung ist einzeln nummeriert statt pauschal — und die **Ursache** der Klasse ist mit 054 adressiert. |
 | **INFO-2** (der Code kommt erstmals unter `coverage-gate`) | benannt: der Umzug hebt bisher coverage-ausgenommenen Code in den gemessenen Bereich; ein Absinken der Quote ist **erwartbar** und kein Regress. |
 
-## 10. Sub-Area-Modus-Begründung
+## 10. MR-006-Einarbeitung (zweiter Lauf, 2026-07-27)
+
+Report: [`2026-07-27-slice-053-plan-2.md`](../../../reviews/2026-07-27-slice-053-plan-2.md) —
+**1 HIGH / 5 MEDIUM / 4 LOW / 2 INFO, „nicht startbar"**. Unabhängiger Reviewer ≠ Plan-Autor ≠ Autor
+des Lauf-1-Reports. **Prüfrahmen dieses Laufs:** der Plan entstand **vor** slice-054 — geprüft wurde
+deshalb gegen den **tatsächlich gelieferten** Port, nicht gegen den erwarteten.
+
+| # | Behandlung |
+|---|---|
+| **HIGH-1** (Senken kommen im Plan nicht vor; Verlust bliebe unter allen Sensoren grün) | **§1.1 neu** + **§3-Zeile 6** neu + zwei DoD-Zeilen. Beide Hälften entschieden: der Port-Default fällt (Compile-Fehler beim Vergessen), der Handler führt und reicht die Senken durch (Orakel mit roter Gegenprobe). |
+| **MEDIUM-1** (Plan beschreibt das **vor**-054-`main.cpp`) | Zeilen-Belege auf den Ist-Stand gezogen: Menü ruft `project.openProject` (:311) / `project.saveProject` (:341); `unsubscribe` :527–528; `--acc-002-beleg` :507 f.; Fenster-Aufbau :481–487. |
+| **MEDIUM-2** (052a/052b buchen auf überholten Pfaden) | **Nicht** in 053 nachgezogen — Entscheidung mit Begründung in §5 „Nicht berührt". |
+| **MEDIUM-3** (Lauf-1-MEDIUM-4 nur **scheinbar** erledigt: „zu entscheiden" in den Vollzug verschoben) | Die drei Antworten stehen jetzt **im Plan**: Widgets injiziert (053 baut sie nicht), `unsubscribe` bleibt im Root (der Service überlebt das Fenster), `--acc-002-beleg` über einen schmalen Tab-Zugriff bei unveränderter Reihenfolge. |
+| **MEDIUM-4** (nur die `command/`-Hälfte der `architecture.md`-Zeile nachgezogen) | Die DoD nennt jetzt **beide** Hälften — die `view/`-Verantwortlichkeit („driven: Beobachter + Rendering") deckt ein Menü-Fenster nicht. |
+| **MEDIUM-5** (Umfang des Umzugs beschönigt) | §3 beziffert ihn ehrlich: **zwei Port-Aufrufe** + Senken + Ergebnis-Auswertung; der Gewinn ist der **Sensor**, nicht die Code-Menge. |
+| **LOW-1** (Toggle-Begründung überholt) | richtiggestellt: nach der 054-Closure ist `in-progress/` wieder leer, 053 ist erneut der erste Slice. |
+| **LOW-2** (`adr_refs` ohne [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md)/[ADR-0001](../../adr/0001-hexagonale-architektur.md)) | ergänzt. |
+| **LOW-3** (`test_project_open_handler.cpp` ungenannt) | als **begründet unberührt** aufgenommen. |
+| **LOW-4** (Kopf/Zeitform noch vor der 054-Lieferung) | Kopf sagt jetzt: 054 ist `done`, der Plan ist gegen den gelieferten Port geprüft. |
+
+**Stand der Lauf-1-Findings** (vom Lauf-2-Reviewer am Artefakt nachgeprüft, nicht der Behauptung
+geglaubt): beide HIGH **echt aufgelöst** · MEDIUM-2/-3/-5 und alle fünf LOW aufgelöst · MEDIUM-1 und
+MEDIUM-6 **teilweise** (jetzt zu Ende geführt) · MEDIUM-4 **nur scheinbar** (jetzt entschieden).
+
+**Startbar:** ja — der HIGH ist aufgelöst, alle MEDIUM/LOW eingearbeitet. Ein dritter Lauf ist nicht
+erforderlich: die Änderungen präzisieren den bestehenden Schnitt und fügen einen Sensor hinzu, sie
+wechseln keine Lösungsrichtung.
+
+## 11. Sub-Area-Modus-Begründung
 
 ### Sub-Area: GUI-Adapter
 
-- **Modus:** GF; **Dichte:** mittel — eine Klasse, ein Umzug, vier Orakel-Zeilen; der Aufwand steckt in
+- **Modus:** GF; **Dichte:** mittel — eine Klasse, ein Umzug, sechs Orakel-Zeilen; der Aufwand steckt in
   der **Invarianz** (R1/R3), nicht im Neubau.
 - **Risiko:** niedrig-mittel — kein neues Verhalten, aber der [ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)-Beleg-Pfad und die
   Qt-Ownership sind empfindlich.
 
-## 11. Closure-Notiz
+## 12. Closure-Notiz
 
 _(bei Ausführung auszufüllen)_
