@@ -36,7 +36,7 @@ Slice mit rotem `make a-check` gegen die Wand gelaufen.
    **falsch** — gemessen: der explizite Pfad meldet `codepath-missing`, weil `codepaths.roots` `src`
    enthält. Die Klammer ist das Ventil für geplante Dateien. Widerlegt statt eingearbeitet.
 
-**Weiter in der Kette:** ▶ **[`slice-053`](../open/slice-053-fenster-als-adapter.md)** (Hauptfenster als
+**Weiter in der Kette:** ▶ **[`slice-053`](slice-053-fenster-als-adapter.md)** (Hauptfenster als
 testbarer Adapter) — **zweiter [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
 noch offen**; er muss zusätzlich prüfen, ob 053 auf dem Port aufsetzt, den 054 **tatsächlich**
 geliefert hat (Sinks als Methoden-Parameter, `save` ohne `Building`). Danach 052a → 052b.
@@ -114,7 +114,7 @@ Slice, weil er die Buchführung betrifft, unter der jeder Slice läuft.
 ### Was offen in `open/` liegt — und in welcher Reihenfolge
 
 **Sequenz: [`slice-054`](../done/slice-054-manage-project-port.md) →
-[`slice-053`](../open/slice-053-fenster-als-adapter.md) →
+[`slice-053`](slice-053-fenster-als-adapter.md) →
 [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
 [`slice-052b`](../open/slice-052b-neues-projekt.md).**
 

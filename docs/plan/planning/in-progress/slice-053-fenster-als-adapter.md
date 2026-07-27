@@ -19,8 +19,8 @@ gefahren:** Lauf 1 (2026-07-26, 2 HIGH / 6 MED / 5 LOW / 2 INFO,
 `done`** — der `ManageProjectPort` existiert. Lauf-1-HIGH-1 hatte belegt, dass „Handler ziehen mit um"
 und „keine neue Kante" ohne ihn nicht gleichzeitig einlösbar sind. **Dieser Plan ist auf den
 tatsächlich gelieferten Port geprüft** (Lauf 2), nicht auf den erwarteten. **Sequenz: 054 → 053 →
-[`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) →
-[`slice-052b`](slice-052b-neues-projekt.md).**
+[`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) →
+[`slice-052b`](../open/slice-052b-neues-projekt.md).**
 
 **Welle:** welle-5-erweiterung (Quergewerk / Struktur-Vorbereitung — Muster
 slice-028/029 (in `done/`), die vor der a-check-Umstellung dieselbe Rolle spielten).
@@ -95,8 +95,8 @@ Wort** — und genau daran hing der gefährlichste Befund des zweiten Laufs:
 ## 2. Bewusst NICHT Teil
 
 - **Jede neue Funktion.** Kein „Speichern", kein „Neu", keine Ungesichert-Rückfrage — das sind
-  [`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) und
-  [`slice-052b`](slice-052b-neues-projekt.md). Dieser Slice **ermöglicht** sie, er liefert sie nicht.
+  [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) und
+  [`slice-052b`](../open/slice-052b-neues-projekt.md). Dieser Slice **ermöglicht** sie, er liefert sie nicht.
 - **Die 3D-/2D-Widgets** (`ViewerWidget`, `CanvasWidget`) und ihre Verdrahtung — unverändert.
 - **Der `--acc-002-beleg`-Pfad und die CLI** (`runHeadlessCli`) — unberührt; der
   [ACC-002](../../../../spec/lastenheft.md#7-abnahmekriterien)-Beleg muss **bit-gleich** erzeugbar
@@ -119,7 +119,7 @@ zugestelltes `QCloseEvent` prüft die Veto-Wirkung **nicht** — `ignore()` wirk
 wird deshalb über `close()` und die **Sichtbarkeit** danach.
 
 **Zeile 5 ist neu** (Lauf-1-MEDIUM-1): ohne sie verspräche 053 nur „die Aktion ruft *irgendeinen*
-Handler", während [`slice-052a`](slice-052a-sitzungs-zustand-und-speichern.md) darauf den **Nachweis
+Handler", während [`slice-052a`](../open/slice-052a-sitzungs-zustand-und-speichern.md) darauf den **Nachweis
 der Verwendung** bucht. Erst mit dem Port ist das prüfbar.
 
 **Zeile 6 ist neu** (Lauf-2-HIGH-1, s. §1.1) — und sie ist die Zeile, die diesen Slice vor der

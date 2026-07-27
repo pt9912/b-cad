@@ -15,9 +15,9 @@ gefahren, alle „nicht startbar"** ([Lauf 1](../../../reviews/2026-07-26-slice-
 4 LOW / 2 INFO · [Lauf 3](../../../reviews/2026-07-26-slice-052a-plan-3.md): 1 HIGH / 3 MED / 4 LOW /
 2 INFO). Lauf 1 + 2 galten dem **ungeteilten** slice-052; Lauf 2 führte zum **Split**
 ([`slice-052b`](slice-052b-neues-projekt.md)), Lauf 3 zum **Struktur-Vorläufer**
-[`slice-053`](slice-053-fenster-als-adapter.md). Alle Findings sind eingearbeitet (§13).
+[`slice-053`](../in-progress/slice-053-fenster-als-adapter.md). Alle Findings sind eingearbeitet (§13).
 
-**Abhängigkeit: [`slice-053`](slice-053-fenster-als-adapter.md) muss zuerst laufen** — ohne das
+**Abhängigkeit: [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md) muss zuerst laufen** — ohne das
 Hauptfenster als Adapter-Klasse ist die Schließ-Rückfrage nicht orakel-fähig (Lauf-3-HIGH-1). **Ein
 vierter [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
 vor dem Start**, sobald 053 geliefert ist.
@@ -195,11 +195,11 @@ er **vor** dem Start — erweitert um die Lücken beider [MR-006](../../../../ha
 | 11 | **Verdikt**: `Proceed` / `AskFirst` | Verdikt-Bildung entfernt ⇒ rot | — |
 | 12 | **Antwort-Auswertung**: „abbrechen" ⇒ *unterlassen*; „verwerfen" ⇒ *ausführen*; „speichern" ⇒ *erst speichern, dann ausführen* | „abbrechen" führt aus ⇒ rot | **Lauf 1 MEDIUM-3** |
 | 12a | **„speichern" im Verwerf-Fluss scheitert** (Zielmedium/Recht) ⇒ die auslösende Aktion wird **unterlassen**, der Stand bleibt ungesichert | Fehler geschluckt und trotzdem ausgeführt ⇒ rot | **Lauf 3 MEDIUM-2a** |
-| 13 | **Fenster-Schließen mit ungesichertem Stand** ⇒ Rückfrage; „abbrechen" ⇒ Fenster bleibt offen (headless über `QCloseEvent` + `QApplication::sendEvent`) — **setzt [`slice-053`](slice-053-fenster-als-adapter.md) voraus** | Schließ-Anbindung entfernt ⇒ rot | **Lauf 2 MEDIUM-10 / Lauf 3 HIGH-1** |
+| 13 | **Fenster-Schließen mit ungesichertem Stand** ⇒ Rückfrage; „abbrechen" ⇒ Fenster bleibt offen (headless über `QCloseEvent` + `QApplication::sendEvent`) — **setzt [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md) voraus** | Schließ-Anbindung entfernt ⇒ rot | **Lauf 2 MEDIUM-10 / Lauf 3 HIGH-1** |
 | 14 | **Baseline-Übergabe**: die Sitzung wird mit dem Stand **nach** dem Start-Aufbau konstruiert | Konstruktion mit leerem `Building` ⇒ rot (Zeile 8 allein bliebe grün) | **Lauf 3 MEDIUM-2b** |
 
 **Zeile 13 war in Lauf 3 der blockierende HIGH — und ist der Grund für
-[`slice-053`](slice-053-fenster-als-adapter.md):** unter dem Datei-Plan der Vorfassung wäre sie **nicht
+[`slice-053`](../in-progress/slice-053-fenster-als-adapter.md):** unter dem Datei-Plan der Vorfassung wäre sie **nicht
 herstellbar** gewesen, weil `main.cpp` in **kein** Testbinary gelinkt ist (`src/CMakeLists.txt`:6 vs.
 `tests/CMakeLists.txt`) und die zitierte Präzedenz **Adapter-Klassen** prüft. Das Ereignis ist erst
 prüfbar, wenn das Fenster eine Adapter-Klasse **ist** — deshalb der Vorläufer, nicht ein weiterer
@@ -211,10 +211,10 @@ Qt-Schließ-Ereignis für sensorlos. Das Repo stellt Qt-Ereignisse aber längst 
 
 **Benannte Grenze (bleibt ohne Sensor, bewusst — vollständige Aufzählung):** **nur** die modalen
 Dialoge selbst (`QMessageBox`, `QFileDialog`) — sie blockieren im Test und werden über eine
-injizierbare Naht gerufen ([`slice-053`](slice-053-fenster-als-adapter.md) §3).
+injizierbare Naht gerufen ([`slice-053`](../in-progress/slice-053-fenster-als-adapter.md) §3).
 
 **Nicht** mehr in der Grenze: das **Schließ-Ereignis** (Zeile 13) und die **Menü-Verdrahtung** — beides
-wird mit [`slice-053`](slice-053-fenster-als-adapter.md) prüfbar (dessen §3-Zeile 4 belegt, dass eine
+wird mit [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md) prüfbar (dessen §3-Zeile 4 belegt, dass eine
 Menü-Aktion programmatisch auslösbar ist). Damit fällt auch Lauf-3-MEDIUM-3: die DoD-Zusage „‚Speichern'
 **nutzt** `saveTarget()`" lag in der Vorfassung vollständig in der sensorlosen Zone — Zeile 9 prüfte die
 Kern-Abfrage, nicht ihre Verwendung. Der Nachweis der **Verwendung** hängt damit ebenfalls an 053.
@@ -238,7 +238,7 @@ Die harte Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
       bleibt und **setzt** den Pfad. **Kein** zweiter Schreibpfad am Use-Case vorbei (§9 R3).
 - [ ] **Rückfrage vor Sitzungs-Verlust** an **beiden** Auslösern dieses Slice (Öffnen, Fenster
       schließen); **Abbrechen unterlässt** die auslösende Aktion. Der Schließ-Weg wird über die
-      [`slice-053`](slice-053-fenster-als-adapter.md)-Naht geprüft (§6-Zeile 13).
+      [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)-Naht geprüft (§6-Zeile 13).
 - [ ] **Lastenheft:** die §3-Vorlagen in
       [`LH-FA-BLD-002`](../../../../spec/lastenheft.md#lh-fa-bld-002--projekt-speichern) und
       [`LH-FA-BLD-003`](../../../../spec/lastenheft.md#lh-fa-bld-003--projekt-laden); Header-Version +
@@ -267,13 +267,13 @@ Die harte Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
 | `src/hexagon/model/*.h` (13 Struct-Typen) | ändern | `operator==` über alle Felder, inkl. `Point2D`/`Segment`/`Footprint` (§2) |
 | `src/hexagon/services/project_session.{h,cpp}` | neu | Baseline, Verdikt, Ziel-Wahl, Antwort-Auswertung (§2) |
 | `src/hexagon/services/manage_project.{h,cpp}` | ändern | erfolgreiches Öffnen/Speichern meldet Pfad **+ Stand** (**nach** dem Erfolg, §9 R2) |
-| `src/adapters/ui/view/main_window.*` (aus [`slice-053`](slice-053-fenster-als-adapter.md)) | ändern | Menü **Speichern**; Öffnen + **Schließen** holen Verdikt/Auswertung — hier, weil nur hier prüfbar (Lauf-3-HIGH-1) |
+| `src/adapters/ui/view/main_window.*` (aus [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)) | ändern | Menü **Speichern**; Öffnen + **Schließen** holen Verdikt/Auswertung — hier, weil nur hier prüfbar (Lauf-3-HIGH-1) |
 | `src/main.cpp` | ändern | Verdrahtung: Sitzung konstruieren (Baseline, §6-Zeile 14), Dialoge stellen (**keine** Entscheidung) |
 | `src/hexagon/CMakeLists.txt`, `tests/CMakeLists.txt` | ändern | beide Listen zählen Dateien **explizit** auf (Lauf-1-LOW-3) |
 | `tests/hexagon/test_model_equality.cpp` | neu | §6-Zeile 3 (Feld-für-Feld über alle 13 Typen) |
 | `tests/hexagon/test_project_session.cpp` | neu | §6-Zeilen 1, 2, 4–9, 11, 12 |
 | `tests/adapters/test_project_open_handler.cpp` | ändern | §6-Zeile 10 (Round-Trip in die gemerkte Datei) |
-| `tests/adapters/test_main_window.cpp` (aus [`slice-053`](slice-053-fenster-als-adapter.md)) | ändern | §6-Zeilen 13 + 14 (`QCloseEvent` headless + Baseline-Übergabe) |
+| `tests/adapters/test_main_window.cpp` (aus [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)) | ändern | §6-Zeilen 13 + 14 (`QCloseEvent` headless + Baseline-Übergabe) |
 | `spec/lastenheft.md`, `spec/lastenheft-historie.md` | ändern | AK-Aufnahme BLD-002/003 + Header-Version |
 | `spec/spezifikation.md`, `spec/spezifikation-historie.md` | ändern | §1-Mechanik-Block + Provenance-Zeile |
 | `spec/architecture.md` | ändern | Kern-Service im §2.1-Baum |
@@ -372,7 +372,7 @@ Der Lauf bestätigte Split (sauber, keine Zusage verloren) und eigenständige Li
 
 | # | Behandlung |
 |---|---|
-| **HIGH-1** (Orakel-Zeile 13 unter dem eigenen Datei-Plan nicht herstellbar) | **Vorläufer-Slice [`slice-053`](slice-053-fenster-als-adapter.md)**: das Hauptfenster wird eine Adapter-Klasse, erst dann ist das Schließ-Ereignis prüfbar. 052a hängt davon ab. Projektinhaber-Entscheidung 2026-07-26. |
+| **HIGH-1** (Orakel-Zeile 13 unter dem eigenen Datei-Plan nicht herstellbar) | **Vorläufer-Slice [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)**: das Hauptfenster wird eine Adapter-Klasse, erst dann ist das Schließ-Ereignis prüfbar. 052a hängt davon ab. Projektinhaber-Entscheidung 2026-07-26. |
 | **MEDIUM-1** (Struktur/Konvention beruht auf ungenannter Implementierungs-Form) | **`= default` festgelegt** (C++20, `CMakeLists.txt`:5): der compiler-generierte Vergleich nimmt künftige Felder automatisch auf, handgeschriebene Operatoren sind **verboten**. Damit ist auch die Feld-Dimension strukturell — §2 und §9 R1 sind widerspruchsfrei. |
 | **MEDIUM-2a** (Fehlerweg „Speichern im Verwerf-Fluss scheitert") | **§6-Zeile 12a** neu. |
 | **MEDIUM-2b** (Baseline-Übergabe in `main`) | **§6-Zeile 14** neu. |
@@ -382,7 +382,7 @@ Der Lauf bestätigte Split (sauber, keine Zusage verloren) und eigenständige Li
 | **LOW-3** | Sizing: die Tabelle wuchs auf 15 Zeilen; §14 bleibt „hoch", ein weiterer Split ist laut Lauf 3 **nicht** angezeigt. |
 | **LOW-4** | `adr_refs` ohne [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md) (kommt im Körper nicht mehr vor). |
 | **INFO-1** | Ruhe-Marker in der DoD-Gates-Zeile. |
-| **INFO-2** (Pflege-Signal: dritte Wiederholung) | **beantwortet durch [`slice-053`](slice-053-fenster-als-adapter.md)** — die Klasse „Entscheidung im Kern geprüft, Nutzung im Handler nicht" bekommt einen strukturellen Ort statt einer vierten Einzelfall-Behandlung. |
+| **INFO-2** (Pflege-Signal: dritte Wiederholung) | **beantwortet durch [`slice-053`](../in-progress/slice-053-fenster-als-adapter.md)** — die Klasse „Entscheidung im Kern geprüft, Nutzung im Handler nicht" bekommt einen strukturellen Ort statt einer vierten Einzelfall-Behandlung. |
 
 **Lehre aus drei Läufen:** Der Plan hatte den Orakel-Schnitt **vorab** entschieden — die richtige Lehre
 aus slice-047 — und beide HIGHs lagen trotzdem **außerhalb** dessen, was ein Orakel je gezeigt hätte:

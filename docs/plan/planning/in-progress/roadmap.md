@@ -30,7 +30,8 @@ Finding F1):
 Plugin-Strang ist inhaltlich geliefert; die Welle trägt daneben nicht meilenstein-bindende Stränge
 (DRW-Zeichenwerkzeuge, GUI-Bedienbarkeit, harness-steering).
 
-Keine offenen Slices.
+**In Arbeit:** [`slice-053`](slice-053-fenster-als-adapter.md) — Hauptfenster als testbarer Adapter
+(Kette 054 ✓ → 053 → 052a → 052b).
 
 ## Nächste Wellen
 
