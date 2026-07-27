@@ -83,13 +83,45 @@ Was der Vergleich leistet — und was **nicht** (Lauf-2-MEDIUM-1, präzisiert st
   Feld-Dimension strukturell. **Handgeschriebene Vergleiche sind verboten**; genau sie wären der stille
   Datenverlust aus §9 R1, und genau dagegen steht die Gegenprobe der §6-Zeile 3.
 - **Semantisch genauer als ein Flag.** „Zurück-geändert auf den Dateistand" ist wieder **sauber**.
-- **Kein Vertrag wird berührt.** Kein neuer `op`, keine neue Schicht-Kante, kein Port: die
+- **Der `ModelChangedPort`-Vertrag wird nicht berührt.** Kein neuer `op`: die
   [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md)-Entscheidung bleibt gültig, statt umgangen oder per
   Folge-ADR aufgehoben zu werden.
 
 **Ort: der Kern** (`src/hexagon/services/`), framework-frei — der Träger vergleicht
 `model::Building`-Werte und kennt sonst nichts. `main.cpp` scheidet aus, weil dort Liegendes
 **orakel-los per Konstruktion** ist ([slice-047](../done/slice-047-projekt-oeffnen.md) §7).
+
+### 2.1 …und **hinter einem eigenen Driving Port** — entschieden 2026-07-27 (Lauf-4-HIGH-1)
+
+Die Vorfassung schrieb „**kein** Port" und ließ `main` die Kern-Abfragen rufen. Das war **vor**
+[`slice-054`](../done/slice-054-manage-project-port.md) geschrieben und ist seit dessen Lieferung
+nachweislich nicht mehr tragfähig: `.a-check.yml` erlaubt **keinem** Adapter einen
+`hexagon/services/`-Import (`ui_command` → `model`/`ui_view`/`ports_driving`, `ui_view` →
+`model`/`ports_driven`). Ein portloser `ProjectSession` wäre also wieder nur aus `main.cpp` erreichbar
+— und Verdikt-Nutzung, Ziel-Wahl und Antwort-Auswertung fielen zurück in genau die orakel-lose Zone,
+aus der die ganze Kette sie herausholen sollte. **Das wäre das fünfte Auftreten derselben Klasse
+gewesen** (047-B4 · 052 · 052a-Lauf-3 · 053-Lauf-1), diesmal nicht mangels Struktur, sondern weil der
+Plan nie nachgezogen wurde.
+
+**Entscheidung (Projektinhaber 2026-07-27): ein eigener Driving Port `ProjectSessionPort`**
+(`src/hexagon/ports/driving/`), erfüllt von einem Kern-Service; **nicht** die Erweiterung des
+[`ManageProjectPort`](../../../../src/hexagon/ports/driving/manage_project_port.h). Begründung: der
+`ManageProjectPort` trägt die **Datei**-Use-Cases (öffnen, speichern); der Sitzungs-Zustand ist eine
+eigene Verantwortung (Baseline halten, Verdikt bilden, Antwort auswerten) mit eigener Lebensdauer.
+Zwei Ports, zwei Zuständigkeiten — statt eines Ports, der beides vermischt.
+
+**Konsequenzen, die dieser Plan trägt:**
+
+- **Keine neue Schicht-Kante.** `services → ports_driving` und `ui_command → ports_driving` bestehen
+  beide; `.a-check.yml` bleibt unberührt. Der Port führt — wie alle neun Bestands-Ports — **nur**
+  `model/` + Standardbibliothek.
+- **Der Aufrufer ist ein `ui/command/`-Handler**, nicht `main`. `main` konstruiert, verdrahtet und
+  stellt die Dialoge; es entscheidet weiterhin nichts. Die Zeile „`main` fragt ab" der Vorfassung ist
+  damit **überholt** — abgefragt wird über den Port, und zwar dort, wo ein Orakel es sieht.
+- **Die Naht zum Fenster existiert bereits:** `MainWindow::CloseGuard`
+  (`std::function<bool()>`, `true` = schließen) ist von
+  [`slice-053`](../done/slice-053-fenster-als-adapter.md) geliefert und **unbesetzt**. 052a besetzt sie
+  — es ändert die Fenster-Klasse dafür **nicht**, es füllt eine vorhandene Naht.
 
 **Preis, beziffert (Lauf-2-LOW-2):** `operator==` auf **13** Struct-Typen — `Building` + die neun von
 ihm gehaltenen Element-Typen + die verschachtelten Koordinaten-Träger `Point2D`, `Segment`, `Footprint`
@@ -195,8 +227,9 @@ er **vor** dem Start — erweitert um die Lücken beider [MR-006](../../../../ha
 | 11 | **Verdikt**: `Proceed` / `AskFirst` | Verdikt-Bildung entfernt ⇒ rot | — |
 | 12 | **Antwort-Auswertung**: „abbrechen" ⇒ *unterlassen*; „verwerfen" ⇒ *ausführen*; „speichern" ⇒ *erst speichern, dann ausführen* | „abbrechen" führt aus ⇒ rot | **Lauf 1 MEDIUM-3** |
 | 12a | **„speichern" im Verwerf-Fluss scheitert** (Zielmedium/Recht) ⇒ die auslösende Aktion wird **unterlassen**, der Stand bleibt ungesichert | Fehler geschluckt und trotzdem ausgeführt ⇒ rot | **Lauf 3 MEDIUM-2a** |
-| 13 | **Fenster-Schließen mit ungesichertem Stand** ⇒ Rückfrage; „abbrechen" ⇒ Fenster bleibt offen (headless über `QCloseEvent` + `QApplication::sendEvent`) — **setzt [`slice-053`](../done/slice-053-fenster-als-adapter.md) voraus** | Schließ-Anbindung entfernt ⇒ rot | **Lauf 2 MEDIUM-10 / Lauf 3 HIGH-1** |
-| 14 | **Baseline-Übergabe**: die Sitzung wird mit dem Stand **nach** dem Start-Aufbau konstruiert | Konstruktion mit leerem `Building` ⇒ rot (Zeile 8 allein bliebe grün) | **Lauf 3 MEDIUM-2b** |
+| 13 | **Fenster-Schließen mit ungesichertem Stand** ⇒ Rückfrage; „abbrechen" ⇒ Fenster bleibt **sichtbar**. Geprüft über den von [`slice-053`](../done/slice-053-fenster-als-adapter.md) gelieferten **`CloseGuard`** und `window.close()` — **nicht** über ein per `sendEvent` zugestelltes `QCloseEvent` | `CloseGuard` nicht besetzt (bzw. Verdikt ignoriert) ⇒ rot | **Lauf 2 MED-10 / Lauf 3 HIGH-1 / Lauf 4 MED-1** |
+| 14 | **Baseline-Übergabe**: der Sitzungs-Service wird mit dem Stand **nach** dem Start-Aufbau konstruiert — geprüft **am Service/Port**, nicht am Fenster (das von Baseline und Sitzung nichts weiß) | Konstruktion mit leerem `Building` ⇒ rot (Zeile 8 allein bliebe grün) | **Lauf 3 MED-2b / Lauf 4 HIGH-2** |
+| 15 | **Der Handler ruft den `ProjectSessionPort`** für Verdikt, Ziel-Wahl und Antwort-Auswertung — geprüft gegen ein Port-Doppel in `tests/adapters/` (Muster `test_project_menu_handler.cpp`) | Aufruf entfernt / Verdikt hart auf `Proceed` ⇒ rot | **Lauf 4 HIGH-1** |
 
 **Zeile 13 war in Lauf 3 der blockierende HIGH — und ist der Grund für
 [`slice-053`](../done/slice-053-fenster-als-adapter.md):** unter dem Datei-Plan der Vorfassung wäre sie **nicht
@@ -209,9 +242,14 @@ Qt-Schließ-Ereignis für sensorlos. Das Repo stellt Qt-Ereignisse aber längst 
 [ADR-0009](../../adr/0009-gui-framework-qt6.md) (f)). Die Sensorlosigkeit wäre eine Eigenschaft der
 **Verortung** gewesen, nicht des Ereignisses — also eine Entscheidung, keine Naturkonstante.
 
-**Benannte Grenze (bleibt ohne Sensor, bewusst — vollständige Aufzählung):** **nur** die modalen
-Dialoge selbst (`QMessageBox`, `QFileDialog`) — sie blockieren im Test und werden über eine
-injizierbare Naht gerufen ([`slice-053`](../done/slice-053-fenster-als-adapter.md) §3).
+**Benannte Grenze (bleibt ohne Sensor, bewusst — vollständige Aufzählung, nachgezogen auf die von
+[`slice-053`](../done/slice-053-fenster-als-adapter.md) hinterlassene Grenze, Lauf-4-MEDIUM-2):**
+(1) die **modalen Dialoge** selbst (`QMessageBox`, `QFileDialog`) — sie blockieren im Test und werden
+über eine injizierbare Naht gerufen; (2) **welcher** Dialog erscheint und mit welchem **Meldungstext**
+— die Zuordnung Verdikt → Dialog liegt in `main.cpp`; **die Entscheidung selbst nicht** (§6-Zeile 15
+prüft, dass der Handler das Verdikt holt und auswertet); (3) der **Fenstertitel**; (4) die
+`.bcad`-**Suffix-Ergänzung**; (5) der **Fenster-Aufbau**. Die Vorfassung nannte nur (1) und erklärte
+die Aufzählung für vollständig — ausgerechnet (2) fehlte, also der Ort der Rückfrage.
 
 **Nicht** mehr in der Grenze: das **Schließ-Ereignis** (Zeile 13) und die **Menü-Verdrahtung** — beides
 wird mit [`slice-053`](../done/slice-053-fenster-als-adapter.md) prüfbar (dessen §3-Zeile 4 belegt, dass eine
@@ -228,14 +266,27 @@ Die harte Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
       verschachtelten `Point2D`/`Segment`/`Footprint` (Lauf-2-MEDIUM-3). **`= default` ist Pflicht, kein
       Stil:** nur der compiler-generierte Vergleich nimmt künftige Felder automatisch auf
       (Lauf-3-MEDIUM-1). Orakel: §6-Zeile 3.
-- [ ] **`ProjectSession` im Kern** (`src/hexagon/services/`, framework-frei, **kein** Port):
+- [ ] **`ProjectSessionPort`** (`src/hexagon/ports/driving/project_session_port.{h}`, §2.1): der
+      Vertrag, den ein `ui/command/`-Handler ruft — Verdikt, Ziel-Wahl, Antwort-Auswertung,
+      „ungesichert?". **Nur `model/` + Standardbibliothek** im Header (wie alle neun Bestands-Ports);
+      Orakel §6-Zeile 15, Gegenprobe wie in [`slice-054`](../done/slice-054-manage-project-port.md):
+      Probe-Include aus `ports/driven/` ⇒ `make a-check` meldet `wrong-direction`.
+- [ ] **`ProjectSessionService` im Kern** (`src/hexagon/services/`, framework-frei) erfüllt ihn:
       Konstruktion mit **Start-Baseline** · `markPersisted(path, building)` · `path()` ·
       `isDirty(current)` · `verdictForDiscard(current)` · `saveTarget()` · Antwort-Auswertung.
-- [ ] **Orakel: alle 15 Zeilen der §6-Tabelle** (1–12, 12a, 13, 14), **je einmal als diskriminierend belegt** (Gegenprobe
+- [ ] **`ui/command/`-Handler** ruft den Port und besetzt die von
+      [`slice-053`](../done/slice-053-fenster-als-adapter.md) gelieferte, heute **unbesetzte**
+      `MainWindow::CloseGuard`-Naht. **Die Fenster-Klasse wird dafür nicht geändert** — sie ist per
+      Vertrag entscheidungsfrei.
+- [ ] **Orakel: alle 16 Zeilen der §6-Tabelle** (1–12, 12a, 13, 14, 15), **je einmal als diskriminierend belegt** (Gegenprobe
       rot, im Closure-Text protokolliert). **Zeile 1 ist Pflicht** — Regressions-Schutz gegen
       Lauf-1-HIGH-1; **Zeile 3** ist die einzige Absicherung gegen §9 R1.
-- [ ] **Menü-Aktion „Speichern"** nutzt `saveTarget()` + `services::saveProject`; „Speichern unter…"
-      bleibt und **setzt** den Pfad. **Kein** zweiter Schreibpfad am Use-Case vorbei (§9 R3).
+- [ ] **Menü-Aktion „Speichern"** nutzt `saveTarget()` + **`ManageProjectPort::saveProject(path)`**
+      (nicht mehr die freie `services::saveProject` — seit
+      [`slice-054`](../done/slice-054-manage-project-port.md) führt der Vertrag **kein** `Building`
+      mehr, Lauf-4-MEDIUM-3); „Speichern unter…" bleibt und **setzt** den Pfad. Die Aktion kommt als
+      dritter Eintrag in `MainWindow::FileActions` dazu. **Kein** zweiter Schreibpfad am Use-Case
+      vorbei (§9 R3).
 - [ ] **Rückfrage vor Sitzungs-Verlust** an **beiden** Auslösern dieses Slice (Öffnen, Fenster
       schließen); **Abbrechen unterlässt** die auslösende Aktion. Der Schließ-Weg wird über die
       [`slice-053`](../done/slice-053-fenster-als-adapter.md)-Naht geprüft (§6-Zeile 13).
@@ -265,24 +316,28 @@ Die harte Auflage bleibt: **in der Verdrahtung steht keine Entscheidung.**
 | Datei / Komponente | Art | Begründung |
 |---|---|---|
 | `src/hexagon/model/*.h` (13 Struct-Typen) | ändern | `operator==` über alle Felder, inkl. `Point2D`/`Segment`/`Footprint` (§2) |
-| `src/hexagon/services/project_session.{h,cpp}` | neu | Baseline, Verdikt, Ziel-Wahl, Antwort-Auswertung (§2) |
-| `src/hexagon/services/manage_project.{h,cpp}` | ändern | erfolgreiches Öffnen/Speichern meldet Pfad **+ Stand** (**nach** dem Erfolg, §9 R2) |
-| `src/adapters/ui/view/main_window.*` (aus [`slice-053`](../done/slice-053-fenster-als-adapter.md)) | ändern | Menü **Speichern**; Öffnen + **Schließen** holen Verdikt/Auswertung — hier, weil nur hier prüfbar (Lauf-3-HIGH-1) |
-| `src/main.cpp` | ändern | Verdrahtung: Sitzung konstruieren (Baseline, §6-Zeile 14), Dialoge stellen (**keine** Entscheidung) |
-| `src/hexagon/CMakeLists.txt`, `tests/CMakeLists.txt` | ändern | beide Listen zählen Dateien **explizit** auf (Lauf-1-LOW-3) |
+| `src/hexagon/ports/driving/project_session_port.{h}` | **neu** | der Driving Port (§2.1) — nur `model/` + stdlib |
+| `src/hexagon/services/project_session.{h,cpp}` | neu | `ProjectSessionService`: Baseline, Verdikt, Ziel-Wahl, Antwort-Auswertung (§2) |
+| `src/hexagon/services/manage_project.{h,cpp}` | ändern | erfolgreiches Öffnen/Speichern meldet Pfad **+ Stand** an die Sitzung (**nach** dem Erfolg, §9 R2) |
+| `src/adapters/ui/command/project_menu_handler.{h,cpp}` | **ändern** | ruft zusätzlich den `ProjectSessionPort`; liefert den `CloseGuard` und die „Speichern"-Aktion (§6-Zeile 15) |
+| `src/adapters/ui/view/main_window.{h,cpp}` | **ändern (klein)** | **nur** ein dritter `FileActions`-Eintrag „Speichern". **Nicht** Verdikt/Auswertung — das Fenster bleibt entscheidungsfrei (Lauf-4-HIGH-1) |
+| `src/main.cpp` | ändern | Verdrahtung: Sitzungs-Service konstruieren (Baseline, §6-Zeile 14), Handler an den `CloseGuard` hängen, Dialoge stellen (**keine** Entscheidung) |
+| `src/hexagon/CMakeLists.txt`, `src/adapters/CMakeLists.txt`, `tests/CMakeLists.txt` | ändern | alle drei Listen zählen Dateien **explizit** auf (Lauf-1-LOW-3, Lauf-4-MEDIUM-4) |
 | `tests/hexagon/test_model_equality.cpp` | neu | §6-Zeile 3 (Feld-für-Feld über alle 13 Typen) |
-| `tests/hexagon/test_project_session.cpp` | neu | §6-Zeilen 1, 2, 4–9, 11, 12 |
+| `tests/hexagon/test_project_session.cpp` | neu | §6-Zeilen 1, 2, 4–9, 11, 12, **12a**, **14** (Baseline-Übergabe am Service, nicht am Fenster) |
 | `tests/adapters/test_project_open_handler.cpp` | ändern | §6-Zeile 10 (Round-Trip in die gemerkte Datei) |
-| `tests/adapters/test_main_window.cpp` (aus [`slice-053`](../done/slice-053-fenster-als-adapter.md)) | ändern | §6-Zeilen 13 + 14 (`QCloseEvent` headless + Baseline-Übergabe) |
+| `tests/adapters/test_project_menu_handler.cpp` | **ändern** | §6-Zeile 15 (Handler ruft den Port) + der `CloseGuard`-Weg |
+| `tests/adapters/test_main_window.cpp` | ändern | §6-Zeile 13 über **`close()` + `CloseGuard`** (nicht `sendEvent`) + die dritte Menü-Aktion |
 | `spec/lastenheft.md`, `spec/lastenheft-historie.md` | ändern | AK-Aufnahme BLD-002/003 + Header-Version |
 | `spec/spezifikation.md`, `spec/spezifikation-historie.md` | ändern | §1-Mechanik-Block + Provenance-Zeile |
 | `spec/architecture.md` | ändern | Kern-Service im §2.1-Baum |
 | `docs/user/benutzerhandbuch.md` | ändern | 4.3, FAQ, 2.3, 4.1 |
 | `CHANGELOG.md` | ändern | [Unreleased]-Eintrag |
-| `docs/reviews/`-Report zum dritten Plan-Review | neu | das dritte [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) vor dem Start (Lauf-1-LOW-5) |
+| `docs/reviews/`-Reporte | **liegen** | vier [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe, zuletzt [Lauf 4](../../../reviews/2026-07-27-slice-052a-plan-4.md) |
 
 **Nicht berührt:** `data-model.yaml`/`schema.sql` (kein persistenter Zustand), `.d-check.yml`/`.a-check.yml`
-(keine neue Kante, kein Port), `docs/plan/adr/` (§10).
+(**keine neue Kante** — `services → ports_driving` und `ui_command → ports_driving` bestehen beide,
+§2.1), `docs/plan/adr/` (§10).
 
 ## 9. Verbleibende Risiken
 
@@ -394,7 +449,40 @@ Mechanismus den realen Weg trifft und ob ein gewachsener Scope bis in alle Ecken
 prüft nur ein unabhängiger Leser. **Und:** Scope-Wachstum ist nicht additiv — der dritte Auslöser hat
 nicht ein Feature, sondern eine Zustands-, eine Anforderungs- und eine Doku-Dimension mitgebracht.
 
-## 14. Sub-Area-Modus-Begründung
+## 14. MR-006-Einarbeitung (vierter Lauf, 2026-07-27)
+
+Report: [`2026-07-27-slice-052a-plan-4.md`](../../../reviews/2026-07-27-slice-052a-plan-4.md) —
+**2 HIGH / 5 MEDIUM / 3 LOW / 2 INFO, „nicht startbar"**. Unabhängiger Reviewer ≠ Plan-Autor ≠ Autor
+der drei Vorlauf-Reports. **Prüfrahmen dieses Laufs:** der Plan entstand **vor**
+[`slice-054`](../done/slice-054-manage-project-port.md) **und**
+[`slice-053`](../done/slice-053-fenster-als-adapter.md); beide sind seit 2026-07-27 `done`. Geprüft
+wurde gegen die **gelieferten** Artefakte.
+
+| # | Behandlung |
+|---|---|
+| **HIGH-1** (portloser `ProjectSession` ist mit der gelieferten Struktur unvereinbar; die gelieferten Artefakte hatten im Plan **null** Fundstellen) | **§2.1 neu**: eigener **`ProjectSessionPort`** (Projektinhaber-Entscheidung 2026-07-27, nicht die Erweiterung des `ManageProjectPort`). Aufrufer ist ein `ui/command/`-Handler, nicht `main`. **§6-Zeile 15** neu. DoD + Datei-Plan durchgezogen. |
+| **HIGH-2** (Baseline-Übergabe auf `test_main_window.cpp` gebucht, obwohl `MainWindow` von Sitzung/Baseline nichts weiß) | §6-Zeile 14 prüft am **Service/Port**; die Zeile wandert im Datei-Plan nach `tests/hexagon/test_project_session.cpp`. |
+| **MEDIUM-1** (Zeile 13 nennt den von 053 verworfenen `sendEvent`-Weg) | Zeile 13 prüft über **`close()` + `CloseGuard`**; die reale Naht ist benannt. |
+| **MEDIUM-2** (Grenz-Aufzählung enger als die von 053 hinterlassene — ausgerechnet „welcher Dialog" fehlte) | §6-Grenze auf **fünf** Punkte nachgezogen; (2) ist explizit die Zuordnung Verdikt → Dialog, **ohne** die Entscheidung. |
+| **MEDIUM-3** (Speicher-Naht vor 054 beschrieben) | DoD nennt `ManageProjectPort::saveProject(path)`; der Hinweis „meldet Pfad **+ Stand**" bezieht sich jetzt auf die **Sitzung**, nicht auf die Port-Signatur. |
+| **MEDIUM-4** (Handler-Heimat und `src/adapters/CMakeLists.txt` fehlten) | beide im Datei-Plan; `project_menu_handler.{h,cpp}` + `test_project_menu_handler.cpp` als **ändern**, `FileActions`-Erweiterung benannt. |
+| **MEDIUM-5** (Zeile 12a ohne Datei/Testbinary) | 12a ist `tests/hexagon/test_project_session.cpp` zugeordnet. |
+
+**Stand der Vorlauf-Findings** (vom Lauf-4-Reviewer am Artefakt geprüft): Lauf 1 im Wesentlichen
+aufgelöst · Lauf 2 aufgelöst bis auf MED-4/-6a/-10 (die in die HIGHs bzw. MEDIUM-1 dieses Laufs
+mündeten) · Lauf 3: MEDIUM-1 (`= default`) **bestätigt tragfähig** (alle 13 Typen defaulted-`==`-fähig),
+HIGH-1 halb, MEDIUM-2a/-2b/-3 **nur scheinbar** erledigt → die beiden HIGH dieses Laufs; alle LOW
+aufgelöst.
+
+**Positiv bestätigt** (nicht wieder in Frage stellen): der Vergleichs-Mechanismus und die
+`= default`-Festlegung tragen am Artefakt · die AK-Arbeit ist [MR-008](../../../../harness/conventions.md)-konform und [MR-010](../../../../harness/conventions.md)-nachgezogen ·
+§1-Block für **beide** Anforderungen · **`docs/user/` mit vier benannten Stellen in der Doku-DoD** —
+die slice-047-V1-Lehre ist eingelöst · Split und §10-ADR-Abwägung sauber.
+
+**Startbar:** ja — beide HIGH sind aufgelöst, alle MEDIUM/LOW eingearbeitet. Die Verortungs-Frage war
+die einzige Lösungsrichtung, die neu entschieden werden musste; sie ist es (§2.1).
+
+## 15. Sub-Area-Modus-Begründung
 
 ### Sub-Area: GUI-Sitzung / Persistenz-Bedienung
 
@@ -405,6 +493,6 @@ nicht ein Feature, sondern eine Zustands-, eine Anforderungs- und eine Doku-Dime
 - **Phase-Reife:** Persistenz-Mechanik reif (welle-1), Aufruf-Pfad seit slice-047 vorhanden.
 - **Risiko:** mittel-hoch — Datenverlust-nah, und **R1** wirkt **still**.
 
-## 15. Closure-Notiz
+## 16. Closure-Notiz
 
 _(bei Ausführung auszufüllen)_
