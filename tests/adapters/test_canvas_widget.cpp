@@ -274,6 +274,23 @@ struct CanvasFixture {
         canvas->resize(400, 300);
         canvas->show();
         QApplication::processEvents();
+        // Den Fit ERZWINGEN, nicht erhoffen: `show()` + `processEvents()`
+        // liefert den Paint nicht deterministisch, und OHNE Fit steht die
+        // Default-Transformation (zoom 0,05 / Zentrum 0,0) — dann liegt die
+        // Modell-Ecke (0,0) auf (200,150), also genau dort, wo die Tests eine
+        // FREIE Position erwarten. `render()` ruft `paintEvent` synchron und
+        // rahmt damit ein. (Flake-Fix; der Fehler stammt aus slice-055.)
+        QImage warmup(canvas->size(), QImage::Format_RGB32);
+        canvas->render(&warmup);
+        // Fixture-Vorbedingung, damit ein stiller Rückfall auffällt:
+        assertFitted();
+    }
+
+    // Nach dem Fit liegt die Modell-Ecke (0,0) NICHT mehr in der Viewport-Mitte.
+    void assertFitted() const {
+        ASSERT_NE(screenOf({0.0, 0.0}), QPoint(200, 150))
+            << "Fit-to-Bounds ist nicht gelaufen — die Tests stuenden auf der "
+               "Default-Transformation, in der (200,150) die Wand-Ecke IST";
     }
 
     // Bildschirmposition eines Modell-Punktes unter der AKTUELLEN Transformation

@@ -189,6 +189,13 @@ public:
     // `services::projectPlan` über das committete Modell. Total.
     model::PlanView planView() const override;
 
+    // ADR-0021 E15 (slice-057): die aenderbaren Parameter einer benannten Wand.
+    // TOTAL — unbekannte Id ergibt `nullopt`, KEINEN Wurf. Der Kontrast zu
+    // `setWallThickness`/`setWallHeight` (die ueber `mutableWall` werfen) ist
+    // gewollt: das hier ist die LESE-Naht.
+    std::optional<model::WallParams> wallParams(
+        model::WallId id) const override;
+
     // ADR-0008 (LH-FA-D3-002): Beobachter-Registrierung — mehrfach,
     // nicht-besitzend; Beobachter melden sich vor ihrer Zerstörung ab.
     void subscribe(ports::driven::ModelChangedPort& listener);

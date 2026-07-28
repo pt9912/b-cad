@@ -299,3 +299,55 @@ TEST(StructureEditService, PlanViewPortDelegiertAnKernProjektion) {
     EXPECT_DOUBLE_EQ(via_port.max_x_mm, direct.max_x_mm);
     EXPECT_DOUBLE_EQ(via_port.min_x_mm, direct.min_x_mm);
 }
+
+// --- slice-057 (ADR-0021 E15): die schmale Parameter-Abfrage der Lese-Naht ---
+
+// Orakel 6: liefert die ECHTEN Werte einer bekannten Wand (Gleichheit).
+TEST(StructureEditService_ADR0021, WallParamsLiefertEchteWerte) {
+    AnalyticGeometry geometry;
+    services::StructureEditService service(geometry);
+    const auto wall = service.addWall(kGroundStorey, kWall1000);
+    ASSERT_TRUE(wall.has_value());
+    const model::Wall& w = service.building().walls.back();
+
+    const auto params = service.wallParams(*wall);
+    ASSERT_TRUE(params.has_value());
+    EXPECT_DOUBLE_EQ(params->thickness_mm, w.thickness_mm);
+    EXPECT_DOUBLE_EQ(params->height_mm, w.height_mm);
+    // Distinkt: die zwei Werte duerfen nicht vertauschbar sein.
+    EXPECT_NE(params->thickness_mm, params->height_mm);
+}
+
+// Orakel 7: unbekannte Id ⇒ KEIN Wert — und KEIN Wurf. Der Bearbeitungs-Weg
+// wirft dort; die LESE-Naht ist total. Ein geerbtes Wurf-Verhalten waere eine
+// stille Vertrags-Aenderung (slice-057 R4). Geprueft werden BEIDE Fehlformen.
+TEST(StructureEditService_ADR0021, WallParamsUnbekannteIdIstTotal) {
+    AnalyticGeometry geometry;
+    services::StructureEditService service(geometry);
+    ASSERT_TRUE(service.addWall(kGroundStorey, kWall1000).has_value());
+
+    std::optional<model::WallParams> params;
+    EXPECT_NO_THROW(params = service.wallParams(model::WallId{9999}));
+    EXPECT_FALSE(params.has_value());  // auch KEINE Default-Werte
+    // Abgrenzung: der BEARBEITUNGS-Weg wirft bei derselben Id.
+    EXPECT_THROW(service.setWallThickness(model::WallId{9999}, 240.0),
+                 std::out_of_range);
+}
+
+// Orakel 8 (NETZ, keine eigene Gegenprobe herstellbar — es gibt keine zweite
+// Quelle, MR-006-Lauf-1-MEDIUM-2): nach einer GEKLEMMTEN Setzung nennt die
+// Abfrage den uebernommenen Wert, nicht den gewuenschten.
+TEST(StructureEditService_ADR0021, WallParamsFolgtDerKlemmung) {
+    AnalyticGeometry geometry;
+    services::StructureEditService service(geometry);
+    const auto wall = service.addWall(kGroundStorey, kWall1000);
+    ASSERT_TRUE(wall.has_value());
+
+    const driving::ParamResult result =
+        service.setWallThickness(*wall, 5000.0);  // > Maximum
+    ASSERT_EQ(result.status, driving::ParamStatus::Clamped);
+    const auto params = service.wallParams(*wall);
+    ASSERT_TRUE(params.has_value());
+    EXPECT_DOUBLE_EQ(params->thickness_mm, result.applied_mm);
+    EXPECT_NE(params->thickness_mm, 5000.0);
+}

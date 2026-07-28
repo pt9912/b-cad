@@ -996,6 +996,19 @@ model::PlanView StructureEditService::planView() const {
     return projectPlan(building_);
 }
 
+std::optional<model::WallParams> StructureEditService::wallParams(
+    model::WallId id) const {
+    const auto it = std::find_if(
+        building_.walls.begin(), building_.walls.end(),
+        [id](const model::Wall& w) { return w.id == id; });
+    if (it == building_.walls.end()) {
+        return std::nullopt;  // TOTAL: kein Wurf, kein Default-Wert
+    }
+    // Die Werte kommen aus dem Modell — also der GEKLEMMTE Ist-Stand, den die
+    // Setzer dort hinterlassen haben, nicht der zuletzt gewuenschte.
+    return model::WallParams{it->thickness_mm, it->height_mm};
+}
+
 std::optional<model::StairId> StructureEditService::addStair(
     const model::Stair& prototype) {
     // Gültige Zwei-Geschoss-Spanne (LOW-1: `addSlab`-Validierungsmuster, NICHT

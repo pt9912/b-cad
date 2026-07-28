@@ -50,6 +50,42 @@ model::Building drwBuilding(bool layer_visible) {
     return b;
 }
 
+// --- slice-057 (ADR-0021 E11): Herkunft je Segment ---------------------------
+// Die Projektion mischt Wand-Achsen und sichtbare Hilfslinien in EINE Liste;
+// ohne Herkunft haette eine Treffer-Pruefung nur anonyme Koordinaten. Gebaut
+// wird das Building HIER von Hand — nur so lassen sich Ids vergeben, die NICHT
+// der Reihenfolge entsprechen (der Service vergibt sie fortlaufend).
+model::Building originBuilding() {
+    model::Building b;
+    b.storeys.push_back(
+        model::Storey{model::StoreyId{1}, model::kDefaultStoreyHeightMm});
+    // Ids bewusst NICHT 1,2 und NICHT aufsteigend: ein Laufindex statt der
+    // echten Id faellt damit auf (Orakel 3).
+    model::Wall w1;
+    w1.id = model::WallId{7};
+    w1.storey_id = model::StoreyId{1};
+    w1.start = {0.0, 0.0};
+    w1.end = {1000.0, 0.0};
+    b.walls.push_back(w1);
+    model::Wall w2 = w1;
+    w2.id = model::WallId{3};
+    w2.start = {1000.0, 0.0};
+    w2.end = {1000.0, 500.0};
+    b.walls.push_back(w2);
+    model::Layer layer;
+    layer.id = model::LayerId{1};
+    layer.name = "Achsen";
+    layer.visible = true;
+    b.layers.push_back(layer);
+    model::GuideLine g;
+    g.id = model::GuideLineId{42};
+    g.storey_id = model::StoreyId{1};
+    g.layer_id = model::LayerId{1};
+    g.segment = {{2000.0, 3000.0}, {5000.0, 7000.0}};
+    b.guide_lines.push_back(g);
+    return b;
+}
+
 }  // namespace
 
 // DRW-005: sichtbare Hilfslinie ist im projizierten Grundriss UND die BBox ist um
@@ -120,6 +156,41 @@ TEST(PlanGeometry, LH_FA_DRW_001_WandAchsenVorHilfslinien) {
     EXPECT_DOUBLE_EQ(segs[2].y1_mm, 3000.0);
     EXPECT_DOUBLE_EQ(segs[3].x1_mm, 8000.0);  // Hilfslinie 2
     EXPECT_DOUBLE_EQ(segs[3].y1_mm, 9000.0);
+}
+
+// Orakel 1+3: richtige ART je Segment, und die ECHTE Id — nicht der Laufindex.
+TEST(PlanGeometry, ADR0021_HerkunftTraegtArtUndEchteId) {
+    const PlanView view = projectPlan(originBuilding());
+    ASSERT_EQ(view.storeys.size(), 1U);
+    const auto& segs = view.storeys[0].segments;
+    ASSERT_EQ(segs.size(), 3U);  // 2 Waende + 1 Hilfslinie
+
+    ASSERT_TRUE(segs[0].origin.has_value());
+    EXPECT_EQ(segs[0].origin->kind, model::PlanSegmentKind::WallAxis);
+    EXPECT_EQ(segs[0].origin->id, 7);   // Laufindex waere 0
+    ASSERT_TRUE(segs[1].origin.has_value());
+    EXPECT_EQ(segs[1].origin->kind, model::PlanSegmentKind::WallAxis);
+    EXPECT_EQ(segs[1].origin->id, 3);   // Laufindex waere 1; auch nicht sortiert
+    ASSERT_TRUE(segs[2].origin.has_value());
+    EXPECT_EQ(segs[2].origin->kind, model::PlanSegmentKind::GuideLine);
+    EXPECT_EQ(segs[2].origin->id, 42);  // Laufindex waere 2
+}
+
+// Orakel 2: die Projektion liefert NIE ein Segment ohne Herkunft. Das ist die
+// Zusage, die das `optional` ueberhaupt erst rechtfertigt (slice-057 §2.1):
+// ein vergessenes Feld ist LEER, und Leere ist pruefbar — als Wert waere es
+// still als Wand-Achse beschriftet gewesen.
+TEST(PlanGeometry, ADR0021_KeinSegmentOhneHerkunft) {
+    for (const model::Building& b :
+         {originBuilding(), drwBuilding(true), drwBuilding(false)}) {
+        const PlanView view = projectPlan(b);
+        for (const auto& storey : view.storeys) {
+            for (const auto& seg : storey.segments) {
+                EXPECT_TRUE(seg.origin.has_value())
+                    << "Segment ohne Herkunft in Geschoss " << storey.storey_id;
+            }
+        }
+    }
 }
 
 // LH-FA-DRW-006: visibleLayerIds trägt nur die sichtbaren Ebenen.

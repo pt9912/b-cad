@@ -697,12 +697,21 @@ je Format. Der einzige Kern-Touch ist die **additive** Erweiterung des Format-Au
 um PDF/PNG (Export-Registry; **kein** Import-Dispatch).
 
 **2D-Projektions-Bereitstellung (Kern-Naht).** Die maßstäbliche 2D-Grundriss-Projektion
-(`PlanView`: Wand-Achsen + sichtbare Hilfslinien je Geschoss + gemeinsame Bounding-Box) ist
+(`PlanView`: Wand-Achsen + sichtbare Hilfslinien je Geschoss + gemeinsame Bounding-Box; **je Segment
+zusätzlich seine Herkunft** — Art und Identität der Entität, aus der es entstand) ist
 **kern-berechnet** (`services::projectPlan`, framework-frei) und wird PDF/PNG als `PlanView` im
 `DerivedGeometry`-Bündel über den `ModelExporterPort` gereicht — die Writer **serialisieren nur**,
 sie projizieren nicht mehr selbst (Prinzip: driven Adapter serialisieren, der Kern liefert die
 abgeleitete Geometrie). Dieselbe Kern-Projektion speist über den Driving-Read-Port `PlanViewPort`
-die (künftige) interaktive 2D-Zeichenfläche — **eine Quelle** für Bildschirm und Export. **DXF**
+die interaktive 2D-Zeichenfläche — **eine Quelle** für Bildschirm und Export.
+
+**Die Herkunft je Segment** ist **additiv** und **optional**: die Projektion setzt sie stets, aber der
+Werttyp erzwingt sie nicht — ein vergessenes Feld ist damit **leer** statt **falsch beschriftet** (als
+Wert wäre der Nullwert der Aufzählung eine gültig aussehende Art). Sie trägt die Frage „**welches
+Bauteil ist das?**", die eine Treffer-Prüfung stellen muss; ohne sie mischt die Projektion Wand-Achsen
+und Hilfslinien zu anonymen Koordinaten. **Kein Encoder liest sie** — die Zusicherung ist über die
+byte-genauen Export-Golden belegbar, und zwar an **PDF und PNG**, den einzigen zwei Formaten, die die
+Projektion überhaupt bekommen. **DXF**
 iteriert weiter direkt und nutzt nur den Ebenen-Sichtbarkeits-**Filter** (`visibleLayerIds`), der
 als reiner Nicht-Geometrie-Filter kern-nah (`model/`) liegt und von Kern-Projektion **und** DXF
 geteilt wird — **kein** Adapter leitet 2D-Geometrie ab, **keine** neue Schicht-Kante.

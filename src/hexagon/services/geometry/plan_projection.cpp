@@ -47,8 +47,10 @@ model::PlanView projectPlan(const model::Building& building) {
             if (wall.storey_id != storey.id) {
                 continue;
             }
-            const model::PlanSegment seg{wall.start.x_mm, wall.start.y_mm,
-                                         wall.end.x_mm, wall.end.y_mm};
+            const model::PlanSegment seg{
+                wall.start.x_mm, wall.start.y_mm, wall.end.x_mm, wall.end.y_mm,
+                model::PlanSegmentOrigin{model::PlanSegmentKind::WallAxis,
+                                         static_cast<int>(wall.id)}};
             accumulate(view, seg);
             plan.segments.push_back(seg);
         }
@@ -64,7 +66,9 @@ model::PlanView projectPlan(const model::Building& building) {
             }
             const model::PlanSegment seg{
                 guide.segment.start.x_mm, guide.segment.start.y_mm,
-                guide.segment.end.x_mm, guide.segment.end.y_mm};
+                guide.segment.end.x_mm, guide.segment.end.y_mm,
+                model::PlanSegmentOrigin{model::PlanSegmentKind::GuideLine,
+                                         static_cast<int>(guide.id)}};
             accumulate(view, seg);
             plan.segments.push_back(seg);
         }

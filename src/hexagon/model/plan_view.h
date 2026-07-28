@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 
 namespace bcad::hexagon::model {
@@ -10,12 +11,42 @@ namespace bcad::hexagon::model {
 // Kern-Read-Port `PlanViewPort` sie liefern, ohne dass ein Adapter die Projektion
 // selbst ableitet). Reine Werttypen (kein OCC/Qt); Längeneinheit mm.
 
+// Woher ein Segment stammt (ADR-0021 E11, slice-057). Die Projektion mischt
+// Wand-Achsen und sichtbare Hilfslinien in EINE Liste; ohne diese Angabe hätte
+// eine Treffer-Prüfung nur anonyme Koordinaten zu benennen.
+enum class PlanSegmentKind {
+    WallAxis,
+    GuideLine,
+};
+
+// Art + Identität der Entität, aus der ein Segment entstanden ist. `id` ist der
+// Zahlwert der starken Id (`WallId` bzw. `GuideLineId`) — welche der beiden,
+// sagt `kind`. Bewusst nicht als Variante: der Werttyp reist im
+// `DerivedGeometry`-Bündel zu den Export-Adaptern und bleibt darum trivial.
+struct PlanSegmentOrigin {
+    PlanSegmentKind kind{};
+    int id{};
+
+    friend bool operator==(const PlanSegmentOrigin&,
+                           const PlanSegmentOrigin&) = default;
+};
+
 // Ein Achs-Segment in Modell-Millimetern.
+//
+// **Die Herkunft ist `optional`, und das ist eine Entscheidung** (slice-057 §2.1):
+// `PlanSegment` wird an mehreren Stellen als Aggregat in `{x1, y1, x2, y2}`-
+// Klammerform gebaut — auch in Bestands-Tests. Als *Wert* initialisierte die
+// Klammerform ein vergessenes Feld still auf den Nullwert der Aufzählung; jedes
+// Segment gälte dann als Wand-Achse, also **falsch beschriftet** statt leer. Als
+// `optional` ist ein vergessenes Feld **leer** — und Leere ist prüfbar. Die
+// Zusage „`projectPlan` liefert nie ein Segment ohne Herkunft" ist damit ein
+// Orakel und keine Hoffnung.
 struct PlanSegment {
     double x1_mm{};
     double y1_mm{};
     double x2_mm{};
     double y2_mm{};
+    std::optional<PlanSegmentOrigin> origin{};
 };
 
 // Die Achsen eines Geschosses (Geschoss-Reihenfolge des Modells).

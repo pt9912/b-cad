@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-057 — **Bauteil-Identität in der 2D-Lese-Naht** ([ADR-0021](docs/plan/adr/0021-wand-im-2d-canvas.md)
+  E11/E15). Jedes Segment der Grundriss-Projektion trägt jetzt seine **Herkunft** (Art + Identität),
+  und die Lese-Naht beantwortet eine zweite, **schmale** Frage: zu einer benannten Wand ihre
+  **änderbaren** Parameter. **Kein UI-Anteil** — der Slice ist die Voraussetzung dafür, dass eine
+  Treffer-Prüfung überhaupt etwas benennen kann.
+  **Die Herkunft ist `optional`, und das ist eine Entscheidung:** `PlanSegment` wird an mehreren
+  Stellen als Aggregat in Klammerform gebaut — als *Wert* hätte ein vergessenes Feld still den
+  Nullwert der Aufzählung getragen, jedes Segment gälte als Wand-Achse. **Falsch beschriftet statt
+  leer.** Als `optional` ist Vergessen **prüfbar**; eine eigene Orakel-Zeile sagt zu, dass die
+  Projektion **nie** ein Segment ohne Herkunft liefert.
+  **Die Parameter-Abfrage ist TOTAL** — unbekannte Identität ergibt keinen Wert, **keinen Wurf**. Der
+  Bearbeitungs-Weg wirft dort; ein geerbtes Wurf-Verhalten wäre eine stille Vertrags-Änderung
+  gewesen. Beide Fehlformen (Wurf **und** Default-Wert) haben eine eigene Gegenprobe.
+  **Additivität belegt, nicht behauptet:** alle sechs Export-Golden bleiben byte-identisch — und eine
+  **Umkehr-Gegenprobe** zeigt, dass sie das überhaupt merken würden: ein Encoder-Zusatz je Segment
+  lässt `GoldenExport.PdfByteIdentical` **und** drei Decode-Orakel fallen. Ohne diese Umkehrung wäre
+  „die Golden sind grün" ein Test, der immer grün ist. **Fähige Zeugen sind zwei von sechs** — nur
+  PDF und PNG bekommen die Projektion überhaupt.
+  **Kein** Encoder-, Persistenz- oder Schema-Diff; keine neue Schicht-Kante.
 - slice-056 — **ADR-0021 „Die Wand im 2D-Canvas" + AK-Schärfung** (LH-FA-WAL-001/002/003,
   LH-FA-DRW-001/005; **Lastenheft 0.1.21**). **Kein Produktions-Code** — dieser Slice legt die
   Entscheidungsgrundlage des Wellen-Kerns.
