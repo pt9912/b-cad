@@ -166,9 +166,10 @@ weiter** (Kopie aus der `PlanView`, keine Rundung, keine Umrechnung — Zeile 1 
 Gleichheit), und eine gefangene Hilfslinie ist danach eine **gewöhnliche** Hilfslinie. Ihr
 Round-Trip ist seit [`slice-032b`](../done/slice-032b-drw-impl.md) durch die
 `guide_lines`-Persistenz-Orakel gedeckt und seit [`slice-032c`](../done/slice-032c-drw-export.md)
-durch die 2D-Export-Orakel. **Vor dem Start zu verifizieren** (R6): dass diese Bestands-Orakel die
-Koordinaten **wertgleich** prüfen und nicht nur die Anzahl. Ergeben sie das nicht, gehört die Zeile
-als eigener Test ergänzt — **die Entscheidung fällt vor dem Start, nicht im Vollzug.**
+durch die 2D-Export-Orakel. **Vor dem Start verifiziert (R6, 2026-07-28): sie prüfen wertgleich** —
+Persistenz auf allen vier Koordinaten beider Hilfslinien, DXF auf den vier Gruppen-Codes. **Kein
+eigener Test nötig**; die Grenze (PDF/PNG belegen nur das Erscheinen, nicht die Koordinate) steht
+benannt in R6.
 
 **Benannte Grenze:** die **visuelle** Rückmeldung (ob der Benutzer *sieht*, dass gefangen wird) ist
 nicht Gegenstand — es gibt sie in diesem Slice nicht (§3).
@@ -243,10 +244,23 @@ nicht Gegenstand — es gibt sie in diesem Slice nicht (§3).
   sehen ist. **Benannte Grenze, kein Fehler** — und das stärkste Argument für eine **Fang-Anzeige**
   als Folge-Slice (§3). Wird das als störend empfunden, ist die Auflösung eine
   **Spezifikations-Schärfung**, nicht ein stiller Filter im Code.
-- **R6 — Zeile 10 stützt sich auf Bestands-Sensoren.** Dass die `guide_lines`-Round-Trip- und
-  2D-Export-Orakel die Koordinaten **wertgleich** prüfen (nicht nur die Anzahl), ist **vor** dem Start
-  zu verifizieren. Ergeben sie das nicht, gehört ein eigener Test ergänzt. **Nicht in den Vollzug
-  verschieben** — genau diese Bewegung hat der 053-Review als „eingearbeitet ≠ entschieden" gerügt.
+- **R6 — Zeile 10 stützt sich auf Bestands-Sensoren. → ERLEDIGT (vor dem Start verifiziert,
+  2026-07-28).** Am Artefakt geprüft, nicht angenommen:
+
+  | Sensor | Was er prüft | wertgleich? |
+  |---|---|---|
+  | `tests/adapters/test_sqlite_project_repository.cpp`:328–344 ([032b](../done/slice-032b-drw-impl.md)) | `EXPECT_DOUBLE_EQ` auf **alle vier** Koordinaten **beider** Hilfslinien; `storey_id ≠ layer_id` fängt zusätzlich einen Spalten-Swap | **ja** |
+  | `tests/adapters/test_dxf_export.cpp`:114–131 ([032c](../done/slice-032c-drw-export.md)) | DXF-Gruppen 10/20/11/21 **exakt** gegen 1000/2000/4000/2500 | **ja** |
+  | `tests/adapters/test_pdf_export.cpp`:330–335 (032c) | nur die **Anzahl** der `" l\n"`-Operatoren | nein |
+  | `tests/adapters/test_png_export.cpp`:321–330 (032c) | nur **mehr Tinte als ohne** | nein |
+
+  **Verdikt: die Zeile trägt, ohne neuen Test.** Der AK verlangt „unverändert nach Speichern/Laden
+  **sowie** im 2D-Grundriss-Export" — der harte Konjunkt (Speichern/Laden, identische mm) ist
+  wertgleich belegt, und der Export ist es in DXF ebenfalls. PDF/PNG belegen nur das **Erscheinen** —
+  was der AK-Text dort auch nur verlangt („dann **erscheint** sie im Artefakt"). **Benannte Grenze:**
+  eine Koordinaten-Wertgleichheit im **PDF-/PNG**-Artefakt hat dieses Repo nicht; das ist
+  032c-Alt-Bestand und **nicht** Gegenstand dieses Slice — hier festgehalten, statt stillschweigend
+  als Wertgleichheit gebucht zu werden.
 
 ## 8. Trigger
 
