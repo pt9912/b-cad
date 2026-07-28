@@ -11,10 +11,9 @@ adr_refs: [[ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr
 
 **Status:** open — **zwei
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
-durch** (Lauf 1: 1 HIGH / 4 MED / 5 LOW / 2 INFO · Lauf 2: 1 HIGH / 4 MED / 5 LOW / 2 INFO), beide
-„nicht startbar"; Einarbeitung in §11. **Lauf 2 hat den Sensor gefangen, den Lauf 1 verlangt hatte:**
-die Tinten-Sonde war in der ersten Einarbeitung **nicht diskriminierend** — die Form stimmte, die
-Kontrolle nicht.
+durch** (Lauf 1: 1 HIGH · Lauf 2: 1 HIGH · **Lauf 3: 0 HIGH / 4 MED / 6 LOW / 2 INFO —
+„startbar"**); Einarbeitung in §11/§11a/§11b. **Lauf 3 hat die zwei Sensoren, an denen die
+Vorläufe rissen, am Artefakt nachgerechnet und für tragfähig befunden.**
 
 **Welle:** welle-6-interaktiv-planen. **Nicht trigger-bindend** — schließt aber eine Grenze, die
 [`slice-048b`](../done/slice-048b-drw-001-fangpunkte-impl.md) selbst als Risiko **R5** benannt und
@@ -166,10 +165,11 @@ Position als Feld) — nicht eine vermutete.
 | 4 | **Angezeigt wird, worauf tatsächlich eingerastet wird** — an derselben Position liefert der Zug exakt den Punkt, den die Anzeige zuvor nannte | `CanvasWidget` (Hover **und** Zug im selben Test) | Hover-Pfad mit anderem Schwellwert/anderer Quelle ⇒ rot |
 | 5 | **Maus-Verfolgung ist eingeschaltet** — ohne sie erreicht den Canvas ohne gedrückte Taste kein Ereignis, und die Zusage wäre im Produkt tot, obwohl der Test (der Ereignisse synthetisiert) grün bliebe | `CanvasWidget::hasMouseTracking`, headless | `setMouseTracking(true)` entfernt ⇒ rot |
 | 6 | **Auch während des Zugs** (gedrückte Taste) zeigt die Preview das Fang-Ziel des **Endes** an | `CanvasWidget`, headless | Preview nur im `!dragging_`-Zweig gepflegt ⇒ rot |
-| 7 | **Der Zeiger außerhalb der Zeichenfläche zeigt nichts an** — **beide** Wege: `QEvent::Leave` ohne gedrückte Taste **und** eine Zug-Bewegung mit Koordinaten außerhalb `rect()` (dort stellt Qt **kein** `Leave` zu, die Move-Ereignisse laufen weiter — Lauf-2-MEDIUM-2) | `CanvasWidget`, headless | je Weg einzeln entfernt ⇒ rot |
-| 8 | **Es wird wirklich etwas gezeichnet:** **dieselbe** `PlanView` und **dieselbe** Transformation, zwei Zeiger-Positionen — innerhalb der Fang-Nähe trägt das gerenderte Bild **mehr Tinte** als außerhalb | **Paint-Pfad**, offscreen-Render + Tinten-Sonde | Marker-Zeichnung aus `paintEvent` entfernt ⇒ rot (Zeilen 1–7 blieben grün) |
-| 9 | **Die Bewegung löst einen Repaint aus** — ohne ihn bliebe auch ein korrekt gezeichneter Marker im laufenden Betrieb unsichtbar | **Zähl-Callable in der `PlanPull`-Naht**: eine Hover-Bewegung + `processEvents()` ergibt **zwei** Pulls (Hover-Auswertung + ausgelöster Repaint) | `update()` im Hover-Zweig entfernt ⇒ **ein** Pull ⇒ rot |
+| 7 | **Der Zeiger außerhalb der Zeichenfläche zeigt nichts an** — **beide** Wege: `QEvent::Leave` ohne gedrückte Taste **und** eine Zug-Bewegung mit Koordinaten außerhalb `rect()` (dort stellt Qt **kein** `Leave` zu, die Move-Ereignisse laufen weiter — Lauf-2-MEDIUM-2) | `CanvasWidget`, headless | je Weg einzeln entfernt ⇒ rot. **Der zweite Weg braucht eine eigene Fixture** (Lauf-3-MEDIUM-1): nach `ViewTransform::fit` liegt **jeder** Fang-Punkt ≥ 15 px vom Rand (`kMargin = 0.9` ⇒ 5 % Rand je Seite, bei 300 px Höhe = 15 px) — bei 12 px Fang-Nähe ist außerhalb `rect()` **nie** ein Punkt in Reichweite. Die Fixture muss **hineinzoomen** (`wheelEvent`), damit ein Punkt über den Rand wandert |
+| 8 | **Es wird wirklich etwas gezeichnet:** **dieselbe** `PlanView` und **dieselbe** Transformation, zwei Zeiger-Positionen — innerhalb der Fang-Nähe trägt das gerenderte Bild **mehr Tinte** als außerhalb. **Nur in der Hover-Phase** (`!dragging_`): im Zug zeichnet der Paint-Pfad die cursor-abhängige in-Arbeit-Linie, dann ist der Marker nicht mehr der einzige Unterschied (Lauf-3-MEDIUM-4) | **Paint-Pfad**, offscreen-Render + Tinten-Sonde | Marker-Zeichnung aus `paintEvent` entfernt ⇒ rot (Zeilen 1–7 blieben grün) |
+| 9 | **Die Bewegung löst einen Repaint aus** — ohne ihn bliebe auch ein korrekt gezeichneter Marker im laufenden Betrieb unsichtbar | **Zähl-Callable in der `PlanPull`-Naht**: **eine einzelne** Hover-Bewegung + `processEvents()` ergibt **zwei** Pulls (Hover-Auswertung + ausgelöster Repaint). **Zwei Bedingungen** (Lauf-3-LOW-5): der Zähler ist **nach dem Show-Paint zurückzusetzen**, und die Bewegungen sind **einzeln** zu messen — Qt fasst mehrere `update()` zu **einem** Paint zusammen (n Bewegungen ⇒ n+1 Pulls, nicht 2n) | `update()` im Hover-Zweig entfernt ⇒ **ein** Pull ⇒ rot |
 | 10 | **Die Anzeige veraltet nicht bei einer Transformations-Änderung**: Zoom, Resize, Geschoss-Wechsel und Modell-Meldung repainten **ohne** Maus-Ereignis — die in mm gehaltene Preview zeigte danach auf eine falsche Bildschirmstelle | `CanvasWidget`, headless | Invalidierung in `wheelEvent`/`resizeEvent`/`setActiveStorey`/`onModelChanged` entfernt ⇒ rot |
+| 10a | **Nach einer Ansichts-Änderung ist die Anzeige weg, obwohl der Fang weiter wirkt** — sie kehrt mit der **nächsten Zeiger-Bewegung** zurück. Das ist die Kehrseite von Zeile 10 und muss in der AK stehen, sonst ist der Happy-Konjunkt in einem erreichbaren Zustand falsch (Lauf-3-MEDIUM-2) | `CanvasWidget`, headless | Rückkehr nach der nächsten Bewegung entfernt ⇒ rot |
 | 11 | **Der Zeichen-Pfad bleibt unverändert** — freies Zeichnen, Fangen und die Entartungs-Ablehnung aus 043/048b sind unberührt | Bestands-Orakel `test_canvas_widget.cpp` | (Regressions-Netz, keine eigene Gegenprobe) |
 
 **Zeile 5 ist die Zeile, die man vergisst — Zeile 8 die, die man für erledigt hält.** Der
@@ -189,13 +189,16 @@ und Export; `snapPreview()` hätte ohne Zeile 8 **keinen** gedeckten Produktions
       ([MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei):
       keine Marker-Form/Farbe/Größe). Die **zeitliche Bedingung** („bevor") ist Teil der Zusage, nicht
       Beiwerk (Lauf-1-LOW-1).
-- [ ] **Das Wort „sichtbar" in der DRW-001-Negative ist mitzuschärfen** (Lauf-2-MEDIUM-4): die
-      Negative sagt heute „**keinen sichtbaren** fangbaren Punkt in Reichweite … *oder* der Punkt liegt
-      auf einer **unsichtbaren Ebene**". slice-048b fängt aber über **alle** Geschosse, also auch auf
-      Punkte, die nicht **dargestellt** sind — und dieser Slice macht genau das mit einem Marker
-      sichtbar. **Zu entscheiden und zu schreiben, nicht zu verschieben:** „sichtbar" meint die
-      **Ebenen-Sichtbarkeit** (was `projectPlan` filtert), nicht „im Bild dargestellt". Ohne diese
-      Klarstellung widerspricht der neue Konjunkt der bestehenden Negative derselben Anforderung.
+- [ ] **Der Happy-Path-Halbsatz „Endpunkt P *auf der Zeichenfläche*" ist mitzuschärfen**
+      (Lauf-2-MEDIUM-4, **verortet durch Lauf-3-MEDIUM-3**). Die erste Einarbeitung wollte das Wort
+      „**sichtbar**" schärfen — **das war der falsche Ort**: die Anforderung **definiert** „sichtbar"
+      bereits über die Ebene („Fangbar sind nur sichtbare Punkte; die Sichtbarkeit richtet sich nach
+      der Ebene"). Der tragende Widerspruch steckt in „**auf der Zeichenfläche**": slice-048b fängt
+      über **alle** Geschosse, also auch auf Punkte, die **nicht dargestellt** sind — und dieser Slice
+      macht genau das mit einem Marker sichtbar. **Zu entscheiden und zu schreiben, nicht zu
+      verschieben.** *(Nebenbefund, bereits aus 048b bekannt und hier nicht zu heilen: der
+      Ebenen-Filter greift in `projectPlan` **nur bei Hilfslinien** — Wand-Achsen tragen keine
+      `layer_id`.)*
 - [ ] **Lastenheft-Version + Historie** ([MR-010](../../../../harness/conventions.md)/[MR-012](../../../../harness/conventions.md)):
       Header == Version der neu ergänzten Zeile in
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md). **Ausgangsstand heute
@@ -221,7 +224,7 @@ und Export; `snapPreview()` hätte ohne Zeile 8 **keinen** gedeckten Produktions
       Modell). **Nicht** mit den Surrogat-Zeilen gebündelt (Lauf-1-HIGH-1/Lauf-2-HIGH-1).
 - [ ] **`tests/adapters/test_canvas_widget.cpp`** erweitert (inkl. **Zähl-Callable** in der
       `PlanPull`-Naht für §4-9); Bestands-Orakel unverändert grün (§4-11).
-- [ ] **Orakel §4-1..10 je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen.
+- [ ] **Orakel §4-1..10a je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen.
 - [ ] **`make a-check` grün ohne neue Kante**; **kein** Kern-/Persistenz-/Export-Diff, belegt am
       `git diff --stat` der Closure (`make schema-check` prüft Schema-Drift, **nicht**
       Unberührtheit — Lauf-1-Präzedenz aus dem 056-Report).
@@ -294,7 +297,7 @@ zweites Mal gerufen), `.a-check.yml`/`.d-check.yml`, `data-model.yaml`/`schema.s
 
 ## 9. Closure-Trigger
 
-- §4-Zeilen 1–10 grün + je diskriminierend belegt; §4-11 (Bestands-Orakel) unverändert grün;
+- §4-Zeilen 1–10a grün + je diskriminierend belegt; §4-11 (Bestands-Orakel) unverändert grün;
   `make gates` + `make io-smoke` grün; kein Kern-/Schema-/Export-Diff am `git diff --stat` belegt;
   Lastenheft-Version, Handbuch und ADR-Index nachgezogen; Closure-Notiz.
 
@@ -370,11 +373,44 @@ am Artefakt wahr. Die Ausnahme ist der HIGH selbst.
 **Kein Lauf-1-Befund musste widerlegt werden** — der zweite Lauf hat keinen der zwölf für falsch
 gehalten.
 
-**Startbar:** **nein.** Der HIGH aus Lauf 2 ist eingearbeitet, aber er betraf **denselben Sensor**,
-den Lauf 1 verlangt hatte — die Zusage ist damit zweimal in Folge am selben Punkt gerissen. Ein
-**dritter Lauf** ist fällig, und sein Auftrag ist eng: **ist die Tinten-Sonde in ihrer neuen Kontroll-
-Form (Zeiger-Position statt Modell) im Bestands-Testaufbau headless herstellbar und diskriminierend —
-und hält der Pull-Zähler (Zeile 9), wenn im selben Test mehrere Repaints laufen?**
+**Startbar nach Lauf 2:** nein. Auftrag an den dritten Lauf: **ist die Tinten-Sonde in ihrer neuen
+Kontroll-Form headless herstellbar und diskriminierend — und hält der Pull-Zähler?**
+
+## 11b. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (dritter Lauf, 2026-07-28)
+
+Report: [`2026-07-28-slice-055-plan-3.md`](../../../reviews/2026-07-28-slice-055-plan-3.md) —
+**0 HIGH / 4 MEDIUM / 6 LOW / 2 INFO, Verdikt „startbar"**. Unabhängiger Reviewer ≠ Plan-Autor ≠ beide
+Vor-Reviewer.
+
+**Die zwei Sensoren, an denen die Vorläufe rissen, halten — am Artefakt nachgerechnet, nicht
+plausibilisiert:**
+
+- **Tinten-Sonde:** gleiche `PlanView` ⇒ gleiches `ViewTransform::fit`; im `!dragging_`-Zustand zeichnet
+  `paintEvent` **nichts** Cursor-Abhängiges — ohne Marker sind beide Bilder **byte-gleich**, die rote
+  Gegenprobe folgt aus dem Aufbau. Headless herstellbar, weil der Canvas ein reines `QWidget` mit
+  `QPainter` ist (**kein GL** — anders als der `grabFramebuffer`-Pfad des Viewers); die Testdatei steht
+  bereits in `tests/CMakeLists.txt`, **keine** CMake-Änderung nötig.
+- **Pull-Zähler:** `pull_` ist konstruktor-injiziert und wird an **genau zwei** Stellen gerufen
+  (Paint, Snap) — `final` versperrt hier nichts; `update()` + `processEvents()` löst headless einen
+  Paint aus (Bestands-Beleg im Canvas-Test).
+
+| # | Behandlung |
+|---|---|
+| **MEDIUM-1** (Orakel-Zeile 7, zweiter Weg: nach `fit` liegt **jeder** Fang-Punkt ≥ 15 px vom Rand — `kMargin = 0.9` ⇒ 5 % je Seite, bei 300 px Höhe = 15 px; bei 12 px Fang-Nähe ist außerhalb `rect()` **nie** ein Punkt in Reichweite, die zugesagte Gegenprobe also in der Repo-Fixture **nicht herstellbar**) | Zeile 7 sagt jetzt, dass der zweite Weg eine **eigene Fixture** braucht: **hineinzoomen** (`wheelEvent`), bis ein Punkt über den Rand wandert. **Nachgerechnet, nicht geschätzt** — genau die Bauart Beleg, die dieses Repo von einer Gegenprobe verlangt. |
+| **MEDIUM-2** (die neue Invalidierung löscht die Anzeige nach einem Zoom **ohne** Maus-Ereignis, während `snappedModelPos` weiter fängt → der unqualifizierte Happy-Konjunkt ist in einem erreichbaren Zustand falsch) | **Neue Orakel-Zeile 10a** + AK-Konjunkt: nach einer Ansichts-Änderung ist die Anzeige weg und kehrt mit der **nächsten Zeiger-Bewegung** zurück. **Die Kehrseite von Zeile 10 gehört in dieselbe Zusage** — sonst heilt die Invalidierung einen Fehler und erzeugt einen zweiten. |
+| **MEDIUM-3** (die „sichtbar"-Schärfung zielt am Problem vorbei: die Anforderung **definiert** „sichtbar" bereits über die Ebene; der tragende Widerspruch steckt in „Endpunkt P **auf der Zeichenfläche**") | **Verortung korrigiert.** Die DoD schärft jetzt den richtigen Halbsatz. **Ein Befund, der beim zweiten Lauf richtig war und beim dritten präziser wurde** — die Lauf-2-Behandlung war nicht falsch, nur am falschen Wort. |
+| **MEDIUM-4** (die Kontroll-Bedingung der Sonde gilt nur bei `!dragging_`: im Zug zeichnet der Paint-Pfad die cursor-abhängige in-Arbeit-Linie — der Plan sagt die Anzeige aber für **beide** Phasen zu) | Zeile 8 ist ausdrücklich auf die **Hover-Phase** eingeschränkt. Die Zug-Phase bleibt über die Zeilen 1/4/6 (Surrogat) gedeckt — **die Tinten-Sonde kann sie strukturell nicht tragen**, und das steht jetzt da, statt unausgesprochen zu gelten. |
+| **LOW-5** (der Pull-Zähler braucht Bedingungen: Reset nach dem Show-Paint; Qt fasst mehrere `update()` zu **einem** Paint zusammen ⇒ n Bewegungen ergeben n+1, nicht 2n Pulls) | Beide Bedingungen stehen jetzt in Zeile 9. |
+
+**Urteil des Laufs über die Lauf-2-Einarbeitung: überwiegend echt, nicht vollständig** — drei von fünf
+aufgelöst (der HIGH tragend), einer halb, einer am falschen Ort; **kein** Befund in den Vollzug
+delegiert, aber zwei neue Widersprüche erzeugt (MEDIUM-2/4). **Die LOW/INFO des zweiten Laufs waren in
+§11a nicht behandelt** — nachgeholt, soweit sie den Text betreffen.
+
+**Startbar: JA.** Kein HIGH. Die vier MEDIUM sind hier eingearbeitet; ein **vierter Lauf ist nicht
+fällig** ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start):
+nur HIGHs blockieren). **Der Plan hat drei Läufe gebraucht, und alle drei fanden etwas Echtes** — die
+zwei ersten am selben Punkt: dem Sensor für „es wird wirklich gezeichnet".
 
 ## 12. Closure-Notiz
 
