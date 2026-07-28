@@ -19,14 +19,14 @@ Slice — der Ruhe-Sentinel steht.
 | **Vierer-Kette komplett** | [054](../done/slice-054-manage-project-port.md) (`ManageProjectPort`) → [053](../done/slice-053-fenster-als-adapter.md) (Fenster + Handler als Adapter) → [052a](../done/slice-052a-sitzungs-zustand-und-speichern.md) (Sitzungs-Zustand, „Speichern", Rückfrage) → [052b](../done/slice-052b-neues-projekt.md) („Neues Projekt"). **[`LH-FA-BLD-001`](../../../../spec/lastenheft.md#lh-fa-bld-001--projekt-anlegen)/002/003 erstmals in der Oberfläche erfüllbar.** Lastenheft 0.1.17 → **0.1.19**, Handbuch 1.1 → **1.3** |
 | **welle-5 geschlossen** | [`done/welle-5-results.md`](../done/welle-5-results.md), **M5 gebucht** (war seit dem 2026-07-03 inhaltlich erfüllt, die Roadmap sagte „offen") |
 | **welle-6 geschnitten** | `welle-6-interaktiv-planen`, Meilenstein **M6**; Ziel [OBJ-004→OBJ-001](../../../../spec/lastenheft.md#3-projektziele), Trigger: **eine Wand ist im 2D-Canvas zeichenbar und parametrisch änderbar** |
-| **Erster welle-6-Plan** | [`slice-048b`](../open/slice-048b-drw-001-fangpunkte-impl.md) (Fangpunkte), Review durch, **startbar** |
+| **Erster welle-6-Plan** | [`slice-048b`](slice-048b-drw-001-fangpunkte-impl.md) (Fangpunkte), Review durch, **startbar** |
 
 **Elf [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
 an einem Tag, 22 HIGH — jeder Lauf fand etwas Echtes, keine Zeile Code ist deswegen gefallen.**
 
 ### ▶ Nächste Sitzung: hier ansetzen
 
-**[`slice-048b`](../open/slice-048b-drw-001-fangpunkte-impl.md) ist startbar** — aber **R6 zuerst**:
+**[`slice-048b`](slice-048b-drw-001-fangpunkte-impl.md) ist startbar** — aber **R6 zuerst**:
 
 > Vor dem ersten Commit ist zu verifizieren, dass die `guide_lines`-Round-Trip-Orakel
 > ([032b](../done/slice-032b-drw-impl.md)) und die 2D-Export-Orakel
