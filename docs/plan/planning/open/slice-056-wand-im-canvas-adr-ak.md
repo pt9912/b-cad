@@ -13,8 +13,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
 durch** (Lauf 1: 2 HIGH · Lauf 2: 1 HIGH · Lauf 3: 1 HIGH / 6 MED / 4 LOW / 4 INFO), alle drei
 „nicht startbar"; Einarbeitung in §11/§11a/§11b. **Die Fragen-Zahl ist von acht über zehn und
-dreizehn auf vierzehn gewachsen — jede Erweiterung kam aus einem Review, keine vom Autor. Kein
-Suchlauf ist bisher leer ausgegangen.** Dieser
+dreizehn auf vierzehn gewachsen — jede Erweiterung kam aus einem Review, keine vom Autor.** Dieser
 Slice schreibt **Doku, keinen Produktions-Code** (Muster
 [`slice-041a`](../done/slice-041a-drw-canvas-adr-ak.md): ADR + AK-Schärfung vor dem Impl-Strang).
 
@@ -62,13 +61,13 @@ führen es wörtlich.)*
 
 *(Sie sind der Grund, warum hier eine ADR steht und nicht direkt ein Impl-Slice. Jede ist am Artefakt
 belegt, nicht vermutet. **F9/F10 fand der erste Review, F11/F12/F13 der zweite, F14 der dritte** —
-die Vorfassung führte acht. Die Zahl ist kein Gütesiegel: sie ist die Bilanz **dreier** Suchläufe,
-von denen **keiner** leer ausging.)*
+die Vorfassung führte acht. Die Zahl ist kein Gütesiegel und **auch keine Vollständigkeits-Zusage**:
+sie ist der Stand nach drei Suchläufen. Wo die Vollständigkeit wirklich zu belegen ist, sagt R6.)*
 
 | # | Frage | Warum offen — am Artefakt |
 |---|---|---|
 | **F1** | **Werkzeug-Wahl.** Woher weiß der Canvas, ob ein Zug eine **Hilfslinie** oder eine **Wand** erzeugt? | Der Canvas hat heute **eine** Geste: Links-Zug ⇒ das injizierte Schreib-Callable, das über `ui/command/edit_drawing_guide_line_sink.h` auf `addGuideLine` führt. Eine zweite Bauform braucht einen Modus — Werkzeugleiste, Tastatur-Modifikator oder getrennte Flächen. **Das Lastenheft kennt den Begriff „Werkzeug", entscheidet die Frage aber nicht:** die DRW-005-Negative sagt „dann **erzeugt das Werkzeug nichts**" (Prosa in einer fremden AK), und [`LH-FA-UI-005`](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui) („Anpassbare Werkzeugleisten") ist reine Outline ohne AK. |
-| **F2** | **Wie viele Segmente je Zeichen-Geste?** | **Keine Modell-Frage, sondern eine Interaktions-Frage** (Lauf-1-MEDIUM-1). [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen) fordert „Linienzug mit ≥ 2 Punkten ⇒ **je Segment eine Wand**" — das ist **exakt** der bestehende Einzelsegment-Typ; ein Zug mit *n* Punkten bildet sich auf *n−1* `addWall`-Aufrufe ab, ohne dass das Domänen-Modell wächst, und der Eckenschluss dieser Segmente liegt seit slice-012 vor ([`LH-FA-WAL-006`](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)). Die `spezifikation.md`-§2.1-Klausel „Wandzüge/Polylines folgen als Erweiterung" betrifft die **Wand-Entität** mit mehreren Segmenten, **nicht** die Geste. Offen ist damit die Bedien-Frage: mehrpunktiger Zug in einem Rutsch oder ein Segment je Zug — und **wenn Letzteres, unterschreitet v1 den geltenden Happy Path** und braucht eine benannte Teilumfang-Klausel im Lastenheft. |
+| **F2** | **Wie viele Segmente je Zeichen-Geste?** | **Keine Modell-Frage, sondern eine Interaktions-Frage** (Lauf-1-MEDIUM-1). [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen) fordert „Linienzug mit ≥ 2 Punkten ⇒ **je Segment eine Wand**" — das ist **exakt** der bestehende Einzelsegment-Typ; ein Zug mit *n* Punkten bildet sich auf *n−1* `addWall`-Aufrufe ab, ohne dass das Domänen-Modell wächst, und der Eckenschluss dieser Segmente liegt seit slice-012 vor ([`LH-FA-WAL-006`](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)). Die `spezifikation.md`-§2.1-Klausel „Wandzüge/Polylines folgen als Erweiterung" betrifft die **Wand-Entität** mit mehreren Segmenten, **nicht** die Geste. Offen ist damit die Bedien-Frage: mehrpunktiger Zug in einem Rutsch oder ein Segment je Zug — und **wenn Letzteres, unterschreitet v1 den geltenden Happy Path** und braucht eine benannte Teilumfang-Klausel im Lastenheft. **Konjunkt (nur bei mehrpunktigem Zug):** der **Teilerfolg** — Transaktion ist der **Port-Aufruf**, Benutzer-Einheit die **Geste**; wird ein Zwischen-Segment abgelehnt, bleibt ein halber Wandzug stehen (ohne Rückweg, s. F12), und das Neu-Einrahmen läuft mitten in der Geste. |
 | **F3** | **Selektion/Picking.** „Parametrisch ändern" setzt voraus, dass der Benutzer **eine bestimmte Wand** benennt. | Es gibt heute **keine** Selektion — weder im Canvas noch im 3D-Viewer ([ADR-0019](../../adr/0019-drw-2d-canvas.md) nimmt sie aus, [ADR-0009](../../adr/0009-gui-framework-qt6.md) verweist die 3D-Selektion auf einen eigenen Re-Eval). Offen: Treffer-Prüfung im Bildschirm- oder Modellraum, Toleranz, Mehrfachtreffer, **und** ob die Auswahl **UI-Zustand** oder **Modell-Zustand** ist (bei Modell-Zustand wären Schema und Persistenz betroffen — dann wäre der Slice ein ganz anderer). |
 | **F4** | **Wo ändert man den Parameter?** | `EditStructurePort` bietet `setWallThickness`/`setWallHeight` mit `ParamResult{applied_mm, status}`. Eine **Bedienfläche** dafür existiert nicht (das Fenster trägt seit slice-053 nur ein Datei-Menü). Panel, Dialog oder Inline-Eingabe — und wie die Rückmeldung aussieht, ist Frage F5. |
 | **F5** | **Rückmeldung an den Benutzer — alle drei Fälle, nicht nur die Klemmung.** | Drei AK verlangen eine sichtbare Reaktion, und **keine** hat heute eine: (a) [`LH-FA-WAL-002`](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)/003 „auf Grenzwert **geklemmt + Hinweis**" (`ParamStatus::Clamped`); (b) `ParamStatus::Rejected` (Modell unverändert, [`E-VAL-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)); (c) **die WAL-001-Boundary „Null-Längen-Wand ⇒ verworfen, *Hinweis*"** — `addWall` verwirft heute **still** (`return std::nullopt`), und der Canvas wertet den Rückgabewert seines Schreib-Callables nicht aus (Lauf-1-MEDIUM-6). Ohne Entscheidung bleiben alle drei still, und die AK sind verletzt. |
@@ -80,7 +79,7 @@ von denen **keiner** leer ausging.)*
 | **F11** | **Die 2D-Lese-Naht selbst** — womit soll der Canvas eine **Wand** treffen und benennen? | **Vom zweiten Review gefunden (HIGH-1) — und [ADR-0019](../../adr/0019-drw-2d-canvas.md) benennt die Folge in ihrem Re-Eval-Block wörtlich:** »2D-Lese-Naht (`PlanViewPort`) um **Bauteil-/Treffer-Queries erweitern**«. Der Plan zitierte dieselbe ADR zweimal, diesen Satz nicht. `model::PlanSegment` trägt `{x1,y1,x2,y2}` — **keine `WallId`, keine Art**; `projectPlan` mischt Wand-Achsen und sichtbare Hilfslinien in **eine** Liste, `paintEvent` zeichnet beide gleich. **F3** (Picking) hätte damit nur **anonyme** Segmente zu treffen, **F4** (Parameter ändern) braucht eine `WallId`, die die Naht nicht liefert, und die geplante WAL-001-Happy-AK wäre nicht als **Wand** beobachtbar. Das ist die teuerste offene Entscheidung des Strangs, weil sie einen **Kern-Werttyp** und einen **Read-Port** berührt — nicht nur das Widget. |
 | **F12** | **Der Rückweg aus einer Wand-Geste.** | **Vom zweiten Review gefunden (MEDIUM-2).** `EditStructurePort` hat **kein `removeWall`** — der Vorgänger-Mutator hat `removeGuideLine`. Der Canvas kennt keinen **Gesten-Abbruch** (Escape, Fokusverlust), und Undo ist unbedient. Eine falsch gezogene Wand ist damit in der Oberfläche **nicht rücknehmbar**; §3 grenzte bisher nur die Undo-Hälfte ab. |
 | **F13** | **Welche Parameter gehören zu „parametrisch änderbar"?** | **Vom zweiten Review gefunden (MEDIUM-3).** F4 führt Stärke und Höhe. Das Lastenheft führt daneben [`LH-FA-WAL-007`](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen) (**Wandtyp**, mit Wertemenge und Wirkung), und der Port bietet `setWallMaterial`. Beide sind weder in F4 geführt noch in §3 abgegrenzt — obwohl §3 die Nachbarn WAL-004/005 ausdrücklich abgrenzt und der Wellen-Trigger genau „**parametrisch** änderbar" lautet. |
-| **F14** | **Woran wird reiner UI-Zustand nachgewiesen?** Auswahl (F3), Werkzeug-Modus (F1) und Hinweis (F5) haben **kein Korrelat außerhalb des Widgets**. | **Vom dritten Review gefunden (HIGH-1) — und ZWEI Accepted-ADRs benennen genau das wörtlich als offen.** Jede bisherige Interaktions-AK dieses Repos hängt an einem **Modell**-Surrogat (`building().guide_lines`, über Persistenz und Export weiter beobachtbar). Auswahl, Werkzeug-Modus und Hinweis sind **nicht persistiert, nicht exportiert, nicht im `Building`** — es gibt nichts, woran eine AK sie festmachen könnte außer dem Widget selbst. [ADR-0009](../../adr/0009-gui-framework-qt6.md) (f) hält `tests/e2e/` leer, bis „ein Treiber mit **Interaktion/Selektion** relevant wird"; [ADR-0019](../../adr/0019-drw-2d-canvas.md) E7 schreibt: „`tests/e2e/` bleibt daher leer, **bis eine AK entsteht, die nur echt end-to-end prüfbar ist (z. B. Selektion / mehrschrittige Interaktion)**". **Dieser Strang liefert beide dort genannten Beispiele** — und `tests/e2e/` enthält bis heute nur `.gitkeep`. §8 bucht für 058/059 bereits „Headless-AK", also **die Antwort, bevor die Frage gestellt ist**. |
+| **F14** | **Woran wird reiner UI-Zustand nachgewiesen?** Auswahl (F3), Werkzeug-Modus (F1) und Hinweis (F5) haben **kein Korrelat außerhalb des Widgets**. | **Vom dritten Review gefunden (HIGH-1) — und ZWEI Accepted-ADRs benennen genau das wörtlich als offen.** Jede bisherige Interaktions-AK dieses Repos hängt an einem **Modell**-Surrogat (`building().guide_lines`, über Persistenz und Export weiter beobachtbar). Auswahl, Werkzeug-Modus und Hinweis sind **nicht persistiert, nicht exportiert, nicht im `Building`** — es gibt nichts, woran eine AK sie festmachen könnte außer dem Widget selbst. [ADR-0009](../../adr/0009-gui-framework-qt6.md) (f) hält `tests/e2e/` leer, bis „ein Treiber mit **Interaktion/Selektion** relevant wird"; [ADR-0019](../../adr/0019-drw-2d-canvas.md) E7 schreibt: „`tests/e2e/` bleibt daher leer, **bis eine AK entsteht, die nur echt end-to-end prüfbar ist (z. B. Selektion / mehrschrittige Interaktion)**". **Dieser Strang liefert beide dort genannten Beispiele** — und `tests/e2e/` enthält bis heute nur `.gitkeep`. §8 buchte für 058/059 „Headless-AK" — **die Antwort, bevor die Frage gestellt war**; das ist nach Lauf 4 entfernt, die §8-Zeilen tragen jetzt „die **in F14 entschiedene** Nachweis-Naht". |
 
 ## 3. Bewusst NICHT Teil
 
@@ -99,11 +98,10 @@ von denen **keiner** leer ausging.)*
   **und Docking-Fenster** ([`LH-FA-UI-001`](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)),
   beide Outline. Eine Werkzeugleisten-Antwort auf F1 und eine Panel-Antwort auf F4 **berühren** diese
   Anforderungen; sie **erfüllen** sie nicht und schärfen sie nicht (Lauf-1-MEDIUM-5, Lauf-3-MEDIUM-5).
-- **Der Teilerfolg einer mehrpunktigen Geste** — wird ein Zwischen-Segment abgelehnt, bleibt ein
-  halber Wandzug stehen (Transaktion = **Port-Aufruf**, Benutzer-Einheit = **Geste**), und das
-  Neu-Einrahmen läuft mitten in der Geste. **Nur relevant, wenn F2 zugunsten des mehrpunktigen Zugs
-  fällt** — dann gehört die Frage in denselben ADR-Abschnitt wie F2 und F12, nicht als eigene
-  Entscheidung (Lauf-3-MEDIUM-6, dort ausdrücklich **nicht** als eigenständige Frage gezählt).
+*(Der **Teilerfolg einer mehrpunktigen Geste** stand hier in der Vorfassung — er ist **kein**
+Nicht-Teil. Er ist jetzt als **Konjunkt von F2** geführt und in der DoD verankert; Lauf-4-MEDIUM-6:
+etwas gleichzeitig „bewusst nicht Teil" zu nennen **und** einem ADR-Abschnitt zuzuweisen, ist keine
+Verortung.)*
 - **Undo/Redo** ([`LH-QA-003`](../../../../spec/lastenheft.md#lh-qa-003--undoredo)).
   Die Anforderung fordert ≥ 1000 rücknehmbare Schritte, `undo_commands` existiert im Schema, **kein**
   Mutations-Pfad bedient es. Der interaktive Wand-Weg erzeugt Modell-Mutationen ohne Undo-Anbindung —
@@ -149,6 +147,9 @@ niemand.
       „Interaktive Erzeugung (2D-Zeichenfläche)" (Happy/Boundary/Negative) +
       [`LH-FA-WAL-002`](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)/003
       je ein interaktiver Konjunkt — **lösungsfrei**.
+- [ ] **Falls F2 zugunsten des mehrpunktigen Zugs entschieden wird: der Teilerfolg ist mitzuentscheiden**
+      (F2-Konjunkt) — ein abgelehntes Zwischen-Segment hinterlässt sonst einen halben Wandzug ohne
+      Rückweg (Lauf-4-MEDIUM-6).
 - [ ] **Falls F2 zugunsten „ein Segment je Zug" entschieden wird: eine benannte Teilumfang-Klausel an
       [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen)** (Muster der
       DRW-/ROF-/STR-Teilumfänge). **Ohne sie unterschreitet die Lieferung den geltenden Happy Path**
@@ -172,9 +173,12 @@ niemand.
       feststellen — [`slice-055`](slice-055-fang-anzeige.md) schärft ebenfalls, die Reihenfolge ist
       offen. **Sensor: die [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Linse, kein Gate** (§4-4).
 - [ ] **`spec/spezifikation.md` §1**: Mapping-Block für den interaktiven Wand-Weg (Werkzeug-Modus,
-      Selektion als UI-Zustand, Parameter-Rückmeldung, Refresh-Pfad, Fang-Geltung, Fehler-Barriere) —
+      Selektion, Parameter-Rückmeldung, Refresh-Pfad, Fang-Geltung, Fehler-Barriere) —
       die **Mechanik**, die aus dem Lastenheft herausgehalten wird — **einschließlich der 2D-Lese-Naht
-      aus F11 und der Nachweis-Naht aus F14** (Lauf-3-MEDIUM-2: die Zeile zählte unverändert dieselben
+      aus F11 und der Nachweis-Naht aus F14**. **Die Aufzählung nennt die Themen, nicht die Antworten**
+      (Lauf-4-MEDIUM-5): ob die Auswahl UI- oder Modell-Zustand ist, entscheidet **F3**, nicht diese
+      DoD-Zeile — die Vorfassung schrieb „Selektion als UI-Zustand" fest und nahm damit zugleich die
+      Prämisse von F14 vorweg (Lauf-3-MEDIUM-2: die Zeile zählte unverändert dieselben
       sechs Punkte, obwohl der Lauf-2-HIGH sie ausdrücklich benannt hatte). **§2.1-Klausel „Wandzüge
       folgen als Erweiterung"** je nach F2-Entscheidung **nachziehen oder ausdrücklich stehen lassen**.
 - [ ] **`spec/spezifikation.md` §6**: die Vertragszeile „**2D-Zeichenfläche (DRW-Canvas)**" (seit
@@ -240,12 +244,20 @@ niemand.
 - **R5 — der Slice könnte zum Papier werden.** Ein ADR-Slice ohne Impl-Nachfolge ist genau die
   Buchführungs-Fiktion, die welle-5 gekostet hat. **Gegenmittel in der DoD:** 057–059 existieren als
   Plan-Datei, bevor 056 schließt.
-- **R6 — die Zählung ist selbst eine Behauptung, und sie ist DREIMAL gefallen.** Lauf 1 fand **zwei**
-  Lücken (F9, F10), Lauf 2 **drei** (F11, F12, F13), Lauf 3 **eine** (F14) — acht → zehn → dreizehn →
-  vierzehn. **Kein Suchlauf ist bisher leer ausgegangen.** Die Ausbeute sinkt (2 · 3 · 1), aber sie ist
-  nicht null. Weil die ADR nach `Accepted` immutabel ist, trägt jeder
-  weitere Lauf dieselbe Hauptlast: **Suche nach der nächsten fehlenden Frage**, nicht Prüfung der
-  vorhandenen. Erst ein Lauf, der **keine** neue findet, ist ein Argument für Vollständigkeit.
+- **R6 — die Vollständigkeit der Fragenliste ist am PLAN nicht belegbar, und dieser Plan behauptet es
+  auch nicht mehr.** Drei Läufe fanden sechs Lücken (Lauf 1: F9/F10 · Lauf 2: F11/F12/F13 · Lauf 3:
+  F14) — acht → zehn → dreizehn → vierzehn.
+  **Das frühere Kriterium „weitersuchen, bis ein Lauf leer ausgeht", ist zurückgenommen** (2026-07-28):
+  es terminiert nicht. Ein gründlicher Reviewer findet an einem Plan dieser Länge immer noch etwas;
+  die Regel liefe ins Unendliche und sähe dabei wie Sorgfalt aus. **Und die Zahlenreihe trägt sie
+  ohnehin nicht:** F14 war der schwerste Fund aller drei Läufe und kam im Lauf mit der **geringsten**
+  Ausbeute — sinkende Menge ist hier kein Argument für Vollständigkeit.
+  **Die Vollständigkeitslast liegt beim ADR-Text-Review, nicht beim Plan-Review.** Der Plan listet
+  Überschriften; die ADR trägt ausformulierte Entscheidungen mit Alternativen und Konsequenzen — daran
+  ist eine **fehlende** Entscheidung besser zu sehen als an einer Tabellenzeile. Das Text-Review ist in
+  der DoD verlangt, und der `Proposed`-Status ist das Netz: **immutabel wird nichts vor `Accepted`.**
+  **Abbruchregel für die Plan-Läufe (vorab festgelegt, damit sie nicht im Nachhinein passend gewählt
+  wird): 0 HIGH ⇒ startbar** — MEDIUM werden eingearbeitet, nicht mit einem weiteren Lauf beantwortet.
 - **R7 — F11 (die Lese-Naht) ist nicht mehr nur eine UI-Frage.** Erweitert die ADR `PlanViewPort` um
   Bauteil-/Treffer-Queries, ändert sich ein **Kern-Werttyp** (`model::PlanSegment`), den auch PDF-,
   PNG-Export und die Golden-Files konsumieren. Das ist ein **anderer Risiko-Grad** als der Rest des
@@ -255,9 +267,9 @@ niemand.
 
 | Slice | Was | Trigger-Beitrag |
 |---|---|---|
-| **057** | **Die 2D-Lese-Naht** (F11) — was der Canvas lesen muss, um eine **Wand** zu treffen und zu benennen. **Vorgelagert, ohne UI-Anteil**; die 2D-Export-Orakel und die Golden-Files sind das Netz | Voraussetzung beider Trigger-Hälften |
-| **058** | **Wand zeichnen** im Canvas: Werkzeug-Modus (F1) + Segment-Zahl je Geste (F2) + Zug ⇒ `addWall` über die neue `ui/command/`-Senke (F7) + Refresh (F6) + Fang-Geltung (F9) + Fehler-Barriere (F10) + Gesten-Abbruch/Rückweg (F12) + Headless-AK | „**zeichenbar**" |
-| **059** | **Wand auswählen und ändern**: Picking (F3) + Parameter-Bedienung (F4/F13) + Rückmeldung in allen drei Fällen (F5) + Headless-AK | „**parametrisch änderbar**" |
+| **057** | **Die 2D-Lese-Naht** (F11) — was der Canvas lesen muss, um eine **Wand** zu treffen und zu benennen. **Vorgelagert, ohne UI-Anteil**; die 2D-Export-Orakel und die Golden-Files sind das Netz | Voraussetzung von **059**; **058 kommt ohne sie aus** (`addWall(StoreyId, Segment)` braucht keine Bauteil-Identität) — die Vorlagerung ist eine Wahl, s. u. |
+| **058** | **Wand zeichnen** im Canvas: Werkzeug-Modus (F1) + Segment-Zahl je Geste (F2) + Zug ⇒ `addWall` über die neue `ui/command/`-Senke (F7) + Refresh (F6) + Fang-Geltung (F9) + Fehler-Barriere (F10) + Gesten-Abbruch/Rückweg (F12) + Zeichenbereich/[`E-GEO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) (F8) + der **in F14 entschiedenen** Nachweis-Naht | „**zeichenbar**" |
+| **059** | **Wand auswählen und ändern**: Picking (F3) + Parameter-Bedienung (F4/F13) + Rückmeldung in allen drei Fällen (F5) + der **in F14 entschiedenen** Nachweis-Naht | „**parametrisch änderbar**" |
 
 ### Die Sequenz-Entscheidung ist gefallen, die ADR-Entscheidung nicht (2026-07-28)
 
@@ -386,7 +398,15 @@ Vor-Reviewer.
 | **HIGH-1** (**die vierzehnte Frage: die Nachweis-Naht für reinen UI-Zustand.** Auswahl, Werkzeug-Modus und Hinweis haben **kein Korrelat außerhalb des Widgets** — anders als jede bisherige Interaktions-AK dieses Repos, die an einem **Modell**-Surrogat hängt. **Zwei Accepted-ADRs benennen genau das wörtlich als offen:** [ADR-0009](../../adr/0009-gui-framework-qt6.md) (f) und [ADR-0019](../../adr/0019-drw-2d-canvas.md) E7 halten `tests/e2e/` leer, „bis eine AK entsteht, die nur echt end-to-end prüfbar ist (**z. B. Selektion / mehrschrittige Interaktion**)" — und dieser Strang liefert **beide** dort genannten Beispiele; `tests/e2e/` enthält bis heute nur `.gitkeep`. §8 buchte für 058/059 bereits „Headless-AK", also die **Antwort vor der Frage**) | **Beide Zitate selbst nachgelesen und bestätigt. Als F14 aufgenommen** + neue DoD-Zeile: die ADR **trägt eine Fitness Function** (Lauf-3-MEDIUM-1). **Das ist der Befund, für den die drei Läufe gelaufen sind:** eine ADR, die diese Frage nicht stellt, hätte den Strang auf ein Prüf-Muster festgelegt, das für seine eigenen Zusagen nicht reicht — und wäre danach immutabel gewesen. |
 | **MEDIUM-2** (der Lauf-2-HIGH war nur zu zwei Dritteln eingearbeitet: die DoD-Zeile für `spezifikation.md` §1 zählte unverändert dieselben sechs Mapping-Punkte **ohne** die Lese-Naht) | Nachgezogen — §1-Mapping führt jetzt **F11 und F14**. **Ein sauber gefundener Nachlässigkeits-Rest: der Befund war benannt, die eine von drei Stellen blieb stehen.** |
 | **MEDIUM-3** (die Sequenz-Entscheidung überdehnt: widerlegt ist nur „die Naht braucht keine Arbeit", **nicht** „die Arbeit braucht einen eigenen vorgelagerten Slice" — 058 kommt mit `addWall(StoreyId, Segment)` ohne Bauteil-Identität aus) | **Zurückgenommen und ehrlich neu geschrieben** (§8): die Vorlagerung ist eine **Projektinhaber-Wahl aus Risiko-Gründen**, keine Ableitung. Fällt F11 auf eine Antwort ohne Kern-Werttyp-Berührung, ist 057 neu zu bewerten — **als Befund des ADR-Text-Reviews, nicht als Fehler dieses Plans**. |
-| **MEDIUM-4** (§11a behandelte nur 5 der 13 Lauf-2-Befunde; die vier LOW standen unverändert im Text und waren nirgends als verworfen vermerkt) | Die textwirksamen sind nachgezogen. **Der Befund trifft eine Lücke der Einarbeitungs-**Disziplin**, nicht des Plans: eine Behandlungstabelle, die nur die schweren Befunde führt, sieht aus wie Vollständigkeit.** |
+| **MEDIUM-4** (§11a behandelte nur 5 der 13 Lauf-2-Befunde; die vier LOW standen unverändert im Text und waren nirgends als verworfen vermerkt) | **Erste Behandlung war eine Behauptung ohne Vollzug** („die textwirksamen sind nachgezogen" — es war keiner; Lauf-4-MEDIUM-3 hat es gemessen). **Jetzt wirklich vollzogen:** die vier Lauf-2-LOW sind unten einzeln geführt. **Der Befund trifft eine Lücke der Einarbeitungs-Disziplin: eine Behandlungstabelle, die nur die schweren Befunde führt, sieht aus wie Vollständigkeit — und ein Satz, der die Nachbesserung behauptet, macht sie unsichtbar.** |
+
+**Die vier LOW aus Lauf 2 — nachgeholt statt behauptet** (Lauf-4-MEDIUM-3): (a) die §2-Überschrift
+zählte F7 als „Frage, die der Spec-Text nicht entscheidet", obwohl F7 nur **feststellt** — steht seit
+Lauf 1 so in F7 selbst, die Überschrift bleibt bewusst, weil sie den Abschnitt benennt, nicht jede
+Zeile qualifiziert. (b) „Selektion als UI-Zustand" in der DoD nahm F3 vorweg — **korrigiert**
+(Lauf-4-MEDIUM-5). (c) „unterschreitet den Happy Path" stand dreifach — die Formulierung bleibt, sie
+ist an der AK belegt. (d) F8 hatte in §8 keinen Träger — **korrigiert**, F8 steht jetzt in der
+057-Zeile.
 | **MEDIUM-5** ([`LH-FA-UI-001`](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui) Docking-Fenster ist nicht abgegrenzt, obwohl F4 „Panel" führt — identisch zur bereits akzeptierten UI-005-Konstellation) | In §3 abgegrenzt, zusammen mit UI-005. |
 | **MEDIUM-6** (Teilerfolg einer mehrpunktigen Geste: Transaktion = Port-Aufruf, Benutzer-Einheit = Geste ⇒ halber Wandzug ohne Rückweg; ausdrücklich **nicht** als 14. Frage gezählt) | In §3 aufgenommen — **bedingt auf die F2-Entscheidung** und dort demselben ADR-Abschnitt zugeordnet wie F2/F12, statt als eigene Frage zu zählen. Die Zurückhaltung des Reviewers ist übernommen, nicht überschrieben. |
 
@@ -398,13 +418,57 @@ Punkte-Listen · der komplette Interaktions-Code-Pfad. **Sieben weitere Kandidat
 Grund verworfen** (Default-Parameter, Raum-Sichtbarkeit, Ebenen-Sperre, Re-Entranz, `ModelReplaced`,
 ACC-Berührung, [`E-GEO-002`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)).
 
-**Startbar:** **nein.** Drei Läufe, sechs neue Fragen, **kein leerer Lauf** — die Ausbeute sinkt
-(2 · 3 · 1), aber sie ist nicht null. **Ein vierter Lauf ist fällig**, mit unverändertem Auftrag: die
-**fünfzehnte** Frage suchen. Erst ein Lauf, der **keine** findet, ist ein Argument für
-Vollständigkeit — bis dahin ist jede Zahl in §2 ein Zwischenstand, keine Zusage. **Das ist kein
-Prozess-Selbstzweck:** die ADR ist nach `Accepted` immutabel, und F14 zeigt, was eine übersehene Frage
+**Startbar nach Lauf 3:** nein — **aus EINEM Grund: Lauf 3 hat einen HIGH gefunden.** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+blockiert den Start, und die Auflösung eines HIGH wird in diesem Repo von einem **unabhängigen** Lauf
+geprüft — dieses Muster hat bei 053, 052a und 052b jedes Mal etwas gefangen, und bei
+[`slice-055`](slice-055-fang-anzeige.md) fand Lauf 2, dass der in Lauf 1 verlangte Sensor **nicht
+diskriminierte**.
+
+**Sein Auftrag ist eng und terminierend:** ist F14 samt der sechs MEDIUM **echt** eingearbeitet, und
+erzeugt die Einarbeitung neue Widersprüche? Dazu ein letzter Sweep. **Abbruchregel steht vorab
+(R6): 0 HIGH ⇒ startbar**, unabhängig von der Zahl der MEDIUM.
+
+**Nicht mehr Auftrag war „die fünfzehnte Frage suchen, bis keine mehr kommt".** Diese Last trägt das
+**ADR-Text-Review** (R6) — dort ist sie schärfer und billiger, und der `Proposed`-Status hält die
+Entscheidungen bis dahin änderbar. **Kein Prozess-Selbstzweck:** F14 zeigt, was eine übersehene Frage
 kostet — sie hätte den ganzen Strang auf ein Prüf-Muster festgelegt, das seine eigenen Zusagen nicht
-trägt.
+trägt. Genau deshalb gehört die Suche dorthin, wo sie am meisten sieht.
+
+## 11c. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (vierter Lauf, 2026-07-28) — **0 HIGH**
+
+Report: [`2026-07-28-slice-056-plan-4.md`](../../../reviews/2026-07-28-slice-056-plan-4.md) —
+**0 HIGH / 6 MEDIUM / 5 LOW / 4 INFO + 13 Negativbefund-Zeilen, Verdikt „startbar"**. Unabhängiger
+Reviewer ≠ Plan-Autor ≠ die drei Vor-Reviewer.
+
+**Der Lauf sagt sein Nichts ausdrücklich:** keine fehlende Frage geführt · keine Quellen-Behauptung,
+die ihrer Quelle widerspricht (F14s **beide** ADR-Zitate und das Fitness-Function-Zitat sind wörtlich
+korrekt) · kein behaupteter Sensor ohne Entsprechung · keine Hard Rule berührt.
+
+**Sein Urteil über die Lauf-3-Einarbeitung: im Kern echt, am Rand nicht.** F14 ist substanziell
+aufgenommen (nicht umformuliert, nicht delegiert), MEDIUM-1/2/5 sauber aufgelöst — **aber das von
+Lauf 3 diagnostizierte Muster hat sich zweimal wiederholt.** Das ist der eigentliche Ertrag dieses
+Laufs.
+
+| # | Behandlung |
+|---|---|
+| **MEDIUM-1** (die §8-Tabellenzelle „057 = Voraussetzung **beider** Trigger-Hälften" widerspricht der drei Zeilen darunter neu geschriebenen Prosa „**058 kommt ohne sie aus**" — Lauf-3-MEDIUM-3 zu zwei Dritteln eingearbeitet) | Tabellenzelle nachgezogen. **Zweite Wiederholung derselben Bauart: Prosa neu, Tabelle alt.** |
+| **MEDIUM-2** (**die neue R6 widerruft sich selbst**: drei Zeilen nach der Rücknahme und der Abbruchregel stand der unveränderte Rest der Vorfassung — „jeder weitere Lauf … Suche nach der nächsten fehlenden Frage … erst ein leerer Lauf ist ein Argument für Vollständigkeit"; per `git diff` als Rest belegt) | **Entfernt.** Der Reviewer hat die Rücknahme nicht am Wortlaut geglaubt, sondern am Diff gemessen — und gefunden, dass ich den Satz ersetzt und den Nachsatz stehen gelassen hatte. **Eine Regel, die zwei Absätze später ihr Gegenteil sagt, ist keine.** |
+| **MEDIUM-3** (§11b behauptete für Lauf-3-MEDIUM-4 „die textwirksamen sind nachgezogen" — am Artefakt war **keiner** der vier Lauf-2-LOW verändert; §11b führte selbst wieder nur die schweren Befunde) | **Behauptung zurückgenommen und vollzogen:** die vier Lauf-2-LOW stehen jetzt einzeln in §11b, zwei davon führten zu echten Korrekturen. **Ein Satz, der eine Nachbesserung behauptet, macht sie unsichtbar** — genau deshalb misst dieser Prozess Einarbeitungen, statt sie zu lesen. |
+| **MEDIUM-4** (§8 buchte weiterhin „+ Headless-AK" für 058/059 — **genau der Vorgriff, den F14 als Beleg zitiert**; F14 und F8 hatten in keiner §8-Zeile einen Träger) | „Headless-AK" ist aus beiden §8-Zeilen entfernt; sie tragen jetzt die **in F14 entschiedene** Nachweis-Naht, und F8 steht in der 058-Zeile. **Ich hatte die Frage aufgenommen und die vorweggenommene Antwort daneben stehen lassen.** |
+| **MEDIUM-5** (die DoD-§1-Zeile schrieb „**Selektion als UI-Zustand**" fest — nimmt F3 vorweg und zugleich die Prämisse von F14; drittes Vorkommen dieser Klasse) | Formulierung entfernt; die DoD nennt jetzt die **Themen**, nicht die Antworten, und sagt das ausdrücklich. |
+| **MEDIUM-6** (der „Teilerfolg einer mehrpunktigen Geste" stand unter „Bewusst NICHT Teil" **und** wurde im selben Satz dem ADR-Abschnitt F2/F12 zugewiesen — ohne DoD-Anker, während die DoD den ADR-Inhalt auf „die vierzehn Fragen aus §2" abschließt) | **Verortet statt geparkt:** jetzt **Konjunkt von F2** (Teil der Frage, nicht daneben) + eigene DoD-Zeile. §3 vermerkt die Verschiebung. |
+
+**Was der Lauf ausdrücklich bestätigt:** die **R6-Rücknahme trägt in der Sache** — sie definiert
+keinen Prüf-Bedarf weg, sondern verschiebt ihn dorthin, wo ausformulierte Entscheidungen stehen;
+gebunden in DoD und §9, präzedenziert durch [ADR-0019](../../adr/0019-drw-2d-canvas.md) (nach
+0-HIGH-Text-Review `Accepted`), und `Proposed` ist ein echtes Netz. Ebenso trägt die **neue
+Sequenz-Begründung**: Beleg („die Lese-Seite braucht Arbeit") und Wahl („eigener vorgelagerter
+Slice") sind sauber getrennt und am Code gegengeprüft.
+
+**Startbar: JA.** 0 HIGH — die in R6 **vorab** festgelegte Abbruchregel greift, und sie ist nicht im
+Nachhinein passend gewählt worden. **Vier Läufe, vier Verdikte, jedes Mal ein echter Fund.** Die sechs
+MEDIUM sind hier eingearbeitet; **sie gehören vor das Schreiben des ADR-Textes**, weil vier von ihnen
+ADR-Antworten vorwegnahmen oder unverortet ließen — und mit dem `Accepted` immutabel geworden wären.
 
 ## 12. Closure-Notiz
 
