@@ -563,7 +563,7 @@ Nach Einarbeitung der drei HIGH und einer Entscheidung über MED-1 bis MED-7 ist
 **accept-fähig**; der Projektinhaber-Accept bleibt davon unberührt.
 
 **Anmerkung zur Einordnung:** der Slice-Plan
-`docs/plan/planning/in-progress/slice-056-wand-im-canvas-adr-ak.md` und die vier Plan-Reports wurden
+`docs/plan/planning/done/slice-056-wand-im-canvas-adr-ak.md` und die vier Plan-Reports wurden
 gelesen, um zu prüfen, ob die ADR **unbegründet** vom Plan abweicht (siehe Negativbefunde). Sie waren
 **nicht** der Maßstab: HIGH-1 bis HIGH-3 und MED-1 bis MED-5 stehen in keinem der vier Reports und
 sind ausschließlich am Artefakt entstanden. MED-6 und MED-7 sind Wiedergänger — sie standen als

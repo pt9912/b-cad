@@ -203,7 +203,7 @@ und Export; `snapPreview()` hätte ohne Zeile 8 **keinen** gedeckten Produktions
       Header == Version der neu ergänzten Zeile in
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md). **Ausgangsstand heute
       0.1.19; die Zielnummer ist die dann nächste freie** — sie wird beim Vollzug festgestellt, nicht
-      hier fixiert, weil [`slice-056`](../in-progress/slice-056-wand-im-canvas-adr-ak.md) ebenfalls schärft und die
+      hier fixiert, weil [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md) ebenfalls schärft und die
       Reihenfolge offen ist (Lauf-1-LOW-5). **Platzierung: unmittelbar nach der `0.1.16`-Zeile** — die
       Tabelle ist **nicht** monoton sortiert, „oberste Zeile" wäre wörtlich befolgt falsch
       (Lauf-1-LOW-2). **Der Sensor dieser Zeile ist die

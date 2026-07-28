@@ -42,7 +42,7 @@ steht jetzt als **benannte Grenze** im Plan statt stillschweigend als Wertgleich
 | Plan | Läufe | Ergebnis |
 |---|---|---|
 | [`slice-055`](../done/slice-055-fang-anzeige.md) (Fang-Anzeige) | 3 | **startbar** (0 HIGH im dritten) |
-| [`slice-056`](slice-056-wand-im-canvas-adr-ak.md) (Wellen-Kern, ADR + AK) | 4 | **startbar** (0 HIGH im vierten) |
+| [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md) (Wellen-Kern, ADR + AK) | 4 | **startbar** (0 HIGH im vierten) |
 
 **Jeder der sieben Läufe hat etwas Echtes gefunden, keiner war kosmetisch.** Bei 056 wuchs die
 Fragenliste **8 → 10 → 13 → 14**; bei 055 riss dieselbe Zusage **zweimal in Folge am selben Punkt**
@@ -109,7 +109,7 @@ Schnitt-Lehre für den nächsten Doku-Slice.**
 
 **Beide Slices sind frei.** [`slice-055`](../done/slice-055-fang-anzeige.md) ist der kleinere,
 geschlossene Schnitt (Code + AK, berührt nichts von 056);
-[`slice-056`](slice-056-wand-im-canvas-adr-ak.md) ist der Wellen-Kern (ADR + AK, **kein**
+[`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md) ist der Wellen-Kern (ADR + AK, **kein**
 Code) und öffnet den Strang **057** Lese-Naht → **058** zeichnen → **059** auswählen/ändern ⇒
 Trigger erfüllt ⇒ **Welle schließen**.
 
