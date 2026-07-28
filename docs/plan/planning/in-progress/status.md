@@ -37,16 +37,36 @@ steht jetzt als **benannte Grenze** im Plan statt stillschweigend als Wertgleich
    fehlt. Damit der Test nicht später versehentlich zu einem Test über zwei *identische* Pixel
    verkommt, hält er per `ASSERT_NE` fest, dass die zwei Pixel **ungefangen verschiedene** mm ergeben.
 
-### ▶ Nächste Sitzung
+### ▶ Nächste Sitzung — zwei Pläne liegen, beide brauchen ihr MR-006
 
-**Der Wellen-Kern hat weiter keinen Plan:** *eine Wand im Canvas zeichnen und parametrisch ändern* —
-das ist der **Trigger** von welle-6 und damit das, was die Welle schließt. Alles andere verlängert sie
-nur (Lehre welle-5 §5-1).
+Die zwei offenen Punkte der 048b-Closure sind **noch am selben Tag** entschieden und geschnitten
+worden, statt in den nächsten Tagesabschluss zu wandern:
 
-**Ausdrücklich zurückgestellt** ([MR-020](../../../../harness/conventions.md)-Deferral, im ADR-Index
-notiert): **DRW-002/003** (Raster/Winkel) und die **Fang-Anzeige** (R5 — der Fang reicht über das
-dargestellte Geschoss hinaus, man sieht also nicht, worauf gerastet wurde). Beide sind sinnvoll,
-keiner ist trigger-bindend.
+- **[`slice-055`](../open/slice-055-fang-anzeige.md) — Fang-Anzeige.** Die
+  [MR-020](../../../../harness/conventions.md)-Zurückstellung ist **aufgehoben**
+  (Projektinhaber, 2026-07-28): die Anzeige ist keine neue Funktion, sondern die **Beobachtbarkeit
+  einer bereits ausgelieferten** — 048b-R5 (Fang über alle Geschosse, gezeichnet nur das aktive) ist
+  ohne sie ein unerklärter Sprung. Enthält **AK-Schärfung und Implementierung in einem Schnitt**;
+  die Abweichung vom 048a/048b-Muster ist in §10 begründet und ausdrücklich review-offen.
+- **[`slice-056`](../open/slice-056-wand-im-canvas-adr-ak.md) — der Wellen-Kern, endlich mit Plan.**
+  Er liefert **ADR + AK-Schärfung, keinen Produktions-Code** (Muster
+  [`slice-041a`](../done/slice-041a-drw-canvas-adr-ak.md)), weil
+  [ADR-0019](../../adr/0019-drw-2d-canvas.md) „Bauteile interaktiv zeichnen" und „Selektion/Picking"
+  **ausdrücklich aus ihrem Schnitt nimmt** — und ADRs nach `Accepted` immutabel sind. §2 führt **acht**
+  Fragen, die der Spec-Text nicht entscheidet, **je am Artefakt belegt**. Die teuersten zwei:
+  **F2** (das Lastenheft fordert einen Linienzug ≥ 2 Punkte, das Domänen-Modell trägt
+  Einzelsegment-Wände, `spezifikation.md` §2.1 führt Wandzüge als *offen*) und **F3** (Selektion gibt
+  es im Produkt **nirgends** — das ist die eigentliche Neuheit, nicht das Zeichnen).
+  §8 schneidet den Rest-Strang: **057** zeichnen · **058** auswählen und ändern ⇒ **Trigger erfüllt**.
+
+**Weiter zurückgestellt** ([MR-020](../../../../harness/conventions.md)-Deferral, im ADR-Index
+notiert): **DRW-002/003** (Raster/Winkel) — nicht trigger-bindend.
+
+**Kein Slice ist startbar, bevor sein
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+gelaufen ist** (Reviewer ≠ Plan-Autor; HIGHs blockieren). Für 056 hat die Linse eine besondere
+Aufgabe: **sind es die richtigen acht Fragen?** Eine übersehene neunte fiele erst im Impl auf — wenn
+die ADR bereits `Accepted` und damit unveränderlich ist.
 
 **Weiter offen, ohne Wellen-Bindung:** [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) ·
 [`slice-044b`](../open/slice-044b-golden-import-fremd.md) ·
