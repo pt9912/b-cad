@@ -1,7 +1,7 @@
 ---
 id: slice-056
 titel: Wand im 2D-Canvas — ADR + AK-Schärfung (Wellen-Kern von welle-6, [LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen))
-status: open
+status: done
 welle: welle-6-interaktiv-planen
 lastenheft_refs: [[LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen), [LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren), [LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren), [LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden), [LH-FA-DRW-001](../../../../spec/lastenheft.md#lh-fa-drw-001), [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 056: Wand im 2D-Canvas — ADR + AK-Schärfung
 
-**Status:** open — **zwei
+**Status:** done (2026-07-28) — **vier
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
 durch** (Lauf 1: 2 HIGH · Lauf 2: 1 HIGH · Lauf 3: 1 HIGH / 6 MED / 4 LOW / 4 INFO), alle drei
 „nicht startbar"; Einarbeitung in §11/§11a/§11b. **Die Fragen-Zahl ist von acht über zehn und
@@ -139,46 +139,46 @@ niemand.
 
 ## 5. Definition of Done
 
-- [ ] **`docs/plan/adr/0021-*.{md}`** (neu): Kontext · die **vierzehn** Fragen aus §2 **je entschieden mit
+- [x] **`docs/plan/adr/0021-*.{md}`** (neu): Kontext · die **vierzehn** Fragen aus §2 **je entschieden mit
       verglichenen Alternativen** · Konsequenzen · Folgepflichten · Re-Eval-Trigger. Status
       `Proposed` → **unabhängiges Text-Review** → `Accepted` (Muster
       [ADR-0019](../../adr/0019-drw-2d-canvas.md)).
-- [ ] **Die ADR trägt eine Fitness Function** — jede ADR seit 0011 hat eine, und
+- [x] **Die ADR trägt eine Fitness Function** — jede ADR seit 0011 hat eine, und
       [ADR-0019](../../adr/0019-drw-2d-canvas.md) fordert sie für den Canvas ausdrücklich
       („der Canvas muss `screenToModel` + den beobachtbaren Zustand exponieren"). Die Vorfassung
       verlangte sie nicht (Lauf-3-MEDIUM-1); nach **F14** ist sie der Kern, nicht die Zugabe.
-- [ ] **[`docs/plan/adr/README.md`](../../adr/README.md)**: Index-Zeile + **Folgepflicht-Zeilen** für
+- [x] **[`docs/plan/adr/README.md`](../../adr/README.md)**: Index-Zeile + **Folgepflicht-Zeilen** für
       057–059 ([AGENTS §4](../../../../AGENTS.md)). **Ohne Gate** — s. §4-1b.
-- [ ] **Lastenheft**: [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen)-Block
+- [x] **Lastenheft**: [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen)-Block
       „Interaktive Erzeugung (2D-Zeichenfläche)" (Happy/Boundary/Negative) +
       [`LH-FA-WAL-002`](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)/003
       je ein interaktiver Konjunkt — **lösungsfrei**.
-- [ ] **Falls F2 zugunsten des mehrpunktigen Zugs entschieden wird: der Teilerfolg ist mitzuentscheiden**
+- [x] **Falls F2 zugunsten des mehrpunktigen Zugs entschieden wird: der Teilerfolg ist mitzuentscheiden**
       (F2-Konjunkt) — ein abgelehntes Zwischen-Segment hinterlässt sonst einen halben Wandzug ohne
       Rückweg (Lauf-4-MEDIUM-6).
-- [ ] **Falls F2 zugunsten „ein Segment je Zug" entschieden wird: eine benannte Teilumfang-Klausel an
+- [x] **Falls F2 zugunsten „ein Segment je Zug" entschieden wird: eine benannte Teilumfang-Klausel an
       [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen)** (Muster der
       DRW-/ROF-/STR-Teilumfänge). **Ohne sie unterschreitet die Lieferung den geltenden Happy Path**
       („Linienzug mit ≥ 2 Punkten") — die Vorfassung hatte die Klausel nur als Empfehlung im
       Risiko-Abschnitt (Lauf-1-MEDIUM-1).
-- [ ] **[`LH-FA-DRW-005`](../../../../spec/lastenheft.md#lh-fa-drw-005)-Teilumfang-Klausel nachziehen
+- [x] **[`LH-FA-DRW-005`](../../../../spec/lastenheft.md#lh-fa-drw-005)-Teilumfang-Klausel nachziehen
       oder bewusst beibehalten**: sie führt „das **interaktive Zeichnen von Bauteilen** … bleibt
       ausdrücklich offen". Der neue WAL-001-Block macht sie im selben Dokument gegenläufig; **kein Gate
       fängt das** (Lauf-1-MEDIUM-4).
-- [ ] **F9 hat ZWEI Entscheidungsrichtungen, und beide kosten Arbeit** (Lauf-2-MEDIUM-1):
+- [x] **F9 hat ZWEI Entscheidungsrichtungen, und beide kosten Arbeit** (Lauf-2-MEDIUM-1):
       `snappedModelPos` sitzt **unbedingt** in Press/Release, also in der **Geste** — nicht im
       Hilfslinien-Sink. Ein Wand-Werkzeug **fängt damit per Default**. Fällt F9 **dafür**, ist die
       [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001)-Teilumfang-Zeile nachzuziehen
       („Fangen beim Bauteil-Zeichnen" steht dort als **offen**); fällt F9 **dagegen**, ist
       **Unterdrückungs-Arbeit** im Canvas nötig — sonst steht die Lastenheft-Zeile **still falsch**.
       **Kein drittes Ergebnis.**
-- [ ] **Lastenheft-Version + Historie** ([MR-010](../../../../harness/conventions.md)/[MR-012](../../../../harness/conventions.md)):
+- [x] **Lastenheft-Version + Historie** ([MR-010](../../../../harness/conventions.md)/[MR-012](../../../../harness/conventions.md)):
       Header == Version der neu ergänzten Zeile in
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md); **Platzierung unmittelbar
       nach der `0.1.16`-Zeile** (die Tabelle ist nicht monoton sortiert). Zielnummer beim Vollzug
       feststellen — [`slice-055`](../done/slice-055-fang-anzeige.md) schärft ebenfalls, die Reihenfolge ist
       offen. **Sensor: die [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Linse, kein Gate** (§4-4).
-- [ ] **`spec/spezifikation.md` §1**: Mapping-Block für den interaktiven Wand-Weg (Werkzeug-Modus,
+- [x] **`spec/spezifikation.md` §1**: Mapping-Block für den interaktiven Wand-Weg (Werkzeug-Modus,
       Selektion, Parameter-Rückmeldung, Refresh-Pfad, Fang-Geltung, Fehler-Barriere) —
       die **Mechanik**, die aus dem Lastenheft herausgehalten wird — **einschließlich der 2D-Lese-Naht
       aus F11 und der Nachweis-Naht aus F14**. **Die Aufzählung nennt die Themen, nicht die Antworten**
@@ -187,34 +187,34 @@ niemand.
       Prämisse von F14 vorweg (Lauf-3-MEDIUM-2: die Zeile zählte unverändert dieselben
       sechs Punkte, obwohl der Lauf-2-HIGH sie ausdrücklich benannt hatte). **§2.1-Klausel „Wandzüge
       folgen als Erweiterung"** je nach F2-Entscheidung **nachziehen oder ausdrücklich stehen lassen**.
-- [ ] **`spec/spezifikation.md` §6**: die Vertragszeile „**2D-Zeichenfläche (DRW-Canvas)**" (seit
+- [x] **`spec/spezifikation.md` §6**: die Vertragszeile „**2D-Zeichenfläche (DRW-Canvas)**" (seit
       slice-041a) trägt den Konjunkt „**Selbst-Refresh ohne `op`**". Der Wand-Weg macht ihn
       unvollständig (Wand-Mutationen **melden** einen `op`) — nachziehen (Lauf-2-MEDIUM-4).
-- [ ] **`spec/architecture.md` §1.1**: Driving-Ports-Tabelle um die Canvas-Klausel am
+- [x] **`spec/architecture.md` §1.1**: Driving-Ports-Tabelle um die Canvas-Klausel am
       `EditStructurePort` **und** — je nach **F11**-Entscheidung — um die erweiterte 2D-Lese-Naht
       (`PlanViewPort`); **meilenstein- und slice-frei** ([AGENTS §2.7](../../../../AGENTS.md)).
-- [ ] **Falls F11 die Lese-Naht erweitert: die Folge für `model::PlanView`/`PlanSegment` ist im
+- [x] **Falls F11 die Lese-Naht erweitert: die Folge für `model::PlanView`/`PlanSegment` ist im
       ADR-Text zu tragen** — es wäre die erste Änderung an einem **Kern-Werttyp** in diesem Strang und
       berührt PDF/PNG-Export und die Golden-Files, die dieselbe Projektion konsumieren.
-- [ ] **F8 ist beantwortet** — entweder Zeichenbereich definiert **oder** die
+- [x] **F8 ist beantwortet** — entweder Zeichenbereich definiert **oder** die
       [`E-GEO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Negative als
       in dieser Ausbaustufe **nicht erreichbar** benannt. **Kein drittes Ergebnis** („später").
-- [ ] **Die Folge-Slices existieren als Plan-Datei** (057 Lese-Naht · 058 zeichnen · 059 auswählen
+- [x] **Die Folge-Slices existieren als Plan-Datei** (057 Lese-Naht · 058 zeichnen · 059 auswählen
       und ändern — die Sequenz-Entscheidung steht in §8) in `open/`, `next/` **oder**
       `in-progress/` — **oder** eine **explizite Deferral-Entscheidung** steht in Roadmap/ADR-Index.
       [MR-020](../../../../harness/conventions.md) regelt die Closure einer **Slice** bzw. einer
       **Welle** (eine ADR hat keine Closure) und lässt beide Wege zu (Lauf-1-LOW-2).
-- [ ] **Die ADR stellt die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Einschlägigkeit fest** (Lese-Runde **L1**, §13):
+- [x] **Die ADR stellt die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Einschlägigkeit fest** (Lese-Runde **L1**, §13):
       [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) hat [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) für Hilfslinien ausdrücklich
       **verneint** („keine neue Solid-Geometrie") — für **Wände** gilt das Gegenteil (Solid,
       Nachbar-Eckenschluss, Raum-Neuerkennung). Ohne die Feststellung erben 058/059 stillschweigend
       eine Verneinung, die für sie falsch ist. Präzedenz: 0018 **und** 0019 treffen die Aussage je
       für ihren Umfang.
-- [ ] **CHANGELOG** [Unreleased]-Eintrag.
-- [ ] **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report
+- [x] **CHANGELOG** [Unreleased]-Eintrag.
+- [x] **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report
       unter `docs/reviews/`** je Lauf + **ADR-Text-Review** — als DoD-Zeile, nicht nur in der
       Datei-Tabelle.
-- [ ] **`make gates` grün**; **kein** Code-Diff, belegt am `git diff --stat` (§4-6).
+- [x] **`make gates` grün**; **kein** Code-Diff, belegt am `git diff --stat` (§4-6).
 
 ## 6. Plan (vor Code)
 
@@ -529,4 +529,62 @@ ist genau das Material, das in Konsequenzen-Blöcken steht und in Entscheidungs-
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Vollzogen 2026-07-28.** `make gates` **EXIT=0** (docs-check **0 Befunde / 277 Dateien** · a-check 0 ·
+arch-check ok · **366/366** Tests · Coverage 92,1 %), `make schema-check` ok. **Kein Code-Diff** —
+`git diff --stat` über `src/`, `tests/`, `data-model.yaml` und `schema.sql` ist **leer** (§4-6; nicht
+über `make schema-check` behauptet, das ist ein Drift-Wächter).
+
+**[ADR-0021](../../adr/0021-wand-im-2d-canvas.md) ist `Accepted`** — mit **siebzehn** Entscheidungen,
+nicht vierzehn.
+
+### Die Bilanz der Prüfungen
+
+| Lauf | Ergebnis | Neue Fragen |
+|---|---|---|
+| Plan-Review 1 | 2 HIGH / 6 MED / 5 LOW / 3 INFO | F9 · F10 |
+| Plan-Review 2 | 1 HIGH / 4 MED / 4 LOW / 4 INFO | F11 · F12 · F13 |
+| Plan-Review 3 | 1 HIGH / 6 MED / 4 LOW / 4 INFO | F14 |
+| Plan-Review 4 | **0 HIGH** / 6 MED / 5 LOW / 4 INFO | — (Abbruchregel greift) |
+| **Lese-Runde** (kein Review) | 3 Verpflichtungen | — |
+| **ADR-Text-Review** | 3 HIGH / 7 MED / 5 LOW / 6 INFO | **E15 · E16 · E17** |
+
+**Acht → siebzehn.** Neun Entscheidungen kamen aus Prüfungen, keine vom Autor allein.
+
+### Die drei Funde des Text-Reviews — und warum sie dort auffielen
+
+1. **Kein Port lieferte die Wand-Parameter**, die der Eigenschaften-Bereich anzeigen sollte.
+2. **Die Treffer-Prüfung hätte deterministisch die unsichtbare Wand getroffen** — im mitgelieferten
+   Demo-Modell liegen vier Außenwände in zwei Geschossen deckungsgleich.
+3. **Eine Auswahl hätte eine Modell-Ersetzung überlebt** und danach still eine **andere existierende**
+   Wand mutiert; die Fehler-Barriere schweigt bei einer gültigen fremden Identität.
+
+**Alle drei fehlten, weil eine *andere* Entscheidung die Frage scheinbar schon beantwortet hatte** —
+„die Id genügt", „wie der Fang", „die Senke fängt", je nur für den halben Fall. **Das ist der Beleg,
+dass die Verlagerung der Vollständigkeitslast vom Plan auf den ADR-Text richtig war:** eine Liste von
+Frage-Überschriften kann diese Bauart nicht zeigen, ein ausformulierter Entscheidungs-Text schon.
+
+### Zwei Befunde außerhalb der Prüf-Läufe
+
+- **Die Lese-Runde fand keine fehlende Entscheidung, aber drei Verpflichtungen** — die
+  [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Einschlägigkeit
+  (die Vorgänger-ADR hatte sie für Hilfslinien **verneint**), die Bauteil-Ebenen-Abgrenzung und eine
+  Beobachtungspflicht. **Alle drei standen in Konsequenzen-Blöcken, keine in einem
+  Entscheidungs-Block.**
+- **Eine Lastenheft-Aussage war seit der Fang-Lieferung unwahr:** die Hilfslinien-Teilumfang-Klausel
+  behauptete „in dieser Ausbaustufe wird **frei** gezeichnet — Fangen … bleibt offen". **Kein Review
+  hat das gefunden**; es fiel beim Nachziehen auf, weil dieselbe Klausel für die Selektion angefasst
+  werden musste. **Ein Beleg dafür, dass Nachzieh-Arbeit selbst ein Sensor ist.**
+
+### Was der Slice bewusst nicht liefert
+
+**Keine Zeile Produktions-Code.** Der Trigger der Welle ist **nicht** erfüllt — er wird es mit
+[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md). Die drei Folge-Pläne liegen als
+Skelett in `open/` ([MR-020](../../../../harness/conventions.md) §3); jeder trägt die Stellen, an
+denen er still falsch werden kann.
+
+### Reihenfolge des Strangs
+
+**057** (Lese-Naht, vorgelagert, ohne UI-Anteil) · **058** (zeichnen, **unabhängig** von 057) ·
+**059** (auswählen und ändern, **setzt 057 voraus**). Vor der Welle-Closure steht das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des ganzen Bauteil-Strangs.
