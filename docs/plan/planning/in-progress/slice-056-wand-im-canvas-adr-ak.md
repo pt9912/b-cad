@@ -76,7 +76,7 @@ sie ist der Stand nach drei Suchläufen. Wo die Vollständigkeit wirklich zu bel
 | **F8** | **[`E-GEO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) „Eingabe außerhalb des Zeichenbereichs".** | Die Negative-AK von [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen) nennt diesen Fall. Ein **begrenzter Zeichenbereich in Modell-mm** existiert nicht; der Zoom ist geklemmt (`[1e-4, 100]` px/mm seit dem slice-043-Code-Review) und ein interaktives Pan gibt es nicht — die Begrenzung ist also eine Sicht-, keine Bereichs-Grenze (Lauf-1-LOW-1). Entweder die ADR definiert einen Bereich, oder die AK bekommt die ehrliche Feststellung, dass der Fall in dieser Ausbaustufe **nicht erreichbar** ist. **Was nicht geht: die AK-Zeile stehen lassen und nichts dazu bauen.** |
 | **F9** | **Fangen beim Bauteil-Zeichnen** — gilt der 048b-Fang auch für den Wand-Zug? | **Vom ersten Review gefunden (HIGH-2); die Vorfassung hatte die Frage nicht.** [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001) begrenzt den Fang wörtlich auf „das interaktive Zeichnen von **Hilfslinien**" und führt „**Fangen beim Bauteil-Zeichnen**" im Teilumfang-Block ausdrücklich als **offen**. Die Folge ist nicht kosmetisch: der WAL-001-Happy fordert „verbundene Endpunkte werden **geometrisch verbunden**", [`LH-FA-WAL-006`](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden) setzt einen **gemeinsamen** Endpunkt voraus, und `spezifikation.md` §3 legt die Toleranz auf **0,1 mm** fest — während ein Bildschirm-Pixel bei Default-Zoom rund **20 mm** entspricht. **Ohne Fang ist der Eckenschluss auf dem interaktiven Weg praktisch unerreichbar.** |
 | **F10** | **Fehler-Barriere des zweiten Mutators.** | **Vom ersten Review gefunden (MEDIUM-2).** Der erste UI-Mutator lehnt **wertbasiert** ab (`addGuideLine → std::optional`, Modell unverändert); der zweite **wirft**: `addWall` wirft `std::out_of_range` bei unbekannter Geschoss-Id, `setWallThickness`/`setWallHeight` werfen über `mutableWall` bei unbekannter Wand-Id. Das ist kein Randfall — die Zeichen-Ziele werden als eingefrorene Ids injiziert und nach einem Projekt-Laden nachgezogen (`setTarget`/`setActiveStorey` tragen genau diesen Kommentar). Dieselbe Konstellation führt beim Hilfslinien-Weg zu stiller Ablehnung, beim Wand-Weg zu einem **Wurf aus einem Qt-Event-Handler**. Wo diese Barriere liegt, ist unentschieden. |
-| **F11** | **Die 2D-Lese-Naht selbst** — womit soll der Canvas eine **Wand** treffen und benennen? | **Vom zweiten Review gefunden (HIGH-1) — und [ADR-0019](../../adr/0019-drw-2d-canvas.md) benennt die Folge in ihrem Re-Eval-Block wörtlich:** »2D-Lese-Naht (`PlanViewPort`) um **Bauteil-/Treffer-Queries erweitern**«. Der Plan zitierte dieselbe ADR zweimal, diesen Satz nicht. `model::PlanSegment` trägt `{x1,y1,x2,y2}` — **keine `WallId`, keine Art**; `projectPlan` mischt Wand-Achsen und sichtbare Hilfslinien in **eine** Liste, `paintEvent` zeichnet beide gleich. **F3** (Picking) hätte damit nur **anonyme** Segmente zu treffen, **F4** (Parameter ändern) braucht eine `WallId`, die die Naht nicht liefert, und die geplante WAL-001-Happy-AK wäre nicht als **Wand** beobachtbar. Das ist die teuerste offene Entscheidung des Strangs, weil sie einen **Kern-Werttyp** und einen **Read-Port** berührt — nicht nur das Widget. |
+| **F11** | **Die 2D-Lese-Naht selbst** — womit soll der Canvas eine **Wand** treffen und benennen? | **Vom zweiten Review gefunden (HIGH-1) — und [ADR-0019](../../adr/0019-drw-2d-canvas.md) benennt die Folge in ihrem Re-Eval-Block wörtlich:** »2D-Lese-Naht (`PlanViewPort`) um **Bauteil-/Treffer-Queries erweitern**«. Der Plan zitierte dieselbe ADR zweimal, diesen Satz nicht. `model::PlanSegment` trägt `{x1,y1,x2,y2}` — **keine `WallId`, keine Art**; `projectPlan` mischt Wand-Achsen und sichtbare Hilfslinien in **eine** Liste, `paintEvent` zeichnet beide gleich. **F3** (Picking) hätte damit nur **anonyme** Segmente zu treffen, **F4** (Parameter ändern) braucht eine `WallId`, die die Naht nicht liefert, und die geplante WAL-001-Happy-AK wäre nicht als **Wand** beobachtbar. Das ist die teuerste offene Entscheidung des Strangs, weil sie einen **Kern-Werttyp** und einen **Read-Port** berührt — nicht nur das Widget. **Und sie zieht einen fremden Re-Eval-Trigger** (Lese-Runde **L3**): `PlanView` reist im `DerivedGeometry`-Bündel, und [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) führt „das Bündel wird zu breit" als Anlass, das Varianten-/Bedarfs-Modell neu zu bewerten. |
 | **F12** | **Der Rückweg aus einer Wand-Geste.** | **Vom zweiten Review gefunden (MEDIUM-2).** `EditStructurePort` hat **kein `removeWall`** — der Vorgänger-Mutator hat `removeGuideLine`. Der Canvas kennt keinen **Gesten-Abbruch** (Escape, Fokusverlust), und Undo ist unbedient. Eine falsch gezogene Wand ist damit in der Oberfläche **nicht rücknehmbar**; §3 grenzte bisher nur die Undo-Hälfte ab. |
 | **F13** | **Welche Parameter gehören zu „parametrisch änderbar"?** | **Vom zweiten Review gefunden (MEDIUM-3).** F4 führt Stärke und Höhe. Das Lastenheft führt daneben [`LH-FA-WAL-007`](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen) (**Wandtyp**, mit Wertemenge und Wirkung), und der Port bietet `setWallMaterial`. Beide sind weder in F4 geführt noch in §3 abgegrenzt — obwohl §3 die Nachbarn WAL-004/005 ausdrücklich abgrenzt und der Wellen-Trigger genau „**parametrisch** änderbar" lautet. |
 | **F14** | **Woran wird reiner UI-Zustand nachgewiesen?** Auswahl (F3), Werkzeug-Modus (F1) und Hinweis (F5) haben **kein Korrelat außerhalb des Widgets**. | **Vom dritten Review gefunden (HIGH-1) — und ZWEI Accepted-ADRs benennen genau das wörtlich als offen.** Jede bisherige Interaktions-AK dieses Repos hängt an einem **Modell**-Surrogat (`building().guide_lines`, über Persistenz und Export weiter beobachtbar). Auswahl, Werkzeug-Modus und Hinweis sind **nicht persistiert, nicht exportiert, nicht im `Building`** — es gibt nichts, woran eine AK sie festmachen könnte außer dem Widget selbst. [ADR-0009](../../adr/0009-gui-framework-qt6.md) (f) hält `tests/e2e/` leer, bis „ein Treiber mit **Interaktion/Selektion** relevant wird"; [ADR-0019](../../adr/0019-drw-2d-canvas.md) E7 schreibt: „`tests/e2e/` bleibt daher leer, **bis eine AK entsteht, die nur echt end-to-end prüfbar ist (z. B. Selektion / mehrschrittige Interaktion)**". **Dieser Strang liefert beide dort genannten Beispiele** — und `tests/e2e/` enthält bis heute nur `.gitkeep`. §8 buchte für 058/059 „Headless-AK" — **die Antwort, bevor die Frage gestellt war**; das ist nach Lauf 4 entfernt, die §8-Zeilen tragen jetzt „die **in F14 entschiedene** Nachweis-Naht". |
@@ -102,6 +102,12 @@ sie ist der Stand nach drei Suchläufen. Wo die Vollständigkeit wirklich zu bel
 Nicht-Teil. Er ist jetzt als **Konjunkt von F2** geführt und in der DoD verankert; Lauf-4-MEDIUM-6:
 etwas gleichzeitig „bewusst nicht Teil" zu nennen **und** einem ADR-Abschnitt zuzuweisen, ist keine
 Verortung.)*
+- **Bauteil-Ebenen** — eine interaktiv gezeichnete Wand erbt **nicht** die aktive Zeichen-Ebene des
+  Canvas; Wände tragen weiterhin **keine** `layer_id` (Lese-Runde **L2**, §13). Das ist eine
+  **Entscheidung, keine Auslassung**: [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) führt
+  „Layer-Zuordnung für Bauteile" als Re-Eval-Trigger, der die polymorphe
+  `entity_layers`-Zuordnung aktivierte und **Layer cross-cutting** machte — eine Schema-Erweiterung,
+  die dieser Strang nicht beschließt und nicht stillschweigend auslösen darf.
 - **Undo/Redo** ([`LH-QA-003`](../../../../spec/lastenheft.md#lh-qa-003--undoredo)).
   Die Anforderung fordert ≥ 1000 rücknehmbare Schritte, `undo_commands` existiert im Schema, **kein**
   Mutations-Pfad bedient es. Der interaktive Wand-Weg erzeugt Modell-Mutationen ohne Undo-Anbindung —
@@ -198,6 +204,12 @@ niemand.
       `in-progress/` — **oder** eine **explizite Deferral-Entscheidung** steht in Roadmap/ADR-Index.
       [MR-020](../../../../harness/conventions.md) regelt die Closure einer **Slice** bzw. einer
       **Welle** (eine ADR hat keine Closure) und lässt beide Wege zu (Lauf-1-LOW-2).
+- [ ] **Die ADR stellt die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Einschlägigkeit fest** (Lese-Runde **L1**, §13):
+      [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) hat [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) für Hilfslinien ausdrücklich
+      **verneint** („keine neue Solid-Geometrie") — für **Wände** gilt das Gegenteil (Solid,
+      Nachbar-Eckenschluss, Raum-Neuerkennung). Ohne die Feststellung erben 058/059 stillschweigend
+      eine Verneinung, die für sie falsch ist. Präzedenz: 0018 **und** 0019 treffen die Aussage je
+      für ihren Umfang.
 - [ ] **CHANGELOG** [Unreleased]-Eintrag.
 - [ ] **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report
       unter `docs/reviews/`** je Lauf + **ADR-Text-Review** — als DoD-Zeile, nicht nur in der
@@ -262,6 +274,10 @@ niemand.
   Bauteil-/Treffer-Queries, ändert sich ein **Kern-Werttyp** (`model::PlanSegment`), den auch PDF-,
   PNG-Export und die Golden-Files konsumieren. Das ist ein **anderer Risiko-Grad** als der Rest des
   Strangs — und der Grund, warum diese Frage vor 057/058 gehört und nicht in sie hinein.
+  **Zusätzlich zieht sie einen fremden Trigger** (L3): wächst der Werttyp, der im
+  `DerivedGeometry`-Bündel reist, ist der
+  [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Re-Eval
+  „Bündel zu breit" gezogen — die ADR muss das **benennen**, nicht später entdecken.
 
 ## 8. Der Strang danach (Sequenz, nicht Umfang dieses Slice)
 
@@ -469,6 +485,47 @@ Slice") sind sauber getrennt und am Code gegengeprüft.
 Nachhinein passend gewählt worden. **Vier Läufe, vier Verdikte, jedes Mal ein echter Fund.** Die sechs
 MEDIUM sind hier eingearbeitet; **sie gehören vor das Schreiben des ADR-Textes**, weil vier von ihnen
 ADR-Antworten vorwegnahmen oder unverortet ließen — und mit dem `Accepted` immutabel geworden wären.
+
+
+## 13. Lese-Runde vor dem Schreiben (2026-07-28) — Deckungs-Nachweis
+
+*(Die Disziplin, deren Fehlen in dieser Sitzung **F11** und **F14** gekostet hat: beide standen
+wörtlich in Konsequenzen-/Re-Eval-Blöcken von ADRs, die der Plan zitierte. Regel-Kandidat in
+`status.md`, Zähler 2. Hier angewandt **bevor** eine Zeile ADR-Text steht.)*
+
+**Gelesen (vollständig, nicht überflogen):** die Blöcke *Konsequenzen*, *Fitness Function*,
+*Re-Evaluierungs-Trigger* und die zugehörigen Folgepflicht-Zeilen im
+[ADR-Index](../../adr/README.md) von [ADR-0009](../../adr/0009-gui-framework-qt6.md),
+[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md) und
+[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md).
+
+**Ergebnis: keine fünfzehnte Frage** — aber **drei Verpflichtungen**, die der Plan nicht trug. Alle
+drei stammen aus Konsequenzen-Blöcken, keine aus einem Entscheidungs-Block.
+
+| # | Fundstelle | Was daraus folgt |
+|---|---|---|
+| **L1** | [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Konsequenzen erklärt [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) ausdrücklich für **n/a** — mit Begründung: „Hilfslinie = 2 Punkte, **keine neue Solid-Geometrie**" | **Für Wände gilt exakt das Gegenteil.** `addWall` baut ein Solid, rechnet **Nachbar-Ecken** neu ([`LH-FA-WAL-006`](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)) und stößt die **Raum-Neuerkennung** an. [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) ist für den Strang **einschlägig** — und die neue ADR muss das **feststellen**, wie 0018 und 0019 es für ihren Umfang tun. Fehlt die Aussage, erbt 058/059 stillschweigend die 0018-Verneinung, die für sie falsch ist. → **neue DoD-Zeile** |
+| **L2** | [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Re-Eval: „**Layer-Zuordnung für Bauteile** (Wände/Räume auf benutzer-Layern) → Aktivierung der polymorphen `entity_layers`-Zuordnung ([ADR-0006](../../adr/0006-relationales-schema-design.md)-#6), **Layer wird cross-cutting**" | Der Canvas hält beim Zeichnen eine **aktive Zeichen-Ebene** (der Hilfslinien-Sink trägt eine `LayerId`). Sobald dort eine **Wand** entsteht, ist die Frage gestellt, ob sie diese Ebene erbt — Wände tragen heute **keine** `layer_id`. Die Antwort „nein, Wände bleiben ebenenlos" ist vertretbar, **muss aber dastehen**: sie triggert sonst unbemerkt eine Schema-Erweiterung, die diese ADR nicht beschlossen hat. → **§3-Abgrenzung** |
+| **L3** | [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) §Re-Eval: „**Das `DerivedGeometry`-Bündel wird zu breit** (viele optionale Felder je neuem Format) → Varianten-/Bedarfs-Modell neu bewerten" | **F11** kann genau das auslösen: erweitert die Antwort `PlanView`/`PlanSegment` um Bauteil-Identität, wächst der Werttyp, der **im Bündel reist**. Der [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Trigger ist dann **gezogen** — das gehört als benannte Folge in F11/R7, nicht als Überraschung in 057. → **F11 und R7 ergänzt** |
+
+**Ausdrücklich geprüft und NICHT als Verpflichtung geführt:**
+[ADR-0009](../../adr/0009-gui-framework-qt6.md) §Re-Eval „Selektion/Picking **im Viewport** → AIS/V3d
+neu bewerten, **als Supersedes-ADR**" — das betrifft die **3D**-Selektion und ist in §3 bereits
+abgegrenzt; die 2D-Selektion (F3) läuft im eigenen `view/`-Widget und berührt weder AIS noch V3d ·
+„Mehr-Fenster/Nebenläufigkeit" ([`LH-FA-UI-004`](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui))
+— nicht berührt · „Render-/Latenz-Budget wird Anforderung" — die „**sofort**"-Zusage aus
+[`LH-FA-WAL-002`](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)/
+[`LH-FA-D3-002`](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung) ist **kein**
+Budget: D3-002 führt „Latenz-/Performance-Budget" ausdrücklich als **Out-of-Scope** ·
+[ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md) §Re-Eval „Benutzer-Layer → eigener DXF-Layer-Name"
+(setzt L2 voraus, das verneint wird) und „Bemaßung/Schraffur/Gruppen" (§3 abgegrenzt) ·
+[ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md) §Re-Eval
+„Import-Adapter braucht Kern-Geometrie" — der Strang berührt keinen Import-Pfad.
+
+**Was die Runde über sich selbst sagt:** sie hat **keine** Architektur-Entscheidung gefunden, die
+gefehlt hätte — die vier Review-Läufe haben die Fragenliste offenbar erschöpft. Gefunden hat sie
+**Verpflichtungen**: eine Prozess-Pflicht (L1), eine Abgrenzung (L2) und eine Folge-Kette (L3). Das
+ist genau das Material, das in Konsequenzen-Blöcken steht und in Entscheidungs-Blöcken nicht.
 
 ## 12. Closure-Notiz
 
