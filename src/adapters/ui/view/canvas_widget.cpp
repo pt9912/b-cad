@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 #include <utility>
 
 #include <QMouseEvent>
@@ -10,6 +11,8 @@
 #include <QPen>
 #include <QResizeEvent>
 #include <QWheelEvent>
+
+#include "adapters/ui/view/snap.h"
 
 namespace bcad::adapters::ui::view {
 
@@ -73,6 +76,14 @@ void CanvasWidget::paintEvent(QPaintEvent* /*event*/) {
     }
 }
 
+hexagon::model::Point2D CanvasWidget::snappedModelPos(
+    const QPoint& cursor_px) const {
+    const hexagon::model::PlanView plan = pull_();
+    const std::optional<hexagon::model::Point2D> target =
+        snapTarget(plan, transform_, cursor_px, kSnapThresholdPx);
+    return target.value_or(transform_.screenToModel(cursor_px));
+}
+
 void CanvasWidget::mousePressEvent(QMouseEvent* event) {
     if (event->button() != Qt::LeftButton) {
         QWidget::mousePressEvent(event);
@@ -81,7 +92,9 @@ void CanvasWidget::mousePressEvent(QMouseEvent* event) {
     dragging_ = true;
     drag_start_px_ = event->pos();
     drag_current_px_ = event->pos();
-    drag_start_mm_ = transform_.screenToModel(event->pos());  // stabil (LOW-2)
+    // Gefangene mm festhalten, nicht das Pixel und nicht den ungefangenen Wert
+    // (slice-048b R3): Zoom/Resize mitten im Zug dürfen den Anfang nicht bewegen.
+    drag_start_mm_ = snappedModelPos(event->pos());  // stabil (LOW-2)
     update();
 }
 
@@ -101,7 +114,7 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent* event) {
     }
     dragging_ = false;
     const hexagon::model::Point2D start = drag_start_mm_;  // bei Press gemappt
-    const hexagon::model::Point2D end = transform_.screenToModel(event->pos());
+    const hexagon::model::Point2D end = snappedModelPos(event->pos());
     // Der Kern lehnt den entarteten Zug (Anfang == Ende) ab (kein Wert, Modell
     // unverändert) — der Canvas verlässt sich darauf, klemmt nichts selbst
     // (E-VAL-001-Rejection-Lesart). Erfolg wie Ablehnung: Repaint (die

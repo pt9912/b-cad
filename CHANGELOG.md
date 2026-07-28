@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-048b — **Fangpunkte im 2D-Canvas** (LH-FA-DRW-001, ADR-0018/ADR-0019; **Benutzerhandbuch
+  1.4**). Beim Zeichnen einer Hilfslinie rasten **Anfang wie Ende** auf den nächstgelegenen Endpunkt
+  einer Wand-Achse oder einer sichtbaren Hilfslinie ein, sobald der Cursor innerhalb der **Fang-Nähe**
+  (12 Bildschirm-Pixel) liegt — die erzeugte Hilfslinie trägt dann **exakt** dessen mm, nicht „nahe
+  dran". Außerhalb der Fang-Nähe bleibt das freie Zeichnen aus slice-043 unverändert.
+  **Die Auswahl liegt in einer eigenen reinen Funktion** (`ui/view/snap.{h,cpp}`), nicht im
+  Widget-Rumpf: die Zusagen dieses Slice sind Aussagen über **Auswahl** (nächstgelegener Punkt,
+  Tie-Break, Schwellwert) und damit **ohne** Qt-Fixture diskriminierend prüfbar — dieselbe Bauform wie
+  `ViewTransform`. Der Canvas ruft sie an den zwei bestehenden `screenToModel`-Stellen und **pullt die
+  `PlanView` an Ort und Stelle**; ein zwischengespeicherter Plan wäre neuer Zustand und könnte
+  veralten (Pull-Widget, ADR-0019). **Kein neuer Port, keine neue Schicht-Kante, kein neuer `op`, kein
+  neuer Fehlerfall** — eine gefangene Hilfslinie ist eine gewöhnliche; `data-model.yaml`/`schema.sql`
+  sind byte-unberührt.
+  **Der Tie-Break liegt an zwei Orten, und das ist keine Formalie:** `PlanSegment` trägt **keinen**
+  Unterscheider Wand↔Hilfslinie, also kann `snapTarget` nur „zuerst besucht gewinnt" zusichern
+  (Geschosse in Speicherreihenfolge, je Segment Anfang vor Ende); **dass** diese Reihenfolge
+  Wand-Achsen vor Hilfslinien führt, entsteht in `projectPlan` und wird dort belegt. Beide Hälften
+  zusammen ergeben erst die Zusicherung der Spezifikation.
+  **Benannte Grenze:** gefangen wird über **alle** Geschosse der `PlanView` — der Spezifikation
+  wörtlich folgend —, gezeichnet aber nur das aktive. Der Cursor kann damit auf einen Punkt einrasten,
+  der nicht im Bild liegt; eine **Fang-Anzeige** gibt es noch nicht (eigener Folge-Slice).
 - slice-052b — **„Neues Projekt"** (`Datei → Neu`, **LH-FA-BLD-001 erstmals benutzer-erfüllbar**;
   **Lastenheft 0.1.19**, **Benutzerhandbuch 1.3**). Das neue Projekt trägt **ein Geschoss** mit der
   Default-Höhe der Spezifikation und **eine Zeichen-Ebene** — ohne sie wäre die einzige heute

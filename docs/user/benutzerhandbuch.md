@@ -1,8 +1,8 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.3
-Stand: 2026-07-26
+Handbuch-Version: 1.4
+Stand: 2026-07-28
 
 ---
 
@@ -27,7 +27,8 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
 **Heute möglich:**
 - ein Gebäude **ansehen** — das mitgelieferte Beispiel, ein importiertes oder ein
   geöffnetes Projekt (3D-Ansicht + 2D-Grundriss),
-- **Hilfslinien** im Grundriss zeichnen,
+- **Hilfslinien** im Grundriss zeichnen — mit **Einrasten** auf vorhandene
+  Eckpunkte, wenn Sie nah genug herangehen,
 - in Formate **exportieren** (IFC/DXF/STEP/STL/PDF/PNG),
 - ein Projekt **speichern** und **öffnen** (Menü **Datei** oder Kommandozeile),
 - ein **neues, leeres Projekt anlegen** (Menü **Datei → Neu**) — mit einem
@@ -104,7 +105,8 @@ Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 - **Ansicht wechseln:** Reiter **3D** oder **2D** anklicken.
 - **3D drehen:** Im Reiter **3D** mit der Maus ziehen.
 - **Hilfslinie zeichnen:** Im Reiter **2D** mit gedrückter linker Maustaste ziehen
-  (siehe Abschnitt 4.2).
+  (siehe Abschnitt 4.2). Nah an einem vorhandenen Eckpunkt **rastet** der Punkt
+  exakt auf ihn ein.
 - **Neues Projekt:** Menü **Datei** → **Neu** (siehe Abschnitt 4.3).
 - **Projekt speichern/öffnen:** Menü **Datei** → **Speichern**,
   **Speichern unter…** bzw. **Öffnen…** (siehe Abschnitt 4.3).
@@ -154,7 +156,7 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 | Aufgabe | Wo |
 |---|---|
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
-| Hilfslinie zeichnen | Oberfläche, Reiter 2D (4.2) |
+| Hilfslinie zeichnen (mit Einrasten auf Eckpunkte) | Oberfläche, Reiter 2D (4.2) |
 | Neues Projekt anlegen | Oberfläche, Menü **Datei → Neu** (4.3) |
 | Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
 | Ungesicherte Änderungen sichern | Rückfrage beim Öffnen/Beenden (4.3) |
@@ -178,10 +180,27 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 **Ergebnis:** Die Hilfslinie erscheint **sofort** im Grundriss. Sie gehört zum
 Modell und erscheint auch im 2D-Export (DXF/PDF/PNG).
 
+**Einrasten auf vorhandene Punkte (Fangen).** Führen Sie den Mauszeiger beim
+Setzen von Anfang **oder** Ende nah an einen vorhandenen **Eckpunkt** — den
+Endpunkt einer Wandachse oder einer bereits gezeichneten Hilfslinie —, dann
+**rastet** der Punkt auf ihn ein: die Hilfslinie beginnt bzw. endet **exakt**
+dort und nicht „ungefähr dort". So setzen Sie zwei Hilfslinien millimetergenau
+aneinander, ohne die Ansicht vergrößern zu müssen. Der gefangene Wert bleibt
+auch nach **Speichern und Öffnen** und im **Export** exakt derselbe.
+
 **Hinweise:**
-- Ziehen Sie ohne echte Länge (Start = Ende), entsteht **keine** Hilfslinie.
-- In dieser Version wird **frei** gezeichnet; Fangen, Raster und Winkel-Bindung
-  sind noch nicht enthalten.
+- Ziehen Sie ohne echte Länge (Start = Ende), entsteht **keine** Hilfslinie. Das
+  gilt auch, wenn Anfang und Ende auf **denselben** Punkt einrasten.
+- Sind Sie weiter als etwa eine Fingerbreite (rund 12 Bildschirmpunkte) von jedem
+  Eckpunkt entfernt, wird **frei** gezeichnet — der Endpunkt ist dann genau die
+  angeklickte Stelle.
+- Eingerastet wird nur auf **sichtbare** Punkte im Sinne der Ebenen: liegt eine
+  Hilfslinie auf einer ausgeblendeten Ebene, ist sie nicht fangbar.
+- Gefangen wird auf Eckpunkte **aller Geschosse**, nicht nur des angezeigten. Ein
+  Punkt kann also einrasten, ohne im Bild zu liegen. Eine Anzeige, **worauf**
+  gerade eingerastet wird, gibt es in dieser Version noch nicht.
+- **Raster**, **Winkel-Bindung** und weitere Fang-Arten (Schnittpunkt, Mitte,
+  Lot) sind noch nicht enthalten.
 
 ### 4.3 Ein Projekt speichern und öffnen (Menü **Datei**)
 
@@ -506,6 +525,7 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.4 | 0.1.0 | 2026-07-28 | **Einrasten (Fangen)** beim Zeichnen von Hilfslinien aufgenommen: neuer Absatz in 4.2 (Anfang **wie** Ende rasten exakt auf Endpunkte von Wandachsen und Hilfslinien ein; der gefangene Wert überlebt Speichern/Öffnen und Export unverändert) samt der vier benannten Grenzen — freies Zeichnen außerhalb von rund 12 Bildschirmpunkten, Entartung durch beidseitiges Einrasten, keine Fangbarkeit auf ausgeblendeten Ebenen, **keine Anzeige** des Fang-Ziels und Fangen über **alle** Geschosse. §1 „Heute möglich", §2.3 und die 4.1-Aufgaben-Tabelle nachgezogen; der frühere Satz „In dieser Version wird **frei** gezeichnet; Fangen … sind noch nicht enthalten" ist damit überholt und ersetzt. |
 | 1.3 | 0.1.0 | 2026-07-27 | **Datei → Neu** aufgenommen: eigener Unterabschnitt in 4.3 (Inhalt des neuen Projekts — ein Geschoss, eine Zeichen-Ebene, sofort bezeichenbar — und die Zusage, dass **keine Datei zugeordnet** ist, das nächste Speichern also nach dem Ziel fragt statt das zuvor geöffnete Projekt zu überschreiben); „Neu" als dritter Auslöser der Rückfrage ergänzt; §1 „Heute möglich", §2.3, die 4.1-Aufgaben-Tabelle und die Wege-Zählung in §3 (**drei → vier**) nachgezogen. |
 | 1.2 | 0.1.0 | 2026-07-27 | **Speichern** (auf die bekannte Projektdatei, ohne erneute Ziel-Abfrage) und die **Rückfrage vor ungesicherten Änderungen** aufgenommen: neuer Unterabschnitt in 4.3 mit der dreiwertigen Antwort (speichern/verwerfen/**abbrechen ⇒ es passiert nichts**), Ergänzung in 2.3, neue Zeile in der 4.1-Aufgaben-Tabelle und zwei FAQ-Einträge — die frühere FAQ-Aussage „Ein ‚Speichern' auf die zuletzt geöffnete Datei gibt es noch nicht" ist damit überholt und ersetzt. |
 | 1.1 | 0.1.0 | 2026-07-26 | Menü **Datei** (Speichern unter…/Öffnen…) als neuer Abschnitt 4.3 aufgenommen — das Handbuch beschrieb Speichern/Öffnen bis dahin als reine Kommandozeilen-Aufgabe und die FAQ verneinte ein Datei-Menü. Der Unterschied der beiden Wege ist jetzt benannt: im Menü ist Öffnen ein **Sitzungs-Wechsel**, auf der Kommandozeile ist `--open` eine **Export-Quelle**. Frühere 4.3/4.4 zu 4.4/4.5 verschoben. |

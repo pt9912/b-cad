@@ -33,8 +33,12 @@ namespace bcad::adapters::ui::view {
 // **Refresh:** Beobachter des `ModelChangedPort` (Repaint + Neu-Einrahmen nach
 // `op`-Mutationen, z. B. Wand-Änderung); nach dem **eigenen** erfolgreichen
 // `addGuideLine` repaintet er **selbst** (Selbst-Refresh, **kein** `op` —
-// ADR-0018 §2 „kein op" bleibt unrevidiert). **v1 zeichnet frei** (kein
-// Fang/Raster/Winkel — eigene spätere Slices).
+// ADR-0018 §2 „kein op" bleibt unrevidiert).
+//
+// **Fangen** (LH-FA-DRW-001, slice-048b): Press und Release quantisieren die
+// geklickte Bildschirmposition über `snapTarget` auf die exakten mm eines
+// nahen Fang-Punktes; außerhalb der Fang-Nähe wird **frei** gezeichnet
+// (Raster/Winkel bleiben spätere Slices).
 class CanvasWidget final : public QWidget,
                            public hexagon::ports::driven::ModelChangedPort {
 public:
@@ -71,6 +75,13 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
 
 private:
+    // Bildschirm-Pixel → Modell-mm **mit Fang** (LH-FA-DRW-001): liegt ein
+    // Fang-Punkt der frisch gepullten `PlanView` in Fang-Nähe, sind es dessen
+    // exakte mm — sonst die freie Abbildung. Der Plan wird **an Ort und Stelle**
+    // gepullt (wie im Paint-Pfad bei jedem Repaint); ein zwischengespeicherter
+    // Plan wäre neuer Zustand und könnte veralten (Pull-Widget, ADR-0019).
+    hexagon::model::Point2D snappedModelPos(const QPoint& cursor_px) const;
+
     PlanPull pull_;
     GuideLineDraw draw_;
     int active_storey_id_{};

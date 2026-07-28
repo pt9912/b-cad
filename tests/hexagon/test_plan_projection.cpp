@@ -84,6 +84,44 @@ TEST(PlanGeometry, LH_FA_DRW_005_UnsichtbareEbeneGefiltert) {
     EXPECT_DOUBLE_EQ(view.max_y_mm, 0.0);
 }
 
+// LH-FA-DRW-001 (slice-048b): je Geschoss stehen die WAND-ACHSEN VOR den
+// Hilfslinien. Das ist der zweite Konjunkt des Fang-Tie-Breaks — und er ist NUR
+// hier belegbar: `PlanSegment` trägt keinen Unterscheider Wand↔Hilfslinie, die
+// Fang-Auswahl (`snapTarget`) sieht eine flache Liste und kann allein
+// "zuerst besucht gewinnt" zusichern. DASS diese Reihenfolge Wand-Achsen zuerst
+// führt, entsteht in `projectPlan`. Mehrere Wände UND mehrere Hilfslinien,
+// damit ein blosses Vertauschen einzelner Elemente nicht durchrutscht.
+TEST(PlanGeometry, LH_FA_DRW_001_WandAchsenVorHilfslinien) {
+    model::Building b = drwBuilding(/*layer_visible=*/true);
+    model::Wall second_wall;
+    second_wall.id = model::WallId{2};
+    second_wall.storey_id = model::StoreyId{1};
+    second_wall.start = {1000.0, 0.0};
+    second_wall.end = {1000.0, 500.0};
+    b.walls.push_back(second_wall);
+    model::GuideLine second_guide;
+    second_guide.id = model::GuideLineId{2};
+    second_guide.storey_id = model::StoreyId{1};
+    second_guide.layer_id = model::LayerId{1};
+    second_guide.segment = {{8000.0, 9000.0}, {8500.0, 9500.0}};
+    b.guide_lines.push_back(second_guide);
+
+    const PlanView view = projectPlan(b);
+    ASSERT_EQ(view.storeys.size(), 1U);
+    const auto& segs = view.storeys[0].segments;
+    ASSERT_EQ(segs.size(), 4U);  // 2 Wände + 2 Hilfslinien
+
+    // [0],[1] sind die Wände (Modell-Reihenfolge), [2],[3] die Hilfslinien.
+    EXPECT_DOUBLE_EQ(segs[0].x2_mm, 1000.0);  // Wand 1: (0,0)->(1000,0)
+    EXPECT_DOUBLE_EQ(segs[0].y2_mm, 0.0);
+    EXPECT_DOUBLE_EQ(segs[1].x1_mm, 1000.0);  // Wand 2: (1000,0)->(1000,500)
+    EXPECT_DOUBLE_EQ(segs[1].y2_mm, 500.0);
+    EXPECT_DOUBLE_EQ(segs[2].x1_mm, 2000.0);  // Hilfslinie 1
+    EXPECT_DOUBLE_EQ(segs[2].y1_mm, 3000.0);
+    EXPECT_DOUBLE_EQ(segs[3].x1_mm, 8000.0);  // Hilfslinie 2
+    EXPECT_DOUBLE_EQ(segs[3].y1_mm, 9000.0);
+}
+
 // LH-FA-DRW-006: visibleLayerIds trägt nur die sichtbaren Ebenen.
 TEST(PlanGeometry, LH_FA_DRW_006_VisibleLayerIdsNurSichtbar) {
     model::Building b = drwBuilding(/*layer_visible=*/true);

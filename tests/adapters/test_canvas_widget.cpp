@@ -137,6 +137,94 @@ TEST(CanvasWidgetInteraction, LH_FA_DRW_005_MausZugErzeugtHilfslinie) {
     QApplication::processEvents();
     EXPECT_EQ(service.building().guide_lines.size(), before_deg);  // unverändert
 
+    // === LH-FA-DRW-001 (slice-048b): der Zug fängt wirklich ==================
+    // Das ist die ZUSAMMENSPIEL-Ebene: `test_snap.cpp` belegt die Auswahl-
+    // Semantik rein, kann aber nicht zeigen, dass der Canvas `snapTarget` an den
+    // richtigen Stellen und mit den richtigen Argumenten ruft. Genau dieser
+    // Fehler-Typ (Zusage über zwei Komponenten, belegt an einer) ist in welle-5
+    // dreimal aufgetreten.
+    //
+    // Fit-to-Bounds bei 400x300 über die zwei Wände (BBox 0..4000 x 0..3000):
+    // zoom = min(400/4000, 300/3000) * 0.9 = 0.09, Zentrum (2000,1500). Damit
+    //   (0,0) mm    -> ( 20, 285) px
+    //   (4000,0)    -> (380, 285) px
+    //   (4000,3000) -> (380,  15) px
+    // Alle Cursor-Positionen der Bestands-Fälle oben liegen >= ~70 px von jedem
+    // Fang-Punkt entfernt — sie zeichnen weiter frei (Fang-Nähe: 12 px).
+
+    // --- §4-8: der ANFANG wird gefangen (Press-Pfad) ---
+    // Press 5,4 px neben der Wand-Ecke (0,0) mm; Release im Freien.
+    const std::size_t before_start_snap = service.building().guide_lines.size();
+    const QPointF near_origin(25, 283);   // ~5,4 px von (20,285)
+    const QPointF free_center(200, 150);  // >= 111 px von jedem Fang-Punkt
+    const model::Point2D expect_free_end =
+        canvas.screenToModel(free_center.toPoint());
+    QMouseEvent press_s(QEvent::MouseButtonPress, near_origin,
+                        canvas.mapToGlobal(near_origin), Qt::LeftButton,
+                        Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent release_s(QEvent::MouseButtonRelease, free_center,
+                          canvas.mapToGlobal(free_center), Qt::LeftButton,
+                          Qt::NoButton, Qt::NoModifier);
+    QApplication::sendEvent(&canvas, &press_s);
+    QApplication::sendEvent(&canvas, &release_s);
+    QApplication::processEvents();
+
+    ASSERT_EQ(service.building().guide_lines.size(), before_start_snap + 1);
+    const model::GuideLine& snapped_start = service.building().guide_lines.back();
+    // EXAKT die Wand-Ecke — nicht die (nahen) Cursor-mm. Ohne Fang stünde hier
+    // screenToModel(25,283) = (~55,6 mm | ~22,2 mm).
+    EXPECT_DOUBLE_EQ(snapped_start.segment.start.x_mm, 0.0);
+    EXPECT_DOUBLE_EQ(snapped_start.segment.start.y_mm, 0.0);
+    // Das freie Ende bleibt frei (der Fang klemmt nicht alles).
+    EXPECT_NEAR(snapped_start.segment.end.x_mm, expect_free_end.x_mm, 1e-6);
+    EXPECT_NEAR(snapped_start.segment.end.y_mm, expect_free_end.y_mm, 1e-6);
+
+    // --- §4-7: das ENDE wird gefangen (Release-Pfad) ---
+    // Press im Freien, Release 5 px neben der Wand-Ecke (4000,3000) mm.
+    const std::size_t before_end_snap = service.building().guide_lines.size();
+    const QPointF free_upper(60, 60);      // >= 56 px von jedem Fang-Punkt
+    const QPointF near_corner(376, 18);    // 5 px von (380,15)
+    const model::Point2D expect_free_start =
+        canvas.screenToModel(free_upper.toPoint());
+    QMouseEvent press_e(QEvent::MouseButtonPress, free_upper,
+                        canvas.mapToGlobal(free_upper), Qt::LeftButton,
+                        Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent release_e(QEvent::MouseButtonRelease, near_corner,
+                          canvas.mapToGlobal(near_corner), Qt::LeftButton,
+                          Qt::NoButton, Qt::NoModifier);
+    QApplication::sendEvent(&canvas, &press_e);
+    QApplication::sendEvent(&canvas, &release_e);
+    QApplication::processEvents();
+
+    ASSERT_EQ(service.building().guide_lines.size(), before_end_snap + 1);
+    const model::GuideLine& snapped_end = service.building().guide_lines.back();
+    EXPECT_NEAR(snapped_end.segment.start.x_mm, expect_free_start.x_mm, 1e-6);
+    EXPECT_NEAR(snapped_end.segment.start.y_mm, expect_free_start.y_mm, 1e-6);
+    // EXAKT die Wand-Ecke (4000,3000) — nicht screenToModel(376,18).
+    EXPECT_DOUBLE_EQ(snapped_end.segment.end.x_mm, 4000.0);
+    EXPECT_DOUBLE_EQ(snapped_end.segment.end.y_mm, 3000.0);
+
+    // --- §4-9: Entartung DURCH den Fang → keine Hilfslinie, kein neuer Fehler ---
+    // Press und Release liegen auf VERSCHIEDENEN Pixeln, aber beide in Fang-Nähe
+    // DESSELBEN Punktes (4000,3000). Ohne Fang entstünde hier eine Hilfslinie;
+    // mit Fang trifft der Zug die bestehende Entartungs-Ablehnung des Kerns.
+    const std::size_t before_snap_deg = service.building().guide_lines.size();
+    const QPointF corner_a(376, 18);
+    const QPointF corner_b(384, 12);
+    ASSERT_NE(canvas.screenToModel(corner_a.toPoint()).x_mm,
+              canvas.screenToModel(corner_b.toPoint()).x_mm)
+        << "die zwei Pixel muessen ungefangen VERSCHIEDENE mm ergeben";
+    QMouseEvent press_dg(QEvent::MouseButtonPress, corner_a,
+                         canvas.mapToGlobal(corner_a), Qt::LeftButton,
+                         Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent release_dg(QEvent::MouseButtonRelease, corner_b,
+                           canvas.mapToGlobal(corner_b), Qt::LeftButton,
+                           Qt::NoButton, Qt::NoModifier);
+    QApplication::sendEvent(&canvas, &press_dg);
+    QApplication::sendEvent(&canvas, &release_dg);
+    QApplication::processEvents();
+    EXPECT_EQ(service.building().guide_lines.size(), before_snap_deg);
+
     service.unsubscribe(canvas);
 }
 

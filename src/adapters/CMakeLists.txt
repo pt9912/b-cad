@@ -29,6 +29,7 @@ add_library(bcad_adapters
     ui/view/viewer_scene.cpp
     ui/view/viewer_widget.cpp
     ui/view/canvas_widget.cpp        # slice-043: interaktive 2D-Zeichenfläche (ADR-0019)
+    ui/view/snap.cpp                 # slice-048b: Fang-Auswahl (LH-FA-DRW-001), rein/display-frei
     ui/view/main_window.cpp          # slice-053: Hauptfenster als testbarer Adapter (port-frei)
     ui/command/view_model_mesh_source.cpp
     ui/command/project_menu_handler.cpp  # slice-053: Datei-Menue-Handler am ManageProjectPort
