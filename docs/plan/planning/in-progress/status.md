@@ -1,5 +1,63 @@
 # Status
 
+## 2026-07-28 — slice-048b geschlossen: der Canvas rastet ein
+
+`make gates` **EXIT=0** (docs-check **0 Befunde / 263 Dateien** · a-check 0 · arch-check ok ·
+**359/359** Tests · Coverage 91,8 %), `make schema-check` ok, `make io-smoke` ok.
+`in-progress/` trägt **keinen** Slice mehr — der Ruhe-Sentinel steht.
+
+**[`slice-048b`](slice-048b-drw-001-fangpunkte-impl.md) done**
+(`012cae3` Start → `6cba160` R6 → `2b530f8` Implementierung → Closure). Beim Zeichnen einer
+Hilfslinie rasten **Anfang wie Ende** auf den nächstgelegenen Endpunkt einer Wand-Achse oder einer
+sichtbaren Hilfslinie ein (Fang-Nähe 12 px); die Linie trägt dann **exakt** dessen mm.
+**Benutzerhandbuch 1.4.** Damit ist [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001)
+erstmals benutzer-erfüllbar — die erste Impl-Zeile der DRW-Aids-Familie.
+
+### R6 wurde vor dem ersten Code-Commit beantwortet, nicht im Vollzug
+
+Das war die Vorbedingung des Plans, und sie hat sich gelohnt: die `guide_lines`-Round-Trip-Orakel
+(032b) und das DXF-Export-Orakel (032c) prüfen die Koordinaten **wertgleich** — Zeile 10 braucht
+keinen neuen Test. **PDF und PNG prüfen es nicht** (nur Operator-Anzahl bzw. Tinten-Vergleich); das
+steht jetzt als **benannte Grenze** im Plan statt stillschweigend als Wertgleichheit gebucht.
+
+### Die drei Lehren
+
+1. **Eine unbeabsichtigte Deckung ist keine benannte Deckung.** Die Gegenprobe zu Orakel 6a
+   (Projektions-Reihenfolge gedreht) machte **auch** einen Bestands-Test rot — er liest die
+   Hilfslinie als `segments[1]`, „nach der Wand". Die Reihenfolge war also gedeckt, aber unter dem
+   Namen „Koordinaten-Treue": ein Umbau hätte sie jederzeit fallen lassen, ohne dass jemand die
+   Zusage vermisst. **Genau das meint der Regel-Kandidat der welle-5-Closure** — und es ist der erste
+   Fall, in dem er *vorbeugend* gegriffen hat statt nachträglich.
+2. **„Die 2D-Export-Orakel" sind zwei Familien, nicht eine.** Die Gegenprobe zu Orakel 6
+   (Sichtbarkeits-Filter entfernt) macht PDF und PNG rot — **DXF nicht**: der DXF-Adapter filtert
+   selbst und bekommt ein leeres `DerivedGeometry`. Kein Fehler und kein Deckungs-Verlust (DXF trägt
+   ein eigenes Orakel), aber der Plan sprach von „den" Export-Orakeln, als wären sie eine Quelle.
+3. **Zeile 9 brauchte keinen eigenen Mutanten — und das ist ihr Beweis.** Die Zusage „fängt Anfang
+   und Ende denselben Punkt ⇒ keine Hilfslinie" fällt automatisch, sobald einer der zwei Fang-Aufrufe
+   fehlt. Damit der Test nicht später versehentlich zu einem Test über zwei *identische* Pixel
+   verkommt, hält er per `ASSERT_NE` fest, dass die zwei Pixel **ungefangen verschiedene** mm ergeben.
+
+### ▶ Nächste Sitzung
+
+**Der Wellen-Kern hat weiter keinen Plan:** *eine Wand im Canvas zeichnen und parametrisch ändern* —
+das ist der **Trigger** von welle-6 und damit das, was die Welle schließt. Alles andere verlängert sie
+nur (Lehre welle-5 §5-1).
+
+**Ausdrücklich zurückgestellt** ([MR-020](../../../../harness/conventions.md)-Deferral, im ADR-Index
+notiert): **DRW-002/003** (Raster/Winkel) und die **Fang-Anzeige** (R5 — der Fang reicht über das
+dargestellte Geschoss hinaus, man sieht also nicht, worauf gerastet wurde). Beide sind sinnvoll,
+keiner ist trigger-bindend.
+
+**Weiter offen, ohne Wellen-Bindung:** [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) ·
+[`slice-044b`](../open/slice-044b-golden-import-fremd.md) ·
+[`slice-006`](../open/slice-006-drittanbieter-attribution.md) · `slice-039a/b` · `slice-040a`.
+
+**Weiterhin offen für den Projektinhaber:** der **Regel-Kandidat** aus der welle-5-Closure (eine
+Orakel-Zeile benennt die **Komponente**, an der sie diskriminiert) — inzwischen **viermal** belegt
+(053 · 052a · 052b · und hier als Vorbeugung). Das bleibt eine Regelwerk-Entscheidung.
+
+---
+
 ## 
 
 

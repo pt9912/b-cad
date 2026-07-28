@@ -1,7 +1,7 @@
 ---
 id: slice-048b
 titel: Fangpunkte implementieren — Eingabe-Quantisierung im 2D-Canvas ([LH-FA-DRW-001](../../../../spec/lastenheft.md#lh-fa-drw-001))
-status: open
+status: done
 welle: welle-6-interaktiv-planen
 lastenheft_refs: [[LH-FA-DRW-001](../../../../spec/lastenheft.md#lh-fa-drw-001), [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005), [LH-FA-DRW-006](../../../../spec/lastenheft.md#lh-fa-drw-006)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0009](../.
 
 # Slice 048b: Fangpunkte implementieren (DRW-001)
 
-**Status:** open — Implementierung zur AK-/Spec-Schärfung aus
+**Status:** done (2026-07-28) — Implementierung zur AK-/Spec-Schärfung aus
 [`slice-048a`](../done/slice-048a-drw-001-fangpunkte-ak-spec.md). **Eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 vor dem Start.**
@@ -176,33 +176,33 @@ nicht Gegenstand — es gibt sie in diesem Slice nicht (§3).
 
 ## 5. Definition of Done
 
-- [ ] **`src/adapters/ui/view/snap.{h,cpp}`**: `snapTarget(plan, transform, cursor_px, threshold_px)`
+- [x] **`src/adapters/ui/view/snap.{h,cpp}`**: `snapTarget(plan, transform, cursor_px, threshold_px)`
       + benannte Fang-Nähe-Konstante. Display-frei, **kein** `QWidget`, **kein** Port-Include,
       **kein** Geschoss-Parameter (§2); Orakel §4-1..5.
-- [ ] **`CanvasWidget` ruft sie** an den zwei bestehenden `screenToModel`-Stellen (Press/Release),
+- [x] **`CanvasWidget` ruft sie** an den zwei bestehenden `screenToModel`-Stellen (Press/Release),
       **mit einem `pull_()` an Ort und Stelle** (§2 — dort liegt heute keine `PlanView`).
       **Sonst unverändert** — kein neuer Zustand, kein neues Signal; Orakel §4-7/8.
-- [ ] **Kein neuer `op`, keine zusätzliche Meldung** — geprüft und **verneint** (048a §Benachrichtigung).
-- [ ] **`tests/adapters/test_snap.cpp`** (neu, ohne Qt-Fixture) + Erweiterung von
+- [x] **Kein neuer `op`, keine zusätzliche Meldung** — geprüft und **verneint** (048a §Benachrichtigung).
+- [x] **`tests/adapters/test_snap.cpp`** (neu, ohne Qt-Fixture) + Erweiterung von
       `tests/adapters/test_canvas_widget.cpp` (Zug mit Fang, Xvfb) + **`tests/hexagon/test_plan_projection.cpp`**
       (Zeile 6a, Projektions-Reihenfolge); alle Listen in `tests/CMakeLists.txt`, `snap.cpp` in
       `src/adapters/CMakeLists.txt`.
-- [ ] **Orakel §4-1..10 (inkl. 6a) je mit roter Gegenprobe** im Closure-Text — Zeile 10 über die
+- [x] **Orakel §4-1..10 (inkl. 6a) je mit roter Gegenprobe** im Closure-Text — Zeile 10 über die
       **benannten Bestands-Sensoren**, deren Wertgleichheits-Deckung nach R6 **vor** dem Start
       verifiziert ist.
-- [ ] **`make a-check` grün ohne neue Kante** — `ui_view → model` besteht; `snap.h` importiert
+- [x] **`make a-check` grün ohne neue Kante** — `ui_view → model` besteht; `snap.h` importiert
       `model/plan_view.h` + `model/point2d.h` und **keinen** Port.
-- [ ] **`data-model.yaml`/`schema.sql` byte-unberührt** (`make schema-check`), **kein** Kern-,
+- [x] **`data-model.yaml`/`schema.sql` byte-unberührt** (`make schema-check`), **kein** Kern-,
       Persistenz- oder Export-Diff — eine gefangene Hilfslinie ist eine gewöhnliche.
-- [ ] **Benutzerhandbuch**: §4.2 („Hilfslinie zeichnen") beschreibt das Einrasten, §1 „Heute möglich"
+- [x] **Benutzerhandbuch**: §4.2 („Hilfslinie zeichnen") beschreibt das Einrasten, §1 „Heute möglich"
       nennt es. Handbuch-Version + Änderungshistorie. (**`docs/user/` steht in dieser DoD-Zeile** —
       Lehre aus slice-047-V1: dieser Slice macht eine Anforderung benutzer-erfüllbar.)
-- [ ] **Kein Lastenheft-, kein Spezifikations-Eintrag** — beide hat
+- [x] **Kein Lastenheft-, kein Spezifikations-Eintrag** — beide hat
       [`slice-048a`](../done/slice-048a-drw-001-fangpunkte-ak-spec.md) geliefert; die
       Fang-Nähe ist eine **Widget**-Konstante und gehört ausdrücklich **nicht** in §3.
       (Geprüft und **verneint**, nicht vergessen.)
-- [ ] **CHANGELOG** [Unreleased]-Eintrag.
-- [ ] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`,
+- [x] **CHANGELOG** [Unreleased]-Eintrag.
+- [x] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`,
       [MR-017](../../../../harness/conventions.md)); **`make io-smoke` grün**.
 
 ## 6. Plan (vor Code)
@@ -313,4 +313,58 @@ benannte Vorbedingung vor dem ersten Commit**, nicht als Vollzugs-Frage.
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Vollzogen 2026-07-28.** `make gates` **EXIT=0** (docs-check **0 Befunde / 263 Dateien** · a-check 0 ·
+arch-check ok · **359/359** Tests · Coverage 91,8 %), `make schema-check` ok
+(`data-model.yaml`/`schema.sql` byte-unberührt), `make io-smoke` ok.
+
+**R6 war die Vorbedingung — und sie ist vor dem ersten Code-Commit beantwortet worden**, nicht im
+Vollzug (`6cba160`). Ergebnis: die Bestands-Sensoren prüfen wertgleich, Zeile 10 braucht keinen neuen
+Test; die PDF/PNG-Grenze steht benannt in §7 R6 statt stillschweigend als Wertgleichheit gebucht.
+
+### Orakel-Zeilen mit gemessener roter Gegenprobe
+
+Jede Gegenprobe wurde **einzeln** angewandt und gemessen (nicht gebündelt), damit die Zuordnung
+Zeile↔Sensor eindeutig ist.
+
+| # | Gegenprobe | gemessen rot |
+|---|---|---|
+| 1 | Rückgabe auf die Cursor-mm geändert | 6 Tests, darunter `Snap.…InnerhalbRastetExaktEin` |
+| 2 | Schwellwert-Prüfung entfernt | `Snap.…AusserhalbFaengtNicht` + `CanvasWidgetInteraction.…` |
+| 3 | „erster Treffer gewinnt" statt Minimum | `Snap.…NaechstgelegenerGewinnt` |
+| 4 | `<=` statt `<` beim Minimum | `Snap.…TieBreakAnfangVorEnde` + `Snap.…AlleGeschosse…` |
+| 5 | Geschoss-Schleife auf das erste beschränkt | `Snap.…AlleGeschosseKandidatenUndReihenfolge` |
+| 6 | Sichtbarkeits-Filter in `projectPlan` entfernt | `PlanGeometry.…UnsichtbareEbeneGefiltert` + PDF + PNG |
+| 6a | Einfüge-Reihenfolge in `projectPlan` gedreht | `PlanGeometry.…WandAchsenVorHilfslinien` (+ 2) |
+| 7 | `snapTarget`-Aufruf im **Release**-Pfad entfernt | Ende trägt `3955,56 / 2966,67` statt exakt `4000 / 3000` |
+| 8 | `snapTarget`-Aufruf im **Press**-Pfad entfernt | Anfang trägt `55,56 / 22,22` statt exakt `0 / 0` |
+| 9 | (dieselben zwei Proben, je einzeln) | **4 statt 3** Hilfslinien — der per Fang entartete Zug erzeugte eine |
+| 10 | keine neue Gegenprobe (Bestands-Sensoren, R6) | s. R6-Tabelle |
+
+**Zeile 9 hat keinen eigenen Mutanten gebraucht — und das ist der Punkt.** Sie fragt, ob ein Zug, der
+**erst durch den Fang** entartet, abgelehnt wird. Genau das fällt, sobald einer der beiden Fang-Aufrufe
+fehlt: die zwei verschiedenen Pixel ergeben dann verschiedene mm und der Kern nimmt die Linie an. Der
+Test hält das ausdrücklich fest (`ASSERT_NE` auf die **ungefangenen** mm der zwei Pixel), damit er nicht
+versehentlich zu einem Test über zwei identische Pixel verkommt.
+
+### Drei Befunde, die über den Plan hinausgehen
+
+1. **Zeile 6a war bereits unbeabsichtigt gedeckt.** Die Gegenprobe „Reihenfolge gedreht" macht auch
+   `PlanGeometry.LH_FA_DRW_005_SichtbareHilfslinieImPlanUndBBox` rot — jener Bestands-Test liest die
+   Hilfslinie als `segments[1]`, „nach der Wand". Die Deckung war also da, **benannt** war sie nicht:
+   der Test heißt „Koordinaten-Treue" und hätte bei einem Umbau jederzeit umgeschrieben werden können,
+   ohne dass jemand die Reihenfolge-Zusage vermisst. Der neue Test benennt sie. Das ist genau der
+   Unterschied, den der Regel-Kandidat der welle-5-Closure meint.
+2. **Der DXF-Export hängt nicht an `projectPlan`.** Die Gegenprobe zu Zeile 6 macht PDF und PNG rot,
+   **DXF nicht** — der DXF-Adapter filtert die Sichtbarkeit selbst (`DerivedGeometry{}` wird leer
+   übergeben). Kein Fehler dieses Slice und kein Verlust an Deckung (DXF trägt ein eigenes
+   Sichtbarkeits-Orakel), aber ein Faktum, das der Plan nicht kannte: „die 2D-Export-Orakel" sind
+   **zwei** Familien, nicht eine.
+3. **Der `snapTarget`-Schwellwert hat bewusst keinen Default-Parameter.** Die Lehre aus slice-053
+   („ein Default-Argument kann ein Orakel aushebeln") ist hier vorab angewandt: `kSnapThresholdPx`
+   steht als benannte Konstante daneben, die zwei Aufrufstellen übergeben sie **explizit**.
+
+### Was der Slice ausdrücklich nicht liefert
+
+Die **Fang-Anzeige** (R5): gefangen wird über **alle** Geschosse der `PlanView`, gezeichnet nur das
+aktive — der Cursor kann auf einen Punkt einrasten, der nicht im Bild liegt. Das ist die wörtliche
+Lesart der Spezifikation und steht so im Handbuch. **Es ist der nächste sinnvolle Folge-Slice.**
