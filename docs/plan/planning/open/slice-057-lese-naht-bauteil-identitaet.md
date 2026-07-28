@@ -81,6 +81,14 @@ sie aus**, statt sie zu unterstellen.
   heute nur Wand-Achsen und Hilfslinien; mehr zu beschriften wäre Vorrat ohne Konsumenten.
 - **Weitere Parameter** (Wandtyp, Material) — [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E13
   grenzt sie ausdrücklich aus.
+
+**Zum Ausschluss-Kriterium „Vorrat ohne Konsumenten"** (Lauf-1-MEDIUM-5): es trifft die
+**Parameter-Abfrage** genauso — auch sie hat vor
+[`slice-059`](slice-059-wand-auswaehlen-und-aendern.md) keinen Konsumenten. Sie ist trotzdem hier,
+und zwar aus einem **anderen** Grund als „wird später gebraucht": die ADR verortet sie an **dieser**
+Naht (E15), und beide Änderungen an derselben Naht in **einem** Schnitt zu machen hält den
+Port-Vertrag in **einem** Review-Vorgang. **Weitere Herkunfts-Arten** wären dagegen Vorrat **ohne**
+ADR-Verortung — der Unterschied ist die Entscheidung, nicht der Zeitpunkt.
 - **Jede Änderung an Export-Encodern, Persistenz, Schema.** Die Erweiterung ist **additiv**; genau das
   ist zu beweisen (§4-5).
 - **Ein `entity_layers`-Bezug** — [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) §Konsequenzen
@@ -94,18 +102,23 @@ sie aus**, statt sie zu unterstellen.
 | 2 | **Die Projektion liefert nie ein Segment ohne Herkunft** — für **jedes** Segment jedes Geschosses ist sie gesetzt | `projectPlan`, Kern | eine der beiden Einfüge-Stellen ohne Herkunft ⇒ rot |
 | 3 | **Die Identität ist die echte, nicht der Index**: bei Ids, die **nicht** der Reihenfolge entsprechen (z. B. nach Löschungen), trägt das Segment die Bauteil-Id | `projectPlan`, Kern | Laufindex statt Id ⇒ rot |
 | 4 | **Unsichtbare Ebenen bleiben draußen** — die Herkunft ändert am Sichtbarkeits-Filter nichts | Bestands-Orakel `test_plan_projection.cpp` | (Regressions-Netz) |
-| 5 | **Die sechs Export-Golden bleiben byte-identisch** — kein Encoder sieht die Herkunft | `GoldenExport.*` in `make test` | s. Absatz unten |
+| 5 | **Die Export-Golden bleiben byte-identisch** — kein Encoder sieht die Herkunft. **Fähige Zeugen sind zwei von sechs** (Lauf-1-MEDIUM-1): nur PDF und PNG bekommen die Projektion im Bündel; DXF iteriert das Modell direkt, IFC/STEP/STL sehen sie nie. Die anderen vier **können** die Zusage strukturell nicht brechen — sie sind Netz gegen Kollateralschaden, kein Beleg | `GoldenExport.*` in `make test` | s. Absatz unten |
 | 6 | **Die Parameter-Abfrage liefert die echten Werte** einer bekannten Wand (Gleichheit, nicht Nähe) | `PlanViewPort`-Implementierung, Kern | Rückgabe auf Default-Werte ⇒ rot |
 | 7 | **Unbekannte Identität ⇒ kein Wert** (`nullopt`), **kein Wurf** — die Abfrage ist read-only und **total** | `PlanViewPort`-Implementierung, Kern | Wurf statt `nullopt` ⇒ rot; Default-Wert statt `nullopt` ⇒ rot |
-| 8 | **Die Abfrage liefert den geklemmten Ist-Wert**, nicht den zuletzt gewünschten — nach einer geklemmten Setzung stimmt sie mit dem Modell überein | `PlanViewPort` + Bestands-Klemmung | Wert aus einer anderen Quelle ⇒ rot |
+| 8 | **Die Abfrage liefert den geklemmten Ist-Wert** — nach einer geklemmten Setzung stimmt sie mit dem Modell überein | `PlanViewPort` + Bestands-Klemmung | **keine eigene** — es gibt im Bestand **keine zweite Quelle**: die Setzer schreiben den geklemmten Wert direkt ins Modell, aus dem die Abfrage liest. Die Zeile ist damit **Netz, kein Orakel** (Lauf-1-MEDIUM-2), und sie steht hier, weil sie die Zusage von §4-6 gegen den **realistischsten** Verwechslungsfall stellt — nicht, weil sie einzeln rot werden könnte |
+| 8a | **Die 2D-Export-Decode-Orakel bleiben grün** — das **zweite** Netz, das [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E11 und die Folgepflicht-Zeile ausdrücklich neben den Golden nennen: sie prüfen die **Struktur** der Artefakte (erscheint die Hilfslinie? bleibt die unsichtbare Ebene draußen?), wo die Golden nur **Bytes** vergleichen | Bestands-Orakel `test_pdf_export.cpp`/`test_png_export.cpp`/`test_dxf_export.cpp` | (Regressions-Netz) |
 | 9 | **Kein Persistenz-/Schema-Diff** — `data-model.yaml`/`schema.sql` byte-unberührt, Round-Trip unverändert | `git diff --stat` + Bestands-Persistenz-Orakel | (Regressions-Netz) |
 
 **Zeile 5 ist die tragende Zusage dieses Slice — und sie braucht eine eigene Gegenprobe, weil sie ein
 Netz ist, kein Orakel.** „Nichts hat sich geändert" wird nicht dadurch bewiesen, dass ein Test grün
 bleibt. **Die Gegenprobe geht darum andersherum:** ein Export-Encoder wird **absichtlich** um eine
-Ausgabe je Segment erweitert — fallen die Golden dann, ist bewiesen, dass sie Encoder-Änderungen
-**überhaupt** fangen, und ihr Grün-Bleiben unter der echten Änderung ist eine Aussage. **Ohne diese
+Ausgabe je Segment erweitert — fällt sein Golden dann, ist bewiesen, dass er Encoder-Änderungen
+**überhaupt** fängt, und sein Grün-Bleiben unter der echten Änderung ist eine Aussage. **Ohne diese
 Umkehrung wäre Zeile 5 ein Test, der immer grün ist.**
+
+**Die Umkehrung muss an einem der zwei FÄHIGEN Zeugen laufen** (PDF oder PNG) — an DXF, IFC, STEP
+oder STL bewiese sie nichts über diese Erweiterung, weil deren Encoder die Projektion gar nicht
+sehen. **Das ist der Unterschied zwischen „sechs Golden sind grün" und „die Zusage ist belegt".**
 
 ## 5. Definition of Done
 
@@ -125,7 +138,7 @@ Umkehrung wäre Zeile 5 ein Test, der immer grün ist.**
 - [ ] **Kein Persistenz-/Schema-Diff**, am `git diff --stat` belegt; `make schema-check` bleibt der
       Drift-Wächter, **nicht** der Unberührtheits-Sensor.
 - [ ] **Orakel §4-1..3 und 6..8 je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen;
-      §4-4/5/9 als Netz benannt.
+      §4-4/5/8/8a/9 als Netz benannt.
 - [ ] **[ADR-Index](../../adr/README.md)**: die [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)-Folgepflichtzeile
       „Lese-Naht-Slice" auf **erfüllt** nachziehen ([MR-020](../../../../harness/conventions.md)).
 - [ ] **Beobachtungspflicht festhalten:** ob die Erweiterung den
@@ -187,7 +200,7 @@ Umkehrung wäre Zeile 5 ein Test, der immer grün ist.**
 
 ## 9. Closure-Trigger
 
-- §4-1..3 und 6..8 grün + je diskriminierend belegt; §4-4/5/9 als Netz grün, Zeile 5 zusätzlich mit
+- §4-1..3 und 6..8 grün + je diskriminierend belegt; §4-4/5/8/8a/9 als Netz grün, Zeile 5 zusätzlich mit
   der **Umkehr-Gegenprobe**; `make gates` + `make io-smoke` grün; kein Persistenz-/Schema-/Encoder-Diff
   am `git diff --stat` belegt; ADR-Index nachgezogen; Closure-Notiz.
 
@@ -201,11 +214,36 @@ Umkehrung wäre Zeile 5 ein Test, der immer grün ist.**
   Golden-Infrastruktur; die ADR-Entscheidung seit
   [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md).
 - **Risiko:** mittel — **nicht im Schreiben**, sondern in der Frage, ob die Erweiterung wirklich
-  additiv ist. Der Werttyp ist geteilt: Bildschirm **und** sechs Export-Formate hängen daran.
+  additiv ist. Der Werttyp ist geteilt: Bildschirm **und** die Export-Seite hängen daran — dort
+  allerdings nur **PDF und PNG**, die als einzige die Projektion im Bündel bekommen
+  (Lauf-1-MEDIUM-1). Die Vorfassung schrieb „sechs Export-Formate"; das traf den Ist-Stand nicht.
 
-## 11. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung
+## 11. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (erster Lauf, 2026-07-28)
 
-_(offen — der Lauf steht vor dem Start aus; HIGHs blockieren ihn.)_
+Report: [`2026-07-28-slice-057-plan.md`](../../../reviews/2026-07-28-slice-057-plan.md) —
+**0 HIGH / 5 MEDIUM / 7 LOW / 5 INFO + 16 Negativbefunde, „startbar"**. Unabhängiger Reviewer ≠
+Plan-Autor.
+
+| # | Behandlung |
+|---|---|
+| **MEDIUM-1** (Zeugen-Breite: **nur PDF und PNG** bekommen die Projektion im Bündel — DXF iteriert das Modell direkt, IFC/STEP/STL sehen sie nie; vier der sechs Golden **können** die Zusage strukturell nicht brechen, und die Umkehr-Gegenprobe an *einem* Encoder belegt die Empfindlichkeit *eines* der zwei fähigen Zeugen) | **Am Artefakt nachgeprüft und bestätigt** (`exchange_service.cpp` füllt `derived.plan` nur für PDF/PNG). §4-5 sagt jetzt „**zwei von sechs** sind fähige Zeugen", und die Umkehrung **muss an einem der zwei** laufen — an den anderen bewiese sie nichts. §10 korrigiert. **Der Unterschied zwischen „sechs Golden sind grün" und „die Zusage ist belegt" ist genau dieser.** |
+| **MEDIUM-2** (§4-8 diskriminiert nicht unabhängig von §4-6: die Setzer schreiben den geklemmten Wert **direkt** ins Modell, aus dem die Abfrage liest — eine zweite Quelle existiert nicht, die geforderte rote Gegenprobe ist im Bestand **nicht herstellbar**) | **Zeile 8 ist als Netz umgeschrieben, nicht als Orakel.** Sie bleibt, weil sie §4-6 gegen den realistischsten Verwechslungsfall stellt — aber die DoD verlangt für sie **keine** einzelne Gegenprobe mehr. **Eine Zeile, die nicht rot werden kann, darf nicht so tun als ob.** |
+| **MEDIUM-3** (das von der ADR **und** der Folgepflicht-Zeile ausdrücklich benannte **zweite** Netz — die 2D-Export-**Decode**-Orakel — fehlte, obwohl der Plan seine Netz-Liste als vollständig auswies) | **Neue Zeile 8a.** Sie prüft die **Struktur** der Artefakte, wo die Golden nur **Bytes** vergleichen — zwei verschiedene Fragen, und die ADR nennt beide. |
+| **MEDIUM-4** (die pauschale Verneinung „kein Spezifikations-Eintrag" trifft E15, **nicht** E11: der §2-Block beschreibt den Inhalt der Projektion, die **Herkunft je Segment** gehört dorthin und fehlt. Zusätzlich: die ADR-Index-Zeile „AK-Schärfung + Spec-Nachzug" steht auf **offen**, obwohl slice-056 sie erfüllt hat) | **Beides in die DoD.** Der Spec-Nachzug ist **Arbeit dieses Slice**; die offene Index-Zeile ist ein **Closure-Rest von slice-056** und wird als solcher benannt, statt still mitgeschleift zu werden. **Der Reviewer hat einen Fehler der Vorgänger-Closure gefunden, nicht des Plans.** |
+| **MEDIUM-5** (das Ausschluss-Kriterium „Vorrat ohne Konsumenten" trifft die Parameter-Abfrage genauso — auch sie hat vor 059 keinen Konsumenten) | §3 sagt jetzt, warum sie **trotzdem** hier ist: die ADR verortet sie an **dieser** Naht, und beide Änderungen am selben Vertrag gehören in **einen** Review-Vorgang. **Der Unterschied ist die Entscheidung, nicht der Zeitpunkt** — weitere Herkunfts-Arten hätten keine. |
+
+**Positiv bestätigt** (nicht neu prüfen): **die Additivitäts-Zusage trägt am Code** — alle
+Konsumenten lesen ausschließlich Koordinaten bzw. die Bounding-Box, `PlanView` wird **nirgends**
+serialisiert, die Aggregat-Klammerform bleibt an allen elf Bauplätzen gültig · **die
+Bedeutungs-Weitung der Lese-Naht (R2) trägt** — sie ist nicht neu zu entscheiden (die ADR ist
+`Accepted`), **beide** derivativen Straten schreiben sie bereits aus, die Bauform ist präzedenziert
+(per-Id, total, wurf-frei) und gate-neutral · **Schnitt und Sequenz tragen** (058 kommt ohne diesen
+Slice aus, 059 braucht genau Herkunft **und** Parameter-Abfrage) · **kein Phantom-Gate** — der Plan
+nennt korrekt `GoldenExport.*` in `make test` statt des Nicht-Gate-Targets · keine Test-Doubles auf
+dem Port, keine Plugin-API-Berührung.
+
+**Startbar:** **ja** — 0 HIGH. Die fünf MEDIUM sind hier eingearbeitet; keiner ändert den Schnitt,
+alle ändern, **was die Closure später belegen kann**.
 
 ## 12. Closure-Notiz
 
