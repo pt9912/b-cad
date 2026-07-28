@@ -170,7 +170,7 @@ niemand.
       Header == Version der neu ergänzten Zeile in
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md); **Platzierung unmittelbar
       nach der `0.1.16`-Zeile** (die Tabelle ist nicht monoton sortiert). Zielnummer beim Vollzug
-      feststellen — [`slice-055`](../in-progress/slice-055-fang-anzeige.md) schärft ebenfalls, die Reihenfolge ist
+      feststellen — [`slice-055`](../done/slice-055-fang-anzeige.md) schärft ebenfalls, die Reihenfolge ist
       offen. **Sensor: die [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Linse, kein Gate** (§4-4).
 - [ ] **`spec/spezifikation.md` §1**: Mapping-Block für den interaktiven Wand-Weg (Werkzeug-Modus,
       Selektion, Parameter-Rückmeldung, Refresh-Pfad, Fang-Geltung, Fehler-Barriere) —
@@ -421,7 +421,7 @@ ACC-Berührung, [`E-GEO-002`](../../../../spec/spezifikation.md#4-fehler-codes-u
 **Startbar nach Lauf 3:** nein — **aus EINEM Grund: Lauf 3 hat einen HIGH gefunden.** [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 blockiert den Start, und die Auflösung eines HIGH wird in diesem Repo von einem **unabhängigen** Lauf
 geprüft — dieses Muster hat bei 053, 052a und 052b jedes Mal etwas gefangen, und bei
-[`slice-055`](../in-progress/slice-055-fang-anzeige.md) fand Lauf 2, dass der in Lauf 1 verlangte Sensor **nicht
+[`slice-055`](../done/slice-055-fang-anzeige.md) fand Lauf 2, dass der in Lauf 1 verlangte Sensor **nicht
 diskriminierte**.
 
 **Sein Auftrag ist eng und terminierend:** ist F14 samt der sechs MEDIUM **echt** eingearbeitet, und
