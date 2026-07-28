@@ -18,7 +18,7 @@ folgen **beim Start**.
 ist der Trigger erfüllt: „eine Wand ist im 2D-Canvas zeichenbar UND parametrisch änderbar, ohne
 Kommandozeile."** Danach ist die Welle zu **schließen**, nicht weiterzufüllen.
 
-**Setzt [`slice-057`](slice-057-lese-naht-bauteil-identitaet.md) voraus** (ohne Bauteil-Identität
+**Setzt [`slice-057`](../in-progress/slice-057-lese-naht-bauteil-identitaet.md) voraus** (ohne Bauteil-Identität
 gibt es nichts zu treffen und nichts zu adressieren).
 
 ## Auslöser
@@ -31,7 +31,7 @@ gibt es nichts zu treffen und nichts zu adressieren).
 |---|---|
 | **3**/**16** | Treffer-Prüfung im Bildschirmraum, **nur im dargestellten Geschoss**, höchstens **eine** Wand; 2D und 3D bleiben getrennt |
 | **17** | Die Auswahl **fällt** bei Modell-Ersetzung, Geschoss-Wechsel und Verschwinden |
-| **15** | Die angezeigten Parameter kommen über die schmale Abfrage aus [`slice-057`](slice-057-lese-naht-bauteil-identitaet.md) |
+| **15** | Die angezeigten Parameter kommen über die schmale Abfrage aus [`slice-057`](../in-progress/slice-057-lese-naht-bauteil-identitaet.md) |
 | **4** | Nicht-modaler Eigenschaften-Bereich im Fenster |
 | **13** | Änderbar: **Stärke** und **Höhe**; Wandtyp und Material bleiben draußen |
 | **5** | Klemmung **mit genanntem übernommenem Wert**, Ablehnung sichtbar |
