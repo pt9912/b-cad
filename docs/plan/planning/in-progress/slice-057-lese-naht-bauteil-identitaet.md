@@ -1,7 +1,7 @@
 ---
 id: slice-057
 titel: Die 2D-Lese-Naht bekommt Bauteil-Identität und eine schmale Parameter-Abfrage ([ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E11/E15)
-status: open
+status: done
 welle: welle-6-interaktiv-planen
 lastenheft_refs: [[LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen), [LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren), [LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren), [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md), [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0019](../.
 
 # Slice 057: Bauteil-Identität in der 2D-Lese-Naht
 
-**Status:** open — **Detail-Schnitt vollzogen** (2026-07-28; die Skelett-Fassung trug nur
+**Status:** done (2026-07-28) — **Detail-Schnitt vollzogen** (2026-07-28; die Skelett-Fassung trug nur
 Scope-Reservierung + ADR-Bezug, [MR-020](../../../../harness/conventions.md) §3). **Eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 vor dem Start.**
@@ -122,35 +122,35 @@ sehen. **Das ist der Unterschied zwischen „sechs Golden sind grün" und „die
 
 ## 5. Definition of Done
 
-- [ ] **`src/hexagon/model/plan_view.h`**: `PlanSegment` trägt eine **optionale** Herkunft (Art +
+- [x] **`src/hexagon/model/plan_view.h`**: `PlanSegment` trägt eine **optionale** Herkunft (Art +
       Identität); Aggregat-Klammerform bleibt gültig, ein vergessenes Feld ist **leer**, nicht falsch
       beschriftet (§2.1). Neuer Werttyp für die änderbaren Parameter im `model/`.
-- [ ] **`src/hexagon/services/geometry/plan_projection.cpp`**: beide Einfüge-Stellen setzen die
+- [x] **`src/hexagon/services/geometry/plan_projection.cpp`**: beide Einfüge-Stellen setzen die
       Herkunft mit der **echten** Id; Orakel §4-1..3.
-- [ ] **`src/hexagon/ports/driving/plan_view_port.h`**: zweite Abfrage (Identität → änderbare
+- [x] **`src/hexagon/ports/driving/plan_view_port.h`**: zweite Abfrage (Identität → änderbare
       Parameter), **total** (`nullopt` statt Wurf). **Der Vertragstext schreibt die Bedeutungs-Weitung
       aus** (§2.2) — die Naht liefert, was die 2D-Fläche lesen muss.
-- [ ] **`src/hexagon/services/structure_edit_service.{h,cpp}`**: Implementierung der zweiten Abfrage;
+- [x] **`src/hexagon/services/structure_edit_service.{h,cpp}`**: Implementierung der zweiten Abfrage;
       Orakel §4-6..8.
-- [ ] **`make a-check` grün ohne neue Kante** — der Port importiert weiterhin nur `model`.
-- [ ] **Die sechs Export-Golden byte-identisch** (§4-5) **plus die Umkehr-Gegenprobe**, die belegt,
+- [x] **`make a-check` grün ohne neue Kante** — der Port importiert weiterhin nur `model`.
+- [x] **Die sechs Export-Golden byte-identisch** (§4-5) **plus die Umkehr-Gegenprobe**, die belegt,
       dass sie Encoder-Änderungen fangen.
-- [ ] **Kein Persistenz-/Schema-Diff**, am `git diff --stat` belegt; `make schema-check` bleibt der
+- [x] **Kein Persistenz-/Schema-Diff**, am `git diff --stat` belegt; `make schema-check` bleibt der
       Drift-Wächter, **nicht** der Unberührtheits-Sensor.
-- [ ] **Orakel §4-1..3 und 6..8 je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen;
+- [x] **Orakel §4-1..3 und 6..8 je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen;
       §4-4/5/8/8a/9 als Netz benannt.
-- [ ] **[ADR-Index](../../adr/README.md)**: die [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)-Folgepflichtzeile
+- [x] **[ADR-Index](../../adr/README.md)**: die [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)-Folgepflichtzeile
       „Lese-Naht-Slice" auf **erfüllt** nachziehen ([MR-020](../../../../harness/conventions.md)).
-- [ ] **Beobachtungspflicht festhalten:** ob die Erweiterung den
+- [x] **Beobachtungspflicht festhalten:** ob die Erweiterung den
       [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Re-Eval
       („Bündel wird zu breit") nähergerückt hat — **eine** optionale Herkunft zieht ihn nicht; die
       Closure sagt, wo die Grenze jetzt steht.
-- [ ] **Kein Lastenheft-, kein Spezifikations-Eintrag** — beides hat
+- [x] **Kein Lastenheft-, kein Spezifikations-Eintrag** — beides hat
       [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md) geliefert. (Geprüft und **verneint**.)
-- [ ] **CHANGELOG** [Unreleased]-Eintrag.
-- [ ] **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report
+- [x] **CHANGELOG** [Unreleased]-Eintrag.
+- [x] **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report
       unter `docs/reviews/`** je Lauf.
-- [ ] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`,
+- [x] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`,
       [MR-017](../../../../harness/conventions.md)); **`make io-smoke` grün**.
 
 ## 6. Plan (vor Code)
@@ -247,4 +247,58 @@ alle ändern, **was die Closure später belegen kann**.
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Vollzogen 2026-07-28.** `make gates` **EXIT=0** (docs-check **0 Befunde / 278 Dateien** · a-check 0 ·
+arch-check ok · **371/371** Tests · Coverage 92,1 %), `make schema-check` ok, `make io-smoke` ok.
+**Kein Encoder-, Persistenz- oder Schema-Diff** — am `git diff --stat` über `src/adapters`,
+`data-model.yaml` und `schema.sql` belegt (leer).
+
+### Die Orakel mit einzeln gemessener roter Gegenprobe
+
+| # | Gegenprobe | gemessen rot |
+|---|---|---|
+| 1 | Art vertauscht | 1 Test |
+| 2 | eine Einfüge-Stelle ohne Herkunft | 2 Tests |
+| 3 | Laufindex statt echter Id | 1 Test |
+| 6 | Stärke/Höhe vertauscht | 2 Tests |
+| 7 | Wurf statt `nullopt` · Default-Wert statt `nullopt` | je 1 Test, **einzeln** gemessen |
+| 8 | **keine** — es gibt im Bestand keine zweite Quelle (Lauf-1-MEDIUM-2); als **Netz** geführt | — |
+| 5 / 8a | **Umkehr-Gegenprobe:** Encoder-Zusatz je Segment im PDF-Writer ⇒ `GoldenExport.PdfByteIdentical` **und** drei Decode-Orakel fallen | 4 Tests |
+
+**Die Umkehrung ist die eigentliche Leistung dieser Closure.** „Die Golden sind grün" beweist nichts,
+solange nicht gezeigt ist, dass sie **etwas** merken würden. Jetzt ist es gezeigt — und zwar an einem
+der **zwei fähigen** Zeugen (nur PDF und PNG bekommen die Projektion; DXF, IFC, STEP und STL könnten
+die Zusage strukturell gar nicht brechen). **Beide** von der ADR benannten Netze haben angeschlagen,
+das byte-genaue **und** das struktur-prüfende.
+
+### Ein Flake aus slice-055 — hier aufgefallen, hier behoben
+
+Ein `make gates`-Lauf fiel rot mit einem Test, der unmittelbar davor dreimal grün war:
+`CanvasSnapPreview.…AnzeigeTrifftDenPunktDerGefangenWird`. **Ursache, nachgerechnet:** die Fixture
+verließ sich für den Fit-to-Bounds auf `show()` + `processEvents()`. Der Paint kommt so **nicht
+deterministisch** — und **ohne** Fit steht die Default-Transformation (Zoom 0,05, Zentrum 0,0), in der
+die Modell-Ecke `(0,0)` **exakt auf (200,150)** liegt: genau der Punkt, den der Test als **freie**
+Position verwendet. Der Abstand ist dann 0 px bei 12 px Fang-Nähe.
+
+**Behoben:** die Fixture erzwingt den Fit **synchron** über `render()` und prüft ihn als
+**Vorbedingung**, damit ein stiller Rückfall auffällt. Drei Läufe, null Fehler.
+
+**Die Lehre gehört aufgeschrieben, nicht nur der Fix:** ein Test, dessen Konstanten von einem
+**asynchron** hergestellten Zustand abhängen, ist nicht falsch — er ist **manchmal** richtig. Und ein
+Orakel, das nur manchmal misst, ist schlimmer als keines, weil sein Grün eine Aussage vortäuscht.
+**Der Fehler stammt aus slice-055 und wurde dort von drei Review-Läufen nicht gefunden** — kein
+Reviewer prüft Nicht-Determinismus, den der Lauf nicht zeigt.
+
+### Beobachtungspflicht (ADR-0021 §Konsequenzen)
+
+Der [ADR-0020](../../adr/0020-driven-adapter-serialisieren-kern-liefert-geometrie.md)-Re-Eval „das
+Bündel wird zu breit" ist **ungezogen**: `PlanSegment` hat **ein** optionales Feld dazubekommen, und
+die änderbaren Parameter stehen bewusst **nicht** dort, sondern hinter einer eigenen Abfrage. **Die
+Grenze verläuft ab hier bei: jedes weitere Feld am Segment braucht eine Begründung, warum es das
+Bild betrifft und nicht nur eine Bedienfläche.**
+
+### Was der Slice ermöglicht
+
+[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md) hat jetzt, was es braucht: eine
+Treffer-Prüfung kann ein Bauteil **benennen**, und der Eigenschaften-Bereich kann seine Parameter
+**lesen**. [`slice-058`](../open/slice-058-wand-zeichnen-im-canvas.md) war und bleibt davon
+unabhängig.
