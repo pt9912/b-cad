@@ -37,44 +37,88 @@ steht jetzt als **benannte Grenze** im Plan statt stillschweigend als Wertgleich
    fehlt. Damit der Test nicht später versehentlich zu einem Test über zwei *identische* Pixel
    verkommt, hält er per `ASSERT_NE` fest, dass die zwei Pixel **ungefangen verschiedene** mm ergeben.
 
-### ▶ Nächste Sitzung — zwei Pläne liegen, beide brauchen ihr MR-006
+### Sieben MR-006-Läufe an zwei Plänen — beide jetzt startbar
 
-Die zwei offenen Punkte der 048b-Closure sind **noch am selben Tag** entschieden und geschnitten
-worden, statt in den nächsten Tagesabschluss zu wandern:
+| Plan | Läufe | Ergebnis |
+|---|---|---|
+| [`slice-055`](../open/slice-055-fang-anzeige.md) (Fang-Anzeige) | 3 | **startbar** (0 HIGH im dritten) |
+| [`slice-056`](../open/slice-056-wand-im-canvas-adr-ak.md) (Wellen-Kern, ADR + AK) | 4 | **startbar** (0 HIGH im vierten) |
 
-- **[`slice-055`](../open/slice-055-fang-anzeige.md) — Fang-Anzeige.** Die
-  [MR-020](../../../../harness/conventions.md)-Zurückstellung ist **aufgehoben**
-  (Projektinhaber, 2026-07-28): die Anzeige ist keine neue Funktion, sondern die **Beobachtbarkeit
-  einer bereits ausgelieferten** — 048b-R5 (Fang über alle Geschosse, gezeichnet nur das aktive) ist
-  ohne sie ein unerklärter Sprung. Enthält **AK-Schärfung und Implementierung in einem Schnitt**;
-  die Abweichung vom 048a/048b-Muster ist in §10 begründet und ausdrücklich review-offen.
-- **[`slice-056`](../open/slice-056-wand-im-canvas-adr-ak.md) — der Wellen-Kern, endlich mit Plan.**
-  Er liefert **ADR + AK-Schärfung, keinen Produktions-Code** (Muster
-  [`slice-041a`](../done/slice-041a-drw-canvas-adr-ak.md)), weil
-  [ADR-0019](../../adr/0019-drw-2d-canvas.md) „Bauteile interaktiv zeichnen" und „Selektion/Picking"
-  **ausdrücklich aus ihrem Schnitt nimmt** — und ADRs nach `Accepted` immutabel sind. §2 führt **acht**
-  Fragen, die der Spec-Text nicht entscheidet, **je am Artefakt belegt**. Die teuersten zwei:
-  **F2** (das Lastenheft fordert einen Linienzug ≥ 2 Punkte, das Domänen-Modell trägt
-  Einzelsegment-Wände, `spezifikation.md` §2.1 führt Wandzüge als *offen*) und **F3** (Selektion gibt
-  es im Produkt **nirgends** — das ist die eigentliche Neuheit, nicht das Zeichnen).
-  §8 schneidet den Rest-Strang: **057** zeichnen · **058** auswählen und ändern ⇒ **Trigger erfüllt**.
+**Jeder der sieben Läufe hat etwas Echtes gefunden, keiner war kosmetisch.** Bei 056 wuchs die
+Fragenliste **8 → 10 → 13 → 14**; bei 055 riss dieselbe Zusage **zweimal in Folge am selben Punkt**
+(dem Sensor für „es wird wirklich ein Marker gezeichnet"), bis Lauf 3 die Kontrolle nachrechnete.
+
+**Zwei Funde hätten den Strang auf einem falschen Zuschnitt starten lassen:** **F11** (die
+2D-Lese-Naht — `PlanSegment` trägt keine `WallId`, ein Picking hätte anonyme Segmente zu treffen) und
+**F14** (die Nachweis-Naht für reinen UI-Zustand — Auswahl/Werkzeug/Hinweis haben **kein** Korrelat
+außerhalb des Widgets, anders als jede bisherige Interaktions-AK dieses Repos).
+
+**Zwei Läufe fanden Fehler, die beim Reparieren früherer Funde entstanden waren:** eine
+Abbruchregel, die sich zwei Absätze später selbst widerruft, und eine Einarbeitung, die per Satz
+behauptet wurde, ohne stattzufinden (per `git diff` gemessen). **Eine Einarbeitung ist zu messen,
+nicht zu lesen.**
+
+**Terminierung, vorab festgelegt:** das frühere Kriterium „weitersuchen, bis ein Lauf leer ausgeht"
+ist **zurückgenommen** — es terminiert nicht. Die Abbruchregel lautet **0 HIGH ⇒ startbar**; die
+Vollständigkeitslast trägt das **ADR-Text-Review** (dort stehen ausformulierte Entscheidungen statt
+Überschriften), und `Proposed` hält sie bis `Accepted` änderbar.
+
+### Regel-Kandidat: Konsequenzen-Blöcke gelesener ADRs (Zähler: **2**, noch keine MR)
+
+> **Ein Plan, der auf einer `Accepted`-ADR aufbaut, liest deren Konsequenzen-, Re-Eval- und
+> Folgepflicht-Blöcke — nicht nur ihre Entscheidungen — und weist die Deckung im Plan nach.**
+
+**Belegt (2×, beide im selben Slice, beide von verschiedenen Reviewern, beide HIGH):**
+
+1. **F11** — [ADR-0019](../../adr/0019-drw-2d-canvas.md) Re-Eval-Block: „2D-Lese-Naht (`PlanViewPort`)
+   um **Bauteil-/Treffer-Queries erweitern**". Der Plan zitierte dieselbe ADR **zweimal** und diesen
+   Satz nicht.
+2. **F14** — [ADR-0019](../../adr/0019-drw-2d-canvas.md) Entscheidung 7 + [ADR-0009](../../adr/0009-gui-framework-qt6.md) (f):
+   „`tests/e2e/` bleibt daher leer, bis eine AK entsteht, die nur echt end-to-end prüfbar ist (z. B.
+   **Selektion** / mehrschrittige Interaktion)". Der Strang liefert beide dort genannten Beispiele.
+
+**Warum das hier steht und nicht in `conventions.md`:** die Regel dieses Repos lautet **zweimal
+kategorisieren, dreimal Regel** ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+führt sie in der eigenen Begründung). Der Zähler steht bei **zwei** — eine MR daraus zu machen wäre
+genau die Schwellen-Aufweichung, die dieser Prozess sonst rügt. Adjazent, aber **nicht** mitgezählt:
+der 048a-Report nutzte den Re-Eval-Block, um eine DoD-Formulierung zu korrigieren (Index-Vermerk, kein
+übersehener Entscheidungs-Bedarf). Gegenbeispiel, das die Klasse schärft: der 041a-Report bescheinigt
+dem Plan ausdrücklich, die Deferral **korrekt geehrt** zu haben — die Disziplin ist also machbar, nicht
+strukturell unmöglich.
+
+**Beim dritten Vorkommen wird daraus eine MR.** Bis dahin gilt sie als **Arbeits-Disziplin ohne
+Regel-Status** — sie kostet nichts und braucht keine Autorisierung.
+
+**Warum sie überhaupt zählt:** die zwei teuersten Funde aus sieben Läufen waren **keine Erkenntnis** —
+sie standen wörtlich in einer Datei, die der Plan-Autor offen hatte. Vier Review-Läufe waren ein
+teurer Ersatz für eine sorgfältige Lektüre eines Dokuments. **Nicht zu viel Review, sondern zu wenig
+Lesen vor dem Schreiben.**
+
+### Zweiter Befund derselben Sitzung — die Form von slice-056
+
+Ein Plan, dessen Kern eine **Liste von Fragen** ist, macht sich selbst unprüfbar: die Vollständigkeit
+einer Liste ist nicht falsifizierbar, also findet jeder Lauf noch eine. Deshalb brauchte 056 am Ende
+eine künstliche Abbruchregel. **Besser wäre der Schnitt über Quellen-Deckung gewesen** („die ADR
+versöhnt die Entscheidungen **und** Re-Eval-Blöcke der zwei einschlägigen Canvas-/GUI-ADRs, die fünf
+Wand-Anforderungen des Lastenhefts und die drei berührten Spezifikations-Abschnitte")
+— das ist prüfbar (ist jede Quelle adressiert?) statt unbeweisbar (fehlt noch eine Frage?). Die Fragen
+wären daraus **gefallen**, statt erraten zu werden. **Kein Kandidat für eine Regel, sondern eine
+Schnitt-Lehre für den nächsten Doku-Slice.**
+
+### ▶ Nächste Sitzung
+
+**Beide Slices sind frei.** [`slice-055`](../open/slice-055-fang-anzeige.md) ist der kleinere,
+geschlossene Schnitt (Code + AK, berührt nichts von 056);
+[`slice-056`](../open/slice-056-wand-im-canvas-adr-ak.md) ist der Wellen-Kern (ADR + AK, **kein**
+Code) und öffnet den Strang **057** Lese-Naht → **058** zeichnen → **059** auswählen/ändern ⇒
+Trigger erfüllt ⇒ **Welle schließen**.
 
 **Weiter zurückgestellt** ([MR-020](../../../../harness/conventions.md)-Deferral, im ADR-Index
 notiert): **DRW-002/003** (Raster/Winkel) — nicht trigger-bindend.
 
-**Kein Slice ist startbar, bevor sein
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
-gelaufen ist** (Reviewer ≠ Plan-Autor; HIGHs blockieren). Für 056 hat die Linse eine besondere
-Aufgabe: **sind es die richtigen acht Fragen?** Eine übersehene neunte fiele erst im Impl auf — wenn
-die ADR bereits `Accepted` und damit unveränderlich ist.
-
-**Weiter offen, ohne Wellen-Bindung:** [`slice-051`](../open/slice-051-review-artefakt-pflicht.md) ·
-[`slice-044b`](../open/slice-044b-golden-import-fremd.md) ·
-[`slice-006`](../open/slice-006-drittanbieter-attribution.md) · `slice-039a/b` · `slice-040a`.
-
-**Weiterhin offen für den Projektinhaber:** der **Regel-Kandidat** aus der welle-5-Closure (eine
-Orakel-Zeile benennt die **Komponente**, an der sie diskriminiert) — inzwischen **viermal** belegt
-(053 · 052a · 052b · und hier als Vorbeugung). Das bleibt eine Regelwerk-Entscheidung.
+**Weiterhin offen für den Projektinhaber:** der **welle-5-Regel-Kandidat** (eine Orakel-Zeile benennt
+die **Komponente**, an der sie diskriminiert) — inzwischen **viermal** belegt. Und der neue Kandidat
+oben, Zähler **2**.
 
 ---
 
