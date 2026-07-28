@@ -1,7 +1,7 @@
 ---
 id: slice-055
 titel: Fang-Anzeige — sichtbar machen, worauf eingerastet wird ([LH-FA-DRW-001](../../../../spec/lastenheft.md#lh-fa-drw-001))
-status: open
+status: done
 welle: welle-6-interaktiv-planen
 lastenheft_refs: [[LH-FA-DRW-001](../../../../spec/lastenheft.md#lh-fa-drw-001), [LH-FA-DRW-005](../../../../spec/lastenheft.md#lh-fa-drw-005)]
 adr_refs: [[ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr
 
 # Slice 055: Fang-Anzeige (DRW-001)
 
-**Status:** open — **zwei
+**Status:** done (2026-07-28) — **drei
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
 durch** (Lauf 1: 1 HIGH · Lauf 2: 1 HIGH · **Lauf 3: 0 HIGH / 4 MED / 6 LOW / 2 INFO —
 „startbar"**); Einarbeitung in §11/§11a/§11b. **Lauf 3 hat die zwei Sensoren, an denen die
@@ -182,14 +182,14 @@ und Export; `snapPreview()` hätte ohne Zeile 8 **keinen** gedeckten Produktions
 
 ## 5. Definition of Done
 
-- [ ] **Lastenheft**: [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001) bekommt einen
+- [x] **Lastenheft**: [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001) bekommt einen
       **Happy-Path-Konjunkt** — „**bevor** der Punkt gesetzt wird, ist erkennbar, auf welchen Punkt
       eingerastet würde, für Anfang **wie** Ende" — und eine **Boundary**-Zeile „liegt kein Punkt in
       Fang-Nähe oder verlässt der Zeiger die Zeichenfläche, gibt es keine Anzeige". **Lösungsfrei**
       ([MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei):
       keine Marker-Form/Farbe/Größe). Die **zeitliche Bedingung** („bevor") ist Teil der Zusage, nicht
       Beiwerk (Lauf-1-LOW-1).
-- [ ] **Der Happy-Path-Halbsatz „Endpunkt P *auf der Zeichenfläche*" ist mitzuschärfen**
+- [x] **Der Happy-Path-Halbsatz „Endpunkt P *auf der Zeichenfläche*" ist mitzuschärfen**
       (Lauf-2-MEDIUM-4, **verortet durch Lauf-3-MEDIUM-3**). Die erste Einarbeitung wollte das Wort
       „**sichtbar**" schärfen — **das war der falsche Ort**: die Anforderung **definiert** „sichtbar"
       bereits über die Ebene („Fangbar sind nur sichtbare Punkte; die Sichtbarkeit richtet sich nach
@@ -199,7 +199,7 @@ und Export; `snapPreview()` hätte ohne Zeile 8 **keinen** gedeckten Produktions
       verschieben.** *(Nebenbefund, bereits aus 048b bekannt und hier nicht zu heilen: der
       Ebenen-Filter greift in `projectPlan` **nur bei Hilfslinien** — Wand-Achsen tragen keine
       `layer_id`.)*
-- [ ] **Lastenheft-Version + Historie** ([MR-010](../../../../harness/conventions.md)/[MR-012](../../../../harness/conventions.md)):
+- [x] **Lastenheft-Version + Historie** ([MR-010](../../../../harness/conventions.md)/[MR-012](../../../../harness/conventions.md)):
       Header == Version der neu ergänzten Zeile in
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md). **Ausgangsstand heute
       0.1.19; die Zielnummer ist die dann nächste freie** — sie wird beim Vollzug festgestellt, nicht
@@ -209,36 +209,36 @@ und Export; `snapPreview()` hätte ohne Zeile 8 **keinen** gedeckten Produktions
       (Lauf-1-LOW-2). **Der Sensor dieser Zeile ist die
       [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Linse,
       nicht `make docs-check`** — d-check prüft keine Feld-Gleichheit.
-- [ ] **Spezifikation §1**: der [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001)`.a`-Block
+- [x] **Spezifikation §1**: der [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001)`.a`-Block
       bekommt die Mechanik — Hover-Verfolgung **und Zug-Phase**, **derselbe** `snapTarget`-Vertrag wie
       der Zeichen-Pfad, Anzeige als **Widget-Zustand** (kein Modell-Datum, kein `op`, kein Schema).
-- [ ] **`src/adapters/ui/view/canvas_widget.{h,cpp}`**: Maus-Verfolgung an, `snap_preview_` +
+- [x] **`src/adapters/ui/view/canvas_widget.{h,cpp}`**: Maus-Verfolgung an, `snap_preview_` +
       `snapPreview()`-Naht, **Pflege in beiden Phasen** (Hover **und** Zug), **`leaveEvent`** löscht,
       **`update()`** im Hover-Zweig; **kein** neuer Port, **kein** neuer `op`. Orakel §4-1..7 + 9.
-- [ ] **Die Preview wird bei jeder Transformations-Änderung invalidiert** —
+- [x] **Die Preview wird bei jeder Transformations-Änderung invalidiert** —
       `wheelEvent`/`resizeEvent`/`setActiveStorey`/`onModelChanged` repainten **ohne** Maus-Ereignis;
       ein in mm gehaltener Marker zeigte danach auf die falsche Bildschirmstelle. **Das ist die
       `drag_start_mm_`-Lehre aus 043, hier umgekehrt** (Lauf-2-MEDIUM-3); Orakel §4-10.
-- [ ] **Marker im Paint-Pfad** — **eigene DoD-Zeile mit eigenem Sensor** (§4-8, Tinten-Sonde auf
+- [x] **Marker im Paint-Pfad** — **eigene DoD-Zeile mit eigenem Sensor** (§4-8, Tinten-Sonde auf
       offscreen gerendertem Widget-Bild, **Kontrolle über die Zeiger-Position**, nicht über das
       Modell). **Nicht** mit den Surrogat-Zeilen gebündelt (Lauf-1-HIGH-1/Lauf-2-HIGH-1).
-- [ ] **`tests/adapters/test_canvas_widget.cpp`** erweitert (inkl. **Zähl-Callable** in der
+- [x] **`tests/adapters/test_canvas_widget.cpp`** erweitert (inkl. **Zähl-Callable** in der
       `PlanPull`-Naht für §4-9); Bestands-Orakel unverändert grün (§4-11).
-- [ ] **Orakel §4-1..10a je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen.
-- [ ] **`make a-check` grün ohne neue Kante**; **kein** Kern-/Persistenz-/Export-Diff, belegt am
+- [x] **Orakel §4-1..10a je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen.
+- [x] **`make a-check` grün ohne neue Kante**; **kein** Kern-/Persistenz-/Export-Diff, belegt am
       `git diff --stat` der Closure (`make schema-check` prüft Schema-Drift, **nicht**
       Unberührtheit — Lauf-1-Präzedenz aus dem 056-Report).
-- [ ] **Benutzerhandbuch**: §4.2 nennt die Anzeige; der heutige Satz „Eine Anzeige, **worauf** gerade
+- [x] **Benutzerhandbuch**: §4.2 nennt die Anzeige; der heutige Satz „Eine Anzeige, **worauf** gerade
       eingerastet wird, gibt es in dieser Version noch nicht" ist zu **ersetzen** (nicht zu ergänzen).
       Handbuch-Version + Änderungshistorie.
-- [ ] **[ADR-Index](../../adr/README.md)**: die [ADR-0019](../../adr/0019-drw-2d-canvas.md)-Folgepflichtzeile beschreibt slice-055 heute
+- [x] **[ADR-Index](../../adr/README.md)**: die [ADR-0019](../../adr/0019-drw-2d-canvas.md)-Folgepflichtzeile beschreibt slice-055 heute
       als „als Plan geschnitten (in `open/`)" — beim Vollzug auf „erfüllt" nachziehen
       ([MR-020](../../../../harness/conventions.md), Lauf-1-LOW-4).
-- [ ] **CHANGELOG** [Unreleased]-Eintrag.
-- [ ] **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report
+- [x] **CHANGELOG** [Unreleased]-Eintrag.
+- [x] **[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Report
       unter `docs/reviews/`** je Lauf — **als DoD-Zeile**, nicht nur in der Datei-Tabelle
       (Lauf-1-MEDIUM-4: **drittes** Vorkommen desselben Musters in diesem Strang).
-- [ ] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`,
+- [x] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`,
       [MR-017](../../../../harness/conventions.md)); **`make io-smoke` grün**.
 
 ## 6. Plan (vor Code)
@@ -414,4 +414,61 @@ zwei ersten am selben Punkt: dem Sensor für „es wird wirklich gezeichnet".
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Vollzogen 2026-07-28.** `make gates` **EXIT=0** (docs-check **0 Befunde / 272 Dateien** · a-check 0 ·
+arch-check ok · **366/366** Tests · Coverage **92,1 %**), `make schema-check` ok, `make io-smoke` ok.
+**Kein Kern-/Persistenz-/Export-Diff** — am `git diff --stat` über `src/hexagon`, `data-model.yaml`,
+`src/adapters/persistence` und `src/adapters/io` belegt (leer), nicht über `make schema-check`
+behauptet.
+
+### Die zehn Gegenproben — jede einzeln angewandt und gemessen
+
+| # | Gegenprobe | gemessen rot |
+|---|---|---|
+| 1 | Preview auf die Cursor-mm statt auf das Fang-Ziel | 4 Tests |
+| 2 | Schwellwert-Ergebnis ignoriert (immer anzeigen) | **vier** „keine Anzeige"-Zusicherungen über 4 Tests |
+| 3 | Preview nur gesetzt, nie gelöscht | 2 Tests |
+| 4 | 0,5 mm Versatz **nur** im Hover-Pfad (Anzeige ≠ Zug) | 3 Tests |
+| 5 | `setMouseTracking(true)` entfernt | 5 Tests — s. Lehre 2 |
+| 6 | Preview nur im `!dragging_`-Zweig gepflegt | 1 Test (Zug-Phase) |
+| 7a | `leaveEvent` unbehandelt | 1 Test |
+| 7b | `rect()`-Wache entfernt | 1 Test (Zug außerhalb) |
+| 8 | Marker-Zeichnung aus `paintEvent` | **1 Test — ausschließlich die Tinten-Sonde** |
+| 9 | `update()` im Hover-Zweig entfernt | 1 Test (Pull-Zähler: 1 statt 2) |
+| 10 | Invalidierung entfernt | 2 Tests |
+| 10a | Rückkehr nach der nächsten Bewegung unterdrückt | 1 Test |
+
+### Drei Lehren
+
+1. **Zeile 8 ist der Beweis, um den zwei Review-Läufe gerungen haben — und er ist eingetreten.**
+   Ohne Marker-Zeichnung fällt **ausschließlich** die Tinten-Sonde; alle sechs Surrogat-Orakel bleiben
+   grün. Genau das hatte Lauf 1 als HIGH behauptet und Lauf 2 als noch nicht gedeckt nachgewiesen.
+   **Ein Zustand ohne Produktions-Konsumenten braucht einen zweiten Sensor** — das ist jetzt gemessen,
+   nicht argumentiert.
+2. **Die Begründung von Zeile 5 war falsch, die Zeile richtig.** Lauf 1 hatte argumentiert, der Test
+   bliebe ohne `setMouseTracking` grün, weil er Ereignisse **synthetisiert**. Gemessen: in dieser
+   Qt-Version erreichen auch synthetisierte **tastenlose** Move-Ereignisse den Handler **nicht** —
+   die Gegenprobe macht **fünf** Tests rot. Genau die zwei Tests, die mit **gedrückter Taste**
+   bewegen, bleiben grün; das bestätigt den Mechanismus (die Verfolgung gatet nur den
+   tastenlosen Fall). **Die Zusage war also stärker gedeckt als angenommen — aus einem anderen Grund
+   als angenommen.**
+3. **Die Fixture musste zweimal gebaut werden, und beide Male sagte es die Rechnung vorher.** Für
+   Zeile 7b (Zug außerhalb) ist **hinein**zuzoomen, damit ein Fang-Punkt über den Rand wandert
+   (Lauf 3 hatte nachgerechnet: nach `fit` liegt jeder Punkt ≥ 15 px vom Rand, die Fang-Nähe ist
+   12 px). Für Zeile 10a ist **heraus**zuzoomen, damit der Punkt im Viewport bleibt — der erste
+   Versuch mit Hineinzoomen lief rot, weil `(4000,3000)` dabei den Rand verlässt. **Beide Male war die
+   Geometrie der Grund, nicht der Code.**
+
+### Was der Slice ausdrücklich nicht liefert
+
+Die **Gummiband-Vorschau** (die in-Arbeit-Linie zieht weiter zum Cursor-Pixel, nicht zum Fang-Ziel)
+und eine **Kennzeichnung, aus welchem Geschoss** der Punkt stammt — beide in §3 benannt, beide
+eigene Zusagen. **Raster/Winkel** ([`LH-FA-DRW-002`](../../../../spec/lastenheft.md#modul-zeichnungsfunktionen-drw)/003)
+bleiben zurückgestellt.
+
+### Prozess-Ertrag
+
+**Drei [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe,
+drei echte Funde, zwei davon am selben Punkt** (dem Sensor für „es wird wirklich gezeichnet").
+Lauf 2 fand, dass die von Lauf 1 verlangte Reparatur **nicht diskriminierte** — die Form stimmte, die
+Kontrolle nicht. Ohne den dritten Lauf wäre außerdem eine Orakel-Zeile in den Vollzug gegangen, deren
+Gegenprobe in der Repo-Fixture **gar nicht herstellbar** war.
