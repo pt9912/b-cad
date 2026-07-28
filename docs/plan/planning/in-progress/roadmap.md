@@ -40,7 +40,8 @@ machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nic
 ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
 wellen-bindend und verlängert sie nicht.
 
-Keine offenen Slices.
+**In Arbeit:** [`slice-056`](slice-056-wand-im-canvas-adr-ak.md) — der **Wellen-Kern**:
+ADR + AK-Schärfung für die Wand im 2D-Canvas.
 
 ## Nächste Wellen
 
