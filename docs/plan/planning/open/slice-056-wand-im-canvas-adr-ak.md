@@ -9,9 +9,11 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 056: Wand im 2D-Canvas — ADR + AK-Schärfung
 
-**Status:** open — **erster
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
-durch** (2 HIGH / 6 MEDIUM / 5 LOW / 3 INFO, Verdikt „nicht startbar"); Einarbeitung in §11. Dieser
+**Status:** open — **zwei
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
+durch** (Lauf 1: 2 HIGH / 6 MED / 5 LOW / 3 INFO · Lauf 2: 1 HIGH / 4 MED / 4 LOW / 4 INFO), beide
+„nicht startbar"; Einarbeitung in §11/§11a. **Die Fragen-Zahl ist von acht auf dreizehn gewachsen —
+jede Erweiterung kam aus einem Review, keine aus dem Autor.** Dieser
 Slice schreibt **Doku, keinen Produktions-Code** (Muster
 [`slice-041a`](../done/slice-041a-drw-canvas-adr-ak.md): ADR + AK-Schärfung vor dem Impl-Strang).
 
@@ -41,7 +43,7 @@ führen es wörtlich.)*
 
 **Zwei Artefakte, beide lösungs- bzw. formfrei an der jeweils richtigen Stelle:**
 
-1. **Eine neue ADR** (nächste freie Nummer: 0021) — die **zehn** Fragen (§2), die der Spec-Text nicht
+1. **Eine neue ADR** (nächste freie Nummer: 0021) — die **dreizehn** Fragen (§2), die der Spec-Text nicht
    entscheidet, beantwortet und begründet; `Proposed` → unabhängiges Text-Review → `Accepted`;
    ADR-Index + Folgepflicht-Block nachgezogen.
 2. **AK-Schärfung** — [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen)
@@ -55,10 +57,11 @@ führen es wörtlich.)*
 
 **Kein Produktions-Code.** Der Slice liefert die Grundlage; 057/058 liefern die Funktion.
 
-## 2. Die zehn Fragen, die der Spec-Text nicht entscheidet
+## 2. Die dreizehn Fragen, die der Spec-Text nicht entscheidet
 
 *(Sie sind der Grund, warum hier eine ADR steht und nicht direkt ein Impl-Slice. Jede ist am Artefakt
-belegt, nicht vermutet. **F9 und F10 hat der erste Review gefunden** — die Vorfassung führte acht.)*
+belegt, nicht vermutet. **F9/F10 hat der erste Review gefunden, F11/F12/F13 der zweite** — die
+Vorfassung führte acht. Die Zahl ist kein Gütesiegel: sie ist die Bilanz zweier Suchläufe.)*
 
 | # | Frage | Warum offen — am Artefakt |
 |---|---|---|
@@ -72,6 +75,9 @@ belegt, nicht vermutet. **F9 und F10 hat der erste Review gefunden** — die Vor
 | **F8** | **[`E-GEO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder) „Eingabe außerhalb des Zeichenbereichs".** | Die Negative-AK von [`LH-FA-WAL-001`](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen) nennt diesen Fall. Ein **begrenzter Zeichenbereich in Modell-mm** existiert nicht; der Zoom ist geklemmt (`[1e-4, 100]` px/mm seit dem slice-043-Code-Review) und ein interaktives Pan gibt es nicht — die Begrenzung ist also eine Sicht-, keine Bereichs-Grenze (Lauf-1-LOW-1). Entweder die ADR definiert einen Bereich, oder die AK bekommt die ehrliche Feststellung, dass der Fall in dieser Ausbaustufe **nicht erreichbar** ist. **Was nicht geht: die AK-Zeile stehen lassen und nichts dazu bauen.** |
 | **F9** | **Fangen beim Bauteil-Zeichnen** — gilt der 048b-Fang auch für den Wand-Zug? | **Vom ersten Review gefunden (HIGH-2); die Vorfassung hatte die Frage nicht.** [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001) begrenzt den Fang wörtlich auf „das interaktive Zeichnen von **Hilfslinien**" und führt „**Fangen beim Bauteil-Zeichnen**" im Teilumfang-Block ausdrücklich als **offen**. Die Folge ist nicht kosmetisch: der WAL-001-Happy fordert „verbundene Endpunkte werden **geometrisch verbunden**", [`LH-FA-WAL-006`](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden) setzt einen **gemeinsamen** Endpunkt voraus, und `spezifikation.md` §3 legt die Toleranz auf **0,1 mm** fest — während ein Bildschirm-Pixel bei Default-Zoom rund **20 mm** entspricht. **Ohne Fang ist der Eckenschluss auf dem interaktiven Weg praktisch unerreichbar.** |
 | **F10** | **Fehler-Barriere des zweiten Mutators.** | **Vom ersten Review gefunden (MEDIUM-2).** Der erste UI-Mutator lehnt **wertbasiert** ab (`addGuideLine → std::optional`, Modell unverändert); der zweite **wirft**: `addWall` wirft `std::out_of_range` bei unbekannter Geschoss-Id, `setWallThickness`/`setWallHeight` werfen über `mutableWall` bei unbekannter Wand-Id. Das ist kein Randfall — die Zeichen-Ziele werden als eingefrorene Ids injiziert und nach einem Projekt-Laden nachgezogen (`setTarget`/`setActiveStorey` tragen genau diesen Kommentar). Dieselbe Konstellation führt beim Hilfslinien-Weg zu stiller Ablehnung, beim Wand-Weg zu einem **Wurf aus einem Qt-Event-Handler**. Wo diese Barriere liegt, ist unentschieden. |
+| **F11** | **Die 2D-Lese-Naht selbst** — womit soll der Canvas eine **Wand** treffen und benennen? | **Vom zweiten Review gefunden (HIGH-1) — und [ADR-0019](../../adr/0019-drw-2d-canvas.md) benennt die Folge in ihrem Re-Eval-Block wörtlich:** »2D-Lese-Naht (`PlanViewPort`) um **Bauteil-/Treffer-Queries erweitern**«. Der Plan zitierte dieselbe ADR zweimal, diesen Satz nicht. `model::PlanSegment` trägt `{x1,y1,x2,y2}` — **keine `WallId`, keine Art**; `projectPlan` mischt Wand-Achsen und sichtbare Hilfslinien in **eine** Liste, `paintEvent` zeichnet beide gleich. **F3** (Picking) hätte damit nur **anonyme** Segmente zu treffen, **F4** (Parameter ändern) braucht eine `WallId`, die die Naht nicht liefert, und die geplante WAL-001-Happy-AK wäre nicht als **Wand** beobachtbar. Das ist die teuerste offene Entscheidung des Strangs, weil sie einen **Kern-Werttyp** und einen **Read-Port** berührt — nicht nur das Widget. |
+| **F12** | **Der Rückweg aus einer Wand-Geste.** | **Vom zweiten Review gefunden (MEDIUM-2).** `EditStructurePort` hat **kein `removeWall`** — der Vorgänger-Mutator hat `removeGuideLine`. Der Canvas kennt keinen **Gesten-Abbruch** (Escape, Fokusverlust), und Undo ist unbedient. Eine falsch gezogene Wand ist damit in der Oberfläche **nicht rücknehmbar**; §3 grenzte bisher nur die Undo-Hälfte ab. |
+| **F13** | **Welche Parameter gehören zu „parametrisch änderbar"?** | **Vom zweiten Review gefunden (MEDIUM-3).** F4 führt Stärke und Höhe. Das Lastenheft führt daneben [`LH-FA-WAL-007`](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen) (**Wandtyp**, mit Wertemenge und Wirkung), und der Port bietet `setWallMaterial`. Beide sind weder in F4 geführt noch in §3 abgegrenzt — obwohl §3 die Nachbarn WAL-004/005 ausdrücklich abgrenzt und der Wellen-Trigger genau „**parametrisch** änderbar" lautet. |
 
 ## 3. Bewusst NICHT Teil
 
@@ -94,7 +100,8 @@ belegt, nicht vermutet. **F9 und F10 hat der erste Review gefunden** — die Vor
   Mutations-Pfad bedient es. Der interaktive Wand-Weg erzeugt Modell-Mutationen ohne Undo-Anbindung —
   eine **Bestandslücke**, die dieser Slice weder einführt noch schließen muss. Sie gehört als eigene
   Entscheidung in Roadmap/Validator-Rolle (Lauf-1-INFO-3). **Hier benannt, damit sie nicht als
-  übersehen gilt.**
+  übersehen gilt.** *(Der **Rückweg** aus einer Geste ist damit **nicht** mit abgegrenzt — er ist als
+  **F13**-Nachbar in **F12** eine eigene Frage: Undo ist nur eine von drei möglichen Antworten.)*
 
 ## 4. Orakel-Schnitt — ein Doku-Slice hat Doku-Sensoren
 
@@ -119,7 +126,7 @@ niemand.
 
 ## 5. Definition of Done
 
-- [ ] **`docs/plan/adr/0021-*.{md}`** (neu): Kontext · die **zehn** Fragen aus §2 **je entschieden mit
+- [ ] **`docs/plan/adr/0021-*.{md}`** (neu): Kontext · die **dreizehn** Fragen aus §2 **je entschieden mit
       verglichenen Alternativen** · Konsequenzen · Folgepflichten · Re-Eval-Trigger. Status
       `Proposed` → **unabhängiges Text-Review** → `Accepted` (Muster
       [ADR-0019](../../adr/0019-drw-2d-canvas.md)).
@@ -138,9 +145,13 @@ niemand.
       oder bewusst beibehalten**: sie führt „das **interaktive Zeichnen von Bauteilen** … bleibt
       ausdrücklich offen". Der neue WAL-001-Block macht sie im selben Dokument gegenläufig; **kein Gate
       fängt das** (Lauf-1-MEDIUM-4).
-- [ ] **Falls F9 zugunsten „Fangen gilt auch für Wände" entschieden wird: die
-      [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001)-Teilumfang-Zeile nachziehen** —
-      sie führt „Fangen beim Bauteil-Zeichnen" heute als **offen**.
+- [ ] **F9 hat ZWEI Entscheidungsrichtungen, und beide kosten Arbeit** (Lauf-2-MEDIUM-1):
+      `snappedModelPos` sitzt **unbedingt** in Press/Release, also in der **Geste** — nicht im
+      Hilfslinien-Sink. Ein Wand-Werkzeug **fängt damit per Default**. Fällt F9 **dafür**, ist die
+      [`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001)-Teilumfang-Zeile nachzuziehen
+      („Fangen beim Bauteil-Zeichnen" steht dort als **offen**); fällt F9 **dagegen**, ist
+      **Unterdrückungs-Arbeit** im Canvas nötig — sonst steht die Lastenheft-Zeile **still falsch**.
+      **Kein drittes Ergebnis.**
 - [ ] **Lastenheft-Version + Historie** ([MR-010](../../../../harness/conventions.md)/[MR-012](../../../../harness/conventions.md)):
       Header == Version der neu ergänzten Zeile in
       [`lastenheft-historie.md`](../../../../spec/lastenheft-historie.md); **Platzierung unmittelbar
@@ -151,8 +162,15 @@ niemand.
       Selektion als UI-Zustand, Parameter-Rückmeldung, Refresh-Pfad, Fang-Geltung, Fehler-Barriere) —
       die **Mechanik**, die aus dem Lastenheft herausgehalten wird. **§2.1-Klausel „Wandzüge folgen als
       Erweiterung"** je nach F2-Entscheidung **nachziehen oder ausdrücklich stehen lassen**.
+- [ ] **`spec/spezifikation.md` §6**: die Vertragszeile „**2D-Zeichenfläche (DRW-Canvas)**" (seit
+      slice-041a) trägt den Konjunkt „**Selbst-Refresh ohne `op`**". Der Wand-Weg macht ihn
+      unvollständig (Wand-Mutationen **melden** einen `op`) — nachziehen (Lauf-2-MEDIUM-4).
 - [ ] **`spec/architecture.md` §1.1**: Driving-Ports-Tabelle um die Canvas-Klausel am
-      `EditStructurePort` — **meilenstein- und slice-frei** ([AGENTS §2.7](../../../../AGENTS.md)).
+      `EditStructurePort` **und** — je nach **F11**-Entscheidung — um die erweiterte 2D-Lese-Naht
+      (`PlanViewPort`); **meilenstein- und slice-frei** ([AGENTS §2.7](../../../../AGENTS.md)).
+- [ ] **Falls F11 die Lese-Naht erweitert: die Folge für `model::PlanView`/`PlanSegment` ist im
+      ADR-Text zu tragen** — es wäre die erste Änderung an einem **Kern-Werttyp** in diesem Strang und
+      berührt PDF/PNG-Export und die Golden-Files, die dieselbe Projektion konsumieren.
 - [ ] **F8 ist beantwortet** — entweder Zeichenbereich definiert **oder** die
       [`E-GEO-001`](../../../../spec/spezifikation.md#4-fehler-codes-und-logging-felder)-Negative als
       in dieser Ausbaustufe **nicht erreichbar** benannt. **Kein drittes Ergebnis** („später").
@@ -170,7 +188,7 @@ niemand.
 
 | Datei / Komponente | Art | Begründung |
 |---|---|---|
-| `docs/plan/adr/0021-*.{md}` | neu | die zehn Entscheidungen (§2) |
+| `docs/plan/adr/0021-*.{md}` | neu | die dreizehn Entscheidungen (§2) |
 | `docs/plan/adr/README.md` | ändern | Index + Folgepflicht-Block |
 | `spec/lastenheft.md`, `spec/lastenheft-historie.md` | ändern | AK-Block + Teilumfang-Klauseln + Version |
 | `spec/spezifikation.md` | ändern | §1-Mapping, §2.1-Klausel je nach F2 |
@@ -206,17 +224,26 @@ niemand.
 - **R5 — der Slice könnte zum Papier werden.** Ein ADR-Slice ohne Impl-Nachfolge ist genau die
   Buchführungs-Fiktion, die welle-5 gekostet hat. **Gegenmittel in der DoD:** 057/058 existieren als
   Plan-Datei, bevor 056 schließt.
-- **R6 — die Zählung „zehn Fragen" ist selbst eine Behauptung.** Der erste Review hat **zwei** Lücken
-  gefunden (F9, F10); dass jetzt keine elfte fehlt, ist **nicht bewiesen**. Weil die ADR nach
-  `Accepted` immutabel ist, trägt der zweite Review-Lauf dieselbe Hauptlast wie der erste: **Suche nach
-  der nächsten fehlenden Frage**, nicht Prüfung der vorhandenen.
+- **R6 — die Zählung ist selbst eine Behauptung, und sie ist zweimal gefallen.** Der erste Review fand
+  **zwei** Lücken (F9, F10), der zweite **drei** (F11, F12, F13) — acht → zehn → dreizehn. **Kein
+  Suchlauf hat bisher nichts gefunden.** Weil die ADR nach `Accepted` immutabel ist, trägt jeder
+  weitere Lauf dieselbe Hauptlast: **Suche nach der nächsten fehlenden Frage**, nicht Prüfung der
+  vorhandenen. Erst ein Lauf, der **keine** neue findet, ist ein Argument für Vollständigkeit.
+- **R7 — F11 (die Lese-Naht) ist nicht mehr nur eine UI-Frage.** Erweitert die ADR `PlanViewPort` um
+  Bauteil-/Treffer-Queries, ändert sich ein **Kern-Werttyp** (`model::PlanSegment`), den auch PDF-,
+  PNG-Export und die Golden-Files konsumieren. Das ist ein **anderer Risiko-Grad** als der Rest des
+  Strangs — und der Grund, warum diese Frage vor 057/058 gehört und nicht in sie hinein.
 
 ## 8. Der Strang danach (Sequenz, nicht Umfang dieses Slice)
 
 | Slice | Was | Trigger-Beitrag |
 |---|---|---|
-| **057** | **Wand zeichnen** im Canvas: Werkzeug-Modus (F1) + Segment-Zahl je Geste (F2) + Zug ⇒ `addWall` über die neue `ui/command/`-Senke (F7) + Refresh (F6) + Fang-Geltung (F9) + Fehler-Barriere (F10) + Headless-AK | „**zeichenbar**" |
-| **058** | **Wand auswählen und ändern**: Picking (F3) + Parameter-Bedienung (F4) + Rückmeldung in allen drei Fällen (F5) + Headless-AK | „**parametrisch änderbar**" |
+| **057** | **Wand zeichnen** im Canvas: Werkzeug-Modus (F1) + Segment-Zahl je Geste (F2) + Zug ⇒ `addWall` über die neue `ui/command/`-Senke (F7) + Refresh (F6) + Fang-Geltung (F9) + Fehler-Barriere (F10) + Gesten-Abbruch/Rückweg (F12) + Headless-AK | „**zeichenbar**" |
+| **058** | **Wand auswählen und ändern**: die Lese-Naht aus F11 + Picking (F3) + Parameter-Bedienung (F4/F13) + Rückmeldung in allen drei Fällen (F5) + Headless-AK | „**parametrisch änderbar**" |
+
+**Der Schnitt 057/058 ist nach F11 zu prüfen, nicht vorauszusetzen.** Erweitert die ADR die
+Lese-Naht, ist das plausibel ein **eigener, vorgelagerter** Slice (Präzedenz: die 2D-Projektions-
+Hebung lief als slice-042b **vor** dem Canvas) — dann wären es drei statt zwei.
 
 **Mit 058 ist der welle-6-Abschluss-Trigger erfüllt — und die Welle ist dann zu schließen, nicht
 weiterzufüllen** (welle-5-Closure §5-1; der Wellen-Block der Roadmap trägt die Regel).
@@ -232,7 +259,7 @@ weiterzufüllen** (welle-5-Closure §5-1; der Wellen-Block der Roadmap trägt di
 
 ### Sub-Area: Spec-Schreibung + Planning-Lifecycle
 
-- **Modus:** GF; **Dichte:** mittel — eine ADR mit zehn Entscheidungen ist der Aufwand, nicht die
+- **Modus:** GF; **Dichte:** mittel-groß — eine ADR mit dreizehn Entscheidungen ist der Aufwand, nicht die
   Zeilenzahl der AK.
 - **Phase-Reife:** der Canvas trägt seit 043 einen geprüften Interaktions-Pfad, seit 048b eine
   Eingabe-Quantisierung; der `EditStructurePort` liegt seit slice-003a/013b vollständig vor
@@ -273,10 +300,45 @@ vorentschieden (außer F7 in der starken Lesart) · die d-check-Module in §4-2/
 `temporal`) existieren genau so, und die neue ADR unterliegt der Regel (exempt nur 0001–0017) ·
 `make docs-check` real gelaufen: **266 Dateien, 0 Befunde** — alle Verweise und Kennungen lösen auf.
 
-**Startbar:** **nein** — dieser Plan trägt die Einarbeitung, aber zwei HIGH verlangen einen **zweiten
-unabhängigen Lauf** gegen das Eingearbeitete. Sein Auftrag ist unverändert der aus R6: **nicht die
-zehn Fragen prüfen, sondern die elfte suchen.** Der erste Lauf hat zwei gefunden — das ist der beste
-verfügbare Beleg dafür, dass die Zählung allein nichts zusichert.
+**Startbar nach Lauf 1:** nein. Der Auftrag an den zweiten Lauf lautete: **nicht die zehn Fragen
+prüfen, sondern die elfte suchen.** Er hat drei gefunden.
+
+## 11a. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (zweiter Lauf, 2026-07-28)
+
+Report: [`2026-07-28-slice-056-plan-2.md`](../../../reviews/2026-07-28-slice-056-plan-2.md) —
+**1 HIGH / 4 MEDIUM / 4 LOW / 4 INFO + 18 Negativbefund-Zeilen, „nicht startbar"**. Unabhängiger
+Reviewer ≠ Plan-Autor ≠ Reviewer des ersten Laufs.
+
+**Sein Urteil über die erste Einarbeitung: echt.** Alle sechzehn Zeilen am Artefakt aufgelöst, keine
+zeigt auf später; die §4-Orakel-Tabelle nennt zeilenweise den **realen** Sensor (gegen `.d-check.yml`
+und [AGENTS §3](../../../../AGENTS.md) einzeln geprüft, **kein Phantom-Gate mehr**); F2 trägt sachlich
+als Interaktions-Frage samt DoD-Klausel.
+
+| # | Behandlung |
+|---|---|
+| **HIGH-1** (**die elfte Frage: die 2D-Lese-Naht.** `model::PlanSegment` trägt `{x1,y1,x2,y2}` — **keine `WallId`, keine Art**; `projectPlan` mischt Wand-Achsen und Hilfslinien, `paintEvent` zeichnet beide gleich. F3 hätte nur **anonyme** Segmente zu treffen, F4 braucht eine `WallId`, und die WAL-001-Happy-AK wäre nicht als **Wand** beobachtbar. **[ADR-0019](../../adr/0019-drw-2d-canvas.md) benennt die Folge in ihrem Re-Eval-Block wörtlich** — »2D-Lese-Naht (`PlanViewPort`) um **Bauteil-/Treffer-Queries erweitern**« —, und der Plan zitierte dieselbe ADR zweimal, diesen Satz nicht) | **Nachgelesen und bestätigt** ([ADR-0019](../../adr/0019-drw-2d-canvas.md), Re-Eval-Block). **Als F11 aufgenommen** + zwei DoD-Zeilen (`architecture.md` §1.1; die Kern-Werttyp-Folge im ADR-Text) + **R7**: F11 ist die einzige Frage des Strangs, die einen **Kern-Werttyp** und damit PDF-/PNG-Export und die Golden-Files berührt. §8 sagt jetzt, dass der Schnitt 057/058 **nach** F11 zu prüfen ist — plausibel ein dritter, vorgelagerter Slice (Präzedenz slice-042b). |
+| **MEDIUM-1** (F9 hat **zwei** Entscheidungsrichtungen, die DoD nur eine: `snappedModelPos` sitzt **unbedingt** in Press/Release, also in der **Geste** — ein Wand-Werkzeug fängt per Default, und eine Entscheidung **gegen** den Wand-Fang verlangt Unterdrückungs-Arbeit, die niemand nennt) | DoD-Zeile auf **beide** Richtungen erweitert, samt der Folge, dass die Lastenheft-Zeile sonst **still falsch** stünde. **Kein drittes Ergebnis.** |
+| **MEDIUM-2** (kein Rückweg aus einer gezeichneten Wand: `EditStructurePort` hat **kein `removeWall`**, der Canvas keinen Gesten-Abbruch, Undo ist unbedient — §3 benannte nur die Undo-Hälfte) | **Als F12 aufgenommen.** §3 sagt jetzt ausdrücklich, dass Undo nur **eine von drei** möglichen Antworten ist und der Rückweg deshalb **nicht** mit-abgegrenzt war. |
+| **MEDIUM-3** ([`LH-FA-WAL-007`](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen) (Wandtyp) und `setWallMaterial` sind weder in F4 geführt noch in §3 abgegrenzt — während §3 die Nachbarn WAL-004/005 abgrenzt und der Trigger „**parametrisch** änderbar" lautet) | **Als F13 aufgenommen** — welche Parameter „parametrisch änderbar" überhaupt meint, ist eine Entscheidung, keine Selbstverständlichkeit. |
+| **MEDIUM-4** (`spezifikation.md` **§6** fehlte im Nachzug: die Vertragszeile „2D-Zeichenfläche (DRW-Canvas)" trägt den Konjunkt „Selbst-Refresh **ohne `op`**", den der Wand-Weg unvollständig macht) | **Eigene DoD-Zeile.** Am Artefakt bestätigt (§6-Tabelle). |
+
+**Ein Lauf-1-Befund ist vom zweiten Lauf widerlegt worden:** die dortige Quellenzuordnung
+„[MR-023](../../../../harness/conventions.md#mr-023--spec-straten-sind-prozess-zeit-rein-d-check-matrix-klasse-temporal)
+verlangt eine Teilumfang-Klausel" trifft nicht zu — [MR-023](../../../../harness/conventions.md#mr-023--spec-straten-sind-prozess-zeit-rein-d-check-matrix-klasse-temporal) regelt die **Formulierung** der Straten,
+nicht die Pflicht zur Klausel. **Der Plan hatte den Fehler nicht geerbt** (die DoD-Zeile steht ohne
+diese Begründung da).
+
+**Ausdrücklich geprüft und NICHT als Befund geführt** (die Negativbefunde des Laufs — sie sind der
+Teil, der die Suchtiefe belegt): Geschoss-Bezug · Ebenen-Bezug · Sichtbarkeit/Filterung im Canvas ·
+gleichzeitige 3D-Sicht · Raum-Neuerkennung · Persistenz · Mehrfach-Auswahl · Projekt-Wechsel.
+**Insbesondere der `ProjectSessionPort` ist kein Befund:** `isDirty` ist ein **Wertvergleich** über
+`model::Building`, jede Wand-Mutation erfasst die 052a-Rückfrage damit automatisch.
+
+**Startbar:** **nein.** Zwei Suchläufe, fünf neue Fragen — **kein Lauf hat bisher nichts gefunden.**
+Solange das so ist, ist die Vollständigkeit der Liste unbelegt, und eine `Accepted`-ADR wäre
+unwiderruflich. **Ein dritter Lauf ist fällig**, mit unverändertem Auftrag (R6): die **vierzehnte**
+Frage suchen. Erst ein Lauf, der **keine** neue findet, ist ein Argument für Vollständigkeit —
+bis dahin zählt jede Zahl in §2 als Zwischenstand, nicht als Zusage.
 
 ## 12. Closure-Notiz
 
