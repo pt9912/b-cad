@@ -1101,6 +1101,80 @@ kommt die zweite Nachweis-Ebene hinzu (s. o.): der Surrogat allein bliebe grün,
 gesetzt würde. Der **Umfang** (nur Endpunkt-Fang sichtbarer Achsen/Hilfslinien; Raster/Winkel/
 Schnittpunkt offen) ist eine benannte Reifephase-Grenze.
 
+### <a id="lh-fa-wal-001-a"></a>`LH-FA-WAL-001.a` / `LH-FA-WAL-002.a` — die Wand auf der 2D-Zeichenfläche
+
+**Heimat & Schicht.** Werkzeug-Modus, Auswahl und Hinweis sind **UI-Interaktions-Zustand der
+Zeichenfläche** — **kein** Modell-Datum, **keine** Persistenz, **kein** Schema-Feld, **kein** `op`.
+Dieselbe Verortung, die die Zeichen-Aids bereits tragen. Das **Bauteil** dagegen entsteht im Kern:
+die Fläche ruft den bestehenden Bearbeitungs-Weg, sie rechnet nichts selbst.
+
+**Werkzeug-Modus.** Die Fläche führt genau **einen** aktiven Modus (Hilfslinie · Wand · Auswahl);
+die Geste bleibt der Links-Zug, **der Modus entscheidet, was daraus entsteht**. Default ist
+**Hilfslinie**, damit die bestehende Bedienung unverändert bleibt. Der Modus ist **nicht** die
+Erfüllung anpassbarer Werkzeugleisten ([`LH-FA-UI-005`](lastenheft.md#modul-benutzeroberfläche-ui)):
+drei feste Werkzeuge, keine Anpassbarkeit.
+
+**Zeichen-Geste.** Ein Zug im Wand-Modus erzeugt **ein** Segment — Press = Anfang, Release = Ende,
+beide **gefangen** (§1 [`LH-FA-DRW-001.a`](lastenheft.md#lh-fa-drw-001)). Der mehrpunktige Zug in
+einem Rutsch ist eine **benannte Reifephase-Grenze**; das Domänen-Modell ist davon **unberührt**
+(„je Segment eine Wand" ist der vorhandene Einzelsegment-Typ, ein Linienzug bildet sich auf mehrere
+Aufrufe ab — die §2.1-Klausel zu Wandzügen bleibt **unverändert** gültig).
+
+**Fangen beim Bauteil-Zeichnen.** Der Endpunkt-Fang gilt für die Wand-Geste wie für die
+Hilfslinien-Geste, **mit derselben Auswahl und demselben Schwellwert**. Er ist hier **nicht
+optional**: der Eckenschluss verlangt einen **gemeinsamen** Endpunkt in der §3-Toleranz, während ein
+Bildschirm-Pixel bei Default-Maßstab rund zwei Größenordnungen darüber liegt. **Benannte Restlücke:**
+der Fang bietet Punkte **aller** Geschosse an; endet im **aktiven** Geschoss dort keine zweite Wand,
+entsteht kein Eckenschluss — Fangen liefert eine Koordinate, keine Nachbarschaft.
+
+**Treffer-Prüfung (Auswahl).** Getroffen wird im **Bildschirmraum** mit einer Pixel-Toleranz
+(zoom-unabhängige Trefferfläche), **beschränkt auf das dargestellte Geschoss**; ausgewählt ist
+**höchstens eine** Wand. Bei mehreren Treffern gewinnt der nächstgelegene, bei gleicher Distanz der
+in der festen Iterationsreihenfolge zuerst besuchte. **Die Beschränkung ist der Unterschied zum
+Fang und hat einen Grund:** Fangen ist eine Aussage über eine **Koordinate** (geschoss-übergreifend
+gewollt), Auswählen eine über ein **Ding, auf das der Benutzer zeigt** — und er zeigt nur auf
+Sichtbares. Ohne die Beschränkung träfe ein Klick bei deckungsgleichen Achsen **deterministisch** die
+nicht dargestellte Wand.
+
+**Lebensdauer der Auswahl.** Die Auswahl ist eine **Identität**, die außerhalb der Fläche vergeben
+wird. Sie wird **verworfen** bei Modell-Ersetzung (Projekt öffnen/anlegen), bei Geschoss-Wechsel und
+wenn das gewählte Bauteil nicht mehr in der Sicht vorkommt. Grund: nach einer Ersetzung bezeichnet
+dieselbe Identität im neuen Stand mit hoher Wahrscheinlichkeit ein **anderes, existierendes**
+Bauteil — eine Änderung träfe still das Falsche, ohne dass eine Ablehnung greift.
+
+**Parameter-Lese-Naht.** Die anzuzeigenden Parameter (Stärke, Höhe) kommen über eine **eigene,
+schmale Abfrage** derselben 2D-Lese-Naht — **nicht** über die Segment-Struktur des Grundrisses (sie
+reist zu den Export-Adaptern und darf nicht um Anzeige-Felder wachsen) und **nicht** über das
+Domänen-Objekt selbst (das hebelte die Lese-Naht aus). Der Umfang der Abfrage ist auf das
+**Änderbare** begrenzt.
+
+**Rückmeldung.** Vier Ausgänge, **ein** Weg — eine nicht-modale Hinweis-Anzeige: Klemmung (mit dem
+**tatsächlich übernommenen** Wert), Ablehnung (Modell unverändert,
+[`E-VAL-001`](#4-fehler-codes-und-logging-felder)-Lesart), verworfene Null-Längen-Wand und ein
+Fehlschlag der Geometrie-Berechnung ([`E-GEO-002`](#4-fehler-codes-und-logging-felder), transaktional
+— das Modell bleibt unverändert). **Kein** neuer Fehler-Code, **kein** modaler Dialog: eine Klemmung
+beim Tippen darf die Bedienung nicht unterbrechen.
+
+**Fehler-Barriere.** Der Bauteil-Bearbeitungs-Weg **wirft** bei unbekannten Bezügen und bei
+Geometrie-Fehlschlag — anders als der Zeichen-Weg, der wertbasiert ablehnt. Die vermittelnde
+Kommando-Schicht **fängt** und leitet in die Hinweis-Anzeige; ein Wurf verlässt den Ereignis-Pfad der
+Oberfläche **nicht**.
+
+**Aktualisierung.** Bauteil-Mutationen melden eine Änderung; die Fläche ist bereits Beobachterin und
+zeichnet **darauf** neu — **kein** zusätzlicher Selbst-Refresh nach dem eigenen Kommando (er liefe
+vor Abschluss der Nachbar- und Raum-Neuberechnung und rahmte ein zweites Mal neu ein).
+**Die Asymmetrie zu den Zeichen-Daten ist gewollt:** dort gibt es keine Meldung, dort **ist** der
+Selbst-Refresh die einzige Quelle.
+
+**Beobachtbarkeit.** Werkzeug-Modus, Auswahl und Hinweis haben **kein** Korrelat außerhalb der
+Oberfläche. Sie werden auf **zwei** Ebenen nachgewiesen: (1) display-freier Surrogat-Zustand der
+Fläche (welcher Modus, welche Auswahl, welcher Hinweis) und (2) eine **Farbmengen-Sonde** auf einem
+offscreen gerenderten Abbild der Fläche, wo eine Zusage am **Erscheinen** hängt — der Surrogat allein
+bliebe grün, wenn nie ein Pixel gesetzt würde. **Die „sofort"-Zusage der Parameter-Änderung ist auf
+der 2D-Fläche selbst nicht beobachtbar** (sie zeichnet Achsen; eine Stärken-Änderung bewegt keine
+Achse) — beobachtbar ist sie am **übernommenen Wert**, an der **3D-Darstellung** und im **Export**.
+
+
 ## 2. Datenstrukturen und Schemas
 
 Das Datenmodell hat **zwei Sichten**, die getrennt zu halten sind
@@ -1288,7 +1362,7 @@ nicht im Bootstrap.
 | PNG | Raster-PNG, **2D-Plan-Rasterbild** (selbst getragener Writer, unkomprimiert) | `ModelExporterPort` **io-resident** (Export-only; Rasterbild desselben Achsen-Plans, kein Qt), §1 [`LH-FA-IO-007.a`](lastenheft.md#lh-fa-io-007) |
 | Plugin-API | **versionierter Vertrag**, exakte Versions-Gleichheit beim Laden (fail-closed) | Plugin-Host (Driving Adapter) vermittelt **Driving-Ports** an Plugins (kein Driven-Port, kein Qt/OCC/SQLite in der Plugin-API); Plugins = Shared Libraries (REQ-TEC-008), §1 [`LH-FA-PLG-001.a`](lastenheft.md#lh-fa-plg-001) |
 | 2D-Zeichnen (DRW) | **intern** (kein Fremdsystem) | neuer **Driving-Port** fürs 2D-Zeichnen (Hilfslinien + Ebenen) am bestehenden Hexagon — kern-resident, keine neue Technologie; Beobachtung über Persistenz + 2D-Grundriss-Export, §1 [`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) |
-| 2D-Zeichenfläche (DRW-Canvas) | **intern** (kein Fremdsystem) | interaktive 2D-Zeichenfläche als **Driving-Adapter** (GUI-`view/`-Widget) über einer **2D-Lese-Naht** (reine Grundriss-Projektion in den Kern gehoben, neuer Driving-Read-Port — 2D-Analog zum `ViewModelPort`; eine Quelle für Bildschirm **und** Export); invertierbare Bildschirm→Modell-Abbildung, Selbst-Refresh ohne `op`, Kommando/Read über GUI-`command/`; Fang/Raster/Winkel = UI-Aids (nicht persistiert); keine neue Technologie/Gate-Regel, §1 [`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) |
+| 2D-Zeichenfläche (DRW-Canvas) | **intern** (kein Fremdsystem) | interaktive 2D-Zeichenfläche als **Driving-Adapter** (GUI-`view/`-Widget) über einer **2D-Lese-Naht** (reine Grundriss-Projektion in den Kern gehoben, neuer Driving-Read-Port — 2D-Analog zum `ViewModelPort`; eine Quelle für Bildschirm **und** Export); invertierbare Bildschirm→Modell-Abbildung, **zweigeteilter Refresh** (Zeichen-Daten melden **keine** Änderung ⇒ Selbst-Refresh nach dem eigenen Kommando; **Bauteil**-Mutationen melden eine ⇒ Refresh **ausschließlich** über die Meldung, kein zusätzlicher Selbst-Refresh), Kommando/Read über GUI-`command/`; Fang/Raster/Winkel = UI-Aids (nicht persistiert); keine neue Technologie/Gate-Regel, §1 [`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) |
 
 ## 7. Offene Punkte
 

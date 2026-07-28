@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.20
+**Version:** 0.1.21
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -152,6 +152,37 @@ folgende Segmente bilden zusammenhängende Wandzüge.
   then keine Null-Längen-Wand (verworfen, Hinweis).
 - **Negative:** Given Eingabe außerhalb des Zeichenbereichs, when
   Punkt gesetzt, then Fehler-Code [`E-GEO-001`](spezifikation.md#4-fehler-codes-und-logging-felder).
+  **Erreichbarkeit (Reifephase):** auf der **2D-Zeichenfläche** ist dieser Fall in dieser
+  Ausbaustufe **nicht erreichbar** — jede Position der Fläche bildet auf eine gültige
+  Zeichen-Position ab, einen begrenzten Zeichenbereich gibt es dort nicht. Die Zusage gilt für
+  Wege, die Positionen **von außen** entgegennehmen (Import).
+
+*Interaktive Erzeugung (2D-Zeichenfläche):*
+
+- **Teilumfang (Reifephase):** In dieser Ausbaustufe entsteht **je Zeichen-Geste ein
+  Segment** — also **eine** Wand je Zug. Ein Linienzug mit mehreren Punkten **in einem Zug**
+  bleibt **offen**; mehrere Wände entstehen durch mehrere Züge, deren Endpunkte einrasten
+  ([LH-FA-DRW-001](#lh-fa-drw-001)) und sich damit verbinden ([LH-FA-WAL-006](#lh-fa-wal-006--wand-verbinden)).
+- **Happy Path:** Given ein Projekt mit einem aktiven Geschoss und aktiviertem
+  Wand-Zeichnen, when der Nutzer auf der 2D-Zeichenfläche einen Zug ausführt (Anfang setzen,
+  Ende setzen bzw. loslassen), then **entsteht eine Wand** mit Default-Stärke und -Höhe, sie
+  **erscheint sofort** im Grundriss und in der 3D-Darstellung und **überlebt** Speichern/Laden
+  sowie den Export.
+- **Happy Path (Verbinden):** Given eine vorhandene Wand mit einem Endpunkt P, when der Nutzer
+  eine zweite Wand **im selben Geschoss** zieht und einen ihrer Punkte in Fang-Nähe von P setzt,
+  then teilen beide Wände **exakt** denselben Endpunkt und die Darstellung zeigt eine
+  **geschlossene Ecke** ([LH-FA-WAL-006](#lh-fa-wal-006--wand-verbinden)).
+- **Boundary (kein Zug):** Given Anfang = Ende, when der Zug abgeschlossen wird, then entsteht
+  **keine** Wand, das Modell bleibt unverändert, und der Nutzer erhält einen **Hinweis**.
+- **Boundary (Abbruch):** Given ein begonnener Zug, when der Nutzer ihn abbricht, then entsteht
+  **keine** Wand und das Modell bleibt unverändert.
+- **Negative (Ablehnung durch das Modell):** Given ein Zug, dessen Wand nicht gebildet werden
+  kann, when er abgeschlossen wird, then bleibt das Modell **vollständig unverändert** (kein
+  Teil-Ergebnis) und der Nutzer erhält einen **Hinweis**.
+- **Benannte Grenze (Reifephase):** eine **angelegte** Wand ist über die Oberfläche in dieser
+  Ausbaustufe **nicht rücknehmbar** — es gibt weder ein Entfernen noch ein Rückgängigmachen
+  ([LH-QA-003](#lh-qa-003--undoredo) bleibt offen). Ungesicherte Änderungen sind durch die
+  Rückfrage vor Verlust geschützt ([LH-FA-BLD-002](#lh-fa-bld-002--projekt-speichern)/003).
 
 #### LH-FA-WAL-002 — Wandstärke definieren
 
@@ -166,10 +197,31 @@ folgende Segmente bilden zusammenhängende Wandzüge.
   Given 49 mm oder 1001 mm, then auf Grenzwert geklemmt + Hinweis,
   Fehler-Code [`E-VAL-001`](spezifikation.md#4-fehler-codes-und-logging-felder).
 
+*Interaktive Änderung (2D-Zeichenfläche):*
+
+- **Happy Path:** Given eine auf der 2D-Zeichenfläche **ausgewählte** Wand, when der Nutzer ihre
+  Stärke ändert, then ist der **übernommene** Wert unmittelbar ablesbar und die 3D-Darstellung
+  zeigt ihn ohne weiteres Zutun.
+- **Boundary (Klemmung sichtbar):** Given eine Eingabe außerhalb des Bereichs, when sie
+  übernommen wird, then wird auf den Grenzwert geklemmt **und der tatsächlich übernommene Wert
+  wird dem Nutzer genannt** — er erfährt die Klemmung, statt sie zu erraten.
+- **Negative (Ablehnung sichtbar):** Given eine ungültige Eingabe, when sie abgelehnt wird, then
+  bleibt das Modell **unverändert** und der Nutzer erhält einen **Hinweis**.
+- **Boundary (Auswahl):** Given kein ausgewähltes Bauteil — auch **nach** dem Öffnen oder Anlegen
+  eines Projekts und nach einem **Geschoss-Wechsel** —, when der Nutzer die Fläche betrachtet,
+  then gibt es **nichts zu ändern**, und es werden **keine** Parameter einer zuvor gewählten Wand
+  angezeigt.
+- **Teilumfang (Reifephase):** interaktiv änderbar sind **Stärke** und **Höhe**
+  ([LH-FA-WAL-003](#lh-fa-wal-003--wandhöhe-definieren)); **Wandtyp**
+  ([LH-FA-WAL-007](#lh-fa-wal-007--wandtyp-wählen)) und **Material** bleiben **offen**. Ausgewählt
+  ist stets **höchstens eine** Wand, und nur eine des **dargestellten** Geschosses.
+
 #### LH-FA-WAL-003 — Wandhöhe definieren
 
 Parametrisch im Bereich **500 mm bis 10000 mm** (Grenzwert-Verhalten
-analog LH-FA-WAL-002).
+analog LH-FA-WAL-002). Die **interaktive Änderung** auf der 2D-Zeichenfläche gilt
+**gleichlautend** — Auswahl, sichtbare Klemmung, sichtbare Ablehnung und Teilumfang wie in
+[LH-FA-WAL-002](#lh-fa-wal-002--wandstärke-definieren).
 
 - <a id="lh-fa-wal-004"></a>**LH-FA-WAL-004 — Wand verschieben.**
 - <a id="lh-fa-wal-005"></a>**LH-FA-WAL-005 — Wand teilen.**
@@ -619,7 +671,8 @@ Hilfslinie** ([LH-FA-DRW-005](#lh-fa-drw-005)) —, an die die Eingabe **einrast
 Führt der Nutzer den Zeichen-Cursor **nahe genug** an einen solchen Punkt, übernimmt die
 gezeichnete Position **exakt** diesen Punkt statt der ungefähren Cursor-Position. Fangen
 wirkt auf das **interaktive Zeichnen von Hilfslinien**
-([LH-FA-DRW-005](#lh-fa-drw-005)) — Anfang wie Ende. Fangbar sind nur **sichtbare**
+([LH-FA-DRW-005](#lh-fa-drw-005)) **und von Wänden**
+([LH-FA-WAL-001](#lh-fa-wal-001--wand-zeichnen)) — Anfang wie Ende. Fangbar sind nur **sichtbare**
 Punkte; die Sichtbarkeit richtet sich nach der Ebene
 ([LH-FA-DRW-006](#lh-fa-drw-006)).
 
@@ -627,8 +680,11 @@ Punkte; die Sichtbarkeit richtet sich nach der Ebene
 und sichtbarer Hilfslinien**. Raster-Fang
 ([LH-FA-DRW-002](#modul-zeichnungsfunktionen-drw)), Winkelvorgaben
 ([LH-FA-DRW-003](#modul-zeichnungsfunktionen-drw)),
-Schnittpunkt-/Mittelpunkt-/Lot-/Tangenten-Fang und Fangen beim Bauteil-Zeichnen bleiben
-**offen** (spätere Ausbaustufen).
+Schnittpunkt-/Mittelpunkt-/Lot-/Tangenten-Fang bleiben **offen** (spätere Ausbaustufen).
+**Fangen wirkt auf das interaktive Zeichnen von Hilfslinien UND von Wänden** — beim
+Bauteil-Zeichnen ist es die Voraussetzung dafür, dass zwei Wände einen **gemeinsamen** Endpunkt
+bekommen und sich zu einer geschlossenen Ecke verbinden
+([LH-FA-WAL-006](#lh-fa-wal-006--wand-verbinden)).
 
 **Akzeptanzkriterien:**
 
@@ -678,10 +734,12 @@ Export (Muster [LH-FA-IO-007](#lh-fa-io-007)/008).
 **Teilumfang:** Eine Hilfslinie wird auf einer **2D-Zeichenfläche** der Oberfläche
 **interaktiv mit der Maus** erzeugt (Anfang setzen, Ende setzen); zusätzlich bleibt das
 **persistierte und exportierte Artefakt** der durable/sichtbare Nachweis (Muster
-[LH-FA-IO-007](#lh-fa-io-007)/008). In dieser Ausbaustufe wird **frei** gezeichnet — **Fangen,
-Raster und Winkelvorgaben** ([LH-FA-DRW-001](#modul-zeichnungsfunktionen-drw)/002/003), das
-**interaktive Zeichnen von Bauteilen**, ein **Ebenen-Bedien-Panel** und **Selektion** bleiben
-**ausdrücklich offen** (späterer UI-Umfang), kein stiller Vollumfang. Die **Ebenen-Zuordnung**
+[LH-FA-IO-007](#lh-fa-io-007)/008). **Fangen** ([LH-FA-DRW-001](#lh-fa-drw-001)) wirkt; **Raster und Winkelvorgaben**
+([LH-FA-DRW-002](#modul-zeichnungsfunktionen-drw)/003) sowie ein **Ebenen-Bedien-Panel** bleiben
+**ausdrücklich offen** (späterer UI-Umfang), kein stiller Vollumfang. Das **interaktive Zeichnen
+von Wänden** und die **Selektion** sind mit
+[LH-FA-WAL-001](#lh-fa-wal-001--wand-zeichnen)/002/003 hinzugekommen — für **andere Bauteile**
+(Räume, Türen, Fenster, Treppen, Dächer) bleiben beide **offen**. Die **Ebenen-Zuordnung**
 einer Hilfslinie bleibt nur im **nativen Projektformat** erhalten; der 2D-Export zeichnet die
 Hilfslinie in die Geschoss-Ausgabe-Gruppierung, überträgt die Benutzer-Ebene aber **nicht** ins
 Austauschformat.

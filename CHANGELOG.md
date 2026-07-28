@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-056 — **ADR-0021 „Die Wand im 2D-Canvas" + AK-Schärfung** (LH-FA-WAL-001/002/003,
+  LH-FA-DRW-001/005; **Lastenheft 0.1.21**). **Kein Produktions-Code** — dieser Slice legt die
+  Entscheidungsgrundlage des Wellen-Kerns.
+  **Siebzehn Entscheidungen**, darunter: Werkzeug-Modus statt unsichtbarer Modifikator · **ein
+  Segment je Zug** mit ausgeschriebener Teilumfang-Klausel · **Auswahl als UI-Zustand**, beschränkt
+  auf das **dargestellte** Geschoss · nicht-modaler Eigenschaften-Bereich · Rückmeldung für **vier**
+  Ausgänge · **Refresh ausschließlich über die Änderungs-Meldung** (kein Selbst-Refresh — die
+  Asymmetrie zu den Zeichen-Daten ist gewollt und benannt) · **Fangen gilt auch für Wände** (ohne es
+  ist der Eckenschluss bei 0,1 mm Toleranz gegen rund 20 mm je Pixel unerreichbar) ·
+  **Fehler-Barriere** in der Kommando-Schicht (dieser Port **wirft**, der Vorgänger lehnte
+  wertbasiert ab) · **additive Bauteil-Identität** in der 2D-Lese-Naht mit den Export-Golden als
+  Additivitäts-Beleg · **Gesten-Abbruch ja, Löschen nein** (die schärfste Grenze, ausgeschrieben) ·
+  **Auswahl fällt** bei Modell-Ersetzung, Geschoss-Wechsel und Verschwinden.
+  **Drei der siebzehn hat erst das ADR-Text-Review gefunden** — und alle drei fehlten, weil eine
+  *andere* Entscheidung die Frage scheinbar schon beantwortet hatte, je nur für den halben Fall.
+  Eine hätte im Demo-Modell dazu geführt, dass jeder Klick auf eine sichtbare Wand **deterministisch**
+  die deckungsgleiche unsichtbare des anderen Geschosses trifft; eine andere, dass eine Änderung nach
+  einem Projekt-Wechsel **still die falsche Wand** ändert.
+  **Zwei Teilumfang-Klauseln geheilt:** „Fangen beim Bauteil-Zeichnen" ist eingelöst; und die
+  Hilfslinien-Klausel behauptete bis heute „in dieser Ausbaustufe wird **frei** gezeichnet — Fangen …
+  bleibt offen", was **seit der Fang-Lieferung unwahr** war.
+  ADR-0019 wird **fortgeschrieben, nicht ersetzt** (kein `Supersedes`); keine neue Gate-Regel, kein
+  Schema-Diff, kein Code-Diff.
 - slice-055 — **Fang-Anzeige im 2D-Canvas** (LH-FA-DRW-001, ADR-0019; **Lastenheft 0.1.20**,
   **Benutzerhandbuch 1.5**). Ein Marker zeigt **vor dem Klick**, auf welchen Punkt eingerastet
   würde — für **Anfang wie Ende**, also auch während des Zugs. Damit ist die Grenze aufgehoben, die
