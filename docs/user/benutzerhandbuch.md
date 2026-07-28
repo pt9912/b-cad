@@ -1,7 +1,7 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.4
+Handbuch-Version: 1.5
 Stand: 2026-07-28
 
 ---
@@ -28,7 +28,7 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
 - ein Gebäude **ansehen** — das mitgelieferte Beispiel, ein importiertes oder ein
   geöffnetes Projekt (3D-Ansicht + 2D-Grundriss),
 - **Hilfslinien** im Grundriss zeichnen — mit **Einrasten** auf vorhandene
-  Eckpunkte, wenn Sie nah genug herangehen,
+  Eckpunkte, **sichtbar markiert, bevor Sie klicken**,
 - in Formate **exportieren** (IFC/DXF/STEP/STL/PDF/PNG),
 - ein Projekt **speichern** und **öffnen** (Menü **Datei** oder Kommandozeile),
 - ein **neues, leeres Projekt anlegen** (Menü **Datei → Neu**) — mit einem
@@ -156,7 +156,7 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 | Aufgabe | Wo |
 |---|---|
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
-| Hilfslinie zeichnen (mit Einrasten auf Eckpunkte) | Oberfläche, Reiter 2D (4.2) |
+| Hilfslinie zeichnen (Einrasten mit sichtbarer Markierung) | Oberfläche, Reiter 2D (4.2) |
 | Neues Projekt anlegen | Oberfläche, Menü **Datei → Neu** (4.3) |
 | Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
 | Ungesicherte Änderungen sichern | Rückfrage beim Öffnen/Beenden (4.3) |
@@ -196,9 +196,16 @@ auch nach **Speichern und Öffnen** und im **Export** exakt derselbe.
   angeklickte Stelle.
 - Eingerastet wird nur auf **sichtbare** Punkte im Sinne der Ebenen: liegt eine
   Hilfslinie auf einer ausgeblendeten Ebene, ist sie nicht fangbar.
+- **Sie sehen vorher, worauf eingerastet wird:** sobald der Mauszeiger nah genug an
+  einem Eckpunkt ist, erscheint dort eine Markierung — **bevor** Sie klicken. Sie
+  gilt für Anfang **und** Ende: auch während Sie ziehen, zeigt sie das Ziel des
+  Endpunkts an. Ist kein Punkt in Reichweite, verschwindet sie wieder.
 - Gefangen wird auf Eckpunkte **aller Geschosse**, nicht nur des angezeigten. Ein
-  Punkt kann also einrasten, ohne im Bild zu liegen. Eine Anzeige, **worauf**
-  gerade eingerastet wird, gibt es in dieser Version noch nicht.
+  Punkt kann also einrasten, ohne dass an dieser Stelle eine Linie gezeichnet ist —
+  **die Markierung macht genau das sichtbar**, statt es zu verbergen.
+- Verlassen Sie die Zeichenfläche oder ändern Sie die Ansicht (Zoomen,
+  Fenstergröße, anderes Geschoss), verschwindet die Markierung. Sie erscheint mit
+  der nächsten Mausbewegung wieder — **am Einrasten selbst ändert das nichts**.
 - **Raster**, **Winkel-Bindung** und weitere Fang-Arten (Schnittpunkt, Mitte,
   Lot) sind noch nicht enthalten.
 
@@ -525,6 +532,7 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.5 | 0.1.0 | 2026-07-28 | **Anzeige des Fang-Ziels** aufgenommen: eine Markierung zeigt **vor dem Klick**, auf welchen Eckpunkt eingerastet würde — für Anfang **und** Ende, auch während des Ziehens. Damit ist die in 1.4 benannte Grenze „Eine Anzeige, **worauf** gerade eingerastet wird, gibt es in dieser Version noch nicht" **aufgehoben und ersetzt**; zugleich ist der bisher nur als Einschränkung beschriebene Geschoss-übergreifende Fang jetzt als **Nutzen** formuliert (die Markierung macht sichtbar, was sonst als Sprung erschien). Neu benannt: die Markierung verschwindet beim Verlassen der Zeichenfläche und bei Ansichts-Änderungen und kehrt mit der nächsten Mausbewegung zurück — **am Einrasten selbst ändert das nichts**. §1 „Heute möglich" und die 4.1-Aufgaben-Tabelle nachgezogen. |
 | 1.4 | 0.1.0 | 2026-07-28 | **Einrasten (Fangen)** beim Zeichnen von Hilfslinien aufgenommen: neuer Absatz in 4.2 (Anfang **wie** Ende rasten exakt auf Endpunkte von Wandachsen und Hilfslinien ein; der gefangene Wert überlebt Speichern/Öffnen und Export unverändert) samt der vier benannten Grenzen — freies Zeichnen außerhalb von rund 12 Bildschirmpunkten, Entartung durch beidseitiges Einrasten, keine Fangbarkeit auf ausgeblendeten Ebenen, **keine Anzeige** des Fang-Ziels und Fangen über **alle** Geschosse. §1 „Heute möglich", §2.3 und die 4.1-Aufgaben-Tabelle nachgezogen; der frühere Satz „In dieser Version wird **frei** gezeichnet; Fangen … sind noch nicht enthalten" ist damit überholt und ersetzt. |
 | 1.3 | 0.1.0 | 2026-07-27 | **Datei → Neu** aufgenommen: eigener Unterabschnitt in 4.3 (Inhalt des neuen Projekts — ein Geschoss, eine Zeichen-Ebene, sofort bezeichenbar — und die Zusage, dass **keine Datei zugeordnet** ist, das nächste Speichern also nach dem Ziel fragt statt das zuvor geöffnete Projekt zu überschreiben); „Neu" als dritter Auslöser der Rückfrage ergänzt; §1 „Heute möglich", §2.3, die 4.1-Aufgaben-Tabelle und die Wege-Zählung in §3 (**drei → vier**) nachgezogen. |
 | 1.2 | 0.1.0 | 2026-07-27 | **Speichern** (auf die bekannte Projektdatei, ohne erneute Ziel-Abfrage) und die **Rückfrage vor ungesicherten Änderungen** aufgenommen: neuer Unterabschnitt in 4.3 mit der dreiwertigen Antwort (speichern/verwerfen/**abbrechen ⇒ es passiert nichts**), Ergänzung in 2.3, neue Zeile in der 4.1-Aufgaben-Tabelle und zwei FAQ-Einträge — die frühere FAQ-Aussage „Ein ‚Speichern' auf die zuletzt geöffnete Datei gibt es noch nicht" ist damit überholt und ersetzt. |

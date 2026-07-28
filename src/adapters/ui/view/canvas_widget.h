@@ -12,6 +12,7 @@
 #include "hexagon/model/point2d.h"
 #include "hexagon/ports/driven/model_changed_port.h"
 
+class QEvent;
 class QMouseEvent;
 class QPaintEvent;
 class QResizeEvent;
@@ -39,6 +40,16 @@ namespace bcad::adapters::ui::view {
 // geklickte Bildschirmposition über `snapTarget` auf die exakten mm eines
 // nahen Fang-Punktes; außerhalb der Fang-Nähe wird **frei** gezeichnet
 // (Raster/Winkel bleiben spätere Slices).
+//
+// **Fang-Anzeige** (slice-055): das Widget verfolgt die Maus (`setMouseTracking`)
+// und hält den aktuellen Fang-Kandidaten als **reinen Widget-Zustand**
+// (`snap_preview_`) — kein Modell-Datum, kein `op`, kein Schema. Er entsteht aus
+// **demselben** `snapTarget`-Aufruf mit **derselben** Konstante wie die Eingabe-
+// Quantisierung (sonst zeigte der Marker auf A und die Linie landete auf B) und
+// wird in **beiden** Phasen gepflegt: ohne gedrückte Taste (Anfang) und während
+// des Zugs (Ende). Er wird **verworfen**, sobald der Zeiger die Fläche verlässt
+// oder sich die Abbildung ändert (Zoom/Resize/Geschoss/Modell-Meldung) — ein in
+// mm gehaltener Kandidat zeigte danach auf die falsche Bildschirmstelle.
 class CanvasWidget final : public QWidget,
                            public hexagon::ports::driven::ModelChangedPort {
 public:
@@ -60,6 +71,16 @@ public:
     void onModelChanged(
         const hexagon::ports::driven::ModelChange& change) override;
 
+    // Der aktuell angezeigte Fang-Kandidat in Modell-mm, oder `nullopt`.
+    // Display-freie Testnaht der Anzeige-AK (Muster `screenToModel`, ADR-0019
+    // E3/E7). **Sie belegt nur, WELCHER Punkt angezeigt würde** — dass überhaupt
+    // etwas gezeichnet wird, prüft die Tinten-Sonde auf dem offscreen gerenderten
+    // Widget (slice-055 §4-8); der Surrogat allein bliebe grün, wenn nie ein
+    // Pixel gesetzt würde.
+    std::optional<hexagon::model::Point2D> snapPreview() const {
+        return snap_preview_;
+    }
+
     // Testbare, display-freie Transformations-Naht (ADR-0019 E3/E7).
     hexagon::model::Point2D screenToModel(const QPoint& p) const {
         return transform_.screenToModel(p);
@@ -73,6 +94,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
+    void leaveEvent(QEvent* event) override;
 
 private:
     // Bildschirm-Pixel → Modell-mm **mit Fang** (LH-FA-DRW-001): liegt ein
@@ -81,6 +103,17 @@ private:
     // gepullt (wie im Paint-Pfad bei jedem Repaint); ein zwischengespeicherter
     // Plan wäre neuer Zustand und könnte veralten (Pull-Widget, ADR-0019).
     hexagon::model::Point2D snappedModelPos(const QPoint& cursor_px) const;
+
+    // Setzt `snap_preview_` auf den Fang-Kandidaten unter `cursor_px` — oder
+    // löscht ihn, wenn keiner in Reichweite liegt bzw. der Zeiger außerhalb der
+    // Fläche steht (bei gedrückter Taste stellt Qt KEIN `leaveEvent` zu, die
+    // Move-Ereignisse laufen mit Koordinaten außerhalb `rect()` weiter).
+    // Plant bei Änderung einen Repaint ein.
+    void updateSnapPreview(const QPoint& cursor_px);
+
+    // Verwirft die Anzeige, weil die Abbildung sich geändert hat und die in mm
+    // gehaltene Position keinem bekannten Zeiger-Pixel mehr entspricht.
+    void invalidateSnapPreview();
 
     PlanPull pull_;
     GuideLineDraw draw_;
@@ -94,6 +127,10 @@ private:
     // Transformations-Änderung (Zoom/Resize) mitten im Zug; die committete
     // Hilfslinie nutzt IHN, nicht die Neu-Abbildung des alten Pixels (MR-009-LOW-2).
     hexagon::model::Point2D drag_start_mm_{};
+    // Der angezeigte Fang-Kandidat in Modell-mm (slice-055). Bewusst in mm und
+    // nicht in Pixeln: er ist derselbe Wert, der beim Klick übergeben würde.
+    // Der Preis ist die Invalidierung bei jeder Transformations-Änderung.
+    std::optional<hexagon::model::Point2D> snap_preview_{};
 };
 
 }  // namespace bcad::adapters::ui::view

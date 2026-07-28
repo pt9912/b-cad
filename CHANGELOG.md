@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-055 — **Fang-Anzeige im 2D-Canvas** (LH-FA-DRW-001, ADR-0019; **Lastenheft 0.1.20**,
+  **Benutzerhandbuch 1.5**). Ein Marker zeigt **vor dem Klick**, auf welchen Punkt eingerastet
+  würde — für **Anfang wie Ende**, also auch während des Zugs. Damit ist die Grenze aufgehoben, die
+  slice-048b selbst als Risiko **R5** benannt hatte: gefangen wird über **alle** Geschosse, gezeichnet
+  nur das aktive; ohne Anzeige war das ein unerklärlicher Sprung. **Eine Funktion, die man nur durch
+  Ausprobieren findet, ist halb geliefert.**
+  **Die Zusage hat zwei Hälften und zwei Sensoren** — das war der Kern von zwei Review-Läufen:
+  *welcher* Punkt angezeigt würde, trägt eine display-freie Widget-Naht; *dass überhaupt etwas
+  erscheint*, trägt eine **Tinten-Sonde** auf dem offscreen gerenderten Widget (dieselbe `PlanView`,
+  dieselbe Transformation, zwei Zeiger-Positionen — nur der Marker unterscheidet sie). Gemessen: die
+  Gegenprobe „Marker-Zeichnung entfernt" macht **ausschließlich** die Sonde rot; alle sechs
+  Surrogat-Orakel bleiben grün.
+  **Der Marker wird verworfen, nicht umgerechnet**, sobald sich die Abbildung ohne Zeiger-Ereignis
+  ändert (Zoom, Größe, Geschoss-Wechsel, Modell-Meldung) — ein in mm gehaltener Kandidat zeigte danach
+  auf die falsche Bildschirmstelle. Er kehrt mit der nächsten Bewegung zurück; **das Einrasten selbst
+  ist davon unberührt**. Das ist die `drag_start_mm_`-Lehre aus slice-043, umgekehrt: dort **muss** ein
+  mm-Wert überleben, hier muss er fallen.
+  **Anforderungs-Korrektur:** der Happy-Path-Halbsatz „Endpunkt P **auf der Zeichenfläche**" ist zu
+  „**im Projekt**" geschärft. Er stand seit 0.1.16 gegen die Spezifikation und gegen die
+  Implementierung — der Widerspruch wurde durch die Anzeige erst benutzer-sichtbar.
+  **Kein** neuer Port, **kein** neuer `op`, **kein** Kern-/Persistenz-/Export-/Schema-Diff.
 - slice-048b — **Fangpunkte im 2D-Canvas** (LH-FA-DRW-001, ADR-0018/ADR-0019; **Benutzerhandbuch
   1.4**). Beim Zeichnen einer Hilfslinie rasten **Anfang wie Ende** auf den nächstgelegenen Endpunkt
   einer Wand-Achse oder einer sichtbaren Hilfslinie ein, sobald der Cursor innerhalb der **Fang-Nähe**

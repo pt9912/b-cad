@@ -1,6 +1,6 @@
 # Lastenheft — b-cad
 
-**Version:** 0.1.19
+**Version:** 0.1.20
 **Status:** Draft
 **Autor:** Dietmar Burkard, **Datum:** 2026-06-08
 
@@ -632,15 +632,28 @@ Schnittpunkt-/Mittelpunkt-/Lot-/Tangenten-Fang und Fangen beim Bauteil-Zeichnen 
 
 **Akzeptanzkriterien:**
 
-- **Happy Path:** Given eine **sichtbare** Wand-Achse (oder Hilfslinie) mit einem Endpunkt
-  P auf der Zeichenfläche, when der Nutzer eine Hilfslinie zieht und Anfang **oder** Ende
-  **in Fang-Nähe von P** setzt, then rastet der Punkt **exakt auf P** ein — die erzeugte
-  Hilfslinie trägt **genau** die Position von P (nicht die ungefähre Cursor-Position),
-  **sofort** sichtbar und **unverändert nach Speichern/Laden** sowie im
+- **Happy Path:** Given eine **sichtbare** Wand-Achse (oder Hilfslinie) mit einem
+  Endpunkt P **im Projekt**, when der Nutzer eine Hilfslinie zieht und Anfang **oder**
+  Ende **in Fang-Nähe von P** setzt, then rastet der Punkt **exakt auf P** ein — die
+  erzeugte Hilfslinie trägt **genau** die Position von P (nicht die ungefähre
+  Cursor-Position), **sofort** sichtbar und **unverändert nach Speichern/Laden** sowie im
   2D-Grundriss-Export.
+  **P muss nicht im gerade angezeigten Ausschnitt liegen** — gefangen wird auf die
+  markanten Punkte **aller Geschosse** des Projekts, dargestellt wird das aktive. Die
+  Anzeige (Konjunkt unten) macht diesen Fall erkennbar, statt ihn zu verbergen.
+- **Happy Path (Anzeige):** Given der Zeichen-Cursor liegt in Fang-Nähe eines solchen
+  Punktes P, when der Nutzer den Punkt **noch nicht gesetzt hat**, then ist **bereits
+  erkennbar, auf welchen Punkt eingerastet würde** — **vor** dem Setzen, nicht danach, und
+  für **Anfang wie Ende**. So ist vor dem Klick entscheidbar, ob der Fang das gewünschte
+  Ziel trifft.
 - **Boundary:** Given der Cursor wird **außerhalb** jeder Fang-Nähe losgelassen, when die
   Hilfslinie abgeschlossen wird, then wird **nicht gefangen** — der Endpunkt ist die
   geklickte Position (freies Zeichnen wie [LH-FA-DRW-005](#lh-fa-drw-005)).
+- **Boundary (Anzeige):** Given es liegt **kein** Punkt in Fang-Nähe, **oder** der Cursor
+  verlässt die Zeichenfläche, **oder** der Nutzer ändert die Ansicht (Zoom, Größe,
+  angezeigtes Geschoss), when er nichts weiter tut, then gibt es **keine** Anzeige; sie
+  erscheint mit der **nächsten Cursor-Bewegung** wieder, sobald ein Punkt in Fang-Nähe
+  liegt. Der Fang selbst bleibt davon **unberührt**.
 - **Boundary (Entartung):** Given Fangen würde Anfang **und** Ende auf **denselben** Punkt
   setzen (Anfang = Ende), when die Hilfslinie ins Modell aufgenommen werden soll, then
   greift die **bestehende Ablehnung** aus [LH-FA-DRW-005](#lh-fa-drw-005) (keine

@@ -9,6 +9,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPen>
+#include <QEvent>
 #include <QResizeEvent>
 #include <QWheelEvent>
 
@@ -21,10 +22,17 @@ CanvasWidget::CanvasWidget(PlanPull pull, GuideLineDraw draw,
     : QWidget(parent),
       pull_(std::move(pull)),
       draw_(std::move(draw)),
-      active_storey_id_(active_storey_id) {}
+      active_storey_id_(active_storey_id) {
+    // Ohne Maus-Verfolgung stellt Qt OHNE gedrückte Taste kein Move-Ereignis zu
+    // — die Fang-Anzeige (slice-055) wäre im Produkt tot, während ein Test, der
+    // Ereignisse synthetisiert, grün bliebe. Deshalb ist die Eigenschaft selbst
+    // eine Zusage (§4-5), nicht nur ihre Wirkung.
+    setMouseTracking(true);
+}
 
 void CanvasWidget::setActiveStorey(int active_storey_id) {
     active_storey_id_ = active_storey_id;
+    invalidateSnapPreview();
     // Derselbe Pfad wie im Notify-Callback: neu einrahmen + Repaint einplanen
     // (`update()` ist queued), damit der Wechsel ohne weitere Modell-Meldung
     // sichtbar wird.
@@ -36,11 +44,13 @@ void CanvasWidget::onModelChanged(
     const hexagon::ports::driven::ModelChange& /*change*/) {
     // `op`-Mutation (Wände etc.) → neu einrahmen und Repaint einplanen
     // (`update()` ist queued — kein synchrones Rendern im Mutationspfad).
+    invalidateSnapPreview();
     fitted_ = false;
     update();
 }
 
 void CanvasWidget::resizeEvent(QResizeEvent* /*event*/) {
+    invalidateSnapPreview();
     transform_.width_px = width();
     transform_.height_px = height();
     fitted_ = false;  // beim nächsten Paint neu einrahmen
@@ -74,6 +84,52 @@ void CanvasWidget::paintEvent(QPaintEvent* /*event*/) {
         painter.setPen(QPen(Qt::blue, 1, Qt::DashLine));
         painter.drawLine(drag_start_px_, drag_current_px_);
     }
+
+    // Fang-Anzeige (LH-FA-DRW-001, slice-055): ein Marker auf dem Punkt, auf den
+    // eingerastet WÜRDE — vor dem Klick. Form/Farbe/Größe sind bewusst KEINE
+    // Zusage (das Lastenheft sagt nur "erkennbar"); die Tinten-Sonde des Orakels
+    // prüft, DASS gezeichnet wird, nicht WIE.
+    if (snap_preview_.has_value()) {
+        constexpr int kMarkerRadiusPx = 5;
+        const QPointF center = transform_.modelToScreen(*snap_preview_);
+        painter.setPen(QPen(Qt::red, 2));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawEllipse(center, kMarkerRadiusPx, kMarkerRadiusPx);
+    }
+}
+
+void CanvasWidget::updateSnapPreview(const QPoint& cursor_px) {
+    // Außerhalb der Fläche gibt es nichts anzuzeigen. Der Fall ist NICHT von
+    // `leaveEvent` gedeckt: bei gedrückter Taste stellt Qt kein `Leave` zu und
+    // liefert Move-Ereignisse mit Koordinaten außerhalb `rect()` weiter.
+    std::optional<hexagon::model::Point2D> next;
+    if (rect().contains(cursor_px)) {
+        const hexagon::model::PlanView plan = pull_();
+        next = snapTarget(plan, transform_, cursor_px, kSnapThresholdPx);
+    }
+    if (next == snap_preview_) {
+        return;  // nichts zu zeichnen, kein Repaint einplanen
+    }
+    snap_preview_ = next;
+    update();
+}
+
+void CanvasWidget::invalidateSnapPreview() {
+    // Der Kandidat liegt in mm; ändert sich die Abbildung ohne Zeiger-Ereignis
+    // (Zoom/Resize/Geschoss/Modell-Meldung), zeigte er danach auf die falsche
+    // Bildschirmstelle. Er wird VERWORFEN statt umgerechnet — die nächste
+    // Zeiger-Bewegung baut ihn neu auf. (Die `drag_start_mm_`-Lehre aus slice-043,
+    // umgekehrt: dort MUSS ein mm-Wert überleben, hier muss er fallen.)
+    if (!snap_preview_.has_value()) {
+        return;
+    }
+    snap_preview_.reset();
+    update();
+}
+
+void CanvasWidget::leaveEvent(QEvent* event) {
+    invalidateSnapPreview();
+    QWidget::leaveEvent(event);
 }
 
 hexagon::model::Point2D CanvasWidget::snappedModelPos(
@@ -90,6 +146,7 @@ void CanvasWidget::mousePressEvent(QMouseEvent* event) {
         return;
     }
     dragging_ = true;
+    updateSnapPreview(event->pos());
     drag_start_px_ = event->pos();
     drag_current_px_ = event->pos();
     // Gefangene mm festhalten, nicht das Pixel und nicht den ungefangenen Wert
@@ -99,6 +156,10 @@ void CanvasWidget::mousePressEvent(QMouseEvent* event) {
 }
 
 void CanvasWidget::mouseMoveEvent(QMouseEvent* event) {
+    // Die Fang-Anzeige wird in BEIDEN Phasen gepflegt: ohne gedrückte Taste
+    // (der Anfang wird gesetzt) und während des Zugs (das Ende wird geführt) —
+    // der Fang wirkt an beiden Stellen, also muss die Zusage beide decken.
+    updateSnapPreview(event->pos());
     if (!dragging_) {
         QWidget::mouseMoveEvent(event);
         return;
@@ -135,6 +196,7 @@ void CanvasWidget::wheelEvent(QWheelEvent* event) {
         constexpr double kMaxZoom = 100.0;
         transform_.zoom =
             std::clamp(transform_.zoom * std::pow(1.15, steps), kMinZoom, kMaxZoom);
+        invalidateSnapPreview();
         update();
     }
     event->accept();

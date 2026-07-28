@@ -1066,6 +1066,28 @@ Speichern/Laden (kein stiller 048b-Drift).
 Selbst-Refresh des Canvas nach dem eigenen Kommando trägt die Anzeige (die »kein op«-Regel bleibt
 **unrevidiert**).
 
+**Anzeige des Fang-Ziels.** Die Zeichenfläche hält den aktuellen Fang-Kandidaten als **reinen
+Widget-Zustand** (ein optionaler mm-Punkt) und zeichnet ihn — **kein** Modell-Datum, **keine**
+Persistenz, **kein** Schema-Feld, **kein** `op`. Er entsteht aus **demselben** Auswahl-Aufruf mit
+**demselben** Schwellwert wie die Eingabe-Quantisierung; Anzeige und Einrasten können deshalb nicht
+auseinanderlaufen. Gepflegt wird er in **beiden** Phasen der Interaktion — ohne gedrückte Taste (der
+Anfang) **und** während des Zugs (das Ende) —, weil der Fang an beiden Stellen wirkt.
+
+**Wann die Anzeige verschwindet.** Sie ist an eine **Zeiger-Position** gebunden, die der Widget-
+Zustand nicht kennt, sobald der Zeiger die Fläche verlässt oder sich die **Abbildung** ändert: Zoom,
+Größenänderung, Wechsel des dargestellten Geschosses und eine Modell-Meldung zeichnen **ohne**
+Zeiger-Ereignis neu, und ein in mm gehaltener Kandidat zeigte danach auf die falsche Bildschirmstelle.
+In all diesen Fällen wird der Kandidat **verworfen** statt umgerechnet; er entsteht mit der nächsten
+Zeiger-Bewegung neu. **Die Eingabe-Quantisierung selbst ist davon unberührt** — sie rechnet je Klick
+frisch.
+
+**Zwei Nachweis-Ebenen, weil die Zusage zwei Hälften hat.** *Welcher* Punkt angezeigt würde, ist über
+die display-freie Widget-Naht prüfbar (Surrogat, wie die Bildschirm→mm-Naht). *Dass überhaupt etwas
+erscheint*, ist es **nicht** — dafür wird die Zeichenfläche **offscreen gerendert** und die gesetzte
+Farbmenge zweier Zeiger-Positionen (innerhalb/außerhalb der Fang-Nähe) bei **unverändertem** Modell und
+**unveränderter** Abbildung verglichen. Die zweite Ebene sichert **kein** Aussehen zu: Form, Farbe und
+Größe der Anzeige bleiben offen (Lastenheft-Grenze).
+
 **Totalität & Ablehnung.** Fangen fügt **keine** neue Ablehnung hinzu. Rastet Fangen Anfang **und**
 Ende auf **denselben** Punkt (Anfang = Ende), greift die **bestehende** Entartungs-Ablehnung aus
 [`LH-FA-DRW-005.a`](lastenheft.md#lh-fa-drw-005) — [`E-VAL-001`](#4-fehler-codes-und-logging-felder)
@@ -1074,9 +1096,10 @@ in der Ablehnungs-Lesart (`Rejected`, Modell unverändert), **kein** neuer Fehle
 **Beobachtbarkeit.** Der harte Nachweis ist die **exakt übernommene Koordinate**: die gezogene
 Hilfslinie trägt nach Speichern/Laden **identische** mm mit dem Fang-Ziel (nicht »nahe«) und
 erscheint so im 2D-Grundriss-Export; der interaktive Zug ist **headless** über die display-freie
-Bildschirm→mm-Naht prüfbar (Surrogat-Zustand, Muster der Canvas-Interaktions-AK). Der **Umfang**
-(nur Endpunkt-Fang sichtbarer Achsen/Hilfslinien; Raster/Winkel/Schnittpunkt offen) ist eine
-benannte Reifephase-Grenze.
+Bildschirm→mm-Naht prüfbar (Surrogat-Zustand, Muster der Canvas-Interaktions-AK). Für die **Anzeige**
+kommt die zweite Nachweis-Ebene hinzu (s. o.): der Surrogat allein bliebe grün, wenn nie ein Pixel
+gesetzt würde. Der **Umfang** (nur Endpunkt-Fang sichtbarer Achsen/Hilfslinien; Raster/Winkel/
+Schnittpunkt offen) ist eine benannte Reifephase-Grenze.
 
 ## 2. Datenstrukturen und Schemas
 

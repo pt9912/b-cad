@@ -8,9 +8,12 @@
 #include <gtest/gtest.h>
 
 #include <QApplication>
+#include <QEvent>
+#include <QImage>
 #include <QMouseEvent>
 #include <QPoint>
 #include <QPointF>
+#include <QWheelEvent>
 
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "adapters/ui/command/edit_drawing_guide_line_sink.h"
@@ -21,6 +24,8 @@
 #include "hexagon/model/point2d.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/services/structure_edit_service.h"
+
+#include <memory>
 
 namespace {
 
@@ -226,6 +231,295 @@ TEST(CanvasWidgetInteraction, LH_FA_DRW_005_MausZugErzeugtHilfslinie) {
     EXPECT_EQ(service.building().guide_lines.size(), before_snap_deg);
 
     service.unsubscribe(canvas);
+}
+
+// --- slice-055: Fang-Anzeige (LH-FA-DRW-001) --------------------------------
+// Eigene TESTs statt Anhaengsel am Bestands-Zug: `gtest_discover_tests` startet
+// jeden Test als eigenen ctest-Prozess, jeder baut also seine EIGENE
+// QApplication (Qt erlaubt nur eine je Prozess) und startet mit sauberem
+// Modell-Zustand — die im Bestands-Test erzeugten Hilfslinien waeren sonst
+// zusaetzliche Fang-Kandidaten.
+
+// Baut Service + Canvas wie der Bestands-Zug: zwei Wand-Achsen, eine Ebene.
+// Nach `show()` + `processEvents()` steht die Fit-Transformation.
+struct CanvasFixture {
+    bcad::adapters::geometry::OccGeometryAdapter geometry;
+    services::StructureEditService service{geometry};
+    model::StoreyId storey{};
+    model::LayerId layer{};
+    std::unique_ptr<command::PlanViewPlanSource> plan_source;
+    std::unique_ptr<command::EditDrawingGuideLineSink> guide_sink;
+    std::unique_ptr<view::CanvasWidget> canvas;
+    int pulls{0};
+
+    void build() {
+        storey = service.building().storeys.front().id;
+        service.addWall(storey, seg(0, 0, 4000, 0));
+        service.addWall(storey, seg(4000, 0, 4000, 3000));
+        model::Layer l;
+        l.name = "Zeichenebene";
+        layer = *service.addLayer(l);
+        plan_source = std::make_unique<command::PlanViewPlanSource>(service);
+        guide_sink = std::make_unique<command::EditDrawingGuideLineSink>(
+            service, storey, layer);
+        canvas = std::make_unique<view::CanvasWidget>(
+            [this]() {
+                ++pulls;  // Zaehl-Callable in der PlanPull-Naht (Orakel 9)
+                return plan_source->planView();
+            },
+            [this](model::Point2D a, model::Point2D b) {
+                return guide_sink->addGuideLine(a, b);
+            },
+            static_cast<int>(storey));
+        canvas->resize(400, 300);
+        canvas->show();
+        QApplication::processEvents();
+    }
+
+    // Bildschirmposition eines Modell-Punktes unter der AKTUELLEN Transformation
+    // — verlaesslicher als handgerechnete Pixel (die Fit-Rechnung ist Bestand).
+    QPoint screenOf(model::Point2D mm) const {
+        return canvas->transform().modelToScreen(mm).toPoint();
+    }
+
+    void sendMove(QPoint pos, Qt::MouseButtons buttons = Qt::NoButton) {
+        const QPointF p(pos);
+        QMouseEvent ev(QEvent::MouseMove, p, canvas->mapToGlobal(p),
+                       Qt::NoButton, buttons, Qt::NoModifier);
+        QApplication::sendEvent(canvas.get(), &ev);
+    }
+    void sendPress(QPoint pos) {
+        const QPointF p(pos);
+        QMouseEvent ev(QEvent::MouseButtonPress, p, canvas->mapToGlobal(p),
+                       Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(canvas.get(), &ev);
+    }
+    void sendRelease(QPoint pos) {
+        const QPointF p(pos);
+        QMouseEvent ev(QEvent::MouseButtonRelease, p, canvas->mapToGlobal(p),
+                       Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+        QApplication::sendEvent(canvas.get(), &ev);
+    }
+};
+
+// Tinten-Sonde: rendert das Widget OFFSCREEN und zaehlt die nicht-weissen
+// Pixel (Muster `test_png_export.cpp`/`inkPixels`). Kein GL im Spiel — der
+// Canvas ist ein reines QWidget mit QPainter.
+int inkPixels(view::CanvasWidget& canvas) {
+    QImage image(canvas.size(), QImage::Format_RGB32);
+    image.fill(Qt::white);
+    canvas.render(&image);
+    int ink = 0;
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            if (image.pixel(x, y) != qRgb(255, 255, 255)) {
+                ++ink;
+            }
+        }
+    }
+    return ink;
+}
+
+int makeArgc() { return 1; }
+
+// Orakel 1/2/3/4/5: exaktes Einrasten der Anzeige, Grenze, Verschwinden bei
+// Bewegung, Gleichheit Anzeige<->Zug, und die Maus-Verfolgung selbst.
+TEST(CanvasSnapPreview, LH_FA_DRW_001_AnzeigeTrifftDenPunktDerGefangenWird) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+    CanvasFixture fx;
+    fx.build();
+
+    // (5) Ohne Maus-Verfolgung kaeme ohne gedrueckte Taste gar kein Ereignis an;
+    // der Test synthetisiert sie und bliebe gruen, waehrend die Zusage im
+    // Produkt tot waere. Also wird die EIGENSCHAFT geprueft.
+    EXPECT_TRUE(fx.canvas->hasMouseTracking());
+
+    const QPoint corner = fx.screenOf({0.0, 0.0});
+    const QPoint near_corner = corner + QPoint(3, -2);  // ~3,6 px daneben
+
+    // (1) In Fang-Naehe: EXAKT die mm des Ziels, nicht die Cursor-mm.
+    fx.sendMove(near_corner);
+    ASSERT_TRUE(fx.canvas->snapPreview().has_value());
+    EXPECT_DOUBLE_EQ(fx.canvas->snapPreview()->x_mm, 0.0);
+    EXPECT_DOUBLE_EQ(fx.canvas->snapPreview()->y_mm, 0.0);
+    // Gegenprobe zur Cursor-Position: sie ergaebe etwas anderes.
+    EXPECT_NE(fx.canvas->screenToModel(near_corner).x_mm, 0.0);
+
+    // (2)+(3) Aus der Fang-Naehe heraus: die Anzeige verschwindet wieder.
+    const QPoint centre(200, 150);  // >= 111 px von jedem Fang-Punkt
+    fx.sendMove(centre);
+    EXPECT_FALSE(fx.canvas->snapPreview().has_value());
+
+    // (4) Angezeigt wird, worauf tatsaechlich eingerastet wird: an DERSELBEN
+    // Position liefert der Zug exakt den Punkt, den die Anzeige zuvor nannte.
+    fx.sendMove(near_corner);
+    ASSERT_TRUE(fx.canvas->snapPreview().has_value());
+    const model::Point2D announced = *fx.canvas->snapPreview();
+    const std::size_t before = fx.service.building().guide_lines.size();
+    fx.sendPress(near_corner);
+    fx.sendRelease(centre);
+    QApplication::processEvents();
+    ASSERT_EQ(fx.service.building().guide_lines.size(), before + 1);
+    const model::GuideLine& gl = fx.service.building().guide_lines.back();
+    EXPECT_DOUBLE_EQ(gl.segment.start.x_mm, announced.x_mm);
+    EXPECT_DOUBLE_EQ(gl.segment.start.y_mm, announced.y_mm);
+}
+
+// Orakel 6: auch WAEHREND des Zugs zeigt die Preview das Fang-Ziel des Endes.
+TEST(CanvasSnapPreview, LH_FA_DRW_001_AnzeigeAuchWaehrendDesZugs) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+    CanvasFixture fx;
+    fx.build();
+
+    const QPoint free_start(200, 150);
+    const QPoint target = fx.screenOf({4000.0, 3000.0});
+
+    fx.sendPress(free_start);
+    ASSERT_FALSE(fx.canvas->snapPreview().has_value());  // Start liegt frei
+    fx.sendMove(target + QPoint(-3, 3), Qt::LeftButton);  // gedrueckte Taste
+    ASSERT_TRUE(fx.canvas->snapPreview().has_value());
+    EXPECT_DOUBLE_EQ(fx.canvas->snapPreview()->x_mm, 4000.0);
+    EXPECT_DOUBLE_EQ(fx.canvas->snapPreview()->y_mm, 3000.0);
+}
+
+// Orakel 7a: der Zeiger VERLAESST die Flaeche (ohne gedrueckte Taste) ->
+// QEvent::Leave; ohne Behandlung bliebe der letzte Marker stehen.
+TEST(CanvasSnapPreview, LH_FA_DRW_001_ZeigerVerlaesstFlaecheLoeschtAnzeige) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+    CanvasFixture fx;
+    fx.build();
+
+    fx.sendMove(fx.screenOf({0.0, 0.0}) + QPoint(3, -2));
+    ASSERT_TRUE(fx.canvas->snapPreview().has_value());
+
+    QEvent leave(QEvent::Leave);
+    QApplication::sendEvent(fx.canvas.get(), &leave);
+    EXPECT_FALSE(fx.canvas->snapPreview().has_value());
+}
+
+// Orakel 7b: WAEHREND des Zugs stellt Qt KEIN Leave zu — die Move-Ereignisse
+// laufen mit Koordinaten ausserhalb `rect()` weiter. Eigene Fixture noetig:
+// nach `fit` liegt jeder Fang-Punkt >= 15 px vom Rand (kMargin 0,9), bei 12 px
+// Fang-Naehe ist ausserhalb NIE ein Punkt in Reichweite. Also erst hineinzoomen.
+TEST(CanvasSnapPreview, LH_FA_DRW_001_ZugAusserhalbDerFlaecheZeigtNichts) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+    CanvasFixture fx;
+    fx.build();
+
+    // Hineinzoomen, bis die Ecke (0,0) ueber den Rand wandert.
+    const QPointF centre(200, 150);
+    QWheelEvent wheel(centre, fx.canvas->mapToGlobal(centre), QPoint(0, 0),
+                      QPoint(0, 120), Qt::NoButton, Qt::NoModifier,
+                      Qt::NoScrollPhase, false);
+    QApplication::sendEvent(fx.canvas.get(), &wheel);
+    QApplication::processEvents();
+
+    const QPoint corner = fx.screenOf({0.0, 0.0});
+    ASSERT_FALSE(fx.canvas->rect().contains(corner))
+        << "Fixture-Vorbedingung: der Fang-Punkt muss ausserhalb liegen";
+    const QPoint outside = corner + QPoint(2, -2);
+    ASSERT_FALSE(fx.canvas->rect().contains(outside));
+
+    fx.sendPress(QPoint(200, 150));
+    fx.sendMove(outside, Qt::LeftButton);
+    EXPECT_FALSE(fx.canvas->snapPreview().has_value());
+}
+
+// Orakel 8: es wird WIRKLICH etwas gezeichnet. Dieselbe PlanView, dieselbe
+// Transformation, zwei Zeiger-Positionen — nur in der Hover-Phase, weil im Zug
+// die cursor-abhaengige in-Arbeit-Linie ein zweiter Unterschied waere.
+TEST(CanvasSnapPreview, LH_FA_DRW_001_MarkerErzeugtTinte) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+    CanvasFixture fx;
+    fx.build();
+
+    fx.sendMove(QPoint(200, 150));  // frei: keine Anzeige
+    ASSERT_FALSE(fx.canvas->snapPreview().has_value());
+    const int ink_without = inkPixels(*fx.canvas);
+
+    fx.sendMove(fx.screenOf({0.0, 0.0}) + QPoint(3, -2));  // in Fang-Naehe
+    ASSERT_TRUE(fx.canvas->snapPreview().has_value());
+    const int ink_with = inkPixels(*fx.canvas);
+
+    EXPECT_GT(ink_with, ink_without)
+        << "der Marker setzt keine Pixel — die Surrogat-Orakel saehen das nicht";
+}
+
+// Orakel 9: die Bewegung loest einen Repaint aus. Gemessen am Zaehl-Callable
+// der PlanPull-Naht: eine EINZELNE Bewegung, die die Anzeige aendert, ergibt
+// zwei Pulls (Hover-Auswertung + ausgeloester Repaint). Der Zaehler wird nach
+// dem Show-Paint zurueckgesetzt; Qt fasst mehrere update() zu EINEM Paint
+// zusammen, deshalb wird einzeln gemessen.
+TEST(CanvasSnapPreview, LH_FA_DRW_001_BewegungLoestRepaintAus) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+    CanvasFixture fx;
+    fx.build();
+
+    QApplication::processEvents();
+    fx.pulls = 0;  // Show-Paint ausgeklammert
+
+    fx.sendMove(fx.screenOf({0.0, 0.0}) + QPoint(3, -2));
+    QApplication::processEvents();
+
+    EXPECT_EQ(fx.pulls, 2) << "erwartet: Hover-Auswertung + ausgeloester Repaint";
+}
+
+// Orakel 10 + 10a: eine Transformations-Aenderung verwirft die Anzeige (sie
+// zeigte sonst auf die falsche Bildschirmstelle) — und sie kehrt mit der
+// NAECHSTEN Zeiger-Bewegung zurueck, waehrend der Fang selbst unberuehrt bleibt.
+TEST(CanvasSnapPreview, LH_FA_DRW_001_AnsichtsAenderungVerwirftUndBewegungHoltZurueck) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+    CanvasFixture fx;
+    fx.build();
+
+    const QPoint before_zoom = fx.screenOf({0.0, 0.0});
+    fx.sendMove(before_zoom + QPoint(3, -2));
+    ASSERT_TRUE(fx.canvas->snapPreview().has_value());
+
+    // (10) Zoom aendert die Abbildung OHNE Zeiger-Ereignis. Herausgezoomt wird,
+    // damit die Fang-Punkte im Viewport bleiben — hineingezoomt wandern die
+    // Ecken ueber den Rand (genau der Effekt, den Orakel 7b ausnutzt).
+    const QPointF centre(200, 150);
+    QWheelEvent wheel(centre, fx.canvas->mapToGlobal(centre), QPoint(0, 0),
+                      QPoint(0, -120), Qt::NoButton, Qt::NoModifier,
+                      Qt::NoScrollPhase, false);
+    QApplication::sendEvent(fx.canvas.get(), &wheel);
+    EXPECT_FALSE(fx.canvas->snapPreview().has_value());
+
+    // (10a) Die naechste Bewegung holt sie zurueck — an der NEUEN Bildschirm-
+    // stelle desselben Modell-Punktes. Der Fang selbst war nie weg.
+    const QPoint after_zoom = fx.screenOf({0.0, 0.0});
+    ASSERT_NE(after_zoom, before_zoom) << "der Zoom hat die Abbildung nicht bewegt";
+    ASSERT_TRUE(fx.canvas->rect().contains(after_zoom));
+    fx.sendMove(after_zoom + QPoint(3, -2));
+    ASSERT_TRUE(fx.canvas->snapPreview().has_value());
+    EXPECT_DOUBLE_EQ(fx.canvas->snapPreview()->x_mm, 0.0);
+    EXPECT_DOUBLE_EQ(fx.canvas->snapPreview()->y_mm, 0.0);
+    // Der Beleg, dass die Anzeige NICHT einfach stehen geblieben war: die alte
+    // Bildschirmstelle traegt jetzt keinen Fang-Punkt mehr.
+    fx.sendMove(before_zoom + QPoint(3, -2));
+    EXPECT_FALSE(fx.canvas->snapPreview().has_value());
 }
 
 }  // namespace
