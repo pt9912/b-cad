@@ -15,7 +15,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 folgen **beim Start**.
 
 **Welle:** welle-6-interaktiv-planen — **erste Hälfte des Abschluss-Triggers** („eine Wand ist im
-2D-Canvas **zeichenbar**"). **Unabhängig von [`slice-057`](../in-progress/slice-057-lese-naht-bauteil-identitaet.md)**:
+2D-Canvas **zeichenbar**"). **Unabhängig von [`slice-057`](../done/slice-057-lese-naht-bauteil-identitaet.md)**:
 Zeichnen braucht keine Bauteil-Identität.
 
 ## Auslöser

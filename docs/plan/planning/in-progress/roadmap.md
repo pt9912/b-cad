@@ -40,8 +40,7 @@ machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nic
 ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
 wellen-bindend und verlängert sie nicht.
 
-**In Arbeit:** [`slice-057`](slice-057-lese-naht-bauteil-identitaet.md) — Bauteil-Identität in der
-2D-Lese-Naht ([ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E11/E15), vorgelagert ohne UI-Anteil.
+Keine offenen Slices.
 
 ## Nächste Wellen
 
