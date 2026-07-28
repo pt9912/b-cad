@@ -40,7 +40,8 @@ machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nic
 ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
 wellen-bindend und verlängert sie nicht.
 
-Keine offenen Slices.
+**In Arbeit:** [`slice-055`](slice-055-fang-anzeige.md) — Fang-Anzeige
+([`LH-FA-DRW-001`](../../../../spec/lastenheft.md#lh-fa-drw-001)) im 2D-Canvas.
 
 ## Nächste Wellen
 
