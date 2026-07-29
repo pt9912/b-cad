@@ -61,27 +61,25 @@ der Typ dieses Werts wohnt, ist die eine echte Entwurfs-Frage:
 | **A** — Ausgangs-Typ in `ui/view/`, die Senke in `ui/command/` erzeugt ihn | verlangt einen `command/ → view/`-Include. Die Schicht-Kante ist erlaubt, **aber** die laterale Adapter-Regel hat einen **skalaren** Ausnahme-Eintrag; ob dieser Include sie verletzt, ist am Gate zu **messen**, nicht zu vermuten |
 | **B** — **kein** gemeinsamer Typ zwischen Canvas und Senke; die **Senke** stellt den Ausgang fest und meldet ihn über ein **eigenes** injiziertes Callable | braucht **keinen** neuen Include und **keine** Gate-Frage |
 
-**Entschieden: Variante B — an der Messung, nicht an der Vermutung** ([MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf 1). Der Reviewer
-hat drei `make a-check`-Läufe gefahren: Baseline **0 Befunde** → probeweiser
-`command/ → view/`-Include ⇒ **`lateral-adapter`, 1 Befund, Exit ≠ 0** → Gegenrichtung ⇒ ebenfalls
-1 Befund → Rücknahme, Baseline wieder 0. **Die Schicht-Kante `ui_command → ui_view` ist deklariert
-und wird nicht bemängelt — die laterale Adapter-Regel schlägt unabhängig davon zu**, und ihr
-Ausnahme-Eintrag ist skalar. Variante A ginge nur über eine **Weitung** dieses Eintrags, also eine
-Gate-Lockerung, die [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) §Konsequenzen ausdrücklich
-ausschließt. Dieselbe Frage hat der Canvas-Slice schon einmal so entschieden.
+**Entschieden: Variante B — gemessen, nicht vermutet.** Drei `make a-check`-Läufe: Baseline
+**0 Befunde** → probeweiser `command/ → view/`-Include ⇒ **`lateral-adapter`, 1 Befund, Exit ≠ 0** →
+Gegenrichtung ⇒ ebenfalls 1 Befund → Rücknahme, Baseline wieder 0. Die Schicht-Kante
+`ui_command → ui_view` ist deklariert und wird nicht bemängelt — **die laterale Adapter-Regel schlägt
+unabhängig davon zu**, und ihr Ausnahme-Eintrag ist skalar. Variante A ginge nur über eine **Weitung**
+dieses Eintrags, also die Gate-Lockerung, die
+[ADR-0021](../../adr/0021-wand-im-2d-canvas.md) §Konsequenzen ausschließt.
 
-**Und B bekommt eine andere Bauform als geplant** (Lauf-1-MEDIUM-2). Die Vorfassung wollte den
-**Canvas** die Entartung „an seinen eigenen zwei Punkten" erkennen lassen — **das ist falsch**: der
-Kern verwirft unterhalb der Geometrie-Toleranz (0,1 mm), und bei Maximal-Zoom (100 px/mm) liegen
-**benachbarte Pixel 0,01 mm** auseinander. Der Canvas hielte den Zug für gültig, der Kern verwürfe
-ihn — **ein falscher Hinweis**.
+**Die Entartung stellt die Senke fest, nicht der Canvas.** Der Kern verwirft unterhalb der
+Geometrie-Toleranz (0,1 mm); bei Maximal-Zoom (100 px/mm) liegen **benachbarte Pixel 0,01 mm**
+auseinander. Ein Canvas, der „an seinen eigenen zwei Punkten" urteilt, hielte den Zug für gültig,
+während der Kern ihn verwirft — **ein falscher Hinweis**.
 
 **Die Senke meldet den Hinweis selbst.** Sie kennt den Ausgang (Rückgabewert **und** gefangene Würfe)
 und bekommt vom Composition-Root ein **eigenes** Hinweis-Callable. Der Hinweis-Typ lebt damit in
 `ui/command/`, **der Canvas sieht ihn nie**, und es entsteht **kein** verbotener Include. Das Callable
 des Canvas bleibt, was es ist: „zeichne eine Wand von A nach B".
 
-**Wie viele Hinweise es gibt — ausgeschrieben** (Lauf-2-MEDIUM-2): **drei**, nicht vier.
+**Drei Hinweise, nicht vier:**
 
 | Ausgang | Hinweis |
 |---|---|
@@ -114,66 +112,41 @@ die Aussage ohnehin dieselbe: nichts entstanden, Modell unverändert.
 |---|---|---|---|
 | 1 | **Default ist Hilfslinie** — ohne Modus-Wechsel erzeugt ein Zug wie bisher eine Hilfslinie und **keine** Wand | `CanvasWidget`, headless | Default auf Wand ⇒ rot (auch Bestands-Orakel fallen) |
 | 2 | **Im Wand-Modus erzeugt derselbe Zug eine Wand und keine Hilfslinie** — die Zusammenspiel-Zeile | `CanvasWidget` + Modell-Surrogat | Modus ignoriert ⇒ rot |
-| 3 | **Der Fang gilt an BEIDEN Enden** — je ein Zug, dessen **Anfang** bzw. **Ende** in Fang-Nähe liegt, erzeugt eine Wand mit **exakt** dessen mm (§1 sagt beide zu; die Vorfassung prüfte nur das Ende) | `CanvasWidget`, headless | Fang im Press- bzw. Release-Pfad einzeln übersprungen ⇒ rot |
-| 4 | **Zwei Züge teilen einen gefangenen Punkt exakt** — die Voraussetzung des Eckenschlusses ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)) | `CanvasWidget` (die zwei Züge) gegen den **Modell-Zustand des Dienstes** — der Ort ist der Canvas, der Beleg das Modell (Lauf-1-LOW-4) | Fang im Wand-Pfad übersprungen ⇒ rot (die Punkte differieren) |
+| 3 | **Der Fang gilt an BEIDEN Enden** — je ein Zug, dessen **Anfang** bzw. **Ende** in Fang-Nähe liegt, erzeugt eine Wand mit **exakt** dessen mm (§1 sagt beide zu) | `CanvasWidget`, headless | Fang im Press- bzw. Release-Pfad einzeln übersprungen ⇒ rot |
+| 4 | **Zwei Züge teilen einen gefangenen Punkt exakt** — die Voraussetzung des Eckenschlusses ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)) | `CanvasWidget` (die zwei Züge) gegen den **Modell-Zustand des Dienstes** — der Ort ist der Canvas, der Beleg das Modell | Fang im Wand-Pfad übersprungen ⇒ rot (die Punkte differieren) |
 | 5 | **Entarteter Zug ⇒ keine Wand, Modell unverändert, Hinweis** — die **Senke** stellt den Ausgang fest, nicht der Canvas (§2.3) | Senken-Test + Hinweis-Surrogat | Hinweis nicht gemeldet ⇒ rot |
-| 5a | **Die Hinweis-Anzeige existiert und trägt den gemeldeten Text** | `MainWindow`-Surrogat: das Anzeige-Widget ist auffindbar und sein **Text** ist der gemeldete | Anzeige-Aufruf entfernt ⇒ rot. **Der `isVisible()`-Konjunkt ist gestrichen** (Lauf-3-MEDIUM-1, gemessen): er wird von Qt und der Konstruktions-Reihenfolge entschieden, **nicht** von der Implementierung — ohne `show()` ist **jedes** Kind unsichtbar, mit `show()` **jedes** sichtbar, sogar ein nie eingelayoutetes Waisen-Widget. **Der Text-Konjunkt trägt die Zeile allein** |
+| 5a | **Die Hinweis-Anzeige existiert und trägt den gemeldeten Text** | `MainWindow`-Surrogat: das Anzeige-Widget ist auffindbar, sein **Text** ist der gemeldete | Anzeige-Aufruf entfernt ⇒ rot. **Bewusst ohne `isVisible()`-Konjunkt** — den entscheidet `show()`, nicht die Implementierung (auch ein Waisen-Widget ist danach sichtbar); der Text-Konjunkt trägt die Zeile allein |
 | 6 | **Gesten-Abbruch ⇒ keine Wand, Modell unverändert** — **beide** Auslöser einzeln: Escape **und** Fokusverlust (E12) | `CanvasWidget`, headless | je Auslöser einzeln entfernt ⇒ rot |
 | 7 | **Kein Wurf verlässt den Ereignis-Pfad** — bei veralteter Geschoss-Id gibt es einen **Hinweis**, keine Ausnahme | **`ui/command/`-Senke** (dort liegt die Barriere und dort liegt der Test) | `try`/`catch` entfernt ⇒ rot |
 | 8 | **Der Refresh kommt aus der Meldekette** — nach dem Kommando rahmt der Canvas neu ein, **ohne** eigenes Zutun | `CanvasWidget::transform()` vor/nach dem Zug | Beobachter-Anmeldung entfernt ⇒ Transformation bleibt stehen ⇒ rot. **Die Gegenprobe ist zugleich der Beleg für E6** (§2.4) |
-| 8a | **Die Wand erscheint sofort im Grundriss** — der abnahmebindende Konjunkt aus [LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen), 2D-Hälfte | **Tinten-Sonde am Canvas**, offscreen gerendert. **Vorbedingung, selbst gemessen:** der Zug muss **innerhalb der bestehenden Bounding-Box** liegen, dann bleibt die Abbildung stehen und der Zuwachs ist **nur** das neue Segment — `633 → 993` Tinte bei unverändertem Zoom `0,09` und unveränderter Modell-Ecke `(20,285)`. Ein Zug **außerhalb** änderte die Tinte auch durch das Neu-Einrahmen und wäre nicht zuordenbar | Zeichnen der Wand-Segmente unterdrückt ⇒ rot |
-| 9 | **Der Modus ist bedienbar und sichtbar** — die Aktion ist auffindbar, sie ruft das injizierte Callable, und die aktive Aktion ist **markiert** | `MainWindow` (Aktions-Surrogat) | Auslösung entfernt ⇒ rot; Markierung entfernt ⇒ rot. **Reichweite benannt** (Lauf-1-MEDIUM-1): geprüft wird der **Fenster-Vertrag**, nicht die produktive Verdrahtung — die liegt im Composition-Root und ist **per Konstruktion orakel-los** (in kein Testbinary gelinkt). Das ist die bekannte Klasse, keine neue Lücke |
-| 10 | **Die 3D-Sicht folgt** — nach dem Zeichnen **über die Geste** trägt der Viewer-Surrogat die neue Wand ([LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)) | Bestands-Viewer-Surrogat, **von der Geste ausgelöst** | Der Bestands-Beleg genügt **nicht** (Lauf-1-MEDIUM-4): er löst die Mutation direkt am Dienst aus. Diskriminierend wird die Zeile erst, wenn der **Zug** sie auslöst |
+| 8a | **Die Wand erscheint sofort im Grundriss** — der abnahmebindende Konjunkt aus [LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen), 2D-Hälfte | **Tinten-Sonde am Canvas**, offscreen gerendert. **Vorbedingung (gemessen): der Zug muss INNERHALB der bestehenden Bounding-Box liegen** — dann steht die Abbildung still und der Zuwachs ist nur das neue Segment (`633 → 993` bei Zoom `0,09`, Ecke `(20,285)` unverändert). Außerhalb färbte das Neu-Einrahmen mit | Zeichnen der Wand-Segmente unterdrückt ⇒ rot |
+| 9 | **Der Modus ist bedienbar und sichtbar** — die Aktion ist auffindbar, sie ruft das injizierte Callable, und die aktive Aktion ist **markiert** | `MainWindow` (Aktions-Surrogat) | Auslösung entfernt ⇒ rot; Markierung entfernt ⇒ rot. **Reichweite:** geprüft wird der **Fenster-Vertrag**, nicht die produktive Verdrahtung — die liegt im Composition-Root und ist per Konstruktion orakel-los (in kein Testbinary gelinkt) |
+| 10 | **Die 3D-Sicht folgt** — nach dem Zeichnen **über die Geste** trägt der Viewer-Surrogat die neue Wand ([LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)) | Bestands-Viewer-Surrogat, **von der Geste ausgelöst** | Der Bestands-Beleg genügt **nicht** — er löst die Mutation direkt am Dienst aus. Diskriminierend wird die Zeile erst, wenn der **Zug** sie auslöst |
 | 11 | **Der Hilfslinien-Pfad bleibt unverändert** — freies Zeichnen, Fangen, Anzeige, Entartungs-Ablehnung | Bestands-Orakel | (Regressions-Netz) |
-| 12 | **Die gezeichnete Wand überlebt Speichern/Laden und Export** — der letzte Konjunkt aus §1 | **Bestands-Netz, nicht neu gebaut**: `make io-smoke` und die Persistenz-Runden-Orakel. **Begründung, warum das genügt** (Lauf-2-LOW-4): eine über die Geste erzeugte Wand ist für Persistenz und Export **dieselbe** Wand wie eine über den Dienst erzeugte — §4-2 belegt, dass die Geste den Dienst erreicht, ab dort ist es Bestand | (Netz — der Slice fügt hier **keinen** eigenen Sensor hinzu, und das ist eine benannte Entscheidung, keine Lücke) |
+| 12 | **Die gezeichnete Wand überlebt Speichern/Laden und Export** — der letzte Konjunkt aus §1 | **Bestands-Netz** (`make io-smoke`, Persistenz-Runden-Orakel): eine über die Geste erzeugte Wand ist dieselbe wie eine über den Dienst erzeugte, und §4-2 belegt, dass die Geste den Dienst erreicht | (Netz — **kein** eigener Sensor, benannte Entscheidung) |
 
-**Zeile 8 gibt es wieder — in ihrer dritten und diesmal gemessenen Form.** Die Vorgeschichte gehört
-hierher, weil sie die Lehre trägt: zwei Fassungen waren **unfalsifizierbar**, und die dritte
-Entscheidung („E6 hat gar keinen Sensor") war **auch falsch**.
-
-- **Fassung 1** wollte „kein zusätzlicher Selbst-Refresh" über einen **Pull-Zähler** belegen. Qt
-  koalesziert beliebig viele `update()` eines Durchlaufs zu **einem** Paint — 4 Pulls mit **und** ohne.
-- **Fassung 2** wollte die Wirkung über die **Tinten-Sonde** belegen. Gemessen: die Tinte ändert sich
-  auch **ohne** Beobachter-Anmeldung, weil der Canvas bei **jedem** Paint frisch pullt und die Sonde
-  einen Paint erzwingt.
-- **Der Verzicht** („keine Sensor, nur durch Lesen prüfbar") war für die **harmlose** Hälfte richtig
-  und für die **schädliche** eine Ausrede (Lauf-3-HIGH-2).
-
-**Die Messung, die es entschieden hat** (Lauf 3 nannte sie, **ich habe sie selbst nachgemessen**, weil
-sie meine eigene Absage kippt — Sonde in der Bestands-Fixture, danach zurückgenommen): derselbe
-Modell-Wechsel (eine Wand, die die Bounding-Box vergrößert) ergibt `transform().zoom`
-
-- **ohne** Beobachter-Anmeldung: `0,09 → 0,09` — unverändert,
-- **mit** Beobachter-Anmeldung: `0,09 → 0,009`.
-
-(Lauf 3 maß `0,09 → 0,03`; der Zahlenwert hängt an der Größe der zugefügten Wand, die **Diskriminierung**
-nicht.) Der Grund ist eindeutig und im Quelltext nachlesbar: das Neu-Einrahmen hat **genau eine**
+**Warum Zeile 8 den Zoom misst und nicht Pulls oder Tinte.** Das Neu-Einrahmen hat **genau eine**
 Auslöse-Bedingung (`fitted_`), und außer `resizeEvent`/`setActiveStorey` führt nur `onModelChanged`
-dorthin. **Weder Tinte noch Pull-Zahl konnten das zeigen — die Transformation kann es**, und sie ist
-über die vorhandene Widget-Naht `transform()` ablesbar, die die Bestands-Fixture ohnehin benutzt.
+dorthin. Gemessen an der Bestands-Naht `transform()`, gleicher Modell-Wechsel:
 
-**Was die Gegenprobe belegt, ist mehr als die Zeile behauptet.** „Beobachter-Anmeldung entfernt ⇒ die
-Transformation bleibt stehen ⇒ rot" ist nicht nur die Kontrolle des Orakels, sondern **der Beleg für
-E6 selbst**: gäbe es einen zusätzlichen Selbst-Refresh, der neu einrahmt, bliebe die Gegenprobe
-**grün** — die Transformation änderte sich ja weiterhin. **Ein grüner Lauf dieser Gegenprobe ist
-also der Nachweis, dass der Canvas nach dem eigenen Kommando nichts Eigenes tut.**
+- **ohne** Beobachter-Anmeldung: `zoom 0,09 → 0,09` — unverändert,
+- **mit** Beobachter-Anmeldung: `zoom 0,09 → 0,009`.
 
-**Was weiterhin keinen Sensor hat, und das bleibt so gesagt:** ein Selbst-Refresh, der **nur**
-`update()` ruft, ohne neu einzurahmen. Er ist nicht beobachtbar — und er ist auch nicht der Fall, vor
-dem [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E6 warnt (dort geht es um das **doppelte
-Neu-Einrahmen**). **Die Zusage deckt genau so weit, wie sie messen kann, und sagt das.**
+Ein Pull-Zähler kann das **nicht** zeigen (Qt koalesziert beliebig viele `update()` zu einem Paint),
+die Tinten-Sonde auch nicht (der Canvas pullt bei **jedem** Paint frisch, die Sonde erzwingt einen).
 
-> **Die Lehre, dreimal bezahlt:** ich hatte zwei Instrumente — Pull-Zähler und Tinten-Sonde — und
-> habe zweimal nach ihnen gegriffen, statt zu fragen, **welche Größe sich beim Fehler überhaupt
-> ändert**. Beim dritten Mal habe ich den Sensor für nicht existent erklärt, statt weiterzusuchen.
-> **Die richtige Frage ist nicht „welches Werkzeug habe ich?", sondern „was wäre anders, wenn die
-> Zusage verletzt wäre?"** — hier: die Abbildung.
+**Die Gegenprobe belegt mehr als die Zeile behauptet.** Gäbe es einen zusätzlichen Selbst-Refresh mit
+Neu-Einrahmen, bliebe „Anmeldung entfernt ⇒ Transformation steht still" **grün**. Ein roter Lauf der
+Gegenprobe ist damit zugleich der Beleg für [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E6.
+**Sensor-los bleibt** ein Selbst-Refresh, der nur `update()` ruft, ohne neu einzurahmen — das ist
+nicht der Fall, vor dem E6 warnt (dort geht es um doppeltes Neu-Einrahmen), und es steht hier, weil
+die Zusage nur so weit deckt, wie sie messen kann.
 
 ## 5. Definition of Done
 
-- [x] **R1 vor dem Start entschieden** (§2.3) — **gemessen** im [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf 1: Variante A ist
-      **nicht** gate-frei (`lateral-adapter` schlägt an, in **beide** Richtungen), also **B** — mit
-      der Korrektur, dass die **Senke** den Ausgang feststellt, nicht der Canvas.
+- [x] **R1 vor dem Start entschieden** (§2.3): Variante A ist **nicht** gate-frei
+      (`lateral-adapter` schlägt in **beide** Richtungen an), also **B** — und die **Senke** stellt
+      den Ausgang fest, nicht der Canvas.
 - [ ] **`src/adapters/ui/view/canvas_widget.{h,cpp}`**: Werkzeug-Modus als Widget-Zustand + lesbare
       Eigenschaft; im Wand-Modus ruft der Zug die neue Senke; Gesten-Abbruch **auf beiden Auslösern**
       (Escape **und** Fokusverlust, E12); **kein** zusätzlicher Selbst-Refresh — E6, **mit Sensor**
@@ -182,42 +155,29 @@ Neu-Einrahmen**). **Die Zusage deckt genau so weit, wie sie messen kann, und sag
       den Bearbeitungs-Port, **fängt** dessen Würfe und meldet den Ausgang als Wert. Orakel §4-7.
 - [ ] **`src/adapters/ui/view/main_window.{h,cpp}`**: Aktions-Gruppe für den Modus, injizierte
       Callables, aktive Aktion **markiert**. Orakel §4-9.
-- [ ] **Die Hinweis-Anzeige selbst** (Lauf-1-HIGH-2) — im Bestand gibt es **keine**. Ohne sie wäre
-      „jeder Fehl-Ausgang gibt einen Hinweis" eine Zusage ohne Adressat. Orakel §4-5a.
-      **Die Tinten-Sonde ist hier NICHT das zweite Nachweis-Mittel** (Lauf-2-HIGH-2, gemessen): am
-      Fenster zählt sie **120 000 von 120 000** Pixeln als Tinte, weil der Fenster-Hintergrund nicht
-      weiß ist — sie trägt am Canvas nur, weil **dessen** Zeichen-Pfad weiß füllt. **Und sie wird
-      hier auch nicht gebraucht:** die Fang-Anzeige brauchte eine zweite Ebene, weil **wir** malen;
-      ein Standard-Anzeige-Widget wird von Qt selbst dargestellt, und dass es **sichtbar** ist und
-      **welchen Text** es trägt, sind Qt-Eigenschaften — prüfbar ohne Pixel.
-      **Die Folgepflicht-Zeile („Surrogat UND Tinten-Sonde") wird trotzdem buchstäblich eingelöst —
-      nur an der richtigen Stelle:** die Sonde sitzt in **§4-8a am Canvas**, wo wir selbst malen, und
-      belegt dort, dass die gezeichnete Wand **Farbe erzeugt**. Am Fenster tritt an ihre Stelle die
-      Qt-Eigenschaft. **Damit ist die Folgepflicht auf beiden Ebenen erfüllt und nicht nur erklärt**
-      (Lauf-3-MEDIUM-4: die Vorfassung buchte sie als „erfüllt", ohne dass die Sonde irgendwo im
-      Slice vorkam).
+- [ ] **Die Hinweis-Anzeige selbst** — im Bestand gibt es **keine**; ohne sie wäre „jeder
+      Fehl-Ausgang gibt einen Hinweis" eine Zusage ohne Adressat. Orakel §4-5a.
+      **Keine Tinten-Sonde am Fenster** (gemessen: dort zählt sie **120 000 von 120 000** Pixeln als
+      Tinte, weil der Hintergrund nicht weiß ist) — sie trägt nur am Canvas, dessen Zeichen-Pfad weiß
+      füllt. Die ADR-Folgepflicht „Surrogat **und** Tinten-Sonde" wird deshalb in **§4-8a am Canvas**
+      eingelöst; am Fenster tritt die Qt-Eigenschaft an ihre Stelle.
 - [ ] **`src/main.cpp`**: Verdrahtung (Modus-Callables → Canvas, Senke → Port, Hinweis-Texte).
       **Die Texte bleiben hier** — benannte Grenze des Fenster-Adapters.
 - [ ] **Tests**: `test_canvas_widget.cpp` (§4-1..4, 6, 8, 8a — die Sonde für 8a **innerhalb** der
-      bestehenden Bounding-Box, s. §4) · **Test der neuen Senke (§4-5 UND §4-7)** —
-      der Ausgang wird **dort** festgestellt, nicht im Canvas (Lauf-2-MEDIUM-1: die Vorfassung buchte
-      §4-5 weiter auf den Canvas und hob damit die Kern-Korrektur an ihrer Vollzugs-Stelle wieder
-      auf) · `test_main_window.cpp` (§4-5a, §4-9) · **ein Test, der Canvas und Viewer-Surrogat an
-      denselben Dienst hängt** (§4-4, §4-10 — Lauf-2-MEDIUM-3: die verschärfte Zeile hatte keinen
-      Ort).
+      bestehenden Bounding-Box) · **Test der neuen Senke (§4-5 UND §4-7)**, denn dort wird der
+      Ausgang festgestellt, nicht im Canvas · `test_main_window.cpp` (§4-5a, §4-9) · **ein Test, der
+      Canvas und Viewer-Surrogat an denselben Dienst hängt** (§4-4, §4-10).
 - [ ] **Orakel §4-1 bis §4-10 (inkl. 5a, 8, 8a) je mit roter Gegenprobe** im Closure-Text,
       **einzeln** gemessen — **zehn Zeilen tragen einen eigenen Sensor**; §4-11 und §4-12 sind
       **Netz** und werden als solches benannt, nicht als Beleg gebucht.
 - [ ] **`make a-check` grün** — **mit** ausgeschriebener Aussage, ob eine neue Kante entstanden ist
       (R1). **Kein** Kern-/Persistenz-/Export-/Schema-Diff, am `git diff --stat` belegt.
-- [ ] **Benutzerhandbuch — VIER Stellen, nicht zwei** (Lauf-2-MEDIUM-4): §4.2 bekommt den
-      Wand-Modus; §1 „Heute möglich" **und** der Satz „ein Gebäude selbst planen … noch NICHT
-      möglich" (zu **präzisieren**: Wände ja, andere Bauteile nein — nicht zu streichen); die
-      4.1-Aufgaben-Tabelle; **§3** („vier Wege, mit einem Gebäude zu arbeiten" — zwei Stellen dort
-      werden falsch) und die **FAQ**-Antwort „Kann ich in der Oberfläche Wände zeichnen? — Noch
-      nicht." Handbuch-Version + Änderungshistorie.
-      **Dieselbe Fehlerklasse stand seit der Fang-Lieferung unbemerkt im Lastenheft** — deshalb wird
-      hier **gesucht**, nicht aufgezählt, was gerade einfällt.
+- [ ] **Benutzerhandbuch — VIER Stellen:** §4.2 (Wand-Modus) · §1 „Heute möglich" **und** der Satz
+      „ein Gebäude selbst planen … noch NICHT möglich" (**präzisieren**: Wände ja, andere Bauteile
+      nein) · die 4.1-Aufgaben-Tabelle · **§3** („vier Wege …", zwei Stellen) und die **FAQ**-Antwort
+      „Kann ich in der Oberfläche Wände zeichnen? — Noch nicht." Plus Version + Änderungshistorie.
+      **Hier wird gesucht, nicht aufgezählt** — dieselbe Fehlerklasse stand seit der Fang-Lieferung
+      unbemerkt im Lastenheft.
 - [ ] **[ADR-Index](../../adr/README.md)**: die „Zeichnen-Slice"-Folgepflichtzeile auf **erfüllt**.
 - [ ] **Lastenheft/Spezifikation: am Artefakt prüfen, ob etwas fehlt** — beides hat
       [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md) geliefert, aber **nicht pauschal
@@ -227,9 +187,8 @@ Neu-Einrahmen**). **Die Zusage deckt genau so weit, wie sie messen kann, und sag
       unter `docs/reviews/`** je Lauf.
 - [ ] **`make gates` grün** (inkl. Ruhe-Marker-Toggle beim `git mv`,
       [MR-017](../../../../harness/conventions.md)); **`make io-smoke` grün**;
-      **`make acc-002-beleg` grün** — **Begründung präzisiert** (Lauf-1-LOW-2): nicht weil „die
-      3D-Kette berührt" würde (sie ist Bestand), sondern weil der Beleg das **Demo-Modell** rendert,
-      dessen Aufbau im Composition-Root liegt — und dieser Slice ändert dort die Verdrahtung.
+      **`make acc-002-beleg` grün** — nötig, weil der Beleg das **Demo-Modell** rendert, dessen
+      Aufbau im Composition-Root liegt, und dieser Slice dort die Verdrahtung ändert.
 
 ## 6. Plan (vor Code)
 
@@ -242,16 +201,15 @@ Neu-Einrahmen**). **Die Zusage deckt genau so weit, wie sie messen kann, und sag
 | `tests/adapters/test_canvas_widget.cpp` | ändern | §4-1..4, 6, **8, 8a** |
 | `tests/adapters/test_main_window.cpp` | ändern | §4-5a, §4-9 |
 | `tests/adapters/`-Test der Wand-Senke `.{cpp}` | neu | §4-5 und §4-7 (der Ausgang wird **dort** festgestellt) |
-| `tests/adapters/`-Test, der Canvas **und** Viewer-Surrogat an denselben Dienst hängt | neu/ändern | §4-4 und §4-10 (Lauf-2-MEDIUM-3: die Zeile hatte keinen Ort) |
+| `tests/adapters/`-Test, der Canvas **und** Viewer-Surrogat an denselben Dienst hängt | neu/ändern | §4-4 und §4-10 |
 | `tests/CMakeLists.txt` | ändern | neue Testdatei |
 | `docs/user/benutzerhandbuch.md` | ändern | **vier Stellen** (§4.2 · §1 inkl. „noch NICHT möglich" · 4.1-Tabelle · §3 und die FAQ) + Version |
 | `docs/plan/adr/README.md` | ändern | Folgepflichtzeile |
 | `CHANGELOG.md` | ändern | [Unreleased] |
 | `docs/reviews/`-Report | neu | das [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) vor dem Start |
 
-**Nicht berührt** (Lauf-1-LOW-3: `spec/**` steht hier **unter Vorbehalt** der DoD-Zeile „am Artefakt
-prüfen, ob etwas fehlt" — Lauf 1 hat geprüft und **Vollständigkeit festgestellt**; ändert sich das im
-Vollzug, gewinnt die DoD-Zeile): `src/hexagon/**`, `src/adapters/io/**`, `src/adapters/persistence/**`, `spec/**`,
+**Nicht berührt** (`spec/**` steht **unter Vorbehalt** der DoD-Zeile „am Artefakt prüfen, ob etwas
+fehlt" — geprüft und vollständig befunden; ändert sich das im Vollzug, gewinnt die DoD-Zeile): `src/hexagon/**`, `src/adapters/io/**`, `src/adapters/persistence/**`, `spec/**`,
 `data-model.yaml`/`schema.sql`, `docs/plan/adr/0021-wand-im-2d-canvas.md`.
 
 ## 7. Risiken
@@ -261,21 +219,16 @@ Vollzug, gewinnt die DoD-Zeile): `src/hexagon/**`, `src/adapters/io/**`, `src/ad
   `command/ → view/`-Include ihn verletzt, ist am Gate abzulesen. Präzedenz für die Bauart der
   Entscheidung: der Canvas-Slice hat drei Optionen verglichen und die **gate-freie** gewählt, statt
   die Regel zu weiten.
-- **R2a — E12 nennt ZWEI Abbruch-Auslöser** (Lauf-1-LOW-1): Escape **und** Fokusverlust. Der Plan
-  sagte nur „Gesten-Abbruch" — beide sind umzusetzen, und §4-6 prüft **beide** Wege einzeln.
+- **R2a — E12 nennt ZWEI Abbruch-Auslöser:** Escape **und** Fokusverlust. Beide sind umzusetzen,
+  §4-6 prüft **beide** Wege einzeln.
 - **R2 — der Refresh ist gegenläufig zum Vorgänger.** Wer den Hilfslinien-Zug kopiert, baut einen
-  zweiten Refresh ein. **Kontrolliert wird das über die Gegenprobe zu Orakel-Zeile 8** (§2.4): bleibt
-  sie grün, obwohl die Beobachter-Anmeldung entfernt wurde, gibt es einen Selbst-Refresh. **Der
-  Verweis zeigte in der Vorfassung auf eine Zeile, die es zu diesem Zeitpunkt gar nicht mehr gab**
-  (Lauf-3-HIGH-1) — dieselbe Bauart „Prosa korrigiert, Vollzugs-Zeile stehen gelassen", nur
-  spiegelverkehrt.
-- **R3a — eine gezeichnete Wand KANN die Abbildung verschieben** (präzisiert nach Lauf-2-LOW-1: **nicht
-  jede** tut es — nur eine, die die Bounding-Box ändert). Anders als eine Hilfslinie meldet sie
-  einen `op`; der Canvas rahmt daraufhin **neu ein**, und Bildschirm↔mm verschiebt sich. **Jede
-  Fixture mit aufeinanderfolgenden Zügen muss ihre Positionen nach JEDEM Zug neu aus der
-  Transformation rechnen** (Lauf-1-MEDIUM-3) — hartcodierte Pixel aus dem Hilfslinien-Muster wären
-  ab dem zweiten Zug falsch. **Das ist eine neue Ursache derselben Fixture-Klasse wie R4, nicht
-  dieselbe.**
+  zweiten Refresh ein. **Kontrolle: die Gegenprobe zu Orakel-Zeile 8** (§4) — bleibt sie grün,
+  obwohl die Beobachter-Anmeldung entfernt wurde, gibt es einen Selbst-Refresh.
+- **R3a — eine gezeichnete Wand KANN die Abbildung verschieben** (nur eine, die die Bounding-Box
+  ändert). Anders als eine Hilfslinie meldet sie einen `op`; der Canvas rahmt **neu ein**, und
+  Bildschirm↔mm verschiebt sich. **Jede Fixture mit aufeinanderfolgenden Zügen muss ihre Positionen
+  nach JEDEM Zug neu aus der Transformation rechnen** — hartcodierte Pixel aus dem
+  Hilfslinien-Muster wären ab dem zweiten Zug falsch. Neue Ursache derselben Fixture-Klasse wie R4.
 - **R3 — das Demo-Modell hat zwei Geschosse mit deckungsgleichen Wänden.** Für **dieses** Slice
   harmlos (gezeichnet wird ins **aktive** Geschoss), aber die Fixture darf daraus keine
   Scheinsicherheit ziehen: eine neue Wand ist an ihrer **Geschoss-Id** zu prüfen, nicht nur an der
@@ -285,9 +238,7 @@ Vollzug, gewinnt die DoD-Zeile): `src/hexagon/**`, `src/adapters/io/**`, `src/ad
   asynchron hergestelltem Zustand abhängen, ist manchmal richtig** — und ein Orakel, das nur manchmal
   misst, täuscht Grün vor.
 - **R5 — das Handbuch wird teil-unwahr.** „Ein Gebäude selbst planen ist noch NICHT möglich" stimmt
-  nach diesem Slice für **Wände** nicht mehr. Präzisieren, nicht streichen — und **nicht vergessen**:
-  dieselbe Klasse Fehler stand seit der Fang-Lieferung unbemerkt im Lastenheft, bis ein Nachzug sie
-  zufällig aufdeckte.
+  nach diesem Slice für **Wände** nicht mehr. Präzisieren, nicht streichen.
 
 ## 8. Trigger
 
@@ -362,11 +313,6 @@ Reviewer ≠ Plan-Autor ≠ Reviewer des ersten Laufs.
 
 **Positiv bestätigt:** der **Schnitt** trägt · **Variante B trägt am Gate** (Baseline `make a-check`
 = 0) · vier der sechs Lauf-1-Behandlungen sind substanziell.
-
-> **Die Lehre dieses Slice, zweimal bezahlt:** ich habe zwei Sensoren erfunden, weil ich zwei
-> **Instrumente** hatte — den Pull-Zähler und die Tinten-Sonde. Beide sind **situationsgebunden**.
-> Dass ein Instrument anderswo getragen hat, ist **kein Argument** dafür, dass es hier trägt; das
-> entscheidet die Messung — **vor** der Zusage, nicht im Review danach.
 
 **Startbar:** **nein.** Zwei HIGH verlangen einen **dritten** Lauf. Sein Schwerpunkt ist eng: **ist
 Zeile 5a in ihrer neuen, pixel-freien Form diskriminierend** — und **hält die Streichung von Zeile 8
