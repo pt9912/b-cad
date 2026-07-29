@@ -63,6 +63,33 @@ ist **zurückgenommen** — es terminiert nicht. Die Abbruchregel lautet **0 HIG
 Vollständigkeitslast trägt das **ADR-Text-Review** (dort stehen ausformulierte Entscheidungen statt
 Überschriften), und `Proposed` hält sie bis `Accepted` änderbar.
 
+### Beobachtung des Projektinhabers: der Plan verrauscht mit jeder Einarbeitung (2026-07-29)
+
+**Befund am Artefakt:** `slice-058` trug nach drei
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufen
+im **Anweisungsteil** (§1–§10)
+Sätze wie „Zeile 8 gibt es wieder — in ihrer dritten und diesmal gemessenen Form", Fassungs-
+Geschichten einzelner Orakel-Zeilen und `Lauf-N-MEDIUM-x`-Zuordnungen in Tabellenzellen. **Der Plan
+erzählte, wie er entstanden ist, statt zu sagen, was zu bauen ist.**
+
+**Der Schnitt, der jetzt gilt:**
+
+| gehört in §1–§10 (Bauplan) | gehört in §11x / `docs/reviews/` / git (Chronik) |
+|---|---|
+| die Zusicherung, die Komponente, die Gegenprobe | **welcher Lauf** sie gefunden hat |
+| **Messwerte, die den Bau steuern** (Vorbedingungen, Toleranzen, Gate-Kanten) | wie oft eine Zeile umformuliert wurde |
+| benannte Grenzen der Zusage | die Lehre daraus |
+
+**Warum das nicht bloß Kosmetik ist:** ein Plan wird **beim Bauen gelesen**, und zwar quer. Jede
+Zeile Chronik zwischen zwei Anweisungen erhöht die Chance, dass die Anweisung überlesen wird — genau
+die Fehlerklasse, die dieser Slice siebenmal produziert hat („Prosa korrigiert, Vollzugs-Zeile stehen
+gelassen"). **Die Einarbeitungs-Abschnitte bleiben vollständig** — die Nachvollziehbarkeit der
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Kette
+ist Prozess-Pflicht; sie hat nur ihren eigenen Ort.
+
+**Zähler: 1.** Wenn dieselbe Verrauschung ein zweites Mal auffällt, ist sie zu kategorisieren; beim
+dritten Mal Regel-Kandidat.
+
 ### Regel-Kandidat: Konsequenzen-Blöcke gelesener ADRs (Zähler: **2**, noch keine MR)
 
 > **Ein Plan, der auf einer `Accepted`-ADR aufbaut, liest deren Konsequenzen-, Re-Eval- und
