@@ -93,12 +93,31 @@ Selbstschnitt liegt **genau dann** vor, wenn `len < |s − e|`. Haben `s` und `e
 Vorzeichen**, gleichen sie sich aus; ein Stumpf-Setzen (`s := 0`) nimmt diesen Ausgleich weg und
 `|s − e|` **wächst**.
 
-**Daraus folgt: ein einzelner Prüf-Schritt genügt nicht.** Der Footprint wird über eine **endliche,
-geordnete Kandidaten-Liste** bestimmt — `(gemitert, gemitert)` → `(gemitert, stumpf)` →
-`(stumpf, gemitert)` → `(stumpf, stumpf)`; der **erste** Kandidat, dessen Polygon den
-Kantenrichtungs-Erhalt besteht, gewinnt. Der letzte ist das stumpfe Referenz-Polygon und besteht
-**immer**. **Das terminiert nachweislich** (vier Kandidaten, feste Reihenfolge) und ist total — die
-Zusage aus §1 gilt damit für das **Ergebnis**, nicht für einen Zwischenschritt.
+**Daraus folgt: ein einzelner Prüf-Schritt genügt nicht.** Der Footprint wird über eine **endliche
+Kandidaten-Menge** bestimmt: beide Ecken gemitert · **die tiefere** Ecke stumpf · **die flachere**
+Ecke stumpf · beide stumpf. Der **erste** Kandidat dieser Ordnung, dessen Polygon den
+Kantenrichtungs-Erhalt besteht, gewinnt; der letzte ist das stumpfe Referenz-Polygon und besteht
+**immer**. **Das terminiert nachweislich** (vier Kandidaten, feste Ordnung) und ist total.
+
+**Die Ordnung hängt an einer RICHTUNGSFREIEN Größe, nicht an der Speicher-Reihenfolge** — das ist
+der Kern dieser Entscheidung, und die erste Fassung hatte ihn falsch. Sie schrieb
+`(gemitert, stumpf)` vor `(stumpf, gemitert)`, ohne zu sagen, welche Ecke Slot 1 ist; die einzige
+natürliche Zuordnung im Code ist die **Speicher-Reihenfolge der Endpunkte**. Gemessen (Lauf 2):
+in **45 172** von 2 916 000 Lagen sind beide Teil-Kandidaten gültig **und verschieden** — und die
+rückwärts gespeicherte Wand liefert dort **ein anderes Polygon**. Dieselbe physische Wand, zwei
+Formen, je nachdem, in welcher Richtung sie gezeichnet wurde. **Die Fläche bleibt dabei identisch**
+(maximale Differenz 0,0 mm²) — Volumen, Auswertung und Golden hätten es also **nicht** gemerkt.
+
+**Entschieden: es fällt die Ecke mit dem größeren Längsversatz zuerst** — `|s|` gegen `|e|`, eine
+Eigenschaft der **Lage** (Stärken, Winkel), nicht der Speicherung. Sie ist es auch, die den Kollaps
+verursacht (`len < |s − e|`), also fällt der Rückfall dort, wo er wirkt. **Bei exakter Gleichheit**
+(symmetrische Lage) sind beide Teil-Kandidaten deckungsgleich-in-der-Wirkung; dann entscheidet die
+Ordnung nichts mehr — das ist zu **messen**, nicht anzunehmen (§4-4b).
+
+**Der [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Report
+hat die Richtungs-Unabhängigkeit der Wand-Geometrie als Negativbefund ausdrücklich gemessen.** Dieser
+Slice darf sie nicht zurücknehmen — schon gar nicht unbemerkt, weil die flächen-basierten Orakel
+blind dafür sind.
 
 **(b) Der Rückfall ist LOKAL, nicht symmetrisch — entgegen der ersten Fassung dieses Plans.** Die
 erste Fassung wollte: kollabiert die Ecke für eine der beiden Wände, enden **beide** dort stumpf.
@@ -152,12 +171,13 @@ nicht hält.
 
 | # | Zusicherung | Wo geprüft | Diskriminierende Gegenprobe |
 |---|---|---|---|
-| 1 | **Das Kollaps-Kriterium ist rein und diskriminiert exakt** — Kantenrichtungs-Erhalt. **Die Zahlenreihe gilt nur mit ihrer Fixture:** `len` 600/241/240 ⇒ erhalten, 239/121/120/119/100 ⇒ umgekehrt **in der ZWEI-Ecken-Lage** (Nachbarn an beiden Enden, Stärke 240, rechtwinklig); in der Ein-Eck-Lage sind 241/240/239/121 **alle** erhalten. **Und der Tie-Break gehört entschieden:** bei `len = 240` ist das Skalarprodukt **exakt 0** — `room_detection.cpp` nutzt dort `<= 0`; dieselbe Konvention ist zu übernehmen und in der Zeile zu nennen, sonst kippt sie an der Schwelle | Kern-Test, **ohne** Qt/OCC (Bauform `test_wall_footprint.cpp`) | Flächen- statt Richtungs-Kriterium ⇒ rot (die Bowtie-Fläche ist unauffällig: `24 000 mm²`, derselbe Wert wie beim stumpfen Rechteck) |
+| 1 | **Das Kollaps-Kriterium ist rein und diskriminiert exakt** — Kantenrichtungs-Erhalt. **Die Zahlenreihe gilt nur mit ihrer Fixture:** `len` 600/241/240 ⇒ erhalten, 239/121/120/119/100 ⇒ umgekehrt **in der ZWEI-Ecken-Lage** (Nachbarn an beiden Enden, Stärke 240, rechtwinklig); in der Ein-Eck-Lage sind 241/240/239/121 **alle** erhalten. **Und der Tie-Break entscheidet die Zeile mit:** bei `len = 240` ist das Skalarprodukt **exakt 0,0**. Die Konvention ist die von `room_detection.cpp` (`<= 0` ⇒ **umgekehrt**) — **dann gehört 240 auf die Seite „umgekehrt", nicht wie in der ersten Fassung auf „erhalten"**; der Widerspruch lag in meiner eigenen Zeile | Kern-Test, **ohne** Qt/OCC (Bauform `test_wall_footprint.cpp`) | Flächen- statt Richtungs-Kriterium ⇒ rot (die Bowtie-Fläche ist unauffällig: `24 000 mm²`, derselbe Wert wie beim stumpfen Rechteck) |
 | 2 | **Ein gemitertes Eck: unterhalb der Schwelle wird stumpf** — der Footprint ist danach **nicht** selbstschneidend | Kern-Test, Fixture rechter Winkel, Stärken 240 (Schwelle dort 120 mm) | Rückfall entfernt ⇒ rot (Selbstschnitt) |
 | 3 | **Zwei gemiterte Ecken haben eine ANDERE Schwelle als eine** — die Kombination, die eine Pro-Ecke-Prüfung verpasst | Kern-Test, Nachbarn an **beiden** Enden | Prüfung pro Ecke statt am Polygon ⇒ rot bei `len = 239` (rechtwinklig, 240) |
-| 3a | **Die Schwelle ist KEINE feste Zahl** — sie hängt an Winkel **und** Stärken: rechtwinklig/gleich dick liegt sie bei 120 bzw. 240 mm, bei θ = 120° schon bei **207,75** mm, und bei Nachbarn 240/1000 bei **619,75** mm = (t₁+t₂)/2 (Lauf-1-Messung). **Die Orakel dürfen keine Zahlen einsetzen, sondern müssen die Schwelle aus der Lage bestimmen** — oder relativ prüfen (knapp darunter ⇒ stumpf, knapp darüber ⇒ gemitert) | Kern-Test über einen kleinen Winkel-/Stärke-Sweep | Schwelle als Konstante gerechnet ⇒ rot bei θ ≠ 90° |
-| 4 | **Was der Rückfall WIRKLICH zusagt** — beide Wände liefern ein **gültiges** Polygon (nicht selbstschneidend), die kurze das **stumpfe Referenz-Polygon**, und der Nachbar bleibt **unverändert** gegenüber der Lage ohne Kollaps. **Ausdrücklich NICHT zugesagt: Nahtlosigkeit** — sie ist bei zwei stumpfen Enden geometrisch unmöglich (§2.3), und ein Orakel, das sie verlangte, könnte nie grün werden | Kern-Test: Polygon-Vergleich gegen `buttFootprint` **und** gegen den unveränderten Nachbar-Footprint | Kandidaten-Suche entfernt ⇒ rot; Rückfall auch beim Nachbarn ⇒ rot (er darf sich **nicht** ändern) |
-| 4a | **Die Kandidaten-Suche ist abgeschlossen** — nach dem Rückfall an **einer** Ecke ist der Footprint **wieder** zu prüfen; die im Lauf 1 gemessene Lage (A 100 mm/240 zwischen Nachbarn 300 und 200, rechtwinklig) liefert **kein** selbstschneidendes Polygon mehr | Kern-Test mit **genau dieser** Lage | Einzelner Prüf-Schritt statt Kandidaten-Liste ⇒ rot (`minDot` kippt von +5000 auf −5000) |
+| 3a | **Die Schwelle ist KEINE feste Zahl** — sie hängt an Winkel **und** Stärken: rechtwinklig/gleich dick liegt sie bei 120 bzw. 240 mm, bei θ = 120° schon bei **207,75** mm, und bei Nachbarn 240/1000 bei **619,75** mm (Lauf-1-Messung; ein **Messwert**, keine Formel — `(t₁+t₂)/2` = 620 trifft ihn nur zufällig nahe). **Die Orakel dürfen keine Zahlen einsetzen, sondern müssen die Schwelle aus der Lage bestimmen** — oder relativ prüfen (knapp darunter ⇒ stumpf, knapp darüber ⇒ gemitert) | Kern-Test über einen kleinen Winkel-/Stärke-Sweep | Schwelle als Konstante gerechnet ⇒ rot bei θ ≠ 90° |
+| 4 | **Was der Rückfall WIRKLICH zusagt** — (a) das Ergebnis-Polygon ist **gültig** (nicht selbstschneidend); (b) es ist **derjenige Kandidat**, den die Ordnung aus §2.3 bestimmt — **nicht** notwendig das stumpfe Referenz-Polygon (in der Zwei-Ecken-Lage `len = 239` gewinnt gemessen ein **Teil**-Kandidat, die erste Fassung dieser Zeile war dort falsch); (c) der **Nachbar bleibt unverändert**. **Ausdrücklich NICHT zugesagt: Nahtlosigkeit** — bei zwei stumpfen Enden geometrisch unmöglich (§2.3), ein Orakel dafür könnte nie grün werden | Kern-Test: Vergleich gegen den **erwarteten Kandidaten** (je Fixture benannt) und gegen den unveränderten Nachbar-Footprint | Kandidaten-Ordnung entfernt ⇒ rot; Rückfall auch beim Nachbarn ⇒ rot (er darf sich **nicht** ändern) |
+| 4a | **Die Kandidaten-Menge braucht ALLE VIER Einträge** — je eine Fixture, in der **K2**, **K3** bzw. **K4** gewinnt. Gemessen (Lauf 2, Sweep über 1 458 000 Lagen): K2 gewinnt in **76 140**, K3 in **53 617**, K4 in **27 538** Lagen — die Familie ist real, nicht konstruiert | Kern-Test, drei benannte Lagen | **Liste auf `K1 → K4` verkürzt ⇒ rot** in den K2- und K3-Fällen. **Die erste Fassung dieser Zeile prüfte eine Lage, die gar nicht zurückfällt** (K1 ist dort gültig) — ihre Gegenprobe war unter der lokalen Regel **nicht erzeugbar**, und eine Umsetzung mit zwei Kandidaten hätte den ganzen Orakel-Satz bestanden |
+| 4b | **Die Wand-Geometrie ist richtungsunabhängig** — dieselbe physische Wand liefert dasselbe Polygon, gleich in welcher Richtung ihr Segment gespeichert ist. Der [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Report hat das als Bestands-Eigenschaft **gemessen**; dieser Slice darf sie nicht zurücknehmen | Kern-Test: eine der 45 172 gemessenen Lagen, vorwärts und rückwärts gespeichert | Ordnung an der Speicher-Reihenfolge statt am Längsversatz ⇒ rot. **Kein flächen-basiertes Orakel fängt das** — die Fläche ist in allen Lagen **exakt gleich** (max. Differenz 0,0 mm²) |
 | 5 | **Der ausgelieferte Wand-Körper ist geschlossen und konsistent orientiert** — **zwei** Sonden, weil eine nicht genügt: (a) Kanten-Manifold (jede gerichtete Kante hat ihre Gegenkante) **und** (b) signiertes Netz-Volumen == `Solid.volume_mm3` | Adapter-Test am echten OCC-Netz | Kollaps-Prüfung entfernt ⇒ rot. **Die Divergenz-Sonde ALLEIN hätte HIGH-1 nicht gefangen** (gemessen): die Normalensumme bleibt 0, weil sich die zwei gegenläufigen Lappen auslöschen — deshalb ist (b) Pflicht, nicht Kür |
 | 6 | **Eine zulässige Stärken-Änderung beschädigt keine fremde Wand** — die exakte Reproduktion des Review-Wegs: drei Wände, `setWallThickness(lange Wand, 1000)`, die **nicht angefasste** kurze Wand bleibt gesund | Dienst-Test (Kern + OCC) | Kollaps-Prüfung entfernt ⇒ rot (12 → 8 Dreiecke an der fremden Wand, gemessen) |
 | 7 | **Die drei Volumen-Wege stimmen überein** — `Solid.volume_mm3`, das analytische Auswertungs-Volumen und das signierte Netz-Volumen | Adapter-Test | Kollaps-Prüfung entfernt ⇒ rot (33 % Differenz im kaputten Fall). Auf gesunder Geometrie stimmen alle drei **exakt** (Review-Messung über sechs Zug-Richtungen) |
@@ -165,7 +185,7 @@ nicht hält.
 | 9 | **Der Eckenschluss des interaktiven Pfads wird an der ECKE geprüft, nicht an Koordinaten** (MEDIUM-2) — zwei Züge, ein **Grad-2**-Knoten, Abtast-Sonde auf Dichtheit | `CanvasWidget`-Test. **Fixture-Vorbedingung:** die Zug-Enden dürfen **nicht** auf einem Endpunkt der Fixture-Wände landen — sonst entsteht ein Grad-3-Knoten, an dem die Spezifikation **stumpfe** Enden vorschreibt und gar keine Ecke zu prüfen ist (der Bestands-Test tut genau das) | Eck-Konstruktion im Kern umgangen ⇒ rot |
 | 10 | **Der Bestand bleibt unverändert** — Footprint-, Raum-, Auswertungs-, Export- und Persistenz-Orakel | Bestands-Orakel | (Regressions-Netz) |
 
-**Elf Zeilen tragen einen eigenen Sensor** (1–9 inkl. 3a und 4a), eine ist **Netz** (10).
+**Zwölf Zeilen tragen einen eigenen Sensor** (1–9 inkl. 3a, 4a und 4b), eine ist **Netz** (10).
 
 **Was ausdrücklich KEIN eigenes Orakel bekommt:** die Adapter-seitige Degenerations-Prüfung
 (`isDegenerate`, MEDIUM-3). Sie bleibt **unverändert**; dass sie den Selbstschnitt nicht sehen **kann**,
@@ -192,9 +212,27 @@ Polygon mehr.
       den Miter-Limit-Rückfall selbst verwendet** („sonst enden beide Wände stumpf"), also
       **benutzer-beobachtbar und lösungsfrei**
       ([MR-008](../../../../harness/conventions.md#mr-008--lastenheft-schärfung-bleibt-lösungsfrei)):
-      *„Given eine Wand, die im Verhältnis zu ihren Nachbarn sehr kurz ist, then enden die Wände an
-      dieser Ecke stumpf."* **Mechanik gehört nicht hinein** — kein „Rücksprung", kein
-      „Kantenrichtungs-Erhalt". Plus **Historien-Zeile und Header-Version**
+
+      > *„Given eine Wand, die für die Ecke **zu kurz** ist — kurz im Verhältnis zu den **Wandstärken**
+      > und dem **Eckwinkel** —, when die Darstellung erzeugt wird, then wird an dieser Ecke **keine
+      > geschlossene Ecke** gebildet: die kurze Wand endet **stumpf**, die andere behält ihre Form."*
+
+      **Zwei Korrekturen gegenüber der ersten Fassung, beide gemessen** (Lauf 2): (1) **kein Plural.**
+      Sie lautete „then enden **die Wände** … stumpf" — übernommen vom Miter-Limit-Vorbild, das
+      **symmetrisch** ist. Der Kollaps-Rückfall ist **lokal**: der Nachbar behält gemessen seinen
+      Eck-Sporn (`wallFootprint(N) ≠ buttFootprint(N)`), und §4-4 verlangt ausdrücklich, dass er ihn
+      behält. **Vertrags-Zeile und eigenes Orakel hätten einander ausgeschlossen.** (2) **Die
+      Bezugsgröße stimmte nicht.** „Im Verhältnis zu ihren **Nachbarn**" verfehlt den Fall: der
+      Rückfall greift gemessen noch bei **850 mm** Länge gegen 50-mm-Nachbarn (Faktor 17) — die
+      Schwelle hängt an der **eigenen** Stärke, der **Nachbar**-Stärke **und** dem **Winkel**.
+      **Die zweite Zusagen-Stelle ist geprüft, nicht übersehen:**
+      [LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen) „Happy Path
+      (Verbinden)" sagt „die Darstellung zeigt eine **geschlossene Ecke**" und verweist dabei
+      **parenthetisch** auf [LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)
+      — sie erbt dessen Boundary-Block, die neue Ausnahme ist damit gedeckt. **Der Deckungs-Weg steht
+      hier, statt dass die Stelle schweigend übergangen wird**; sie ist die AK, die §4-8/§4-9 im
+      interaktiven Pfad prüfen. **Mechanik gehört trotzdem nicht hinein** — kein „Rücksprung", kein „Kantenrichtungs-Erhalt",
+      keine Formel. Plus **Historien-Zeile und Header-Version**
       ([MR-010](../../../../harness/conventions.md) — Header-Version == oberste Historie-Zeile).
 - [ ] **`spec/spezifikation.md`**: der Block „Begrenzung und Rückfälle" von
       [`LH-FA-WAL-006.a`](../../../../spec/spezifikation.md#lh-fa-wal-006a--eckenschluss-footprint-regel-teilumfang) bekommt
@@ -204,7 +242,8 @@ Polygon mehr.
       lebt die Mechanik, nicht im Lastenheft.
 - [ ] **Tests**: `tests/hexagon/test_wall_footprint.cpp` (§4-1..4) · `tests/adapters/test_occ_geometry_adapter.cpp`
       (§4-5, §4-7 — die **ersten** Invarianten-Sonden für Wand-Netze im Repo) ·
-      `tests/hexagon/test_structure_edit_service.cpp` oder ein neuer Dienst-Test (§4-6) ·
+      ein Dienst-Test im **OCC-fähigen** Adapter-Ziel (§4-6 — **nicht** `tests/hexagon/`: das
+      Kern-Testziel ist dependency-frei, und die Zeile zählt Dreiecke am echten OCC-Netz) ·
       `tests/adapters/test_canvas_widget.cpp` (§4-8, §4-9).
 - [ ] **Die Invarianten-Sonde wird wiederverwendbar abgelegt** (MEDIUM-1): Kanten-Manifold **und**
       Volumen-Übereinstimmung als Test-Helfer, damit die nächste Bauteil-Familie sie nicht neu
@@ -221,7 +260,9 @@ Polygon mehr.
 - [ ] **`make acc-002-beleg` grün**; das Bild wird **nicht** committet (Abnahme-Artefakt von
       [`slice-012`](../done-archive/slice-012-eckenschluss-wal006-teil.md)).
 - [ ] **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Report
-      nachgezogen**: HIGH-1 und MEDIUM-1/2/3 als **behoben** vermerkt, mit Verweis auf die Orakel.
+      nachgezogen**: HIGH-1 sowie MEDIUM-1 und MEDIUM-2 als **behoben**, **MEDIUM-3 als
+      gegenstandslos** (die Adapter-Prüfung bleibt, wie sie ist — sie ist nur nie mehr der letzte
+      Halt). Je mit Verweis auf die Orakel.
 - [ ] **Die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Abweichung
       wird VERANKERT, nicht nur erwähnt** (Lauf-1-MEDIUM-5): sie steht heute nur in zwei
       Slice-Dateien. Sie gehört in die **Roadmap** (Wellen-Block) und in das **Wellen-Ergebnis** —
@@ -237,7 +278,7 @@ Polygon mehr.
 
 | Datei / Komponente | Art | Begründung |
 |---|---|---|
-| `src/hexagon/services/geometry/wall_footprint.cpp` | ändern | Kollaps-Kriterium + symmetrischer Rückfall |
+| `src/hexagon/services/geometry/wall_footprint.cpp` | ändern | Kollaps-Kriterium + **lokaler** Rückfall über die Kandidaten-Ordnung (§2.3) |
 | `spec/lastenheft.md` | ändern | neue Boundary-Zeile bei [LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden) + Historie + Header-Version |
 | `spec/spezifikation.md` | ändern | dritter Rückfall im Eckenschluss-Block ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden).a) |
 | `tests/hexagon/test_wall_footprint.cpp` | ändern | §4-1..4 |
@@ -257,10 +298,12 @@ symmetrische Variante ihn angefasst hätte), `data-model.yaml`/`schema.sql`, all
 
 ## 7. Risiken
 
-- **R1 — der Rückfall ist ENTSCHIEDEN, aber seine Abgeschlossenheit bleibt das Risiko** (§2.3). Die
-  Kandidaten-Liste terminiert per Konstruktion; **dass sie in jeder Lage ein gültiges Polygon
-  liefert, ist zu messen** — der letzte Kandidat (stumpf/stumpf) ist immer gültig, aber die Reihenfolge
-  entscheidet, welcher gewinnt, und eine falsch geordnete Liste liefert unnötig oft stumpf.
+- **R1 — die Kandidaten-Menge ist ENTSCHIEDEN; das Risiko ist ihre ORDNUNG.** Dass sie total ist,
+  hat Lauf 2 gemessen (`buttFootprint` in 12 862 500 geprüften Kandidaten **nie** selbstschneidend,
+  keine Lage ohne gültigen Kandidaten — auch bei 0,11 mm Länge und 10¹²-Koordinaten). Offen bleibt
+  die **Richtungsfreiheit**: die Ordnung hängt jetzt am Längsversatz statt an der Speicher-Reihenfolge
+  (§2.3), und **bei exakter Gleichheit** der beiden Versätze ist zu messen, dass die Ordnung dann
+  nichts mehr entscheidet (§4-4b).
 - **R2 — der Fix ändert Geometrie im Bestand.** Der Rückfall greift genau dort, wo bisher ein
   kaputtes Polygon entstand — **aber das ist zu belegen, nicht anzunehmen**: `make golden-check`
   byte-identisch und die Auswertungs-Orakel unverändert. **Ein Byte Abweichung ist ein Befund.**
@@ -292,7 +335,9 @@ symmetrische Variante ihn angefasst hätte), `data-model.yaml`/`schema.sql`, all
 - §4-1 bis §4-9 grün + **je einzeln** diskriminierend belegt; §4-10 als Netz grün; `make gates`,
   `make io-smoke`, `make golden-check` und `make acc-002-beleg` grün; Spec-Nachzug vollzogen;
   [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Report
-  auf „behoben" nachgezogen; Closure-Notiz.
+  auf „behoben" nachgezogen — **MEDIUM-3 dabei ehrlich**: die Adapter-Prüfung `isDegenerate` bleibt
+  **unverändert** (§2.2); der Befund ist **gegenstandslos**, weil der Kern kein solches Polygon mehr
+  liefert, **nicht behoben**. Closure-Notiz.
 - **Danach ist die Welle closure-fähig** — mit der **benannten Vertagung** von HIGH-2
   ([`slice-061`](slice-061-eckenschluss-ungleiche-hoehen.md)), die im Wellen-Ergebnis als
   **Abweichung von [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)**
@@ -340,11 +385,43 @@ Analytisch belegt: Stirnkanten können nie umkehren, Längskanten kehren **genau
 `len < |s − e|` — dieselbe Bedingung wie der Stirnkanten-Schnitt. **Die Grundlage des Slice steht;
 falsch war, was ich daraus gebaut habe.**
 
-**Startbar:** **nein.** Drei HIGH sind eingearbeitet, davon zwei mit **umgedrehter** Entscheidung —
-das verlangt eine unabhängige Prüfung der Einarbeitung. Auftrag an Lauf 2, eng: **ist die
-Kandidaten-Liste in der richtigen Reihenfolge und liefert sie in jeder Lage ein gültiges Polygon —
-und misst §4-4 jetzt eine Zusage, die die lokale Bauart auch halten kann?** Zusätzlich: **ist die
-neue Lastenheft-Zeile lösungsfrei und deckt sie den Fall vollständig?**
+**Startbar nach Lauf 1:** nein.
+
+## 11a. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (zweiter Lauf, 2026-07-29)
+
+Report: [`2026-07-29-slice-060-plan-2.md`](../../../reviews/2026-07-29-slice-060-plan-2.md) —
+**2 HIGH / 6 MEDIUM / 5 LOW / 3 INFO + 10 Negativbefunde, „nicht startbar"**. Unabhängiger Reviewer,
+verschieden von Autor und Lauf 1.
+
+**Beide HIGH treffen die REPARATUR, nicht mehr den ursprünglichen Entwurf** — und beide an Stellen,
+an denen ich beim Einarbeiten neue Behauptungen aufgestellt habe, ohne sie zu messen.
+
+| # | Behandlung |
+|---|---|
+| **HIGH-1** (die neue Lastenheft-Zeile sagt „then enden **die Wände** … stumpf" — unter der **lokalen** Bauart behält der Nachbar gemessen seinen Eck-Sporn, und §4-4 **verlangt** ausdrücklich, dass er ihn behält: Vertrags-Zeile und Orakel desselben Slice schlössen einander aus) | **Die Zeile ist neu formuliert — singular und beobachtbar:** „an dieser Ecke wird **keine geschlossene Ecke** gebildet: die kurze Wand endet stumpf, die andere behält ihre Form." **Den Plural hatte ich vom Miter-Limit-Vorbild übernommen — der ist symmetrisch, weil `cornerAt` dort für beide Wände dieselben Punkte rechnet. Ich habe die Formulierung übernommen und den Mechanismus nicht.** |
+| **HIGH-2** (§4-4a prüfte die Abgeschlossenheit an einer Lage, die **gar nicht zurückfällt** — K1 ist dort gültig; die zitierte Umkehr `+5000 → −5000` war der Übergang des **symmetrischen** Entwurfs und ist unter der lokalen Regel nicht erzeugbar. Eine Umsetzung mit **zwei** Kandidaten hätte den ganzen Orakel-Satz bestanden) | **Zeile neu:** drei benannte Lagen, in denen **K2**, **K3** bzw. **K4** gewinnt — der Reviewer hat die Familie über 1 458 000 Lagen vermessen (76 140 / 53 617 / 27 538). **Ich hatte die Gegenprobe aus dem alten Entwurf mitgenommen, obwohl die Bauart darunter gewechselt hatte.** |
+| **MEDIUM-1** (die Kandidaten-**Reihenfolge** war unbegründet und ihre Slots unbenannt ⇒ in der natürlichen Lesart hinge die Wand-Form an der **Speicher-Richtung** des Segments; 45 172 Lagen gemessen, Fläche dabei **exakt gleich** — kein flächen-basiertes Orakel hätte es gefangen) | **Die Ordnung hängt jetzt an einer richtungsfreien Größe** (die Ecke mit dem größeren Längsversatz fällt zuerst) — plus **neue Zeile §4-4b**, die die Richtungsunabhängigkeit prüft. Der [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Report hatte sie als Bestands-Eigenschaft **gemessen**; dieser Slice hätte sie unbemerkt zurückgenommen. |
+| **MEDIUM-2** (§4-4 verlangte „die kurze Wand liefert das **stumpfe** Referenz-Polygon" — bei `len = 239` gewinnt gemessen ein **Teil**-Kandidat) | Konjunkt korrigiert: verglichen wird gegen den **erwarteten Kandidaten**, je Fixture benannt. |
+| **MEDIUM-3** (§4-1 listete 240 als „erhalten" **und** schrieb `<= 0` vor — bei `len = 240` ist das Skalarprodukt exakt 0,0) | Der Widerspruch lag in meiner eigenen Zeile; 240 steht jetzt auf „umgekehrt". |
+| **MEDIUM-4/5** (§6 trug weiter „symmetrischer Rückfall", die DoD verortete §4-6 weiter im **dependency-freien** Kern-Ziel) | Beides nachgezogen. **Zweimal dieselbe Bauart „Prosa korrigiert, Vollzugs-Zeile stehen gelassen"** — in diesem Projekt inzwischen zehnmal gezählt. |
+| **MEDIUM-6** (das *Given* deckt den Fall nicht: der Rückfall greift noch bei **850 mm** gegen 50-mm-Nachbarn, Faktor 17 — die Schwelle hängt an der **eigenen** Stärke, der Nachbar-Stärke **und** dem Winkel) | Bezugsgröße in der Lastenheft-Zeile korrigiert. |
+| **LOW-1..5** | „dritter" → **vierter** Rückfall · das §2.2-Argument war umgedreht formuliert · **MEDIUM-3 wird nicht als „behoben" gebucht, sondern als gegenstandslos** (die Adapter-Prüfung bleibt unverändert) · 619,75 ist ein **Messwert**, keine Formel · die **zweite** Zusagen-Stelle ([LH-FA-WAL-001](../../../../spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen) „Happy Path (Verbinden)") ist geprüft: sie erbt den Boundary-Block über ihren Verweis. |
+
+**Positiv bestätigt (10 Negativbefunde):** die Kandidaten-Menge ist **total** — `buttFootprint` in
+**12 862 500** geprüften Kandidaten **nie** selbstschneidend, **keine** Lage ohne gültigen Kandidaten
+(auch bei 0,11 mm Länge und 10¹²-Koordinaten); sie liefert **nicht** unnötig stumpf; und das
+Kollaps-Kriterium ist auch auf den **gemischten** Kandidaten exakt (0 Fehl-Negative).
+
+> **Die Lehre dieses Laufs:** ich habe eine Bauart gewechselt und die **Belege der alten** mitgenommen
+> — die Gegenprobe von §4-4a stammte aus dem symmetrischen Entwurf, der Plural der Lastenheft-Zeile
+> vom symmetrischen Vorbild. **Wer die Entscheidung umdreht, muss jede daran hängende Zeile neu
+> prüfen, nicht nur die, die sie erwähnt.**
+
+**Startbar:** **nein.** Zwei HIGH sind eingearbeitet — das verlangt eine unabhängige Prüfung. Auftrag
+an Lauf 3, eng: **hält die neue Lastenheft-Zeile, was die lokale Bauart liefert — und ist die
+richtungsfreie Ordnung (größerer Längsversatz zuerst) wirklich richtungsfrei, auch bei exakter
+Gleichheit der Versätze?** Zusätzlich: **erzwingen die drei Fixturen von §4-4a wirklich K2, K3 und
+K4 — oder gewinnt in einer davon doch K1?**
 
 ## 12. Closure-Notiz
 
