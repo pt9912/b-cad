@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-059b — **Stärke und Höhe einer Wand ändern** ([LH-FA-WAL-002](spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)/003,
+  [ADR-0021](docs/plan/adr/0021-wand-im-2d-canvas.md) E4/E5/E13/E15). **Damit ist ein Gebäude in der
+  Oberfläche erstmals nicht nur zeichenbar, sondern parametrisch bearbeitbar.** Ein nicht-modaler
+  **Eigenschaften-Bereich** unter der Zeichenfläche zeigt die Werte der ausgewählten Wand und nimmt
+  neue an; die 3D-Ansicht folgt ohne Zutun.
+  **Drei Ausgänge, alle sichtbar:** übernommen · **geklemmt** (der tatsächlich übernommene Wert wird
+  **genannt** und ins Feld zurückgeschrieben) · **abgelehnt** (Modell unverändert).
+  **Textfelder statt Zahlen-Drehfeldern, und das ist eine Entscheidung:** ein Drehfeld mit dem
+  Modell-Bereich hätte die Eingabe **selbst** geklemmt — dann erreichte eine 49 den Kern nie, und
+  zwei abnahmebindende Kriterien (Klemmung sichtbar, Ablehnung sichtbar) wären **unerreichbar statt
+  prüfbar** gewesen. Der Kern bleibt die einzige Klemm-Autorität.
+  **Die Schreibweise ist eng und der Grund steht im Handbuch:** ohne Einheit, Punkt als
+  Dezimaltrenner. „50 mm" und „50,0" werden **abgelehnt** statt still als 50 gelesen — und was das
+  Feld anzeigt, nimmt die Eingabe unverändert wieder an.
+  **Übernommen wird beim Abschluss der Eingabe**, nicht je Tastendruck: sonst mutierte das Tippen von
+  „240" das Modell dreimal und erzeugte zwei falsche Klemm-Hinweise.
+  **Noch nicht dabei:** Wandtyp und Material.
+  **Kein** Kern-, Persistenz-, Export- oder Schema-Diff; `.a-check.yml` byte-unberührt.
 - slice-059a — **Wand im 2D-Canvas auswählen** ([ADR-0021](docs/plan/adr/0021-wand-im-2d-canvas.md)
   E3/E14/E16/E17). Drittes Werkzeug **Auswahl**: ein Klick auf eine Wand-Achse wählt **genau eine**
   Wand des **angezeigten** Geschosses, und sie wird im Grundriss **hervorgehoben**.

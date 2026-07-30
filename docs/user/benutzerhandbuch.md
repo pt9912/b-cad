@@ -1,7 +1,7 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.7
+Handbuch-Version: 1.8
 Stand: 2026-07-28
 
 ---
@@ -32,6 +32,10 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
   überlebt Speichern/Öffnen und Export,
 - eine gezeichnete **Wand auswählen** — Werkzeug **Auswahl** wählen und auf die
   Achse klicken; die gewählte Wand wird im Grundriss **hervorgehoben**,
+- **Stärke und Höhe** der gewählten Wand **ändern** — im Eigenschaften-Bereich
+  unter der Zeichenfläche; die 3D-Ansicht folgt sofort, und liegt der Wert
+  außerhalb des zulässigen Bereichs, wird er geklemmt und der **übernommene**
+  Wert genannt,
 - **Hilfslinien** im Grundriss zeichnen — mit **Einrasten** auf vorhandene
   Eckpunkte, **sichtbar markiert, bevor Sie klicken**,
 - in Formate **exportieren** (IFC/DXF/STEP/STL/PDF/PNG),
@@ -49,10 +53,8 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
   machen**. Ein begonnener Zug lässt sich abbrechen (Escape), eine **fertige** Wand
   bleibt. Ungesicherte Änderungen sind durch die Rückfrage geschützt
   (Abschnitt 4.3).
-- die **Stärke oder Höhe** einer Wand ändern — sie entsteht mit den
-  Standardwerten. **Auswählen** können Sie sie inzwischen (siehe oben); was noch
-  fehlt, ist der Bereich, in dem sich die Werte ändern lassen. Das folgt im
-  nächsten Ausbauschritt.
+- **Wandtyp und Material** einer Wand ändern — änderbar sind **Stärke** und
+  **Höhe**.
 
 Wie ein Gebäude heute überhaupt in b-cad kommt, beschreibt **Abschnitt 3**.
 
@@ -118,6 +120,10 @@ In der **Menüleiste** liegen zwei Menüs: **Datei** (Abschnitt 4.3) und
 **Hilfslinie** (Voreinstellung), **Wand** oder **Auswahl**. Das gewählte Werkzeug
 ist im Menü **markiert**, und es ist immer genau eines aktiv.
 
+Unter der Zeichenfläche liegt der **Eigenschaften-Bereich** mit den Feldern
+**Stärke** und **Höhe**. Er zeigt die Werte der **ausgewählten** Wand; ist nichts
+ausgewählt, steht dort „Keine Auswahl" und die Felder sind leer und gesperrt.
+
 Am **unteren Fensterrand** liegt eine **Hinweis-Zeile**. Dort erscheint ein kurzer
 Text, wenn eine Eingabe **nicht** zum gewünschten Ergebnis geführt hat — sie
 unterbricht Ihre Arbeit nicht und muss nicht weggeklickt werden.
@@ -131,6 +137,8 @@ unterbricht Ihre Arbeit nicht und muss nicht weggeklickt werden.
   er bewirkt.
 - **Wand auswählen:** Werkzeug **Auswahl**, dann auf eine Wand-Achse klicken
   (siehe Abschnitt 4.2).
+- **Stärke/Höhe ändern:** Wert im Eigenschaften-Bereich eintragen und die
+  Eingabe mit **Enter** oder durch Klick daneben abschließen (Abschnitt 4.2).
 - **Hilfslinie oder Wand zeichnen:** Im Reiter **2D** mit gedrückter linker
   Maustaste ziehen (siehe Abschnitt 4.2). Nah an einem vorhandenen Eckpunkt
   **rastet** der Punkt exakt auf ihn ein.
@@ -188,6 +196,7 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
 | **Wand zeichnen** (Werkzeug **Wand**, mit Einrasten) | Oberfläche, Reiter 2D (4.2) |
 | **Wand auswählen** (Werkzeug **Auswahl**) | Oberfläche, Reiter 2D (4.2) |
+| **Stärke/Höhe ändern** | Oberfläche, Eigenschaften-Bereich (4.2) |
 | Hilfslinie zeichnen (Einrasten mit sichtbarer Markierung) | Oberfläche, Reiter 2D (4.2) |
 | Neues Projekt anlegen | Oberfläche, Menü **Datei → Neu** (4.3) |
 | Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
@@ -306,8 +315,32 @@ Linie). Ein Klick ins Leere hebt die Auswahl wieder auf.
   oder Anlegen eines Projekts und bei einem Wechsel des angezeigten Geschosses.
   Das ist Absicht — eine Auswahl, die einen Projekt-Wechsel überlebt, zeigte
   danach womöglich auf eine **andere** Wand.
-- **Was die Auswahl heute noch nicht kann:** die Stärke oder Höhe der gewählten
-  Wand ändern. Der Bereich dafür folgt im nächsten Ausbauschritt.
+#### Stärke und Höhe einer Wand ändern
+
+**Ziel:** Die Maße einer vorhandenen Wand anpassen.
+
+**Voraussetzung:** Eine Wand ist ausgewählt (siehe oben).
+
+**Vorgehen:**
+
+1. Tragen Sie im **Eigenschaften-Bereich** unter der Zeichenfläche einen neuen
+   Wert für **Stärke** oder **Höhe** ein.
+2. Schließen Sie die Eingabe mit **Enter** ab (oder klicken Sie daneben).
+
+**Ergebnis:** Der Wert wird übernommen, die **3D-Ansicht** zeigt den geänderten
+Wandkörper sofort, und die Änderung überlebt Speichern/Laden und den Export.
+
+**Hinweise:**
+- **Zulässig sind 50 bis 1000 mm Stärke und 500 bis 10000 mm Höhe.** Liegt Ihr
+  Wert außerhalb, wird er auf den nächsten Grenzwert **geklemmt** — die
+  Hinweis-Zeile nennt Ihnen dann den **tatsächlich übernommenen** Wert, und das
+  Feld zeigt ihn ebenfalls.
+- **Keine gültige Zahl** (Buchstaben, leeres Feld, „50 mm", „50,0") wird
+  **abgelehnt**: das Modell bleibt unverändert, und die Hinweis-Zeile sagt es.
+  Schreiben Sie die Zahl schlicht — ohne Einheit, mit **Punkt** als Dezimaltrenner.
+- **Erst beim Abschluss** der Eingabe wird übernommen, nicht bei jedem
+  Tastendruck. So entsteht beim Tippen von „240" keine Zwischen-Klemmung auf 2.
+- **Wandtyp und Material** sind noch nicht änderbar.
 
 ### 4.3 Ein Projekt speichern und öffnen (Menü **Datei**)
 
@@ -573,11 +606,11 @@ zu geschlossenen Ecken verbindbar. Was noch **nicht** geht: die Wand wieder
 (Räume, Türen, Fenster, Treppen, Dächer) interaktiv anlegen.
 
 **Kann ich eine gezeichnete Wand wieder ändern?**
-Noch nicht. Sie können sie seit Handbuch-Version 1.7 **auswählen** (Werkzeug
-**Auswahl**, Abschnitt 4.2) und sehen sie dann hervorgehoben — der
-Eigenschaften-Bereich, in dem sich Stärke und Höhe ändern lassen, folgt im
-nächsten Ausbauschritt. Entfernen oder rückgängig machen lässt sich eine fertige
-Wand in dieser Version ebenfalls nicht.
+Ja — **Stärke** und **Höhe**, seit Handbuch-Version 1.8. Wählen Sie die Wand aus
+(Werkzeug **Auswahl**) und tragen Sie im Eigenschaften-Bereich einen neuen Wert
+ein (Abschnitt 4.2). **Wandtyp und Material** sind noch nicht änderbar, und
+**entfernen oder rückgängig machen** lässt sich eine fertige Wand in dieser
+Version ebenfalls nicht.
 
 **Wie speichere/öffne ich über ein Menü?**
 Über das Menü **Datei** in der Oberfläche: **Speichern**, **Speichern unter…**
@@ -642,6 +675,7 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.8 | 0.1.0 | 2026-07-29 | **Stärke und Höhe ändern** aufgenommen — damit ist ein Gebäude in der Oberfläche erstmals nicht nur zeichenbar, sondern auch **parametrisch bearbeitbar**: neuer **Eigenschaften-Bereich** unter der Zeichenfläche (§2.2/§2.3), neuer Unterabschnitt in 4.2 samt der vier benannten Eigenschaften — **Wertebereiche** mit sichtbarer **Klemmung** (der tatsächlich übernommene Wert wird genannt **und** ins Feld zurückgeschrieben), **Ablehnung** ungültiger Eingaben mit dem ausdrücklichen Hinweis auf die Schreibweise (ohne Einheit, Punkt als Dezimaltrenner — „50 mm" und „50,0" werden abgelehnt), **Übernahme erst beim Abschluss** der Eingabe (kein Klemmen beim Tippen) und die Grenze, dass **Wandtyp/Material** offen bleiben. §1 „Heute möglich" und die 4.1-Tabelle nachgezogen; die in 1.7 gesetzte Grenze „Stärke oder Höhe ändern" ist **aufgehoben und ersetzt**, ebenso die FAQ-Antwort. |
 | 1.7 | 0.1.0 | 2026-07-29 | **Wand auswählen** aufgenommen: drittes Werkzeug **Auswahl** in Menü und Bedienung (§2.2/§2.3), neuer Unterabschnitt „Eine Wand auswählen" in 4.2 samt der fünf benannten Eigenschaften — **genau eine** Wand, **ganze Achse** statt Endpunkte, **nur das angezeigte Geschoss** (mit dem Grund: übereinanderliegende Außenwände), **Hilfslinien nicht auswählbar**, und die **Lebensdauer** der Auswahl (sie fällt beim Öffnen/Anlegen und beim Geschoss-Wechsel — eine Auswahl, die das überlebte, zeigte danach womöglich auf eine andere Wand). §1 „Heute möglich" und die 4.1-Tabelle nachgezogen; die in 1.6 gesetzte Grenze „eine gezeichnete Wand auswählen und ihre Stärke/Höhe ändern" ist **halb aufgehoben und dadurch präzisiert** — auswählen ja, ändern noch nicht —, ebenso die FAQ. |
 | 1.6 | 0.1.0 | 2026-07-29 | **Wände zeichnen** aufgenommen — das erste Bauteil, das in der Oberfläche selbst entsteht: neues **Werkzeug**-Menü (Hilfslinie/Wand, Voreinstellung Hilfslinie), neue **Hinweis-Zeile** am unteren Fensterrand, neuer Unterabschnitt „Eine Wand zeichnen" in 4.2 (samt Eckenschluss über das Einrasten und der Begründung, warum es ohne Einrasten praktisch nicht gelingt) und die vier benannten Grenzen: **eine** Wand je Zug, **kein** Entfernen/Rückgängig, **keine** nachträgliche Änderung von Stärke/Höhe, Zeichnen nur im angezeigten Geschoss. §1 ist **präzisiert statt gestrichen** („ein Gebäude **vollständig** selbst planen" — Wände ja, übrige Bauteile nein), ebenso §2.2/§2.3, der Kopf von §3, der §3-Hinweis, die 4.1-Aufgaben-Tabelle und die FAQ-Antwort „Kann ich in der Oberfläche Wände zeichnen?", die bis hierher **verneinte**. |
 | 1.5 | 0.1.0 | 2026-07-28 | **Anzeige des Fang-Ziels** aufgenommen: eine Markierung zeigt **vor dem Klick**, auf welchen Eckpunkt eingerastet würde — für Anfang **und** Ende, auch während des Ziehens. Damit ist die in 1.4 benannte Grenze „Eine Anzeige, **worauf** gerade eingerastet wird, gibt es in dieser Version noch nicht" **aufgehoben und ersetzt**; zugleich ist der bisher nur als Einschränkung beschriebene Geschoss-übergreifende Fang jetzt als **Nutzen** formuliert (die Markierung macht sichtbar, was sonst als Sprung erschien). Neu benannt: die Markierung verschwindet beim Verlassen der Zeichenfläche und bei Ansichts-Änderungen und kehrt mit der nächsten Mausbewegung zurück — **am Einrasten selbst ändert das nichts**. §1 „Heute möglich" und die 4.1-Aufgaben-Tabelle nachgezogen. |

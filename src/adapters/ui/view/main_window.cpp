@@ -5,21 +5,86 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QCloseEvent>
+#include <QFormLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QString>
+#include <QVBoxLayout>
 #include <QWidget>
 
 namespace bcad::adapters::ui::view {
+namespace {
+
+// Anzeige-Form der Millimeter-Werte. **Sie ist an eine Schliessbedingung
+// gebunden** (slice-059b §2.2): was hier herauskommt, muss die Umwandlung der
+// `ui/command/`-Parameter-Senke **ohne Ablehnung** wieder lesen — sonst bekaeme
+// ein Benutzer, der ein zurueckgeschriebenes Feld nur bestaetigt, eine
+// Ablehnung fuer einen Wert, den er nie geaendert hat.
+//
+// Deshalb: schlichte Dezimalzahl, **kein** Tausender-Trenner, **keine** Einheit
+// im Feld (die steht in der Beschriftung), **kein** Komma. `QString::number`
+// ist locale-unabhaengig — `QLocale` waere es nicht.
+//
+// Das Fenster kann die Senke nicht einbinden (`ui_view -> ui_command` ist keine
+// deklarierte Kante), die zwei Seiten sind also **nur ueber ein Orakel**
+// gekoppelt: §4-13 schickt den Feld-Inhalt unveraendert zurueck durch die Senke.
+QString formatMm(double value) { return QString::number(value, 'f', 1); }
+
+}  // namespace
 
 MainWindow::MainWindow(QWidget* central, FileActions actions, ToolActions tools,
-                       CloseGuard close_guard)
+                       ParamActions params, CloseGuard close_guard)
     : close_guard_(std::move(close_guard)) {
+    // slice-059b (ADR-0021 E4): der nicht-modale Eigenschaften-Bereich. Ein
+    // FESTER Bereich unter der Sicht — keine Andock-Verwaltung (LH-FA-UI-001
+    // bleibt Outline), kein modaler Dialog (E5: eine Klemmung beim Tippen darf
+    // den Zeichenfluss nicht unterbrechen).
+    auto* container = new QWidget(this);
+    auto* column = new QVBoxLayout(container);
+    column->setContentsMargins(0, 0, 0, 0);
     if (central != nullptr) {
-        setCentralWidget(central);  // Qt uebernimmt das Widget-Ownership
+        column->addWidget(central, 1);  // Qt uebernimmt das Widget-Ownership
     }
+
+    auto* properties = new QWidget(container);
+    auto* form = new QFormLayout(properties);
+    selection_label_ = new QLabel(properties);
+    selection_label_->setObjectName(QString::fromLatin1(kSelectionLabelName));
+    form->addRow(selection_label_);
+
+    // **Textfelder, keine Zahlen-Drehfelder** (slice-059b §2.1): ein Drehfeld
+    // mit dem Modell-Bereich klemmte die Eingabe SELBST — dann erreichte eine
+    // 49 den Kern nie, der Hinweis erschiene nie, und zwei abnahmebindende
+    // Akzeptanzkriterien (Klemmung sichtbar, Ablehnung sichtbar) waeren
+    // **unerreichbar statt rot**. Der Kern bleibt die einzige Klemm-Autoritaet.
+    thickness_field_ = new QLineEdit(properties);
+    thickness_field_->setObjectName(QString::fromLatin1(kThicknessFieldName));
+    form->addRow(QStringLiteral("Staerke (mm)"), thickness_field_);
+    height_field_ = new QLineEdit(properties);
+    height_field_->setObjectName(QString::fromLatin1(kHeightFieldName));
+    form->addRow(QStringLiteral("Hoehe (mm)"), height_field_);
+    column->addWidget(properties);
+    setCentralWidget(container);
+
+    // Uebernahme bei ABSCHLUSS der Eingabe, nicht je Tastendruck: sonst
+    // mutierte das Tippen von "240" das Modell dreimal (2 -> geklemmt 50,
+    // 24 -> 50, 240) und erzeugte zwei falsche Klemm-Hinweise fuer EINE Eingabe.
+    if (params.commit_thickness) {
+        QObject::connect(thickness_field_, &QLineEdit::editingFinished, this,
+                         [this, handler = std::move(params.commit_thickness)]() {
+                             handler(thickness_field_->text());
+                         });
+    }
+    if (params.commit_height) {
+        QObject::connect(height_field_, &QLineEdit::editingFinished, this,
+                         [this, handler = std::move(params.commit_height)]() {
+                             handler(height_field_->text());
+                         });
+    }
+    showWallParams(std::nullopt);  // Startzustand: keine Auswahl
 
     QMenu* file_menu = menuBar()->addMenu(QStringLiteral("&Datei"));
 
@@ -109,6 +174,69 @@ MainWindow::MainWindow(QWidget* central, FileActions actions, ToolActions tools,
     hint_label_ = new QLabel(this);
     hint_label_->setObjectName(QString::fromLatin1(kHintLabelName));
     statusBar()->addWidget(hint_label_);
+}
+
+void MainWindow::showWallParams(
+    std::optional<hexagon::model::WallParams> params) {
+    const bool has_selection = params.has_value();
+    if (selection_label_ != nullptr) {
+        selection_label_->setText(has_selection
+                                      ? QStringLiteral("Gewaehlte Wand")
+                                      : QStringLiteral("Keine Auswahl"));
+    }
+    // Ohne Auswahl gibt es NICHTS zu aendern — und vor allem stehen dann
+    // **keine Werte einer zuvor gewaehlten Wand** mehr da (LH-FA-WAL-002
+    // Boundary (Auswahl), abnahmebindend).
+    for (QLineEdit* field : {thickness_field_, height_field_}) {
+        if (field != nullptr) {
+            field->setEnabled(has_selection);
+            if (!has_selection) {
+                field->clear();
+            }
+        }
+    }
+    if (!has_selection) {
+        return;
+    }
+    if (thickness_field_ != nullptr) {
+        thickness_field_->setText(formatMm(params->thickness_mm));
+    }
+    if (height_field_ != nullptr) {
+        height_field_->setText(formatMm(params->height_mm));
+    }
+}
+
+void MainWindow::showParamOutcome(ParamOutcome outcome, double applied_mm,
+                                  bool thickness) {
+    QLineEdit* field = thickness ? thickness_field_ : height_field_;
+    switch (outcome) {
+        case ParamOutcome::Accepted:
+            if (field != nullptr) {
+                field->setText(formatMm(applied_mm));
+            }
+            showHint(QString());
+            return;
+        case ParamOutcome::Clamped:
+            // Der **uebernommene Wert** geht ins Feld UND in den Hinweis. Dass
+            // er genannt wird, ist der abnahmebindende Teil; wie der Satz
+            // lautet, ist es nicht.
+            if (field != nullptr) {
+                field->setText(formatMm(applied_mm));
+            }
+            showHint(QStringLiteral("Wert geklemmt — uebernommen: %1 mm.")
+                         .arg(formatMm(applied_mm)));
+            return;
+        case ParamOutcome::Rejected:
+            showHint(QStringLiteral("Eingabe abgelehnt — Modell unveraendert."));
+            return;
+        case ParamOutcome::NotANumber:
+            showHint(QStringLiteral("Keine gueltige Zahl — Modell unveraendert."));
+            return;
+        case ParamOutcome::Failed:
+            showHint(QStringLiteral("Aenderung nicht moeglich — Modell "
+                                    "unveraendert."));
+            return;
+    }
 }
 
 void MainWindow::showHint(const QString& text) {

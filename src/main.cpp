@@ -43,6 +43,8 @@
 #include "adapters/ui/command/edit_drawing_guide_line_sink.h"
 #include "adapters/ui/command/edit_structure_wall_sink.h"
 #include "adapters/ui/command/plan_view_plan_source.h"
+#include "adapters/ui/command/wall_param_sink.h"
+#include "adapters/ui/command/wall_params_source.h"
 #include "adapters/ui/command/project_menu_handler.h"
 #include "adapters/ui/command/view_model_mesh_source.h"
 #include "adapters/ui/view/canvas_widget.h"
@@ -149,6 +151,30 @@ std::optional<int> runExportIfRequested(
         return 0;
     } catch (const std::exception& e) {
         std::cerr << label << "-Export fehlgeschlagen: " << e.what() << '\n';
+        return 1;
+    }
+}
+
+// Headless-Import: Gegenstueck zu `runExportIfRequested` (slice-059b
+// zusammengefaltet). Die zwei Formate hatten Zeichen fuer Zeichen denselben
+// Block — inklusive derselben Fehlerbehandlung; die Dopplung wuchs mit jedem
+// Format und trug messbar zur Komplexitaet von `main` bei.
+std::optional<int> runImportIfRequested(
+    const QStringList& cli, const char* flag,
+    bcad::hexagon::ports::driving::ExchangeModelPort& exchange,
+    bcad::hexagon::ports::driving::ExchangeFormat format, const char* label) {
+    const int index = static_cast<int>(cli.indexOf(QString::fromLatin1(flag)));
+    if (index < 0 || index + 1 >= cli.size()) {
+        return std::nullopt;
+    }
+    const std::string path = cli.at(index + 1).toStdString();
+    try {
+        const model::Building imported = exchange.importModel(path, format);
+        std::cout << label << " importiert: " << imported.storeys.size()
+                  << " Geschosse, " << imported.walls.size() << " Wände\n";
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << label << "-Import fehlgeschlagen: " << e.what() << '\n';
         return 1;
     }
 }
@@ -390,6 +416,46 @@ bcad::adapters::ui::view::MainWindow::ToolActions makeToolActions(
             [canvas]() { canvas->setToolMode(Mode::Select); }};
 }
 
+// slice-059b: Ausgang der Parameter-Senke -> Anzeige-Ausgang des Fensters.
+// Eine reine Abbildung; sie liegt hier, weil `main` sonst waechst und der
+// Lint-Gate das misst (Muster wallHintText, slice-058).
+bcad::adapters::ui::view::MainWindow::ParamOutcome shownOutcome(
+    bcad::adapters::ui::command::ParamEditOutcome outcome) {
+    using Outcome = bcad::adapters::ui::command::ParamEditOutcome;
+    using Shown = bcad::adapters::ui::view::MainWindow::ParamOutcome;
+    switch (outcome) {
+        case Outcome::Accepted:   return Shown::Accepted;
+        case Outcome::Clamped:    return Shown::Clamped;
+        case Outcome::Rejected:   return Shown::Rejected;
+        case Outcome::NotANumber: return Shown::NotANumber;
+        case Outcome::Failed:     break;
+    }
+    return Shown::Failed;
+}
+
+// slice-059b: die zwei Uebernahme-Callables des Eigenschaften-Bereichs. Sie
+// holen die gewaehlte Wand beim AUSLOESEN aus dem Canvas — eine Quelle der
+// Wahrheit, kein zweiter Auswahl-Zustand daneben.
+bcad::adapters::ui::view::MainWindow::ParamActions makeParamActions(
+    bcad::adapters::ui::view::CanvasWidget* canvas,
+    const bcad::adapters::ui::command::WallParamSink& sink,
+    bool& editing_thickness) {
+    return {
+        [canvas, &sink, &editing_thickness](const QString& text) {
+            if (const auto id = canvas->selection()) {
+                editing_thickness = true;
+                sink.setThickness(*id, text.toStdString());
+            }
+        },
+        [canvas, &sink, &editing_thickness](const QString& text) {
+            if (const auto id = canvas->selection()) {
+                editing_thickness = false;
+                sink.setHeight(*id, text.toStdString());
+            }
+        },
+    };
+}
+
 bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
     bcad::adapters::ui::command::ProjectMenuHandler& handler) {
     // Ein unvollstaendig aufgeloestes Ziel ist kein Fehler, aber der Benutzer
@@ -529,37 +595,16 @@ int main(int argc, char** argv) {
     const QStringList cli = QApplication::arguments();
     loadPluginsFromCli(cli, plugin_host);
 
-    const int import_index =
-        static_cast<int>(cli.indexOf(QStringLiteral("--import-ifc")));
-    if (import_index >= 0 && import_index + 1 < cli.size()) {
-        const std::string ifc_path = cli.at(import_index + 1).toStdString();
-        try {
-            const model::Building imported = exchange.importModel(
-                ifc_path, bcad::hexagon::ports::driving::ExchangeFormat::Ifc);
-            std::cout << "IFC importiert: " << imported.storeys.size()
-                      << " Geschosse, " << imported.walls.size() << " Wände\n";
-            return 0;
-        } catch (const std::exception& e) {
-            std::cerr << "IFC-Import fehlgeschlagen: " << e.what() << '\n';
-            return 1;
-        }
+    // Headless-Import IFC/DXF (ADR-0013/0015 — io-resident), gefaltet.
+    if (const auto rc = runImportIfRequested(
+            cli, "--import-ifc", exchange,
+            bcad::hexagon::ports::driving::ExchangeFormat::Ifc, "IFC")) {
+        return *rc;
     }
-
-    // Headless-Import DXF (Parität zu --import-ifc, ADR-0015 — io-resident).
-    const int dxf_import_index =
-        static_cast<int>(cli.indexOf(QStringLiteral("--import-dxf")));
-    if (dxf_import_index >= 0 && dxf_import_index + 1 < cli.size()) {
-        const std::string dxf_path = cli.at(dxf_import_index + 1).toStdString();
-        try {
-            const model::Building imported = exchange.importModel(
-                dxf_path, bcad::hexagon::ports::driving::ExchangeFormat::Dxf);
-            std::cout << "DXF importiert: " << imported.storeys.size()
-                      << " Geschosse, " << imported.walls.size() << " Wände\n";
-            return 0;
-        } catch (const std::exception& e) {
-            std::cerr << "DXF-Import fehlgeschlagen: " << e.what() << '\n';
-            return 1;
-        }
+    if (const auto rc = runImportIfRequested(
+            cli, "--import-dxf", exchange,
+            bcad::hexagon::ports::driving::ExchangeFormat::Dxf, "DXF")) {
+        return *rc;
     }
 
     // slice-047a: headless CLI (--open/--save/--export) — ausgelagert (hält die
@@ -614,6 +659,23 @@ int main(int argc, char** argv) {
             }
         });
 
+    // slice-059b: die schmale Parameter-Lese-Naht (slice-057) und die dritte
+    // Senke. Ihr Ausgang geht als **Wert** ans Fenster — nicht als fertiger
+    // Text: der uebernommene Wert ist der abnahmebindende Teil, und ein im Root
+    // zusammengesetzter Satz waere an genau dieser Stelle orakel-los.
+    const bcad::adapters::ui::command::WallParamsSource params_source(service);
+    bool editing_thickness = true;  // welches Feld die Meldung ausgeloest hat
+    const bcad::adapters::ui::command::WallParamSink param_sink(
+        service,
+        [&hint_window, &editing_thickness](
+            bcad::adapters::ui::command::ParamEditResult result) {
+            if (hint_window != nullptr) {
+                hint_window->showParamOutcome(shownOutcome(result.outcome),
+                                              result.applied_mm,
+                                              editing_thickness);
+            }
+        });
+
     auto* canvas = new bcad::adapters::ui::view::CanvasWidget(
         [&plan_source]() { return plan_source.planView(); },
         [&guide_sink](model::Point2D a, model::Point2D b) {
@@ -624,12 +686,17 @@ int main(int argc, char** argv) {
             // Canvas soll ihn nicht kennen (slice-058 §2.3).
             wall_sink.addWall(a, b);
         },
-        // slice-059a: die Auswahl-Meldung. In DIESEM Slice hat sie noch keinen
-        // Empfänger — sie ist die Naht, die slice-059b besetzt (der
-        // Eigenschaften-Bereich). Sie steht hier, statt später als Lücke
-        // entdeckt zu werden; dass im Produkt etwas zu sehen ist, belegt
-        // unabhängig davon die Hervorhebung auf der Fläche.
-        [](std::optional<model::WallId>) {},
+        // slice-059b besetzt die Naht aus slice-059a: jeder Auswahl-Wechsel
+        // speist den Eigenschaften-Bereich — auch das Fallen (`nullopt` ⇒
+        // „keine Auswahl", und die Werte der zuvor gewählten Wand verschwinden).
+        [&hint_window, &params_source](std::optional<model::WallId> id) {
+            if (hint_window == nullptr) {
+                return;
+            }
+            hint_window->showWallParams(
+                id ? params_source.wallParams(*id)
+                   : std::optional<model::WallParams>{});
+        },
         static_cast<int>(active_storey));
     service.subscribe(*canvas);
 
@@ -688,6 +755,7 @@ int main(int argc, char** argv) {
     bcad::adapters::ui::view::MainWindow window(
         tabs, makeFileActions(project_handler),
         makeToolActions(canvas),
+        makeParamActions(canvas, param_sink, editing_thickness),
         [&close_dialog_parent, &project_handler]() {
             return mayDiscardSession(close_dialog_parent, project_handler);
         });

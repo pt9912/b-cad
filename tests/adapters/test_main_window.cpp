@@ -14,6 +14,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QLabel>
+#include <QLineEdit>
 #include <QWidget>
 
 #include <gtest/gtest.h>
@@ -22,9 +23,11 @@
 #include <optional>
 
 #include "adapters/ui/command/project_menu_handler.h"
+#include "adapters/ui/command/wall_param_sink.h"
 #include "adapters/ui/view/main_window.h"
 #include "hexagon/model/building.h"
 #include "hexagon/model/storey.h"
+#include "hexagon/model/wall_params.h"
 #include "hexagon/ports/driving/manage_project_port.h"
 #include "hexagon/services/project_session.h"
 
@@ -72,10 +75,17 @@ QAction* actionNamed(MainWindow& window, const char* name) {
 TEST(MainWindow, IsConstructibleHeadlessWithCentralWidget) {
     const QtFixture qt;
     auto* central = new QLabel(QStringLiteral("zentral"));
-    MainWindow window(central, {}, {}, {});
+    MainWindow window(central, {}, {}, {}, {});
 
-    EXPECT_EQ(window.centralWidget(), central)
+    // slice-059b: das Fenster setzt das gereichte Widget nicht mehr DIREKT als
+    // Zentral-Widget — es baut eine Spalte aus Sicht und Eigenschaften-Bereich
+    // (ADR-0021 E4: ein fester, nicht-modaler Bereich). Die Zusage war nie
+    // "es IST das Zentral-Widget", sondern "das Fenster uebernimmt es": es
+    // gehoert zum Fenster und wird angezeigt. Genau das wird jetzt geprueft —
+    // liesse das Fenster es fallen, waere `window()` nicht dieses Fenster.
+    EXPECT_EQ(central->window(), &window)
         << "das Fenster uebernimmt das gereichte Widget (Qt-Ownership)";
+    EXPECT_NE(window.centralWidget(), nullptr);
     // Die beiden Menue-Aktionen existieren, auch ohne verdrahtete Handler.
     EXPECT_NE(actionNamed(window, MainWindow::kOpenActionName), nullptr);
     EXPECT_NE(actionNamed(window, MainWindow::kNewActionName), nullptr);
@@ -99,7 +109,7 @@ TEST(MainWindow, TriggeringMenuActionsCallsTheInjectedHandlers) {
                        },
                        [&saved](QWidget*) { ++saved; },
                        [&saved_as](QWidget*) { ++saved_as; }},
-                      {}, {});
+                      {}, {}, {});
 
     // slice-052b: "Neu" ist eine EIGENE Aktion — eine Vertauschung mit
     // "Oeffnen" waere ein Datenverlust ohne Datei-Dialog.
@@ -132,7 +142,7 @@ TEST(MainWindow, TriggeringMenuActionsCallsTheInjectedHandlers) {
 TEST(MainWindow, CloseRunsTheCloseGuard) {
     const QtFixture qt;
     int asked = 0;
-    MainWindow window(nullptr, {}, {}, [&asked]() {
+    MainWindow window(nullptr, {}, {}, {}, [&asked]() {
         ++asked;
         return true;
     });
@@ -146,7 +156,7 @@ TEST(MainWindow, CloseRunsTheCloseGuard) {
 // Naht, an der slice-052a sein "abbrechen" aufhaengt.
 TEST(MainWindow, CloseGuardVetoKeepsTheWindowVisible) {
     const QtFixture qt;
-    MainWindow window(nullptr, {}, {}, []() { return false; });
+    MainWindow window(nullptr, {}, {}, {}, []() { return false; });
     window.show();
     ASSERT_TRUE(window.isVisible());
 
@@ -159,7 +169,7 @@ TEST(MainWindow, CloseGuardVetoKeepsTheWindowVisible) {
 // Rueckfrage ein (Verhaltens-Invarianz, Plan §2).
 TEST(MainWindow, WithoutGuardTheWindowClosesAsBefore) {
     const QtFixture qt;
-    MainWindow window(nullptr, {}, {}, {});
+    MainWindow window(nullptr, {}, {}, {}, {});
     window.show();
 
     EXPECT_TRUE(window.close());
@@ -187,7 +197,7 @@ TEST(MainWindow, SchliessenMitUngesichertemStandUndAbbrechenHaeltDasFensterOffen
         project, session, [&aktuell]() -> const model::Building& { return aktuell; },
         {});
 
-    MainWindow window(nullptr, {}, {}, [&handler]() {
+    MainWindow window(nullptr, {}, {}, {}, [&handler]() {
         return handler.mayDiscard(
             []() { return bcad::hexagon::ports::driving::DiscardAnswer::Cancel; },
             []() { return std::optional<std::filesystem::path>{}; });
@@ -213,7 +223,7 @@ TEST(MainWindow, SchliessenOhneUngesichertenStandFragtNicht) {
         [&baseline]() -> const model::Building& { return baseline; }, {});
 
     int gefragt = 0;
-    MainWindow window(nullptr, {}, {}, [&handler, &gefragt]() {
+    MainWindow window(nullptr, {}, {}, {}, [&handler, &gefragt]() {
         return handler.mayDiscard(
             [&gefragt]() {
                 ++gefragt;
@@ -243,7 +253,7 @@ TEST(MainWindow, ADR_0021_E1_WerkzeugAktionenSindAusloesbarUndMarkiert) {
     MainWindow window(nullptr, {},
                       {[&guide_line_calls]() { ++guide_line_calls; },
                        [&wall_calls]() { ++wall_calls; }},
-                      {});
+                      {}, {});
 
     QAction* guide_line = actionNamed(window, MainWindow::kToolGuideLineActionName);
     QAction* wall = actionNamed(window, MainWindow::kToolWallActionName);
@@ -283,7 +293,7 @@ TEST(MainWindow, ADR_0021_E1_WerkzeugAktionenSindAusloesbarUndMarkiert) {
 // Sie traegt nur am Canvas — dort loest §4-8a die ADR-0021-E14-Folgepflicht ein.
 TEST(MainWindow, ADR_0021_E5_HinweisAnzeigeTraegtDenGemeldetenText) {
     const QtFixture qt;
-    MainWindow window(nullptr, {}, {}, {});
+    MainWindow window(nullptr, {}, {}, {}, {});
 
     auto* hint = window.findChild<QLabel*>(
         QString::fromLatin1(MainWindow::kHintLabelName));
@@ -318,7 +328,7 @@ TEST(MainWindow, ADR_0021_E3_AuswahlWerkzeugIstAusloesbarUndMarkiert) {
                       {[&guide_line_calls]() { ++guide_line_calls; },
                        [&wall_calls]() { ++wall_calls; },
                        [&select_calls]() { ++select_calls; }},
-                      {});
+                      {}, {});
 
     QAction* guide_line = actionNamed(window, MainWindow::kToolGuideLineActionName);
     QAction* wall = actionNamed(window, MainWindow::kToolWallActionName);
@@ -341,6 +351,117 @@ TEST(MainWindow, ADR_0021_E3_AuswahlWerkzeugIstAusloesbarUndMarkiert) {
     wall->trigger();
     EXPECT_TRUE(wall->isChecked());
     EXPECT_FALSE(select->isChecked());
+}
+
+// --- slice-059b, §4-1/§4-2/§4-5 (Fenster)/§4-6/§4-13 ----------------------
+//
+// Der Eigenschaften-Bereich. Die Naht nimmt WERTE, keinen fertigen Text
+// (Plan §2.3) — nur so ist der abnahmebindende Konjunkt "der tatsaechlich
+// uebernommene Wert wird dem Nutzer GENANNT" ueberhaupt messbar.
+
+QLineEdit* fieldNamed(MainWindow& window, const char* name) {
+    return window.findChild<QLineEdit*>(QString::fromLatin1(name));
+}
+
+// Der Feld-Inhalt als Zahl — zurueckgelesen mit DERSELBEN Umwandlung wie die
+// Senke (Plan §2.1). Mit einer anderen waere ein Feld-Inhalt "50,0" im Test
+// gruen und im Produkt eine Ablehnung.
+std::optional<double> fieldValue(MainWindow& window, const char* name) {
+    QLineEdit* field = fieldNamed(window, name);
+    if (field == nullptr) {
+        return std::nullopt;
+    }
+    return bcad::adapters::ui::command::WallParamSink::parse(
+        field->text().toStdString());
+}
+
+// §4-1: der Bereich zeigt die Parameter der gewaehlten Wand.
+TEST(MainWindow, ADR_0021_E4_EigenschaftenBereichZeigtDieParameter) {
+    const QtFixture qt;
+    MainWindow window(nullptr, {}, {}, {}, {});
+
+    window.showWallParams(model::WallParams{240.0, 2500.0});
+    EXPECT_EQ(fieldValue(window, MainWindow::kThicknessFieldName), 240.0);
+    EXPECT_EQ(fieldValue(window, MainWindow::kHeightFieldName), 2500.0);
+}
+
+// §4-2: keine Auswahl ⇒ nichts zu aendern, und KEINE Werte einer zuvor
+// gewaehlten Wand. Abnahmebindend (LH-FA-WAL-002 Boundary (Auswahl)).
+TEST(MainWindow, LH_FA_WAL_002_Boundary_OhneAuswahlStehenKeineAltenWerteDa) {
+    const QtFixture qt;
+    MainWindow window(nullptr, {}, {}, {}, {});
+    window.showWallParams(model::WallParams{240.0, 2500.0});
+    ASSERT_EQ(fieldValue(window, MainWindow::kThicknessFieldName), 240.0);
+
+    window.showWallParams(std::nullopt);
+
+    auto* label = window.findChild<QLabel*>(
+        QString::fromLatin1(MainWindow::kSelectionLabelName));
+    ASSERT_NE(label, nullptr);
+    EXPECT_FALSE(label->text().isEmpty()) << "der Bereich sagt, dass nichts gewaehlt ist";
+    EXPECT_TRUE(fieldNamed(window, MainWindow::kThicknessFieldName)->text().isEmpty())
+        << "die Werte der zuvor gewaehlten Wand duerfen NICHT stehen bleiben";
+    EXPECT_TRUE(fieldNamed(window, MainWindow::kHeightFieldName)->text().isEmpty());
+    EXPECT_FALSE(fieldNamed(window, MainWindow::kThicknessFieldName)->isEnabled())
+        << "ohne Auswahl gibt es nichts zu aendern";
+}
+
+// §4-5 (Fenster-Haelfte): die Klemmung wird mit dem UEBERNOMMENEN WERT genannt.
+// Abnahmebindend ist die Nennung des Werts, nicht der Wortlaut.
+TEST(MainWindow, LH_FA_WAL_002_Boundary_KlemmungWirdMitDemWertGenannt) {
+    const QtFixture qt;
+    MainWindow window(nullptr, {}, {}, {}, {});
+    window.showWallParams(model::WallParams{240.0, 2500.0});
+
+    window.showParamOutcome(MainWindow::ParamOutcome::Clamped, 50.0, true);
+
+    auto* hint = window.findChild<QLabel*>(
+        QString::fromLatin1(MainWindow::kHintLabelName));
+    ASSERT_NE(hint, nullptr);
+    EXPECT_TRUE(hint->text().contains(QStringLiteral("50")))
+        << "der uebernommene Wert muss im Hinweis vorkommen — sonst erfaehrt "
+           "der Nutzer die Klemmung, aber nicht das Ergebnis";
+}
+
+// §4-6: nach der Klemmung zeigt das FELD den uebernommenen Wert, nicht die
+// Eingabe. Eigener Weg, eigene Zeile (der Rueckweg liegt im Fenster).
+TEST(MainWindow, ADR_0021_E5_NachDerKlemmungZeigtDasFeldDenUebernommenenWert) {
+    const QtFixture qt;
+    MainWindow window(nullptr, {}, {}, {}, {});
+    window.showWallParams(model::WallParams{240.0, 2500.0});
+
+    // Der Nutzer tippt 49; der Kern klemmt auf 50.
+    fieldNamed(window, MainWindow::kThicknessFieldName)
+        ->setText(QStringLiteral("49"));
+    window.showParamOutcome(MainWindow::ParamOutcome::Clamped, 50.0, true);
+
+    EXPECT_EQ(fieldValue(window, MainWindow::kThicknessFieldName), 50.0)
+        << "das Feld muss den uebernommenen Wert zeigen, nicht die Eingabe";
+    // Und die Hoehe bleibt unberuehrt.
+    EXPECT_EQ(fieldValue(window, MainWindow::kHeightFieldName), 2500.0);
+}
+
+// §4-13: die Anzeige-Form ist von der Senken-Umwandlung lesbar — der Rundlauf
+// schliesst. Ohne diese Zeile haette das Produkt einen Fehler, den kein anderes
+// Orakel sieht: Enter auf einem nie geaenderten Feld ergaebe eine Ablehnung.
+TEST(MainWindow, DieAnzeigeFormIstVonDerSenkenUmwandlungLesbar) {
+    const QtFixture qt;
+    MainWindow window(nullptr, {}, {}, {}, {});
+
+    for (const model::WallParams params :
+         {model::WallParams{240.0, 2500.0}, model::WallParams{50.0, 500.0},
+          model::WallParams{1000.0, 10000.0}}) {
+        window.showWallParams(params);
+        for (const char* name : {MainWindow::kThicknessFieldName,
+                                 MainWindow::kHeightFieldName}) {
+            const QString shown = fieldNamed(window, name)->text();
+            EXPECT_TRUE(bcad::adapters::ui::command::WallParamSink::parse(
+                            shown.toStdString())
+                            .has_value())
+                << "die Anzeige-Form muss die Senke UNVERAENDERT passieren: "
+                << shown.toStdString();
+        }
+    }
 }
 
 }  // namespace

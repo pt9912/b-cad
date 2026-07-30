@@ -1,11 +1,15 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include <QMainWindow>
 
+#include "hexagon/model/wall_params.h"
+
 class QCloseEvent;
 class QLabel;
+class QLineEdit;
 class QString;
 class QWidget;
 
@@ -66,12 +70,33 @@ public:
         std::function<void()> select_pick;  // slice-059a: Auswahl-Werkzeug
     };
 
+    // Was der Eigenschaften-Bereich auslöst (slice-059b, ADR-0021 E4/E5):
+    // eine Übernahme mit dem **Text** des Feldes. Der Text — nicht die Zahl:
+    // die Umwandlung ist eine Ausgangs-Entscheidung und gehört in die
+    // `ui/command/`-Senke, nicht in zwei Autoritäten (slice-059b §2.2).
+    using ParamCommit = std::function<void(const QString& text)>;
+
+    struct ParamActions {
+        ParamCommit commit_thickness;
+        ParamCommit commit_height;
+    };
+
+    // Ausgang einer Parameter-Änderung, wie ihn das Fenster **anzeigt**.
+    // **Bewusst Werte statt eines fertigen Textes** (slice-059b §2.3): der
+    // abnahmebindende Konjunkt ist „der tatsächlich übernommene Wert wird dem
+    // Nutzer **genannt**". Käme der Hinweis als fertige Zeichenkette aus dem
+    // Composition-Root, wäre die Stelle, an der der Wert in den Text gelangt,
+    // per Konstruktion orakel-los — belegt wäre dann nur, dass **ein**
+    // gereichter Text erscheint. Der **Wortlaut** bleibt Sache dieses Fensters
+    // und ist **keine** Zusage; geprüft wird, dass der Wert darin vorkommt.
+    enum class ParamOutcome { Accepted, Clamped, Rejected, NotANumber, Failed };
+
     // `central` wird dem Fenster übergeben (Qt-Ownership via
     // `setCentralWidget`) — genau wie bisher im Composition-Root. Das Fenster
     // **baut** die Sichten nicht: 3D-/2D-Widgets sind nicht Gegenstand dieses
     // Slice, und der Root behält die Zeiger, die er selbst erzeugt hat.
     MainWindow(QWidget* central, FileActions actions, ToolActions tools,
-               CloseGuard close_guard);
+               ParamActions params, CloseGuard close_guard);
 
     // Zeigt einen Hinweis an (slice-058, ADR-0021 E5): **nicht-modal** — eine
     // Klemmung oder Ablehnung beim Zeichnen darf den Fluss nicht unterbrechen.
@@ -93,6 +118,23 @@ public:
     static constexpr auto kToolWallActionName = "action_tool_wall";
     static constexpr auto kToolSelectActionName = "action_tool_select";
     static constexpr auto kHintLabelName = "hint_label";
+    static constexpr auto kThicknessFieldName = "field_wall_thickness";
+    static constexpr auto kHeightFieldName = "field_wall_height";
+    static constexpr auto kSelectionLabelName = "label_selection";
+
+    // Der Eigenschaften-Bereich zeigt die Parameter der gewählten Wand — oder
+    // **nichts** (`nullopt`): dann sagt er „keine Auswahl" und trägt **keine**
+    // Werte einer zuvor gewählten Wand mehr
+    // ([LH-FA-WAL-002](../../../../spec/lastenheft.md) Boundary (Auswahl),
+    // abnahmebindend).
+    void showWallParams(std::optional<hexagon::model::WallParams> params);
+
+    // Der Rückweg (slice-059b §2.3): der übernommene Wert geht **ins Feld**
+    // zurück und **in den Hinweis**. Er liegt hier und nicht im
+    // Composition-Root, weil die Gegenprobe „Rückweg entfernt" sonst im Test
+    // nicht herstellbar wäre.
+    void showParamOutcome(ParamOutcome outcome, double applied_mm,
+                          bool thickness);
 
 protected:
     // Ruft den `CloseGuard`; sagt er „nein", wird das Ereignis abgelehnt und
@@ -101,6 +143,9 @@ protected:
 
 private:
     CloseGuard close_guard_;
+    QLineEdit* thickness_field_{nullptr};
+    QLineEdit* height_field_{nullptr};
+    QLabel* selection_label_{nullptr};
     // Die Hinweis-Zeile. Qt-Eltern-Ownership (Statusleiste); der Zeiger dient
     // nur dem Setzen des Textes.
     QLabel* hint_label_{nullptr};

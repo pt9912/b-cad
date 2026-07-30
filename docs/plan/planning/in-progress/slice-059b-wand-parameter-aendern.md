@@ -399,4 +399,82 @@ sind eingearbeitet; sie betreffen **Nahtschnitt und Vorbedingungen**, nicht die 
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Vollzogen 2026-07-29.** `make gates` grün, **414 Tests** (399 vor dem Slice, **+15** neu),
+Zeilen-Coverage 92,0 %; `make io-smoke` grün, `make acc-002-beleg` grün (das Bild **nicht**
+committet — Abnahme-Artefakt von
+[`slice-012`](../done-archive/slice-012-eckenschluss-wal006-teil.md)). Kein
+Kern-/Persistenz-/Export-/Schema-Diff, **`.a-check.yml` byte-unberührt** (`a-check` = 0 Befunde,
+**keine neue Kante**: die Senke lebt in `ui/command/` an der vorhandenen
+`ui_command → ports_driving`-Kante, und sie ist **Qt-frei** geblieben).
+
+### Die Orakel-Zeilen, je mit EINZELN gemessener roter Gegenprobe
+
+| Zeile | Sonde (Mutation) | gefallen |
+|---|---|---|
+| §4-1 | Anzeige-Aufruf entfernt | `EigenschaftenBereichZeigtDieParameter` + 2 |
+| §4-2 | Leeren des Bereichs entfernt | `OhneAuswahlStehenKeineAltenWerteDa` |
+| §4-3 | Übernahme-Aufruf entfernt | `UebernahmeImFensterErreichtModellUnd3D` |
+| §4-4 | die 3D-Szene sieht `WallThicknessChanged` nicht | **eigene Sonde**: drei `ViewerSceneAk`-Zeilen — §4-3 und §4-4 teilen einen Test, aber **nicht** dieselbe Sonde |
+| §4-5 | Klemm-Hinweis **ohne** den übernommenen Wert | `KlemmungWirdMitDemWertGenannt` |
+| §4-6 | Rückweg ins Feld entfernt | `NachDerKlemmungZeigtDasFeldDenUebernommenenWert` |
+| §4-7 | Ablehnungs-Weg entfernt (`Rejected` → `Accepted`) | `NichtEndlichWirdVomKernAbgelehnt` |
+| §4-8 (a) | Volle-Konsumption-Prüfung entfernt | `DieUmwandlungVerlangtVolleKonsumption` + `NichtNumerischWirdInDerSenkeAbgelehnt` |
+| §4-8 (b) | Umwandlungs-Prüfung **ganz** entfernt (`0` wird übernommen) | `NichtNumerischWirdInDerSenkeAbgelehnt` |
+| §4-9 | Höhen-Weg auf den Stärke-Mutator verdrahtet | **beide** Höhen-Zeilen (Senke **und** Fenster-Kette) |
+| §4-10 | `try`/`catch` der Barriere entfernt | `VeralteteWandIdWirdGefangenUndGemeldet` + 1 |
+| §4-13 (a) | Anzeige-Form **mit Einheit** („240.0 mm") | 4 Fenster-Zeilen |
+| §4-13 (b) | Anzeige-Form **mit Komma** („240,0") | dieselben 4 |
+
+**§4-11 und §4-12 sind Netz:** der Zeichen- und Auswahl-Pfad lief unverändert grün (399 → 414 Tests,
+**keine** Bestands-Zeile gefallen); Persistenz/Export prüfen `make io-smoke` und die Runden-Orakel.
+
+**§4-13 ist die Zeile, die sich am meisten gelohnt hat.** Beide Sonden — Einheit und Komma — lassen
+**vier** Fenster-Zeilen fallen. Ohne sie hätte das Produkt einen Fehler gehabt, den kein anderes
+Orakel sieht: **Enter auf einem nie geänderten Feld ergäbe eine Ablehnung**, weil die Anzeige-Form
+von der Eingabe-Umwandlung nicht gelesen werden kann. Der Befund stammt aus dem Plan-Review, und er
+war beim Schreiben des Plans **nicht** offensichtlich.
+
+### Was der Vollzug gegenüber dem Plan geändert hat
+
+1. **Die Umwandlung ist eine eigene, öffentliche Naht** (`WallParamSink::parse`). Der Plan verlangte,
+   dass Anzeige und Eingabe **dieselbe** Umwandlung benutzen; das Fenster kann die Senke aber nicht
+   einbinden (`ui_view → ui_command` ist keine deklarierte Kante). Die zwei Seiten sind deshalb
+   **nur über ein Orakel** gekoppelt (§4-13) — und das steht als Kommentar an **beiden** Enden.
+2. **Der Bestands-Test `IsConstructibleHeadlessWithCentralWidget` wurde angepasst**, weil das Fenster
+   das gereichte Widget nicht mehr direkt als Zentral-Widget setzt, sondern in eine Spalte mit dem
+   Eigenschaften-Bereich legt (E4: fester Bereich, keine Andock-Verwaltung). Die Zusage war nie „es
+   **ist** das Zentral-Widget", sondern „das Fenster **übernimmt** es" — jetzt geprüft über
+   `central->window() == &window`, was beim Fallenlassen ebenso rot wird.
+3. **`main` hat zwei Helfer bekommen** (`shownOutcome`, `makeParamActions`) und **die zwei
+   Import-Blöcke sind gefaltet** (`runImportIfRequested`, Muster `runExportIfRequested`). Auslöser
+   war der Lint-Gate (kognitive Komplexität 33 > 20); die Faltung entfernt eine **Zeichen-für-Zeichen
+   -Dopplung**, die mit jedem Format weitergewachsen wäre — `make io-smoke` belegt beide Importe
+   danach unverändert.
+4. **Ein `bool editing_thickness` im Composition-Root** merkt sich, welches Feld die Meldung
+   ausgelöst hat. Das ist die kleinste Naht, die den Rückweg ins **richtige** Feld führt, ohne dem
+   Fenster einen zweiten Zustand zu geben.
+
+### Reichweite und benannte Grenzen
+
+- **Die Herkunft der angezeigten Werte hat keinen Sensor** (§4-1): eine Implementierung, die sie aus
+  dem `Building` zöge, lieferte dieselben Zahlen, und `a-check` sieht es nicht (`ui_view → model` ist
+  erlaubt). Die schmale Abfrage ist **Bauvorschrift** (E15), kein Beleg — so gebaut, so benannt.
+- **Der Composition-Root bleibt orakel-los.** Deshalb liegt die Umwandlung in der Senke und der
+  Rückweg im Fenster; beide Entscheidungen sind genau aus diesem Grund gefallen (§2.2/§2.3).
+- **Die 2D-Sichtbarkeit einer Stärken-Änderung bekommt kein Orakel** und ist keine: der Canvas
+  zeichnet Achsen, eine Stärken-Änderung bewegt keine.
+- **Lastenheft und Spezifikation am Artefakt geprüft, nicht pauschal verneint:**
+  [LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) trägt seit
+  [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md) den Block „Interaktive Änderung" mit
+  allen vier Konjunkten (Happy · Klemmung sichtbar · Ablehnung sichtbar · Boundary (Auswahl)); alle
+  vier haben jetzt einen Sensor (§4-3/§4-9 · §4-5/§4-6 · §4-7/§4-8 · §4-2). **Kein Spec-Diff nötig**
+  — diesmal belegt.
+
+### Wellen-Stand
+
+**Der Abschluss-Trigger von welle-6 ist erfüllt:** eine Wand ist im 2D-Canvas **zeichenbar** und
+**parametrisch änderbar**, ohne Kommandozeile. **Vor der Closure steht das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des Bauteil-Strangs** (Eckenschluss, Nachbar-Rebuild, Raum-Neuerkennung im interaktiven Pfad) —
+HIGHs blockieren sie. Danach die drei Handgriffe aus §9: Closure-Datei, Meilenstein-Status M6,
+Welle-Block.

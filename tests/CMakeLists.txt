@@ -46,6 +46,8 @@ add_executable(bcad_adapter_tests
     adapters/test_snap.cpp             # slice-048b: Fang-Auswahl-Semantik (LH-FA-DRW-001) — OHNE Qt-Fixture
     adapters/test_wall_sink.cpp        # slice-058: Wand-Senke = Fehler-Barriere + Ausgangs-Feststellung (ADR-0021 E5/E10)
     adapters/test_pick.cpp             # slice-059a: Treffer-Pruefung (ADR-0021 E3/E16) — OHNE Qt-Fixture
+    adapters/test_wall_param_sink.cpp  # slice-059b: Parameter-Senke (Text-Eingang, Klemmung, Barriere)
+    adapters/test_wall_param_chain.cpp # slice-059b: Kette Fenster -> Senke -> Dienst -> 3D-Sicht
     adapters/test_main_window.cpp      # slice-053: Fenster-Adapter — Menue-Ausloesung + Schliess-Veto (Xvfb)
     adapters/test_project_menu_handler.cpp  # slice-053: Handler ruft den Port UND reicht die Senken durch
     adapters/test_ifc_spf_reader.cpp   # slice-019b Commit i: SPF-Codec (isoliert)
