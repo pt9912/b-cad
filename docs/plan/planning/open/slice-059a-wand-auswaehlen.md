@@ -9,9 +9,10 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 059a: Wand auswählen
 
-**Status:** open — **Detail-Schnitt vollzogen** (2026-07-29), **geteilt** nach dem ersten
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
-(§11). Die Parameter-Hälfte ist [`slice-059b`](slice-059b-wand-parameter-aendern.md).
+**Status:** open — **STARTBAR** (2026-07-29). Zwei
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
+mit zwei verschiedenen Reviewern; der zweite meldet **0 HIGH**, damit greift die vorab festgelegte
+Abbruchregel. Einarbeitungen in §11 (Lauf 1, samt Teilung) und §11a (Lauf 2). Die Parameter-Hälfte ist [`slice-059b`](slice-059b-wand-parameter-aendern.md).
 
 **Welle:** welle-6-interaktiv-planen. **Der Abschluss-Trigger hängt an
 [`slice-059b`](slice-059b-wand-parameter-aendern.md)**, nicht hier — dieser Slice liefert dessen
@@ -151,16 +152,18 @@ schreibt.
 |---|---|---|---|
 | 1 | **Die Treffer-Prüfung ist rein und display-frei** — Abstand zum **Segment**, Grenze fängt (Distanz == Schwellwert trifft noch), leere Sicht ⇒ kein Treffer | neue `view/`-Funktion, **ohne** `QWidget`/`QApplication` (Bauform `test_snap.cpp`) | Endpunkt- statt Segment-Abstand ⇒ rot (ein Klick auf die **Mitte** einer 4 m langen Achse trifft dann nicht mehr) |
 | 2 | **Nur Wand-Achsen sind wählbar** — ein Klick auf eine Hilfslinie wählt **nichts** | dieselbe Funktion, Fixture mit Hilfslinie **und** Wand | `WallAxis`-Filter entfernt ⇒ die Hilfslinie wird gewählt ⇒ rot |
-| 3 | **Nur das dargestellte Geschoss** — bei **deckungsgleichen** Achsen in zwei Geschossen trifft der Klick die Wand des **aktiven**, an der **Id** geprüft | dieselbe Funktion. **Fixture-Vorbedingung, tragend:** das **aktive** Geschoss muss das **zweite** in der Iterationsreihenfolge sein — bei gleicher Distanz gewinnt sonst der zuerst besuchte, und die Gegenprobe lieferte **dieselbe** Id wie die korrekte Implementierung | Geschoss-Filter entfernt ⇒ die Wand des **anderen** Geschosses ⇒ rot. **Die von [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E16 benannte symptomlose Fehlerklasse** |
+| 3 | **Nur das dargestellte Geschoss** — bei **deckungsgleichen** Achsen in zwei Geschossen trifft der Klick die Wand des **aktiven**, an der **Id** geprüft | dieselbe Funktion. **DREI Fixture-Vorbedingungen, alle tragend:** (a) das **aktive** Geschoss ist das **zweite** in der Iterationsreihenfolge — bei gleicher Distanz gewinnt sonst der zuerst besuchte, und die Gegenprobe lieferte **dieselbe** Id; (b) die zwei deckungsgleichen Achsen tragen **verschiedene** Wand-Ids (beim Bau der `PlanView` von Hand entsteht Deckungsgleichheit am bequemsten durch **Kopieren** des Segment-Literals — samt `origin`-Id, und dann ist die Zeile gehaltlos); (c) die Prüfung entscheidet bei gleicher Distanz für den **zuerst** Besuchten (§4-4a) — mit `<=` statt `<` wäre die Gegenprobe **genau dann** grün, wenn zusätzlich die E3-Regel verletzt ist | Geschoss-Filter entfernt ⇒ die Wand des **anderen** Geschosses ⇒ rot. **Die von [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E16 benannte symptomlose Fehlerklasse** |
 | 4 | **Höchstens eine, die nächstgelegene** — bei zwei Achsen in Reichweite gewinnt die nähere; außerhalb der Reichweite ⇒ **kein** Treffer | dieselbe Funktion. **Fixture-Vorbedingung:** die **nähere** Achse muss in der Iteration **später** kommen — sonst wäre auch die Reihenfolge-Auswahl zufällig richtig | Reihenfolge- statt Distanz-Auswahl ⇒ rot |
-| 5 | **Der Zug im Auswahl-Modus wählt** (entschieden beim **Loslassen**, §2.1) — und **nur** dort: im Wand-/Hilfslinien-Modus wählt derselbe Zug nichts, im Auswahl-Modus entsteht nichts | `CanvasWidget`, headless, über `selection()` **und** den Modell-Zustand | Modus ignoriert ⇒ rot (**beide** Richtungen einzeln gemessen) |
-| 6 | **Die Auswahl fällt bei Modell-Ersetzung** — **auch wenn** der neue Stand eine Wand mit **derselben Id** trägt | `CanvasWidget` + Dienst: `replaceBuilding` mit einem Stand, dessen Ids die gewählte **enthalten** | `ModelReplaced`-Behandlung entfernt ⇒ die Auswahl überlebt ⇒ rot. **Die Fixture ist der Punkt:** mit einem Stand **ohne** diese Id wäre die Zeile auch ohne die Behandlung grün (das Netz griffe), und die eigentliche Fehlerklasse bliebe unbelegt |
-| 7 | **Die Auswahl fällt bei `setActiveStorey`** — geprüft ist der **Widget-Vertrag**; der benutzer-seitige Auslöser ist heute der Öffnen-/Anlegen-Pfad (§2.2 b) | `CanvasWidget` | Behandlung entfernt ⇒ rot |
+| 4a | **Bei gleicher Distanz gewinnt der ZUERST Besuchte** — die von [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E3 entschiedene und in der Spezifikation stehende Tie-Break-Regel, Bauform `snap.cpp` (strikt `<`) | dieselbe Funktion, zwei Achsen in **exakt** gleicher Distanz | `<=` statt `<` ⇒ der zuletzt Besuchte gewinnt ⇒ rot. **Ohne diese Zeile hätte eine entschiedene Regel keinen Sensor** — und §4-3 hinge an ihr, ohne sie zu prüfen |
+| 5 | **Der Zug im Auswahl-Modus wählt** (entschieden beim **Loslassen**, §2.1) — und **nur** dort: im Wand-/Hilfslinien-Modus wählt derselbe Zug nichts, im Auswahl-Modus entsteht nichts | `CanvasWidget`, headless, über `selection()` **und** den Modell-Zustand | Modus ignoriert ⇒ rot (**beide** Richtungen einzeln gemessen). **Der Loslassen-Konjunkt braucht eine EIGENE Gegenprobe:** ein Zug, dessen Enden **verschiedene** Ausgänge haben (Press außerhalb der Reichweite → Release auf der Achse und umgekehrt) — bei einem Klick (Press == Release) ist „beim Drücken entschieden" **nicht** von „beim Loslassen entschieden" unterscheidbar |
+| 6 | **Die Auswahl fällt bei Modell-Ersetzung** — **auch wenn** der neue Stand eine Wand mit **derselben Id** trägt | `CanvasWidget` + Dienst: `replaceBuilding` mit einem Stand, der die gewählte Wand-Id **in einem Geschoss trägt, dessen Id das Widget aktiv hält**. **Beide Konjunkte sind nötig, gemessen:** gleiche Wand-Id + **fremde** Geschoss-Id ⇒ 0 Vorkommen in der Sicht, „Neu"-Gestalt (Geschoss ohne Wände) ⇒ 0 — in beiden Fällen verwirft das **Netz** (c) die Auswahl, und die Gegenprobe bliebe grün. **Der naheliegende Fixture-Griff „den Anlegen-Pfad nachbilden" ist genau der nicht-diskriminierende** | `ModelReplaced`-Behandlung entfernt ⇒ die Auswahl überlebt ⇒ rot. **Die Fixture ist der Punkt:** mit einem Stand **ohne** diese Id wäre die Zeile auch ohne die Behandlung grün (das Netz griffe), und die eigentliche Fehlerklasse bliebe unbelegt |
+| 7 | **Die Auswahl fällt bei `setActiveStorey`** — geprüft ist der **Widget-Vertrag**; der benutzer-seitige Auslöser ist heute der Öffnen-/Anlegen-Pfad (§2.2 b) | `CanvasWidget` | Behandlung entfernt ⇒ rot. **Bauvorschrift, ohne die die Gegenprobe mehrdeutig ist:** `setActiveStorey` verwirft **unbedingt**, nicht über die Sichtbarkeits-Prüfung — sonst räumte das Netz (c) die Auswahl ohnehin ab (die Wand liegt in genau **einem** Geschoss), und die Zeile bliebe grün, ohne zu belegen, was sie behauptet. **Anders als bei §4-6 ist das per Fixture NICHT heilbar** |
 | 8 | **Die Auswahl ist auf der Fläche erkennbar** | **Tinten-Sonde am Canvas** (offscreen). **Zwei Vorbedingungen, beide zu PRÜFEN** (§2.3): (a) `snapPreview()` ist an **beiden** Messpunkten **leer** — sonst misst die Zeile den Fang-Marker (gemessen +56 px); (b) die Abbildung ist unverändert (Zoom **und** Modell-Ecke) | Hervorhebung entfernt ⇒ Tinte unverändert ⇒ rot. **Bauvorschrift, ohne die die Zeile nicht gilt:** die Hervorhebung fügt **Fläche** hinzu (breiterer Stift/Marker) — eine reine **Umfärbung** ist von dieser Sonde per Konstruktion unsichtbar und damit **keine** zulässige Umsetzung |
 | 9 | **Die Auswahl ist display-frei lesbar und wird gemeldet** — `selection()` liefert genau die getroffene Id (`nullopt` sonst); ein injiziertes `SelectionChanged`-Callable meldet **jeden** Wechsel, **auch das Fallen** | `CanvasWidget` + Zähl-Callable | Meldung nur bei Treffer, nicht beim Fallen ⇒ rot. **Die Naht ist die Voraussetzung von [`slice-059b`](slice-059b-wand-parameter-aendern.md)** — ohne sie hätte der Eigenschaften-Bereich kein Subjekt |
+| 9a | **Der Auswahl-Modus ist bedienbar und sichtbar** — die dritte Aktion ist auffindbar, sie ruft ihr injiziertes Callable, und die **Markierung springt auf sie um** (die Gruppe bleibt exklusiv) | `MainWindow` (Aktions-Surrogat, Bauform [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) §4-9) | Auslösung entfernt ⇒ rot; Exklusivität entfernt ⇒ rot. **Reichweite:** geprüft wird der **Fenster-Vertrag**, nicht die produktive Verdrahtung — die liegt im Composition-Root und ist per Konstruktion orakel-los. **Ohne diese Zeile hätte die einzige Fenster-Zusage dieses Slice keine Diskriminierung** |
 | 10 | **Der Zeichen-Pfad bleibt unverändert** — Hilfslinie, Wand, Fang, Anzeige, Abbruch, Hinweise | Bestands-Orakel | (Regressions-Netz) |
 
-**Neun Zeilen tragen einen eigenen Sensor** (1–9), eine ist **Netz** (10).
+**Elf Zeilen tragen einen eigenen Sensor** (1–9 inkl. 4a und 9a), eine ist **Netz** (10).
 
 **Was ausdrücklich KEIN Orakel bekommt:** (c) aus §2.2 — „die gewählte Wand verschwindet aus der
 Sicht" ist ohne Entfernen-Pfad **strukturell nicht erreichbar**. Die Prüfung wird gebaut (Netz für
@@ -177,17 +180,21 @@ den Tag, an dem ein Entfernen entsteht) und **so benannt**.
       Option A), **flächen-hinzufügende** Hervorhebung im Paint-Pfad (§2.3), **drei**
       Lebensdauer-Regeln (§2.2). Orakel §4-5..9.
 - [ ] **`src/adapters/ui/view/main_window.{h,cpp}`**: dritte Aktion in der Werkzeug-Gruppe
-      (**Auswahl**); Default bleibt **Hilfslinie**.
+      (**Auswahl**), Objektname + drittes Callable in `ToolActions`; Default bleibt **Hilfslinie**,
+      die Gruppe bleibt **exklusiv**. Orakel §4-9a.
 - [ ] **`src/main.cpp`**: Verdrahtung der Auswahl-Aktion. Das `SelectionChanged`-Callable bleibt in
       diesem Slice **ohne Empfänger** außer dem Test — das ist die Naht, die
       [`slice-059b`](slice-059b-wand-parameter-aendern.md) besetzt, und es steht hier, statt später
       als Lücke entdeckt zu werden (R4).
 - [ ] **Tests**: neuer `tests/adapters/`-Test der Treffer-Prüfung (§4-1..4, **ohne** Qt-Fixture) ·
-      `test_canvas_widget.cpp` (§4-5..9) · `test_main_window.cpp` (die dritte Aktion).
-- [ ] **Orakel §4-1 bis §4-9 je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen; §4-10
-      als **Netz** benannt. **Drei Zeilen tragen eine ausgeschriebene Vorbedingung** (§4-3, §4-4:
-      Iterationsreihenfolge; §4-8: Fang-Marker-Freiheit **und** flächen-hinzufügende Hervorhebung) —
-      ohne sie messen sie nichts.
+      `test_canvas_widget.cpp` (§4-5..9) · `test_main_window.cpp` (§4-9a).
+- [ ] **Orakel §4-1 bis §4-9a (inkl. 4a und 9a) je mit roter Gegenprobe** im Closure-Text,
+      **einzeln** gemessen — **elf Zeilen mit eigenem Sensor**; §4-10 als **Netz** benannt.
+      **Sechs Zeilen tragen ausgeschriebene Vorbedingungen bzw. Bauvorschriften**: §4-3 (drei
+      Fixture-Bedingungen), §4-4 (Iterationsreihenfolge), §4-5 (der Loslassen-Konjunkt braucht einen
+      Zug mit **verschiedenen** Ausgängen), §4-6 (Wand-Id **im aktiven** Geschoss), §4-7
+      (`setActiveStorey` verwirft unbedingt) und §4-8 (Fang-Marker-Freiheit **und**
+      flächen-hinzufügende Hervorhebung) — ohne sie messen sie nichts.
 - [ ] **`make a-check` grün** — **mit** ausgeschriebener Aussage, ob eine neue Kante entstanden ist.
       **Kein** Kern-/Persistenz-/Export-/Schema-Diff, am `git diff --stat` belegt.
 - [ ] **Benutzerhandbuch** — **gesucht, nicht aufgezählt** (in slice-058 waren es zehn Stellen statt
@@ -214,14 +221,16 @@ den Tag, an dem ein Entfernen entsteht) und **so benannt**.
 | `src/main.cpp` | ändern | Verdrahtung der Aktion |
 | `tests/adapters/`-Test der Treffer-Prüfung `.{cpp}` | neu | §4-1..4 |
 | `tests/adapters/test_canvas_widget.cpp` | ändern | §4-5..9 |
-| `tests/adapters/test_main_window.cpp` | ändern | dritte Aktion |
+| `tests/adapters/test_main_window.cpp` | ändern | §4-9a (dritte Aktion + Markierung) |
 | `tests/CMakeLists.txt` | ändern | **eine** neue Testdatei |
 | `docs/user/benutzerhandbuch.md` | ändern | **gesucht** + Version |
 | `CHANGELOG.md` | ändern | [Unreleased] |
 | `docs/reviews/`-Report | neu | das [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) vor dem Start |
 
-**Nicht berührt** (`spec/**` unter Vorbehalt der DoD-Prüfzeile — die Spezifikation trägt
-Treffer-Prüfung und Lebensdauer bereits, geliefert von
+**Nicht berührt** (`spec/**`: die Prüf-DoD-Zeile „am Artefakt nachsehen, ob etwas fehlt" ist
+**vollständig** nach [`slice-059b`](slice-059b-wand-parameter-aendern.md) gewandert — für den Umfang
+**dieser** Hälfte hat der zweite Plan-Lauf selbst nachgesehen und **Vollständigkeit festgestellt**;
+die Spezifikation trägt Treffer-Prüfung und Lebensdauer, geliefert von
 [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md)): `src/hexagon/**`, `src/adapters/io/**`,
 `src/adapters/persistence/**`, `spec/**`, `data-model.yaml`/`schema.sql`,
 `docs/plan/adr/0021-wand-im-2d-canvas.md`.
@@ -264,7 +273,7 @@ Treffer-Prüfung und Lebensdauer bereits, geliefert von
 ### Sub-Area: GUI-Adapter (2D-Canvas)
 
 - **Modus:** GF; **Dichte:** mittel — eine reine Treffer-Funktion, ein dritter Werkzeug-Modus, ein
-  Auswahl-Zustand mit drei Lebensdauer-Regeln, eine Melde-Naht, zehn Orakel-Zeilen (neun mit eigenem
+  Auswahl-Zustand mit drei Lebensdauer-Regeln, eine Melde-Naht, zwölf Orakel-Zeilen (elf mit eigenem
   Sensor).
 - **Risiko:** **hoch für den Strang** — Auswählen ist das Interaktions-Muster, das das Produkt
   **nirgends** hat, und der Geschoss-Skopus ist symptomlos.
@@ -292,10 +301,38 @@ zweite ist [`slice-059b`](slice-059b-wand-parameter-aendern.md).
 bei „Neu"; und eine fremde, gültige Id mutiert **lautlos** (kein Wurf, `applied = 300`). Der
 Reviewer nennt §4-6 „die schärfste Zeile des Plans, und sie ist gemessen richtig".
 
-**Startbar:** **nein.** Ein HIGH ist eingearbeitet — das verlangt eine **unabhängige** Prüfung der
-Einarbeitung. Auftrag an Lauf 2, eng: **trägt Zeile 8 mit ihren zwei Vorbedingungen und der
-Bauvorschrift — oder ist sie die zweite unfalsifizierbare Zusage an derselben Stelle?** Und: **sind
-die Reihenfolge-Vorbedingungen von §4-3/§4-4 vollständig**, oder gibt es eine dritte Abhängigkeit?
+**Startbar nach Lauf 1:** nein.
+
+## 11a. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (zweiter Lauf, 2026-07-29)
+
+Report: [`2026-07-29-slice-059a-plan-2.md`](../../../reviews/2026-07-29-slice-059a-plan-2.md) —
+**0 HIGH / 3 MEDIUM / 4 LOW / 3 INFO + 20 Negativbefunde, „STARTBAR"**. Unabhängiger Reviewer,
+verschieden von Autor und Lauf 1.
+
+**Die zwei Auftragsfragen sind gemessen beantwortet.** Zeile 8 **trägt** — in **beiden** Richtungen:
+ein Klick auf die Achsenmitte hält `snapPreview()` leer und Tinte/Zoom/Ecke konstant (633 / 0,09 /
+(20,285)) über Press, Release **und** einen ganzen Zug; die vom Plan ungenannte vierte Farbquelle
+(die in-Arbeit-Linie) liefert **0 px**, die zwei Vorbedingungen sind also **hinreichend**. Und die
+Bauvorschrift ist exakt richtig gefasst: probeweise **Umfärbung** ⇒ `633 → 633` (**+0**), probeweise
+**breiterer Stift** ⇒ `633 → 1359` (**+726**). **Keine dritte unfalsifizierbare Fassung.**
+
+| # | Behandlung |
+|---|---|
+| **MEDIUM-1** (§4-6: die Fixture-Vorbedingung ist **eine Bedingung zu kurz** — die gewählte Wand muss im **aktiven Geschoss des Widgets** liegen; gemessen: fremde Geschoss-Id ⇒ 0 Vorkommen, „Neu"-Gestalt ⇒ 0, in beiden Fällen räumt das **Netz** (c) die Auswahl ab und die Gegenprobe bliebe grün) | **Zweiter Konjunkt in der Zeile.** Bitter und lehrreich: **der naheliegende Fixture-Griff — „den Anlegen-Pfad nachbilden", den §2.2 selbst nennt — ist genau der nicht-diskriminierende.** |
+| **MEDIUM-2** (die **dritte** ungenannte Abhängigkeit von §4-3 ist die **Tie-Break-Richtung**; und die von [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E3 **entschiedene**, in der Spezifikation stehende Regel hatte im ganzen Plan **keine** Zeile) | **Neue Orakel-Zeile §4-4a** für den Tie-Break selbst, und §4-3 nennt jetzt **drei** Fixture-Vorbedingungen. Eine entschiedene Regel ohne Sensor ist die Klasse, die dieser Strang wiederholt produziert. |
+| **MEDIUM-3** (die dritte Werkzeug-Aktion hatte DoD- und §6-Zeile, aber **keine** Orakel-Zeile — die Vorgänger-Zeile slice-058 §4-9 ist beim Schnitt verlorengegangen) | **Neue Zeile §4-9a** mit **zwei** Gegenproben (Auslösung, Exklusivität) und der Reichweiten-Klausel. **Die Bauart „beim Teilen fällt eine Zeile heraus" ist neu** — sie entstand erst durch den Split. |
+| **LOW-1** (die zwei deckungsgleichen Achsen brauchen **verschiedene** Wand-Ids — beim Bau von Hand entsteht Deckungsgleichheit durch Kopieren des Literals **samt `origin`-Id**) | Als Konjunkt (b) in §4-3. |
+| **LOW-2** (der Konjunkt „entschieden beim **Loslassen**" hat keine eigene Gegenprobe: bei einem Klick ist Press == Release) | §4-5 verlangt jetzt einen Zug mit **verschiedenen** Ausgängen an beiden Enden. |
+| **LOW-3** („Behandlung entfernt ⇒ rot" ist bei §4-7 mehrdeutig und **nicht per Fixture heilbar**) | **Bauvorschrift in der Zeile:** `setActiveStorey` verwirft **unbedingt**, nicht über die Sichtbarkeits-Prüfung. |
+| **LOW-4** (§6 verweist auf eine DoD-Prüfzeile, die vollständig nach [`slice-059b`](slice-059b-wand-parameter-aendern.md) gewandert ist) | §6 sagt es jetzt — und der Reviewer hat für den Umfang **dieser** Hälfte selbst nachgesehen: Lastenheft und Spezifikation decken ihn **vollständig**. |
+
+**Positiv bestätigt (20 Negativbefunde):** die **Teilung ist sauber** — alle 17 Orakel-Zeilen und 16
+DoD-Positionen des ungeteilten Stands haben eine Heimat, und diese Hälfte trägt **nichts Fremdes**;
+die Melde-Naht ohne Produktions-Konsumenten ist begründet, terminiert **und** besensort; §2.2 ist in
+beiden Teilen gemessen richtig.
+
+**Startbar: JA** — 0 HIGH nach der vorab festgelegten Abbruchregel. Die drei MEDIUM und vier LOW sind
+eingearbeitet; sie betreffen **Fixture-Vorbedingungen und eine fehlende Zeile**, keine Bauart.
 
 ## 12. Closure-Notiz
 

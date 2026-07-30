@@ -3,16 +3,16 @@ id: slice-059b
 titel: Wand parametrisch ändern — Eigenschaften-Bereich, Klemmung, Ablehnung; der Abschluss-Trigger ([LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)/003)
 status: open
 welle: welle-6-interaktiv-planen
-lastenheft_refs: [[LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren), [LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren), [LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden), [LH-FA-WAL-007](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen), [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)]
+lastenheft_refs: [[LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren), [LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren), [LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden), [LH-FA-WAL-007](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen), [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung), [LH-FA-UI-001](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)]
 ---
 
 # Slice 059b: Wand parametrisch ändern
 
-**Status:** open — **Detail-Schnitt vollzogen** (2026-07-29), entstanden aus der Teilung von
-slice-059 im ersten
+**Status:** open — **STARTBAR** (2026-07-29). Entstanden aus der Teilung von slice-059 (§11) und
+danach **eigenständig** geprüft: der eigene
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
-(§11). Die Auswahl-Hälfte ist [`slice-059a`](slice-059a-wand-auswaehlen.md).
+meldet **0 HIGH** (§11a). Die Auswahl-Hälfte ist [`slice-059a`](slice-059a-wand-auswaehlen.md).
 
 **Welle:** welle-6-interaktiv-planen — **hier hängt der Abschluss-Trigger.** Mit diesem Slice ist er
 erfüllt: „eine Wand ist im 2D-Canvas zeichenbar **und parametrisch änderbar**, ohne Kommandozeile."
@@ -60,8 +60,11 @@ Klemmung beim Tippen darf den **Zeichen**fluss nicht unterbrechen" — das ist e
 Hinweis **nicht-modal** ist, nicht weil jeder Tastendruck wirkt.
 
 **Der Preis der Entscheidung, benannt:** das Anzeige-Surrogat wird eine **Zeichenkette**. Die
-Vergleichsregel der Orakel lautet deshalb: **Text zurück-parsen und den Zahlwert vergleichen** — die
-Anzeige-**Form** („50" vs. „50,0" vs. „50 mm") ist **keine** Zusage dieses Slice.
+Vergleichsregel der Orakel lautet deshalb: **Text mit DERSELBEN Umwandlung zurück-lesen wie die
+Senke** (§2.2) und den Zahlwert vergleichen. **Mit einer anderen** wäre ein Feld-Inhalt „50,0" im
+Test grün und im Produkt eine **Ablehnung** — das Orakel prüfte dann eine andere Software als die
+ausgelieferte. Die Anzeige-**Form** ist keine Gestaltungs-Zusage, aber sie ist **eingeschränkt**:
+sie muss von derselben Umwandlung lesbar sein (§2.2, §4-13).
 
 **Nach der Übernahme zeigt das Feld den ÜBERNOMMENEN Wert**, nicht die Eingabe. Zwei Ebenen, die man
 nicht verwechseln darf: **abnahmebindend** ist der Lastenheft-Konjunkt „der tatsächlich übernommene
@@ -88,7 +91,60 @@ angenommen (`Accepted`), Wurf (unbekannte Id). **Das ist der Unterschied zur Sch
 [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md)**, die ein `Point2D`-Paar nimmt: dort gab
 es keine Textform, hier ist sie der Anfang des Ausgangs.
 
-### 2.3 Wo die „sofort"-Zusage beobachtbar ist — und mit welcher Größe
+**Und die UMWANDLUNG ist damit selbst eine Bauvorschrift, nicht eine Implementierungs-Freiheit.** An
+ihr hängen drei Zusagen, gemessen:
+
+| Eingabe | `QString::toDouble` | `std::stod` | `std::from_chars` (volle Konsumption) |
+|---|---|---|---|
+| `abc` / leer | `ok = false`, 0 | **wirft** | Fehler |
+| `50 mm` | `ok = false`, 0 | **50** (Rest ignoriert) | Fehler (Rest) |
+| `50,0` | `ok = false`, 0 | **50** (Komma trennt) | Fehler (Rest) |
+| `inf` / `nan` | `ok = true` | durchgereicht | durchgereicht |
+
+**Entschieden: `std::string_view` + `std::from_chars` mit VOLLER Konsumption.** Drei Gründe: (1) die
+Senke bleibt **Qt-frei** — heute inkludiert **kein** `ui/command/`-Objekt Qt, und ein `QString`-
+Eingang wäre das erste (gate-frei, gemessen, aber eine Eigenschaft, die man nicht beiläufig ändert);
+(2) `from_chars` **wirft nicht** und ist **locale-frei** — `std::stod` täte beides nicht; (3) die
+nicht-endlichen Werte (`inf`/`nan`) laufen weiterhin **in den Kern** und werden **dort** abgelehnt,
+die Zweiteilung der Ablehnungs-AK bleibt also erhalten.
+
+**Schließbedingung, ohne die das Produkt einen Fehler hätte, den kein Orakel sieht:** die
+**Anzeige-Form muss von derselben Umwandlung wieder gelesen werden**. §2.1 gab „50,0" und „50 mm"
+frei — beide sind für jede der drei Umwandlungen **kein** vollständiger Zahlwert. Ein Benutzer, der
+ein zurückgeschriebenes Feld nur mit Enter bestätigt, bekäme eine **Ablehnung für einen Wert, den er
+nie geändert hat**. Die Anzeige-Form ist damit **eingeschränkt** (schlichte Dezimalzahl, kein
+Tausender-Trenner, keine Einheit im Feld) und bekommt eine eigene Orakel-Zeile (§4-13).
+
+### 2.3 Das Fenster bekommt WERTE, keine fertigen Texte — sonst hat der abnahmebindende Konjunkt keinen Sensor
+
+[LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) bindet ab: „der
+**tatsächlich übernommene Wert** wird dem Nutzer **genannt**". Das ist eine Zusage über den **Wert**
+im Text, nicht über Wortlaut.
+
+**Der Weg des Vorgängers trägt sie nicht.** In [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md)
+setzt der Composition-Root die Hinweis-Texte zusammen und reicht sie als fertige Zeichenkette ans
+Fenster; ein Fenster-Orakel belegt dann nur, dass **ein gereichter Text** erscheint. Die
+**Zusammensetzung** — die Stelle, an der der übernommene Wert in den Text kommt — liegt in
+`src/main.cpp` und ist **per Konstruktion orakel-los**.
+
+**Für slice-058 war das richtig:** dessen drei Hinweise sind **konstante** Sätze ohne Wert. **Hier
+ist es falsch**, weil genau der Wert die Abnahme trägt.
+
+**Entschieden: die Fenster-Naht nimmt `(Ausgang, übernommener Wert)`**, nicht `QString`. Das Fenster
+setzt daraus den Hinweis **und** schreibt den Wert ins Feld zurück. Damit sind **beide** Zusagen am
+Fenster-Surrogat messbar: dass der Hinweis den **Wert** trägt (§4-5) und dass das **Feld** ihn zeigt
+(§4-6). Der **Wortlaut** bleibt Fenster-Sache und ist **keine** Zusage — geprüft wird, dass der Wert
+darin vorkommt.
+
+**Die Abweichung von der slice-053-Grenze („Meldungstexte bleiben im Composition-Root") ist benannt
+und begründet:** dort ging es um **Dialog**-Texte; hier geht es um eine wert-tragende Statuszeile.
+Der Unterschied ist nicht Geschmack, sondern Messbarkeit — ein Text ohne Wert darf im Root entstehen,
+ein Text **mit** abnahmebindendem Wert nicht.
+
+**Und der Rückweg ins Feld liegt aus demselben Grund im Fenster** (§4-6): läge er im Root, wäre die
+Gegenprobe „Rückweg entfernt" im Test **nicht herstellbar**.
+
+### 2.4 Wo die „sofort"-Zusage beobachtbar ist — und mit welcher Größe
 
 [LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) sagt „Geometrie
 und 3D-Körper aktualisieren sich **sofort**". Auf der **2D-Fläche hat das kein Korrelat**: der Canvas
@@ -132,18 +188,19 @@ Netzes der geänderten Wand) — das ist die zu beobachtende Größe, und sie st
 |---|---|---|---|
 | 1 | **Der Bereich zeigt die Parameter der gewählten Wand** — die Werte kommen über die **schmale Abfrage** (slice-057) | `MainWindow`-Surrogat: Feld-Text **zurück-geparst** == `wallParams` (§2.1) | Anzeige-Aufruf entfernt ⇒ rot. **Kein Sensor für die Herkunft:** eine Implementierung, die die Werte aus dem `Building` zöge, lieferte **dieselben** Inhalte, und `make a-check` sieht es nicht (`ui_view → model` ist erlaubt) — die Naht-Treue ist eine **Bauvorschrift** (E15), kein Beleg |
 | 2 | **Keine Auswahl ⇒ nichts zu ändern** — der Bereich sagt „keine Auswahl" und trägt **keine** Werte einer zuvor gewählten Wand; **auch nach** Öffnen/Anlegen | `MainWindow`-Surrogat, im Anschluss an eine gefallene Auswahl | Leeren entfernt ⇒ die alten Werte stehen weiter da ⇒ rot. **Abnahmebindend** ([LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren) Boundary (Auswahl)) |
-| 3 | **Stärke ändern wirkt** — das Modell trägt den übernommenen Wert, und das Feld zeigt ihn | Fenster (Eingabe) → Senke → Dienst | Übernahme-Aufruf entfernt ⇒ rot |
-| 4 | **Die 3D-Sicht folgt** ([LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)) — **von der Bedienung ausgelöst**, nicht am Dienst | Fenster → Senke → Dienst → `ViewerScene` am **selben** Dienst. **Beobachtete Größe: `effectiveUpdates()`** (bzw. der Netz-**Inhalt** der Wand) — **nicht** die Netz-**Anzahl**: sie bleibt bei einer Parameter-Änderung **konstant** (§2.3) | Meldekette unterbrochen ⇒ rot. Mit der Anzahl als Größe wäre die Zeile in **beiden** Armen grün |
-| 5 | **Klemmung ist sichtbar und BENANNT** — Eingabe 49 ⇒ Modell trägt **50**, der Hinweis **nennt 50** | Senken-Test (Ausgang + übernommener Wert) **und** `MainWindow`-Surrogat (Hinweis-Text) | Hinweis ohne Wert ⇒ rot. **Abnahmebindend** ist die **Nennung** (§2.1). **Vorbedingung: das Eingabe-Widget klemmt NICHT selbst** — sonst ist die Zeile **unerreichbar** statt rot |
-| 6 | **Nach der Klemmung zeigt das FELD den übernommenen Wert**, nicht die Eingabe | `MainWindow`-Surrogat (Feld zurück-geparst) | Rückweg entfernt ⇒ das Feld zeigt 49 ⇒ rot. **Bauvorschrift** aus [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E5 — eigene Zeile, weil sie einen eigenen Weg hat (R2) |
+| 3 | **Stärke ändern wirkt** — das Modell trägt den übernommenen Wert | Fenster (Eingabe) → Senke → Dienst | Übernahme-Aufruf entfernt ⇒ rot. **Der Feld-Konjunkt gehört NICHT hierher:** im Happy-Fall ist der übernommene Wert **identisch mit der Eingabe**, ein entfernter Rückweg ließe das Feld unverändert richtig aussehen. Diskriminierend wird er erst bei der Klemmung — dafür gibt es §4-6 |
+| 4 | **Die 3D-Sicht folgt** ([LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung)) — **von der Bedienung ausgelöst**, nicht am Dienst | Fenster → Senke → Dienst → `ViewerScene` am **selben** Dienst. **Beobachtete Größe: der Netz-INHALT der geänderten Wand** — **nicht** die Netz-**Anzahl** (bleibt konstant, §2.4) und **nicht** `effectiveUpdates()` allein: der Zähler bewegt sich gemessen **auch bei einer wirkungslosen Setzung** (derselbe Wert erneut ⇒ 2 → 3) und belegt damit „es kam etwas an", nicht „die Darstellung zeigt den neuen Stand" | Meldekette unterbrochen ⇒ rot. Mit der Anzahl als Größe wäre die Zeile in **beiden** Armen grün |
+| 5 | **Klemmung ist sichtbar und BENANNT** — Eingabe 49 ⇒ Modell trägt **50**, und der **angezeigte Hinweis enthält den Wert 50** | **Zwei Orte, beide gebucht** (§2.3): Senken-Test (Ausgang **und** übernommener Wert) **und** `MainWindow`-Surrogat — dort wird die Naht mit `(Clamped, 50)` gerufen und der **erscheinende Text** auf den Wert geprüft | Wert nicht in den Text übernommen ⇒ rot. **Abnahmebindend** ist die **Nennung des Werts**, nicht der Wortlaut. **Vorbedingung: das Eingabe-Widget klemmt NICHT selbst** — sonst ist die Zeile **unerreichbar** statt rot |
+| 6 | **Nach der Klemmung zeigt das FELD den übernommenen Wert**, nicht die Eingabe | `MainWindow`-Surrogat (Feld mit der **Senken-Umwandlung** zurück-gelesen, §2.1) | Rückweg entfernt ⇒ das Feld zeigt 49 ⇒ rot. **Bauvorschrift** aus [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E5. **Der Rückweg liegt im FENSTER** (§2.3) — läge er im Composition-Root, wäre diese Gegenprobe im Test nicht herstellbar |
 | 7 | **Ablehnung, nicht-endlich** — `inf`/`nan` erreichen den Kern und werden **abgelehnt**: Modell unverändert, Hinweis | Senken-Test | Ablehnungs-Weg entfernt ⇒ rot |
-| 8 | **Ablehnung, nicht-numerisch** — „abc"/leer erreichen den Kern **nie** und werden **in der Senke** abgelehnt: kein Port-Aufruf, Modell unverändert, Hinweis | **Senken-Test** (dort fällt die Entscheidung, §2.2) | Text-Prüfung entfernt ⇒ `0` wird übernommen und auf 50 geklemmt ⇒ rot (**stille Falsch-Übernahme** statt Ablehnung) |
+| 8 | **Ablehnung, nicht-numerisch** — „abc", leer, **und die Rest-Fälle „50 mm"/„50,0"** erreichen den Kern **nie** und werden **in der Senke** abgelehnt: kein Port-Aufruf, Modell unverändert, Hinweis | **Senken-Test** (dort fällt die Entscheidung, §2.2) | Volle-Konsumption-Prüfung entfernt ⇒ „50 mm" wird als **50** übernommen ⇒ rot; Umwandlungs-Prüfung ganz entfernt ⇒ `0` wird übernommen und **geklemmt** (auf **50** bei der Stärke, auf **500** bei der Höhe — gemessen) ⇒ rot. **Beides ist eine stille Falsch-Übernahme statt einer Ablehnung** |
 | 9 | **Höhe gilt gleichlautend** ([LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren)) — Happy, Klemmung (499 ⇒ 500), Ablehnung; **eigene** Zeile mit **eigenem** Senken-Test | Senken-Test **und** `MainWindow`-Surrogat (wie §4-3, 5, 7) | Höhen-Weg auf den Stärke-Mutator verdrahtet ⇒ rot (die Verwechslung wäre sonst still, weil beide `ParamResult` liefern) |
 | 10 | **Kein Wurf verlässt den Ereignis-Pfad** — bei **veralteter** Wand-Id gibt es einen **Hinweis**, keine Ausnahme (`setWallThickness` wirft bei unbekannter Id) | **`ui/command/`-Parameter-Senke** (dort liegt die Barriere und dort liegt der Test) | `try`/`catch` entfernt ⇒ rot |
+| 13 | **Die Anzeige-Form ist von der Senken-Umwandlung lesbar** — der Rundlauf schließt: was das Feld zeigt, nimmt die Senke **ohne Ablehnung** wieder an (§2.2-Schließbedingung) | `MainWindow`-Surrogat + Senken-Test: Feld-Inhalt nach einer Übernahme **unverändert** erneut abschicken | Anzeige mit Komma/Einheit/Tausender-Trenner ⇒ die unveränderte Eingabe wird **abgelehnt** ⇒ rot. **Ohne diese Zeile hätte das Produkt einen Fehler, den kein anderes Orakel sieht:** Enter auf einem nie geänderten Feld ergäbe eine Ablehnung |
 | 11 | **Der Zeichen- und Auswahl-Pfad bleibt unverändert** | Bestands-Orakel (inkl. [`slice-059a`](slice-059a-wand-auswaehlen.md)) | (Regressions-Netz) |
 | 12 | **Die geänderte Stärke überlebt Speichern/Laden und Export** | **Bestands-Netz** (`make io-smoke`, Persistenz-Runden-Orakel): eine über den Bereich geänderte Wand ist dieselbe wie eine über den Dienst geänderte, und §4-3 belegt, dass die Bedienung den Dienst erreicht | (Netz — **kein** eigener Sensor, benannte Entscheidung) |
 
-**Zehn Zeilen tragen einen eigenen Sensor** (1–10), zwei sind **Netz** (11, 12).
+**Elf Zeilen tragen einen eigenen Sensor** (1–10 und 13), zwei sind **Netz** (11, 12).
 
 **Was ausdrücklich KEIN Orakel bekommt** (§2.3): die 2D-Sichtbarkeit einer Stärken-Änderung — der
 Canvas zeichnet Achsen, eine Stärken-Änderung bewegt keine. Und **keine Zusage** ist die Anzeige-Form
@@ -153,22 +210,28 @@ der Zahlen (§2.1).
 
 - [ ] **`src/adapters/ui/command/`-Parameter-Lese-Quelle** (neu, Bauform `plan_view_plan_source.h`):
       kapselt `PlanViewPort::wallParams`. **Kein** neuer Port — die Naht existiert seit slice-057.
-- [ ] **`src/adapters/ui/command/`-Parameter-Senke** (neu): nimmt den **Text** (§2.2),
-      ruft `setWallThickness`/`setWallHeight`, **fängt** die Würfe, meldet **einen** Ausgang **mit
-      übernommenem Wert**. Orakel §4-5, 7, 8, 9, 10.
+- [ ] **`src/adapters/ui/command/`-Parameter-Senke** (neu): nimmt den **Text** als
+      `std::string_view` und wandelt mit `std::from_chars` **bei voller Konsumption** um (§2.2 —
+      **Qt-frei**, wurf-frei, locale-frei), ruft `setWallThickness`/`setWallHeight`, **fängt** die
+      Würfe, meldet **einen** Ausgang **mit übernommenem Wert**. Orakel §4-5, 7, 8, 9, 10, 13.
 - [ ] **`src/adapters/ui/view/main_window.{h,cpp}`**: **nicht-modaler Eigenschaften-Bereich** — zwei
-      Felder, Übernahme bei Abschluss der Eingabe, „keine Auswahl"-Zustand, Rückweg für den
-      übernommenen Wert. Orakel §4-1, 2, 6.
+      Felder, Übernahme bei Abschluss der Eingabe, „keine Auswahl"-Zustand. **Die Naht nimmt
+      `(Ausgang, übernommener Wert)`, keinen fertigen Text** (§2.3): das Fenster setzt den Hinweis
+      zusammen **und** schreibt den Wert ins Feld zurück. Orakel §4-1, 2, 5 (Fenster-Hälfte), 6, 13.
 - [ ] **`src/main.cpp`**: Verdrahtung — Auswahl-Meldung (aus
-      [`slice-059a`](slice-059a-wand-auswaehlen.md)) → Lese-Quelle → Anzeige; Feld → Senke → Hinweis
-      **und** Anzeige-Nachzug. **Die Texte bleiben hier.**
+      [`slice-059a`](slice-059a-wand-auswaehlen.md)) → Lese-Quelle → Anzeige; Feld → Senke → **Ausgang
+      als Wert** ans Fenster. **Der Root reicht Werte durch, er setzt hier keine Texte zusammen**
+      (§2.3 — anders als in [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md), und aus
+      einem benannten Grund).
 - [ ] **Tests**: neuer Test der Parameter-Senke (§4-5, 7, 8, 9, 10) · `test_main_window.cpp`
       (§4-1, 2, 6) · **ein neuer Test, der Fenster, Senke und Viewer-Surrogat an denselben Dienst
       hängt** (§4-3, 4, **und die Fenster-Hälfte von §4-9**) — eigene Datei, damit die Kette einen
       Ort hat.
-- [ ] **Orakel §4-1 bis §4-10 je mit roter Gegenprobe** im Closure-Text, **einzeln** gemessen; §4-11
-      und §4-12 als **Netz** benannt. **Zwei Zeilen tragen eine ausgeschriebene Vorbedingung**
-      (§4-5: das Feld klemmt nicht selbst; §4-4: die beobachtete Größe ist nicht die Anzahl).
+- [ ] **Orakel §4-1 bis §4-10 und §4-13 je mit roter Gegenprobe** im Closure-Text, **einzeln**
+      gemessen — **elf Zeilen mit eigenem Sensor**; §4-11 und §4-12 als **Netz** benannt.
+      **Vier Zeilen tragen ausgeschriebene Vorbedingungen bzw. Bauvorschriften:** §4-3 (der
+      Feld-Konjunkt gehört nicht hierher), §4-4 (die Größe ist der Netz-**Inhalt**), §4-5 (das Feld
+      klemmt nicht selbst) und §4-6 (der Rückweg liegt im Fenster).
 - [ ] **`make a-check` grün** — **mit** ausgeschriebener Aussage, ob eine neue Kante entstanden ist.
       **Kein** Kern-/Persistenz-/Export-/Schema-Diff, am `git diff --stat` belegt.
 - [ ] **Benutzerhandbuch** — **gesucht, nicht aufgezählt**: §1 („Stärke/Höhe nachträglich nicht
@@ -189,9 +252,15 @@ der Zahlen (§2.1).
       [`slice-012`](../done-archive/slice-012-eckenschluss-wal006-teil.md); Lehre slice-058).
 - [ ] **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
       des Bauteil-Strangs** — **vor** der Welle-Closure, unabhängiger Reviewer:
-      **Eckenschluss** ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)),
-      **Nachbar-Rebuild** und **Raum-Neuerkennung** im interaktiven Pfad. **HIGHs blockieren die
-      Closure.** Es hängt hier, weil mit diesem Slice der letzte interaktive Mutator entsteht.
+      die **Geometrie-Korrektheit gegen die Spezifikation** im vollen Umfang der Konvention
+      (mindestens Orientierung/Winding, Bündigkeit/Spaltfreiheit, Höhen-/Maß-Exaktheit, Totalität bei
+      Degeneration) — **im interaktiven Pfad** und mit den drei von
+      [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) §Konsequenzen ausdrücklich genannten
+      Schwerpunkten: **Eckenschluss**
+      ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden)),
+      **Nachbar-Rebuild**, **Raum-Neuerkennung**. **Die drei sind Schwerpunkte, nicht die Grenze** —
+      die Konvention rangiert höher als ihre Aufzählung hier. **HIGHs blockieren die Closure.** Es
+      hängt hier, weil mit diesem Slice der letzte interaktive Mutator entsteht.
 
 ## 6. Plan (vor Code)
 
@@ -203,7 +272,7 @@ der Zahlen (§2.1).
 | `src/main.cpp` | ändern | Verdrahtung + Hinweis-Texte |
 | `tests/adapters/`-Test der Parameter-Senke `.{cpp}` | neu | §4-5, 7, 8, 9, 10 |
 | `tests/adapters/`-Test der Kette Fenster→Senke→Dienst→Viewer `.{cpp}` | neu | §4-3, 4, 9 (Fenster-Hälfte) |
-| `tests/adapters/test_main_window.cpp` | ändern | §4-1, 2, 6 |
+| `tests/adapters/test_main_window.cpp` | ändern | §4-1, 2, 5 (Fenster-Hälfte), 6, 13 |
 | `tests/CMakeLists.txt` | ändern | **zwei** neue Testdateien |
 | `docs/user/benutzerhandbuch.md` | ändern | **gesucht** + Version |
 | `docs/plan/adr/README.md` | ändern | **zwei** Folgepflichtzeilen |
@@ -250,17 +319,24 @@ der Zahlen (§2.1).
 - §4-1 bis §4-10 grün + **je einzeln** diskriminierend belegt; §4-11/§4-12 als Netz grün;
   `make gates`, `make io-smoke` und `make acc-002-beleg` grün; kein Kern-/Schema-/Export-Diff belegt;
   Handbuch und ADR-Index nachgezogen; Closure-Notiz.
-- **Danach die Welle:** der Abschluss-Trigger ist erfüllt — liegt die
-  [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Freigabe
-  vor, ist **zu schließen** (M6 buchen).
+- **Danach die Welle**, und zwar in **drei** Handgriffen (am Bestand geprüft, nicht „M6 buchen"):
+  eine **Closure-Datei** `welle-6-results.md` neben den Vorgängern in
+  [`done/`](../done/) (alle sechs bisherigen Wellen haben eine), der **Meilenstein-Status** M6 in der Roadmap-Tabelle (heute `offen`) und der
+  **Welle-Block** samt Ruhe-Marker.
+  **[MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)
+  steht der Closure nicht im Weg** — im Folgepflicht-Block sind nur die **zwei**
+  [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)-Zeilen `offen`, und **beide bucht dieser Slice**;
+  die [ADR-0019](../../adr/0019-drw-2d-canvas.md)-Zeile „Raster/Winkel" trägt eine **ausdrückliche
+  Deferral-Entscheidung**. Das steht hier, damit die Closure nicht an einer vermeintlich offenen
+  Zeile hängen bleibt.
 
 ## 10. Sub-Area-Modus-Begründung
 
 ### Sub-Area: GUI-Adapter (Fenster + Kommando-Schicht)
 
 - **Modus:** GF; **Dichte:** mittel-groß — eine Lese-Quelle, eine Senke mit Text-Eingang und
-  Barriere, der **erste zustandstragende** Eingabe-Bereich des Fensters samt Rückweg, zwölf
-  Orakel-Zeilen (zehn mit eigenem Sensor).
+  Barriere, der **erste zustandstragende** Eingabe-Bereich des Fensters samt Rückweg, dreizehn
+  Orakel-Zeilen (elf mit eigenem Sensor).
 - **Risiko:** **hoch** — hier entsteht der einzige Weg, auf dem eine Benutzer-Eingabe das
   Gebäudemodell **verändert**, und drei der vier Ausgänge sind Fehl-Ausgänge.
 - **Warum diese Hälfte den Wellen-Abschluss trägt:** der Trigger verlangt „parametrisch änderbar" —
@@ -270,8 +346,9 @@ der Zahlen (§2.1).
 
 Entstanden aus der **Teilung** von slice-059 im ersten
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
-([`2026-07-29-slice-059-plan.md`](../../../reviews/2026-07-29-slice-059-plan.md), MEDIUM-6). Vier
-Befunde des Laufs betreffen **diese** Hälfte und sind hier eingearbeitet:
+([`2026-07-29-slice-059-plan.md`](../../../reviews/2026-07-29-slice-059-plan.md), MEDIUM-6). **Neun**
+Befunde des Laufs betreffen **diese** Hälfte und sind hier eingearbeitet (drei MEDIUM, sechs
+LOW-Positionen):
 
 | # | Behandlung |
 |---|---|
@@ -285,10 +362,40 @@ Befunde des Laufs betreffen **diese** Hälfte und sind hier eingearbeitet:
 | **LOW-5 (a)** (§4-14-alt sagte „wie §4-10..12", war aber nur im Fenster-Test verortet) | §4-9 nennt **beide** Orte: eigener Senken-Test **und** Fenster-Hälfte im Ketten-Test. |
 | **LOW-5 (c)** ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden) fehlte im Front-Matter, obwohl die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Zeile darauf zielt) | **Im Front-Matter ergänzt.** |
 
-**Startbar:** **nein** — dieser Plan hat **noch kein eigenes**
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start).
-Er entstand als Hälfte eines geprüften Plans, aber die Teilung selbst ist ungeprüft, und §2.2 (die
-Text-Naht) ist eine **neue** Entscheidung, die kein Reviewer gesehen hat.
+## 11a. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Einarbeitung (eigener erster Lauf, 2026-07-29)
+
+Report: [`2026-07-29-slice-059b-plan.md`](../../../reviews/2026-07-29-slice-059b-plan.md) —
+**0 HIGH / 3 MEDIUM / 6 LOW / 4 INFO + 17 Negativbefunde, „STARTBAR"**. Unabhängiger Reviewer,
+verschieden von Autor und den Reviewern des ungeteilten Plans und von
+[`slice-059a`](slice-059a-wand-auswaehlen.md).
+
+**Die neue Entscheidung trägt** — beide Begründungszweige am Artefakt bestätigt (`src/main.cpp` ist
+in keinem Testziel; das Fenster wäre eine zweite Ausgangs-Autorität), und die Gegenprobe von §4-8 ist
+**exakt** wie behauptet (`setWallThickness(…, 0.0)` ⇒ `Clamped`, `applied = 50`; Höhe: 500).
+**Die eigentliche Kehrseite lag woanders:**
+
+| # | Behandlung |
+|---|---|
+| **MEDIUM-1** (§4-5 buchte **zwei** Orte, aber nur einer misst: die abnahmebindende **Nennung** des übernommenen Werts endet an der Senke — das Fenster-Orakel belegt nur, dass ein **gereichter** Text erscheint, und die **Zusammensetzung** liegt im orakel-losen Composition-Root) | **§2.3 ist neu und entscheidet die Naht: das Fenster bekommt `(Ausgang, Wert)`, keinen fertigen Text.** Damit ist die Nennung am Fenster-Surrogat messbar. **Die Abweichung von slice-058 ist benannt und begründet:** dessen Hinweise sind **konstante** Sätze ohne Wert, hier trägt der Wert die Abnahme — ein Text ohne Wert darf im Root entstehen, ein Text **mit** abnahmebindendem Wert nicht. |
+| **MEDIUM-2** (§4-6 hat nur dann einen Sensor, wenn der **Rückweg im Fenster** liegt; zwei benachbarte DoD-Zeilen sagten Verschiedenes) | **Derselbe Schnitt** (§2.3): der Rückweg liegt im Fenster, sonst ist „Rückweg entfernt" im Test nicht herstellbar. Die zwei DoD-Zeilen sind vereinheitlicht. |
+| **MEDIUM-3** (§2.2 entschied die **Naht**, aber nicht die **Umwandlung** — und an ihr hängen drei Zusagen: `std::stod("abc")` **wirft** statt still 0 zu liefern; `toDouble("50,0")`/`"50 mm"` ⇒ `ok = false`, `stod("50,0")` ⇒ 50) | **Die Umwandlung ist jetzt Bauvorschrift:** `std::string_view` + `std::from_chars` bei **voller Konsumption** — Qt-frei, wurf-frei, locale-frei, und `inf`/`nan` laufen weiterhin in den Kern. **Dazu die Schließbedingung samt eigener Orakel-Zeile (§4-13): die Anzeige-Form muss von derselben Umwandlung wieder lesbar sein.** Ohne sie hätte das Produkt einen Fehler, den **kein** Orakel sieht: Enter auf einem nie geänderten Feld ergäbe eine Ablehnung. |
+| **LOW-1** (die Einarbeitungs-Zählung in §11 stimmte nicht) | **Neun** statt vier. |
+| **LOW-2** (§4-3 trug einen Konjunkt, der im `Accepted`-Fall nicht diskriminiert — der übernommene Wert ist dort **identisch** mit der Eingabe) | Der Feld-Konjunkt ist aus §4-3 **entfernt** und dort ausdrücklich als **kein Beleg** benannt; er lebt in §4-6, wo er misst. |
+| **LOW-3** (`effectiveUpdates()` bewegt sich gemessen **auch bei einer wirkungslosen** Setzung: 2 → 3) | **§4-4 verlangt jetzt den Netz-INHALT**, nicht den Zähler — der belegt „es kam etwas an", nicht „die Darstellung zeigt den neuen Stand". **Das ist die sechste Wiederholung der Instrument-Klasse in diesem Strang**, und diesmal war das ERSATZ-Instrument das ungenaue. |
+| **LOW-4** (die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-DoD-Zeile **verengte** die höherrangige Quelle auf drei Punkte) | Die Zeile nennt jetzt den **vollen** Konventions-Umfang und führt die drei ADR-Punkte als **Schwerpunkte, nicht als Grenze**. |
+| **LOW-5** (der Wellen-Abschluss braucht mehr als „M6 buchen", und die [MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin)-Lage gehört dazu) | §9 nennt die **drei** Handgriffe und stellt fest, dass der Folgepflicht-Block der Closure **nicht** im Weg steht. |
+| **LOW-6 (b)** (Front-Matter-Asymmetrie: [LH-FA-WAL-007](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen) gelistet, [LH-FA-UI-001](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui) nicht, obwohl §3 beide in derselben Rolle zitiert) | **Ergänzt.** |
+| **LOW-6 (a)** (fünf Rückverweise in [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) zeigen seit der Teilung auf die **falsche** Hälfte — darunter die **einzigen zwei Wegweiser** zur [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Pflicht) | **Alle fünf korrigiert.** **Neunte Zählung derselben Bauart** in diesem Strang — und die erste, die nicht durch Umformulieren, sondern durch **Teilen** entstanden ist. |
+
+**Positiv bestätigt (17 Negativbefunde):** die **Teilung ist sauber** — keine Zusage heimatlos (17
+Zeilen des ungeteilten Plans gegen 10 + 12 abgeglichen), und `slice-059b` ist technisch sogar **ohne**
+`slice-059a` baubar; die Abhängigkeit ist **Produkt-Erreichbarkeit**, und der Plan sagt das richtig.
+Gemessen bestätigt: Netz-**Anzahl** bei Parameter-Änderung konstant (1 → 1), `effectiveUpdates()` bei
+**Ablehnung** unbewegt (1 → 1). Ein Qt-Include in `ui/command/` wäre **gate-frei** — der Plan
+entscheidet sich trotzdem dagegen (§2.2).
+
+**Startbar: JA** — 0 HIGH nach der vorab festgelegten Abbruchregel. Die drei MEDIUM und sechs LOW
+sind eingearbeitet; sie betreffen **Nahtschnitt und Vorbedingungen**, nicht die Bauart.
 
 ## 12. Closure-Notiz
 
