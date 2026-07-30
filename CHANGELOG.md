@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-058 — **Wände im 2D-Canvas zeichnen** ([LH-FA-WAL-001](spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen),
+  [ADR-0021](docs/plan/adr/0021-wand-im-2d-canvas.md) E1/E2/E5/E6/E7/E8/E9/E10/E12/E14). **Das erste
+  Bauteil, das in der Oberfläche entsteht.** Menü **Werkzeug** → **Hilfslinie** (Voreinstellung) oder
+  **Wand**; die Geste bleibt der Links-Zug, der Modus entscheidet, was daraus wird. Die Wand erscheint
+  sofort in 2D **und** 3D, rastet an **beiden** Enden auf vorhandene Eckpunkte ein — damit ist der
+  **Eckenschluss** interaktiv erreichbar — und überlebt Speichern/Öffnen und Export.
+  **Neu ist eine Hinweis-Zeile** (nicht-modal, Statusleiste): drei Ausgänge, drei Aussagen — angelegt
+  (kein Hinweis, die Wand ist der Beleg), „keine Wand angelegt", „nicht angelegt, Modell unverändert".
+  **Der zweite UI-Mutator ist gegenläufig zum ersten und deshalb eine eigene Bauform:** der
+  Zeichen-Weg lehnt wertbasiert ab, der Bauteil-Weg **wirft** — die neue `ui/command/`-Senke ist die
+  **Fehler-Barriere** und stellt den Ausgang fest. **Nicht der Canvas:** der Kern verwirft unterhalb
+  von 0,1 mm, während bei Maximal-Zoom benachbarte Pixel 0,01 mm auseinanderliegen — ein Canvas, der
+  selbst urteilte, gäbe einen **falschen** Hinweis.
+  **Benannte Grenzen** (alle im Handbuch): eine Wand je Zug · **kein** Entfernen und **kein**
+  Rückgängigmachen einer fertigen Wand (ein *begonnener* Zug bricht mit Escape oder Fokusverlust ab) ·
+  Stärke/Höhe nachträglich **nicht** änderbar (folgt) · gezeichnet wird nur im angezeigten Geschoss.
+  **Kein** Kern-, Persistenz-, Export- oder Schema-Diff; `.a-check.yml` byte-unberührt.
 - slice-057 — **Bauteil-Identität in der 2D-Lese-Naht** ([ADR-0021](docs/plan/adr/0021-wand-im-2d-canvas.md)
   E11/E15). Jedes Segment der Grundriss-Projektion trägt jetzt seine **Herkunft** (Art + Identität),
   und die Lese-Naht beantwortet eine zweite, **schmale** Frage: zu einer benannten Wand ihre

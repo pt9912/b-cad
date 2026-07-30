@@ -5,6 +5,8 @@
 #include <optional>
 #include <utility>
 
+#include <QFocusEvent>
+#include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
@@ -18,16 +20,34 @@
 namespace bcad::adapters::ui::view {
 
 CanvasWidget::CanvasWidget(PlanPull pull, GuideLineDraw draw,
-                           int active_storey_id, QWidget* parent)
+                           WallDraw draw_wall, int active_storey_id,
+                           QWidget* parent)
     : QWidget(parent),
       pull_(std::move(pull)),
       draw_(std::move(draw)),
+      draw_wall_(std::move(draw_wall)),
       active_storey_id_(active_storey_id) {
     // Ohne Maus-Verfolgung stellt Qt OHNE gedrückte Taste kein Move-Ereignis zu
     // — die Fang-Anzeige (slice-055) wäre im Produkt tot, während ein Test, der
     // Ereignisse synthetisiert, grün bliebe. Deshalb ist die Eigenschaft selbst
     // eine Zusage (§4-5), nicht nur ihre Wirkung.
     setMouseTracking(true);
+    // Ohne Fokus stellt Qt keine Tasten-Ereignisse zu — der Escape-Abbruch
+    // (ADR-0021 E12) wäre im Produkt tot, während ein Test, der `QKeyEvent`
+    // direkt zustellt, grün bliebe. Dieselbe Klasse wie `setMouseTracking`:
+    // die Eigenschaft ist Teil der Zusage. `StrongFocus` = Klick- UND
+    // Tabulator-Fokus, der Klick auf die Fläche holt ihn also mit.
+    setFocusPolicy(Qt::StrongFocus);
+}
+
+void CanvasWidget::setToolMode(ToolMode mode) {
+    if (mode == tool_mode_) {
+        return;
+    }
+    // Ein Wechsel MITTEN im Zug würde aus einer als Hilfslinie begonnenen Geste
+    // eine Wand machen (oder umgekehrt) — der Zug fällt.
+    cancelDrag();
+    tool_mode_ = mode;
 }
 
 void CanvasWidget::setActiveStorey(int active_storey_id) {
@@ -132,6 +152,33 @@ void CanvasWidget::leaveEvent(QEvent* event) {
     QWidget::leaveEvent(event);
 }
 
+void CanvasWidget::cancelDrag() {
+    if (!dragging_) {
+        return;
+    }
+    dragging_ = false;
+    // KEINE Mutation, kein Callable — nur die in-Arbeit-Linie verschwindet.
+    // `update()` rahmt NICHT neu ein (`fitted_` bleibt), es zeichnet nur.
+    update();
+}
+
+void CanvasWidget::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape) {
+        cancelDrag();
+        event->accept();
+        return;
+    }
+    QWidget::keyPressEvent(event);
+}
+
+void CanvasWidget::focusOutEvent(QFocusEvent* event) {
+    // Zweiter der beiden E12-Auslöser. Wer den Fokus verliert, führt keine
+    // Geste mehr — ein bei Rückkehr fortgesetzter Zug wäre ein Zug, an dessen
+    // Anfang sich niemand erinnert.
+    cancelDrag();
+    QWidget::focusOutEvent(event);
+}
+
 hexagon::model::Point2D CanvasWidget::snappedModelPos(
     const QPoint& cursor_px) const {
     const hexagon::model::PlanView plan = pull_();
@@ -178,12 +225,28 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent* event) {
     const hexagon::model::Point2D end = snappedModelPos(event->pos());
     // Der Kern lehnt den entarteten Zug (Anfang == Ende) ab (kein Wert, Modell
     // unverändert) — der Canvas verlässt sich darauf, klemmt nichts selbst
-    // (E-VAL-001-Rejection-Lesart). Erfolg wie Ablehnung: Repaint (die
-    // in-Arbeit-Linie verschwindet; bei Erfolg erscheint die neue Hilfslinie
-    // aus der frisch gepullten `PlanView` = Selbst-Refresh, kein `op`).
-    if (draw_) {
+    // (E-VAL-001-Rejection-Lesart). Das gilt für BEIDE Wege, und beim Wand-Weg
+    // stellt die Senke den Ausgang fest (ADR-0021 E5/E10).
+    //
+    // **Der Modus entscheidet, was aus dem Zug entsteht** (E1) — die Geste
+    // bleibt dieselbe.
+    if (tool_mode_ == ToolMode::Wall) {
+        if (draw_wall_) {
+            draw_wall_(start, end);
+        }
+    } else if (draw_) {
         draw_(start, end);
     }
+    // Repaint — **kein** Neu-Einrahmen. Die in-Arbeit-Linie muss verschwinden,
+    // auch wenn nichts entstand (Ablehnung/Wurf melden keinen `op`); `update()`
+    // lässt `fitted_` unberührt.
+    //
+    // **Und deshalb ist das KEIN Verstoß gegen ADR-0021 E6:** verboten ist der
+    // zusätzliche Selbst-Refresh, der ein zweites Mal NEU EINRAHMT (sichtbarer
+    // Sprung). Beim Hilfslinien-Weg ist dieses `update()` die einzige Quelle
+    // (ADR-0018 §2: kein `op`); beim Wand-Weg kommt das Neu-Einrahmen
+    // ausschließlich aus der Meldekette (`onModelChanged`), und hier steht
+    // **kein** `fitted_ = false`. Genau das misst §4-8 an `transform()`.
     update();
 }
 

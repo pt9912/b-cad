@@ -72,7 +72,7 @@ QAction* actionNamed(MainWindow& window, const char* name) {
 TEST(MainWindow, IsConstructibleHeadlessWithCentralWidget) {
     const QtFixture qt;
     auto* central = new QLabel(QStringLiteral("zentral"));
-    MainWindow window(central, {}, {});
+    MainWindow window(central, {}, {}, {});
 
     EXPECT_EQ(window.centralWidget(), central)
         << "das Fenster uebernimmt das gereichte Widget (Qt-Ownership)";
@@ -99,7 +99,7 @@ TEST(MainWindow, TriggeringMenuActionsCallsTheInjectedHandlers) {
                        },
                        [&saved](QWidget*) { ++saved; },
                        [&saved_as](QWidget*) { ++saved_as; }},
-                      {});
+                      {}, {});
 
     // slice-052b: "Neu" ist eine EIGENE Aktion — eine Vertauschung mit
     // "Oeffnen" waere ein Datenverlust ohne Datei-Dialog.
@@ -132,7 +132,7 @@ TEST(MainWindow, TriggeringMenuActionsCallsTheInjectedHandlers) {
 TEST(MainWindow, CloseRunsTheCloseGuard) {
     const QtFixture qt;
     int asked = 0;
-    MainWindow window(nullptr, {}, [&asked]() {
+    MainWindow window(nullptr, {}, {}, [&asked]() {
         ++asked;
         return true;
     });
@@ -146,7 +146,7 @@ TEST(MainWindow, CloseRunsTheCloseGuard) {
 // Naht, an der slice-052a sein "abbrechen" aufhaengt.
 TEST(MainWindow, CloseGuardVetoKeepsTheWindowVisible) {
     const QtFixture qt;
-    MainWindow window(nullptr, {}, []() { return false; });
+    MainWindow window(nullptr, {}, {}, []() { return false; });
     window.show();
     ASSERT_TRUE(window.isVisible());
 
@@ -159,7 +159,7 @@ TEST(MainWindow, CloseGuardVetoKeepsTheWindowVisible) {
 // Rueckfrage ein (Verhaltens-Invarianz, Plan §2).
 TEST(MainWindow, WithoutGuardTheWindowClosesAsBefore) {
     const QtFixture qt;
-    MainWindow window(nullptr, {}, {});
+    MainWindow window(nullptr, {}, {}, {});
     window.show();
 
     EXPECT_TRUE(window.close());
@@ -187,7 +187,7 @@ TEST(MainWindow, SchliessenMitUngesichertemStandUndAbbrechenHaeltDasFensterOffen
         project, session, [&aktuell]() -> const model::Building& { return aktuell; },
         {});
 
-    MainWindow window(nullptr, {}, [&handler]() {
+    MainWindow window(nullptr, {}, {}, [&handler]() {
         return handler.mayDiscard(
             []() { return bcad::hexagon::ports::driving::DiscardAnswer::Cancel; },
             []() { return std::optional<std::filesystem::path>{}; });
@@ -213,7 +213,7 @@ TEST(MainWindow, SchliessenOhneUngesichertenStandFragtNicht) {
         [&baseline]() -> const model::Building& { return baseline; }, {});
 
     int gefragt = 0;
-    MainWindow window(nullptr, {}, [&handler, &gefragt]() {
+    MainWindow window(nullptr, {}, {}, [&handler, &gefragt]() {
         return handler.mayDiscard(
             [&gefragt]() {
                 ++gefragt;
@@ -225,6 +225,83 @@ TEST(MainWindow, SchliessenOhneUngesichertenStandFragtNicht) {
 
     EXPECT_TRUE(window.close());
     EXPECT_EQ(gefragt, 0);
+}
+
+// --- slice-058, §4-9 und §4-5a: Werkzeug-Modus und Hinweis-Anzeige ---------
+//
+// Reichweite, ausgeschrieben (Plan §4-9): geprueft wird der FENSTER-VERTRAG —
+// die Aktion existiert, sie ruft ihr injiziertes Callable, und die aktive Aktion
+// ist markiert. Die PRODUKTIVE Verdrahtung (Aktion → `CanvasWidget::setToolMode`)
+// liegt im Composition-Root und ist per Konstruktion orakel-los: `src/main.cpp`
+// ist in kein Testbinary gelinkt. Das ist die bekannte Klasse, keine neue Luecke.
+
+// §4-9: der Modus ist bedienbar UND sichtbar.
+TEST(MainWindow, ADR_0021_E1_WerkzeugAktionenSindAusloesbarUndMarkiert) {
+    const QtFixture qt;
+    int guide_line_calls = 0;
+    int wall_calls = 0;
+    MainWindow window(nullptr, {},
+                      {[&guide_line_calls]() { ++guide_line_calls; },
+                       [&wall_calls]() { ++wall_calls; }},
+                      {});
+
+    QAction* guide_line = actionNamed(window, MainWindow::kToolGuideLineActionName);
+    QAction* wall = actionNamed(window, MainWindow::kToolWallActionName);
+    ASSERT_NE(guide_line, nullptr) << "die Werkzeug-Aktion muss auffindbar sein";
+    ASSERT_NE(wall, nullptr);
+
+    // Default ist HILFSLINIE (ADR-0021 E1) — die bestehende Bedienung laeuft
+    // unveraendert weiter, und die Markierung sagt es.
+    EXPECT_TRUE(guide_line->isChecked());
+    EXPECT_FALSE(wall->isChecked());
+
+    // Ausloesen ruft das injizierte Callable …
+    wall->trigger();
+    EXPECT_EQ(wall_calls, 1);
+    EXPECT_EQ(guide_line_calls, 0);
+    // … und verschiebt die Markierung. Exklusiv: genau EIN Werkzeug ist aktiv.
+    EXPECT_TRUE(wall->isChecked());
+    EXPECT_FALSE(guide_line->isChecked())
+        << "zwei gleichzeitig markierte Werkzeuge waeren eine Luege ueber den "
+           "Zustand des Canvas";
+
+    guide_line->trigger();
+    EXPECT_EQ(guide_line_calls, 1);
+    EXPECT_TRUE(guide_line->isChecked());
+    EXPECT_FALSE(wall->isChecked());
+}
+
+// §4-5a: die Hinweis-Anzeige existiert und traegt den GEMELDETEN Text.
+//
+// Bewusst OHNE `isVisible()`-Konjunkt (Plan-Review Lauf 3): den entscheidet
+// `show()` und die Konstruktions-Reihenfolge, nicht die Implementierung — auch
+// ein nie eingelayoutetes Waisen-Widget ist nach `show()` sichtbar. Der
+// Text-Konjunkt traegt die Zeile allein.
+//
+// Und bewusst OHNE Tinten-Sonde: am Fenster zaehlt sie 120 000 von 120 000
+// Pixeln als Tinte, weil der Hintergrund nicht weiss ist (Lauf 2, gemessen).
+// Sie traegt nur am Canvas — dort loest §4-8a die ADR-0021-E14-Folgepflicht ein.
+TEST(MainWindow, ADR_0021_E5_HinweisAnzeigeTraegtDenGemeldetenText) {
+    const QtFixture qt;
+    MainWindow window(nullptr, {}, {}, {});
+
+    auto* hint = window.findChild<QLabel*>(
+        QString::fromLatin1(MainWindow::kHintLabelName));
+    ASSERT_NE(hint, nullptr)
+        << "ohne Anzeige waere 'jeder Fehl-Ausgang gibt einen Hinweis' eine "
+           "Zusage ohne Adressaten";
+    EXPECT_TRUE(hint->text().isEmpty()) << "frisch: kein Hinweis";
+
+    window.showHint(QStringLiteral("Keine Wand angelegt."));
+    EXPECT_EQ(hint->text(), QStringLiteral("Keine Wand angelegt."));
+
+    // Ein zweiter Hinweis ERSETZT den ersten — eine Zeile, kein Protokoll.
+    window.showHint(QStringLiteral("Wand nicht angelegt."));
+    EXPECT_EQ(hint->text(), QStringLiteral("Wand nicht angelegt."));
+
+    // Und der Erfolgsfall raeumt sie ab (ADR-0021 E5: die Wand ist der Beleg).
+    window.showHint(QString());
+    EXPECT_TRUE(hint->text().isEmpty());
 }
 
 }  // namespace

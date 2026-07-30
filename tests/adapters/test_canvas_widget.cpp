@@ -17,15 +17,19 @@
 
 #include "adapters/geometry/occ_geometry_adapter.h"
 #include "adapters/ui/command/edit_drawing_guide_line_sink.h"
+#include "adapters/ui/command/edit_structure_wall_sink.h"
 #include "adapters/ui/command/plan_view_plan_source.h"
+#include "adapters/ui/command/view_model_mesh_source.h"
 #include "adapters/ui/view/canvas_widget.h"
 #include "adapters/ui/view/view_transform.h"
+#include "adapters/ui/view/viewer_scene.h"
 #include "hexagon/model/plan_view.h"
 #include "hexagon/model/point2d.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/services/structure_edit_service.h"
 
 #include <memory>
+#include <vector>
 
 namespace {
 
@@ -96,6 +100,12 @@ TEST(CanvasWidgetInteraction, LH_FA_DRW_005_MausZugErzeugtHilfslinie) {
         [&plan_source]() { return plan_source.planView(); },
         [&guide_sink](model::Point2D a, model::Point2D b) {
             return guide_sink.addGuideLine(a, b);
+        },
+        // slice-058: dieser Bestands-Test bleibt im DEFAULT-Modus (Hilfslinie);
+        // ein Wand-Callable, das dennoch gerufen wuerde, laesst ihn fallen —
+        // das ist die Gegenprobe zu §4-1 aus der anderen Richtung.
+        [](model::Point2D, model::Point2D) {
+            FAIL() << "im Default-Modus darf der Wand-Pfad nicht laufen";
         },
         static_cast<int>(eg));
     service.subscribe(canvas);
@@ -249,8 +259,12 @@ struct CanvasFixture {
     model::LayerId layer{};
     std::unique_ptr<command::PlanViewPlanSource> plan_source;
     std::unique_ptr<command::EditDrawingGuideLineSink> guide_sink;
+    std::unique_ptr<command::EditStructureWallSink> wall_sink;
     std::unique_ptr<view::CanvasWidget> canvas;
     int pulls{0};
+    // slice-058: die gemeldeten Wand-Ausgaenge. Der Canvas sieht sie nicht —
+    // die Senke meldet sie (ADR-0021 E5); hier stehen sie als Surrogat.
+    std::vector<command::WallDrawOutcome> outcomes;
 
     void build() {
         storey = service.building().storeys.front().id;
@@ -262,6 +276,9 @@ struct CanvasFixture {
         plan_source = std::make_unique<command::PlanViewPlanSource>(service);
         guide_sink = std::make_unique<command::EditDrawingGuideLineSink>(
             service, storey, layer);
+        wall_sink = std::make_unique<command::EditStructureWallSink>(
+            service, storey,
+            [this](command::WallDrawOutcome o) { outcomes.push_back(o); });
         canvas = std::make_unique<view::CanvasWidget>(
             [this]() {
                 ++pulls;  // Zaehl-Callable in der PlanPull-Naht (Orakel 9)
@@ -269,6 +286,9 @@ struct CanvasFixture {
             },
             [this](model::Point2D a, model::Point2D b) {
                 return guide_sink->addGuideLine(a, b);
+            },
+            [this](model::Point2D a, model::Point2D b) {
+                wall_sink->addWall(a, b);  // Rueckgabe verworfen wie im Produkt
             },
             static_cast<int>(storey));
         canvas->resize(400, 300);
@@ -285,6 +305,13 @@ struct CanvasFixture {
         // Fixture-Vorbedingung, damit ein stiller Rückfall auffällt:
         assertFitted();
     }
+
+    // slice-058, Plan-Risiko R4: die Fixture meldet den Canvas NICHT von selbst
+    // als Beobachter an — sonst haette §4-8 (Refresh aus der Meldekette) eine
+    // Vorbedingung, die niemand sieht, und die Gegenprobe waere gruen wie die
+    // Zeile selbst. Wer die Meldekette braucht, ruft das hier AUSDRUECKLICH.
+    void subscribeCanvas() { service.subscribe(*canvas); }
+    void unsubscribeCanvas() { service.unsubscribe(*canvas); }
 
     // Nach dem Fit liegt die Modell-Ecke (0,0) NICHT mehr in der Viewport-Mitte.
     void assertFitted() const {
@@ -537,6 +564,297 @@ TEST(CanvasSnapPreview, LH_FA_DRW_001_AnsichtsAenderungVerwirftUndBewegungHoltZu
     // Bildschirmstelle traegt jetzt keinen Fang-Punkt mehr.
     fx.sendMove(before_zoom + QPoint(3, -2));
     EXPECT_FALSE(fx.canvas->snapPreview().has_value());
+}
+
+// ---------------------------------------------------------------------------
+// slice-058 (ADR-0021 E1/E6/E10/E12, LH-FA-WAL-001): der Wand-Zug.
+// Jede Zeile nennt die Komponente, an der sie diskriminiert (Plan §4).
+// ---------------------------------------------------------------------------
+
+// Zaehlt die Waende im ZIEL-Geschoss — nicht alle (Plan-Risiko R3: das
+// Demo-Modell traegt deckungsgleiche Waende in zwei Geschossen, die Anzahl
+// allein waere Scheinsicherheit).
+int wallsIn(const services::StructureEditService& service,
+            model::StoreyId storey) {
+    int count = 0;
+    for (const model::Wall& w : service.building().walls) {
+        if (w.storey_id == storey) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+// §4-1: Default ist Hilfslinie — ohne Modus-Wechsel erzeugt der Zug wie bisher
+// eine Hilfslinie und KEINE Wand.
+TEST(CanvasWallTool, ADR_0021_E1_DefaultIstHilfslinie) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    EXPECT_EQ(fx.canvas->toolMode(), view::CanvasWidget::ToolMode::GuideLine);
+
+    const int walls_before = wallsIn(fx.service, fx.storey);
+    const std::size_t guides_before = fx.service.building().guide_lines.size();
+
+    fx.sendPress(fx.screenOf({500.0, 500.0}));
+    fx.sendRelease(fx.screenOf({3500.0, 2500.0}));
+
+    EXPECT_EQ(wallsIn(fx.service, fx.storey), walls_before)
+        << "der Default-Modus darf KEINE Wand anlegen";
+    EXPECT_EQ(fx.service.building().guide_lines.size(), guides_before + 1U);
+    EXPECT_TRUE(fx.outcomes.empty()) << "die Wand-Senke wurde nicht gerufen";
+}
+
+// §4-2: Im Wand-Modus erzeugt DERSELBE Zug eine Wand und keine Hilfslinie —
+// die Zusammenspiel-Zeile (Modus + Geste + Senke + Modell).
+TEST(CanvasWallTool, LH_FA_WAL_001_HappyPath_ImWandModusEntstehtEineWand) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+    EXPECT_EQ(fx.canvas->toolMode(), view::CanvasWidget::ToolMode::Wall);
+
+    const int walls_before = wallsIn(fx.service, fx.storey);
+    const std::size_t guides_before = fx.service.building().guide_lines.size();
+
+    fx.sendPress(fx.screenOf({500.0, 500.0}));
+    fx.sendRelease(fx.screenOf({3500.0, 2500.0}));
+
+    EXPECT_EQ(wallsIn(fx.service, fx.storey), walls_before + 1)
+        << "der Wand-Modus muss eine Wand im AKTIVEN Geschoss anlegen";
+    EXPECT_EQ(fx.service.building().guide_lines.size(), guides_before)
+        << "und keine Hilfslinie";
+    ASSERT_EQ(fx.outcomes.size(), 1U);
+    EXPECT_EQ(fx.outcomes.front(), command::WallDrawOutcome::Created);
+}
+
+// §4-3: Der Fang gilt an BEIDEN Enden (LH-FA-DRW-001 sagt „Anfang wie Ende"
+// zu). Je ein Zug, dessen Anfang bzw. Ende in Fang-Naehe eines vorhandenen
+// Endpunkts liegt — die Wand traegt EXAKT dessen mm, nicht die Cursor-Position.
+TEST(CanvasWallTool, LH_FA_DRW_001_FangGiltAnBeidenEndenDesWandZugs) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+
+    // (a) ANFANG in Fang-Naehe von (0,0) — 3 px daneben, innerhalb der Naehe.
+    fx.sendPress(fx.screenOf({0.0, 0.0}) + QPoint(3, -2));
+    fx.sendRelease(fx.screenOf({2000.0, 1500.0}));
+    ASSERT_EQ(wallsIn(fx.service, fx.storey), 3);
+    const model::Wall& first = fx.service.building().walls.back();
+    EXPECT_DOUBLE_EQ(first.start.x_mm, 0.0) << "Anfang exakt auf dem Fang-Punkt";
+    EXPECT_DOUBLE_EQ(first.start.y_mm, 0.0);
+
+    // (b) ENDE in Fang-Naehe von (4000,3000). Positionen NACH dem ersten Zug neu
+    // aus der Transformation rechnen (Plan-Risiko R3a) — auch wenn dieser Canvas
+    // nicht angemeldet ist, bleibt die Regel dieselbe.
+    fx.sendPress(fx.screenOf({1000.0, 2000.0}));
+    fx.sendRelease(fx.screenOf({4000.0, 3000.0}) + QPoint(-3, 2));
+    ASSERT_EQ(wallsIn(fx.service, fx.storey), 4);
+    const model::Wall& second = fx.service.building().walls.back();
+    EXPECT_DOUBLE_EQ(second.end.x_mm, 4000.0) << "Ende exakt auf dem Fang-Punkt";
+    EXPECT_DOUBLE_EQ(second.end.y_mm, 3000.0);
+}
+
+// §4-4: Zwei Zuege teilen einen gefangenen Punkt EXAKT — die Voraussetzung des
+// Eckenschlusses (LH-FA-WAL-006 verlangt einen gemeinsamen Endpunkt, Toleranz
+// 0,1 mm, waehrend ein Pixel bei diesem Zoom rund 11 mm traegt). Der Ort ist der
+// Canvas, der Beleg der Modell-Zustand.
+TEST(CanvasWallTool, LH_FA_WAL_006_ZweiZuegeTeilenDenGefangenenPunktExakt) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+
+    // Zug 1 endet in Fang-Naehe von (4000,3000) — aus einer anderen Richtung
+    // und mit einem anderen Pixel-Versatz als Zug 2, damit die Gleichheit nicht
+    // daran haengt, dass beide dasselbe Pixel getroffen haben.
+    fx.sendPress(fx.screenOf({1000.0, 2500.0}));
+    fx.sendRelease(fx.screenOf({4000.0, 3000.0}) + QPoint(-4, 3));
+    ASSERT_EQ(wallsIn(fx.service, fx.storey), 3);
+    const model::Point2D end_of_first = fx.service.building().walls.back().end;
+
+    // Zug 2 beginnt dort — anderer Versatz, anderes Pixel.
+    fx.sendPress(fx.screenOf({4000.0, 3000.0}) + QPoint(5, 2));
+    fx.sendRelease(fx.screenOf({1500.0, 500.0}));
+    ASSERT_EQ(wallsIn(fx.service, fx.storey), 4);
+    const model::Point2D start_of_second =
+        fx.service.building().walls.back().start;
+
+    EXPECT_DOUBLE_EQ(start_of_second.x_mm, end_of_first.x_mm);
+    EXPECT_DOUBLE_EQ(start_of_second.y_mm, end_of_first.y_mm);
+    // …und zwar auf dem Fang-Punkt selbst, nicht irgendwo gemeinsam.
+    EXPECT_DOUBLE_EQ(start_of_second.x_mm, 4000.0);
+    EXPECT_DOUBLE_EQ(start_of_second.y_mm, 3000.0);
+}
+
+// §4-6: Gesten-Abbruch ⇒ keine Wand, Modell unveraendert. ADR-0021 E12 nennt
+// ZWEI Ausloeser — Escape und Fokusverlust —, hier je EINZELN geprueft.
+TEST(CanvasWallTool, ADR_0021_E12_EscapeBrichtDieGesteAb) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+    const int walls_before = wallsIn(fx.service, fx.storey);
+
+    fx.sendPress(fx.screenOf({500.0, 500.0}));
+    QKeyEvent escape(QEvent::KeyPress, Qt::Key_Escape, Qt::NoModifier);
+    QApplication::sendEvent(fx.canvas.get(), &escape);
+    // Das Loslassen NACH dem Abbruch darf nichts mehr anlegen.
+    fx.sendRelease(fx.screenOf({3500.0, 2500.0}));
+
+    EXPECT_EQ(wallsIn(fx.service, fx.storey), walls_before);
+    EXPECT_TRUE(fx.outcomes.empty())
+        << "ein abgebrochener Zug erzeugt KEINEN Ausgang — auch keinen Hinweis";
+}
+
+TEST(CanvasWallTool, ADR_0021_E12_FokusverlustBrichtDieGesteAb) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+    const int walls_before = wallsIn(fx.service, fx.storey);
+
+    fx.sendPress(fx.screenOf({500.0, 500.0}));
+    QFocusEvent focus_out(QEvent::FocusOut, Qt::OtherFocusReason);
+    QApplication::sendEvent(fx.canvas.get(), &focus_out);
+    fx.sendRelease(fx.screenOf({3500.0, 2500.0}));
+
+    EXPECT_EQ(wallsIn(fx.service, fx.storey), walls_before);
+    EXPECT_TRUE(fx.outcomes.empty());
+}
+
+// §4-8: Der Refresh kommt aus der MELDEKETTE — nach dem Kommando rahmt der
+// Canvas neu ein, ohne eigenes Zutun (ADR-0021 E6).
+//
+// **Vorbedingung, gemessen (Plan §4):** der Zug muss die Bounding-Box
+// VERGROESSERN. Liegt er innerhalb, steht der Zoom mit UND ohne Anmeldung still
+// und die Zeile misst nichts — genau die gegenteilige Vorbedingung von §4-8a
+// unten, und beide leben in dieser Datei.
+//
+// Die Gegenprobe (`subscribeCanvas()` entfernen ⇒ die Transformation bleibt
+// stehen ⇒ rot) ist zugleich der Beleg FUER E6: gaebe es einen zusaetzlichen
+// Selbst-Refresh mit Neu-Einrahmen, bliebe sie gruen.
+TEST(CanvasWallTool, ADR_0021_E6_NeuEinrahmenKommtAusDerMeldekette) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.subscribeCanvas();  // OHNE diese Zeile misst der Test nichts (s. o.)
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+
+    const double zoom_before = fx.canvas->transform().zoom;
+    // Diagonale ueber die ganze Flaeche: beide Enden liegen im 10-%-Rand der
+    // Fit-Abbildung, also AUSSERHALB der bestehenden Bounding-Box.
+    fx.sendPress(QPoint(2, 2));
+    fx.sendRelease(QPoint(399, 299));
+    ASSERT_EQ(fx.outcomes.size(), 1U);
+    ASSERT_EQ(fx.outcomes.front(), command::WallDrawOutcome::Created);
+
+    // Das Neu-Einrahmen selbst wird beim naechsten Paint wirksam (`update()` ist
+    // queued) — synchron ueber `render()`, wie die Fixture den Fit erzwingt.
+    QImage frame(fx.canvas->size(), QImage::Format_RGB32);
+    fx.canvas->render(&frame);
+    const double zoom_after = fx.canvas->transform().zoom;
+
+    EXPECT_LT(zoom_after, zoom_before)
+        << "die vergroesserte Bounding-Box muss zu einem kleineren Zoom fuehren "
+           "— steht er still, kam keine Meldung an";
+    fx.unsubscribeCanvas();  // ADR-0008 #5: vor der Widget-Zerstoerung
+}
+
+// §4-8a: Die Wand erscheint SOFORT im Grundriss — der abnahmebindende Konjunkt
+// aus LH-FA-WAL-001, 2D-Haelfte. Tinten-Sonde am Canvas.
+//
+// **Vorbedingung, gemessen (Plan §4):** der Zug muss INNERHALB der bestehenden
+// Bounding-Box liegen — dann steht die Abbildung still und der Farb-Zuwachs ist
+// NUR das neue Segment. Ausserhalb faerbte das Neu-Einrahmen mit, und der
+// Zuwachs waere nicht zuordenbar. Der Stillstand wird hier GEPRUEFT, nicht
+// gehofft.
+TEST(CanvasWallTool, LH_FA_WAL_001_HappyPath_WandErscheintSofortImGrundriss) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.subscribeCanvas();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+
+    const double zoom_before = fx.canvas->transform().zoom;
+    const QPoint corner_before = fx.screenOf({0.0, 0.0});
+    const int ink_before = inkPixels(*fx.canvas);
+
+    fx.sendPress(fx.screenOf({500.0, 500.0}));
+    fx.sendRelease(fx.screenOf({3500.0, 2500.0}));
+    ASSERT_EQ(fx.outcomes.size(), 1U);
+    ASSERT_EQ(fx.outcomes.front(), command::WallDrawOutcome::Created);
+
+    const int ink_after = inkPixels(*fx.canvas);
+
+    // Die Vorbedingung selbst — ohne sie ist der Tinten-Vergleich bedeutungslos.
+    ASSERT_DOUBLE_EQ(fx.canvas->transform().zoom, zoom_before);
+    ASSERT_EQ(fx.screenOf({0.0, 0.0}), corner_before);
+    EXPECT_GT(ink_after, ink_before)
+        << "die gezeichnete Wand muss bei UNVERAENDERTER Abbildung Farbe "
+           "erzeugen — sonst ist sie angelegt, aber nicht dargestellt";
+    fx.unsubscribeCanvas();
+}
+
+// §4-10: Die 3D-Sicht folgt (LH-FA-D3-002) — und zwar von der GESTE ausgeloest,
+// nicht von einem direkten Dienst-Aufruf. Der Bestands-Beleg (test_viewer_scene)
+// mutiert am Dienst; diskriminierend wird die Zeile erst ueber den Zug.
+TEST(CanvasWallTool, LH_FA_D3_002_DieGesteErreichtDieDreiDSicht) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+
+    // Der Bestands-Viewer-Surrogat (Qt-frei) am DEMSELBEN Dienst.
+    const command::ViewModelMeshSource mesh_source(fx.service);
+    view::ViewerScene scene(mesh_source);
+    scene.loadAll();
+    fx.service.subscribe(scene);
+    const std::size_t meshes_before = scene.wallMeshes().size();
+
+    fx.sendPress(fx.screenOf({500.0, 500.0}));
+    fx.sendRelease(fx.screenOf({3500.0, 2500.0}));
+
+    EXPECT_EQ(scene.wallMeshes().size(), meshes_before + 1U)
+        << "die 3D-Szene muss der ueber die GESTE erzeugten Wand folgen";
+    fx.service.unsubscribe(scene);
 }
 
 }  // namespace

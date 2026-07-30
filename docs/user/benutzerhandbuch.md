@@ -1,7 +1,7 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.5
+Handbuch-Version: 1.6
 Stand: 2026-07-28
 
 ---
@@ -27,6 +27,9 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
 **Heute möglich:**
 - ein Gebäude **ansehen** — das mitgelieferte Beispiel, ein importiertes oder ein
   geöffnetes Projekt (3D-Ansicht + 2D-Grundriss),
+- **Wände** im Grundriss zeichnen — Werkzeug **Wand** wählen und ziehen; die Wand
+  erscheint sofort in 2D **und** 3D, rastet auf vorhandene Eckpunkte ein und
+  überlebt Speichern/Öffnen und Export,
 - **Hilfslinien** im Grundriss zeichnen — mit **Einrasten** auf vorhandene
   Eckpunkte, **sichtbar markiert, bevor Sie klicken**,
 - in Formate **exportieren** (IFC/DXF/STEP/STL/PDF/PNG),
@@ -36,10 +39,16 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
 - Fremdformate **importieren** (IFC/DXF).
 
 **In dieser Version noch NICHT möglich:**
-- ein Gebäude **selbst planen** — Wände, Räume, Türen, Fenster, Treppen, Dächer
-  interaktiv anlegen und bearbeiten. Es gibt dafür **weder** eine Bedienung in der
-  Oberfläche **noch** eine Skript-/Definitionsdatei. Das interaktive Planen ist der
-  **nächste große Ausbauschritt** (siehe FAQ, Abschnitt 8).
+- ein Gebäude **vollständig selbst planen**. Die **Wand** ist das erste Bauteil,
+  das Sie in der Oberfläche selbst anlegen können (siehe oben) — **Räume, Türen,
+  Fenster, Treppen und Dächer** nicht: für sie gibt es **weder** eine Bedienung in
+  der Oberfläche **noch** eine Skript-/Definitionsdatei.
+- eine gezeichnete Wand **wieder entfernen** oder eine Aktion **rückgängig
+  machen**. Ein begonnener Zug lässt sich abbrechen (Escape), eine **fertige** Wand
+  bleibt. Ungesicherte Änderungen sind durch die Rückfrage geschützt
+  (Abschnitt 4.3).
+- eine gezeichnete Wand **auswählen** und ihre Stärke oder Höhe ändern — sie
+  entsteht mit den Standardwerten. Das folgt im nächsten Ausbauschritt.
 
 Wie ein Gebäude heute überhaupt in b-cad kommt, beschreibt **Abschnitt 3**.
 
@@ -100,13 +109,25 @@ Das Fenster hat oben zwei Reiter:
 
 Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 
+In der **Menüleiste** liegen zwei Menüs: **Datei** (Abschnitt 4.3) und
+**Werkzeug** — dort wählen Sie, was ein Zug im Reiter **2D** erzeugt:
+**Hilfslinie** (Voreinstellung) oder **Wand**. Das gewählte Werkzeug ist im Menü
+**markiert**.
+
+Am **unteren Fensterrand** liegt eine **Hinweis-Zeile**. Dort erscheint ein kurzer
+Text, wenn eine Eingabe **nicht** zum gewünschten Ergebnis geführt hat — sie
+unterbricht Ihre Arbeit nicht und muss nicht weggeklickt werden.
+
 ### 2.3 Grundlegende Bedienung
 
 - **Ansicht wechseln:** Reiter **3D** oder **2D** anklicken.
 - **3D drehen:** Im Reiter **3D** mit der Maus ziehen.
-- **Hilfslinie zeichnen:** Im Reiter **2D** mit gedrückter linker Maustaste ziehen
-  (siehe Abschnitt 4.2). Nah an einem vorhandenen Eckpunkt **rastet** der Punkt
-  exakt auf ihn ein.
+- **Werkzeug wählen:** Menü **Werkzeug** → **Hilfslinie** (Voreinstellung) oder
+  **Wand**. Der Zug ist derselbe — das Werkzeug entscheidet, was entsteht.
+- **Hilfslinie oder Wand zeichnen:** Im Reiter **2D** mit gedrückter linker
+  Maustaste ziehen (siehe Abschnitt 4.2). Nah an einem vorhandenen Eckpunkt
+  **rastet** der Punkt exakt auf ihn ein.
+- **Zug abbrechen:** **Escape** drücken, während Sie ziehen — es entsteht nichts.
 - **Neues Projekt:** Menü **Datei** → **Neu** (siehe Abschnitt 4.3).
 - **Projekt speichern/öffnen:** Menü **Datei** → **Speichern**,
   **Speichern unter…** bzw. **Öffnen…** (siehe Abschnitt 4.3).
@@ -118,16 +139,17 @@ Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 
 ## 3. Ein Gebäude in b-cad bekommen und ansehen
 
-Da Sie ein Gebäude in dieser Version **nicht selbst planen** (siehe Abschnitt 1),
-gibt es **vier** Wege, mit einem Gebäude zu arbeiten:
+Ein Gebäude **von Grund auf** selbst zu planen, geht in dieser Version noch nicht
+— **Wände** können Sie selbst zeichnen (Abschnitt 4.2), die übrigen Bauteile nicht
+(siehe Abschnitt 1). Es gibt **vier** Wege, mit einem Gebäude zu arbeiten:
 
 1. **Das mitgelieferte Beispiel** — nach dem Start ist es sofort da (Abschnitt 2).
 2. **Ein importiertes Gebäude** — aus einer IFC- oder DXF-Datei (Abschnitt 4.5).
 3. **Ein geöffnetes Projekt** — eine zuvor gespeicherte `.bcad`-Datei; über
    **Datei → Öffnen…** in der Oberfläche (Abschnitt 4.3).
 4. **Ein neues, leeres Projekt** — über **Datei → Neu** (Abschnitt 4.3). Es
-   enthält ein Geschoss und eine Zeichen-Ebene; Bauteile lassen sich in dieser
-   Version noch nicht interaktiv anlegen, Hilfslinien schon.
+   enthält ein Geschoss und eine Zeichen-Ebene; darin können Sie **Wände** und
+   Hilfslinien zeichnen (Abschnitt 4.2), die übrigen Bauteile noch nicht.
 
 ### Das geladene Gebäude ansehen
 
@@ -142,10 +164,11 @@ gibt es **vier** Wege, mit einem Gebäude zu arbeiten:
 **Ergebnis:** Sie sehen dasselbe Gebäudemodell einmal räumlich (3D) und einmal als
 maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 
-> **Hinweis:** Das interaktive **Anlegen und Bearbeiten** von Wänden, Räumen,
-> Türen, Fenstern, Treppen und Dächern ist in dieser Version noch nicht verfügbar.
-> Sie können ein bereits bestehendes Gebäude ansehen, mit Hilfslinien versehen und
-> exportieren — aber (außer Hilfslinien) noch nichts an der Bausubstanz ändern.
+> **Hinweis:** **Wände** können Sie in dieser Version selbst anlegen
+> (Abschnitt 4.2) — **Räume, Türen, Fenster, Treppen und Dächer** nicht, und
+> **bearbeiten** (Stärke/Höhe ändern, entfernen) lässt sich auch eine gezeichnete
+> Wand noch nicht. Sie können also ein bestehendes Gebäude ansehen, um Wände und
+> Hilfslinien **ergänzen** und exportieren.
 
 ---
 
@@ -156,6 +179,7 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 | Aufgabe | Wo |
 |---|---|
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
+| **Wand zeichnen** (Werkzeug **Wand**, mit Einrasten) | Oberfläche, Reiter 2D (4.2) |
 | Hilfslinie zeichnen (Einrasten mit sichtbarer Markierung) | Oberfläche, Reiter 2D (4.2) |
 | Neues Projekt anlegen | Oberfläche, Menü **Datei → Neu** (4.3) |
 | Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
@@ -164,9 +188,11 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 | Projekt importieren (IFC/DXF) | Kommandozeile (4.5) |
 | Erweiterung (Plugin) laden | Kommandozeile (4.5) |
 
-### 4.2 Eine Hilfslinie zeichnen
+### 4.2 Eine Hilfslinie oder eine Wand zeichnen
 
-**Ziel:** Eine gerade Hilfslinie als Zeichenhilfe im Grundriss anlegen.
+**Ziel:** Eine gerade Hilfslinie als Zeichenhilfe **oder eine Wand** im Grundriss
+anlegen. Die Geste ist **dieselbe** — das gewählte **Werkzeug** entscheidet, was
+entsteht.
 
 **Voraussetzung:** b-cad ist gestartet.
 
@@ -208,6 +234,43 @@ auch nach **Speichern und Öffnen** und im **Export** exakt derselbe.
   der nächsten Mausbewegung wieder — **am Einrasten selbst ändert das nichts**.
 - **Raster**, **Winkel-Bindung** und weitere Fang-Arten (Schnittpunkt, Mitte,
   Lot) sind noch nicht enthalten.
+
+#### Eine Wand zeichnen
+
+**Voraussetzung:** b-cad ist gestartet und ein Projekt ist geladen (das
+mitgelieferte Beispiel genügt).
+
+**Vorgehen:**
+
+1. Wählen Sie **Werkzeug → Wand**. Die Auswahl bleibt, bis Sie sie ändern.
+2. Wechseln Sie auf den Reiter **2D**.
+3. Ziehen Sie mit gedrückter linker Maustaste von der Anfangs- zur Endposition.
+
+**Ergebnis:** Es entsteht **eine Wand** mit Standard-Stärke und -Höhe. Sie
+erscheint **sofort** im Grundriss **und** in der 3D-Ansicht, und sie überlebt
+Speichern/Öffnen sowie den Export.
+
+**Zwei Wände zu einer Ecke verbinden.** Setzen Sie den Punkt der zweiten Wand in
+**Fang-Nähe** des Endpunkts der ersten (dasselbe Einrasten wie oben, Anfang **wie**
+Ende). Dann teilen beide Wände **exakt** denselben Punkt, und die Ecke wird
+geschlossen dargestellt — in 2D und in 3D. **Ohne** Einrasten gelingt das
+praktisch nicht: die Toleranz liegt bei einem Zehntel Millimeter, ein
+Bildschirmpunkt trägt bei normaler Ansicht rund zwei Zentimeter.
+
+**Hinweise:**
+- **Eine Wand je Zug.** Ein mehrpunktiger Wandzug in **einem** Zug ist noch nicht
+  enthalten; mehrere Wände entstehen durch mehrere Züge, deren Endpunkte
+  einrasten.
+- **Ziehen ohne Länge** (Start = Ende) erzeugt **keine** Wand; in der Hinweis-Zeile
+  am unteren Fensterrand steht dann „Keine Wand angelegt."
+- **Abbrechen:** Solange Sie ziehen, brechen **Escape** oder ein Klick in ein
+  anderes Fenster den Zug ab — es entsteht keine Wand.
+- **Nicht rücknehmbar:** Eine **fertige** Wand können Sie in dieser Version nicht
+  entfernen und nicht rückgängig machen. Speichern Sie vorher, wenn Sie zum alten
+  Stand zurück wollen.
+- **Stärke und Höhe** übernimmt b-cad aus den Standardwerten (die Höhe ist die
+  Geschosshöhe); sie lassen sich in dieser Version **nachträglich nicht** ändern.
+- Die Wand entsteht immer im **angezeigten** Geschoss.
 
 ### 4.3 Ein Projekt speichern und öffnen (Menü **Datei**)
 
@@ -465,9 +528,12 @@ reine 3D-DXF, während b-cad 2D-Linien liest).
 ## 8. FAQ
 
 **Kann ich in der Oberfläche Wände zeichnen?**
-Noch nicht. In Version 0.1.0 zeigt die Oberfläche ein Beispielprojekt und erlaubt
-das Zeichnen von Hilfslinien; das interaktive Bauteil-Zeichnen folgt in einer
-späteren Version.
+Ja — seit Handbuch-Version 1.6. Wählen Sie **Werkzeug → Wand** und ziehen Sie im
+Reiter **2D** (Abschnitt 4.2). Es entsteht **eine** Wand je Zug, mit
+Standard-Stärke und -Höhe; sie rastet auf vorhandene Eckpunkte ein und ist damit
+zu geschlossenen Ecken verbindbar. Was noch **nicht** geht: die Wand wieder
+**entfernen**, ihre Stärke/Höhe **nachträglich ändern** und andere Bauteile
+(Räume, Türen, Fenster, Treppen, Dächer) interaktiv anlegen.
 
 **Wie speichere/öffne ich über ein Menü?**
 Über das Menü **Datei** in der Oberfläche: **Speichern**, **Speichern unter…**
@@ -532,6 +598,7 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.6 | 0.1.0 | 2026-07-29 | **Wände zeichnen** aufgenommen — das erste Bauteil, das in der Oberfläche selbst entsteht: neues **Werkzeug**-Menü (Hilfslinie/Wand, Voreinstellung Hilfslinie), neue **Hinweis-Zeile** am unteren Fensterrand, neuer Unterabschnitt „Eine Wand zeichnen" in 4.2 (samt Eckenschluss über das Einrasten und der Begründung, warum es ohne Einrasten praktisch nicht gelingt) und die vier benannten Grenzen: **eine** Wand je Zug, **kein** Entfernen/Rückgängig, **keine** nachträgliche Änderung von Stärke/Höhe, Zeichnen nur im angezeigten Geschoss. §1 ist **präzisiert statt gestrichen** („ein Gebäude **vollständig** selbst planen" — Wände ja, übrige Bauteile nein), ebenso §2.2/§2.3, der Kopf von §3, der §3-Hinweis, die 4.1-Aufgaben-Tabelle und die FAQ-Antwort „Kann ich in der Oberfläche Wände zeichnen?", die bis hierher **verneinte**. |
 | 1.5 | 0.1.0 | 2026-07-28 | **Anzeige des Fang-Ziels** aufgenommen: eine Markierung zeigt **vor dem Klick**, auf welchen Eckpunkt eingerastet würde — für Anfang **und** Ende, auch während des Ziehens. Damit ist die in 1.4 benannte Grenze „Eine Anzeige, **worauf** gerade eingerastet wird, gibt es in dieser Version noch nicht" **aufgehoben und ersetzt**; zugleich ist der bisher nur als Einschränkung beschriebene Geschoss-übergreifende Fang jetzt als **Nutzen** formuliert (die Markierung macht sichtbar, was sonst als Sprung erschien). Neu benannt: die Markierung verschwindet beim Verlassen der Zeichenfläche und bei Ansichts-Änderungen und kehrt mit der nächsten Mausbewegung zurück — **am Einrasten selbst ändert das nichts**. §1 „Heute möglich" und die 4.1-Aufgaben-Tabelle nachgezogen. |
 | 1.4 | 0.1.0 | 2026-07-28 | **Einrasten (Fangen)** beim Zeichnen von Hilfslinien aufgenommen: neuer Absatz in 4.2 (Anfang **wie** Ende rasten exakt auf Endpunkte von Wandachsen und Hilfslinien ein; der gefangene Wert überlebt Speichern/Öffnen und Export unverändert) samt der vier benannten Grenzen — freies Zeichnen außerhalb von rund 12 Bildschirmpunkten, Entartung durch beidseitiges Einrasten, keine Fangbarkeit auf ausgeblendeten Ebenen, **keine Anzeige** des Fang-Ziels und Fangen über **alle** Geschosse. §1 „Heute möglich", §2.3 und die 4.1-Aufgaben-Tabelle nachgezogen; der frühere Satz „In dieser Version wird **frei** gezeichnet; Fangen … sind noch nicht enthalten" ist damit überholt und ersetzt. |
 | 1.3 | 0.1.0 | 2026-07-27 | **Datei → Neu** aufgenommen: eigener Unterabschnitt in 4.3 (Inhalt des neuen Projekts — ein Geschoss, eine Zeichen-Ebene, sofort bezeichenbar — und die Zusage, dass **keine Datei zugeordnet** ist, das nächste Speichern also nach dem Ziel fragt statt das zuvor geöffnete Projekt zu überschreiben); „Neu" als dritter Auslöser der Rückfrage ergänzt; §1 „Heute möglich", §2.3, die 4.1-Aufgaben-Tabelle und die Wege-Zählung in §3 (**drei → vier**) nachgezogen. |

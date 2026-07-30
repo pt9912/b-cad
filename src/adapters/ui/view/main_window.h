@@ -5,6 +5,8 @@
 #include <QMainWindow>
 
 class QCloseEvent;
+class QLabel;
+class QString;
 class QWidget;
 
 namespace bcad::adapters::ui::view {
@@ -54,11 +56,30 @@ public:
     // hier liegt, ist sie prüfbar.
     using CloseGuard = std::function<bool()>;
 
+    // Was die Werkzeug-Aktionen auslösen (slice-058, ADR-0021 E1). Das Fenster
+    // **kennt den Canvas nicht** — es meldet nur, welches Werkzeug gewählt
+    // wurde; der Composition-Root ruft darauf `CanvasWidget::setToolMode`.
+    // Dieselbe port-freie Bauform wie `FileActions`.
+    struct ToolActions {
+        std::function<void()> select_guide_line;
+        std::function<void()> select_wall;
+    };
+
     // `central` wird dem Fenster übergeben (Qt-Ownership via
     // `setCentralWidget`) — genau wie bisher im Composition-Root. Das Fenster
     // **baut** die Sichten nicht: 3D-/2D-Widgets sind nicht Gegenstand dieses
     // Slice, und der Root behält die Zeiger, die er selbst erzeugt hat.
-    MainWindow(QWidget* central, FileActions actions, CloseGuard close_guard);
+    MainWindow(QWidget* central, FileActions actions, ToolActions tools,
+               CloseGuard close_guard);
+
+    // Zeigt einen Hinweis an (slice-058, ADR-0021 E5): **nicht-modal** — eine
+    // Klemmung oder Ablehnung beim Zeichnen darf den Fluss nicht unterbrechen.
+    // Der **Text** kommt von außen (Composition-Root, benannte Grenze); dieses
+    // Fenster entscheidet nur, WO er erscheint.
+    //
+    // Im Bestand gab es **keine** Anzeige — ohne sie wäre „jeder Fehl-Ausgang
+    // gibt einen Hinweis" eine Zusage ohne Adressat.
+    void showHint(const QString& text);
 
     // Objektnamen der Menü-Aktionen — Tests lösen sie darüber aus
     // (`findChild<QAction*>`), statt sich auf Menü-Reihenfolge oder
@@ -67,6 +88,9 @@ public:
     static constexpr auto kOpenActionName = "action_open";
     static constexpr auto kSaveActionName = "action_save";
     static constexpr auto kSaveAsActionName = "action_save_as";
+    static constexpr auto kToolGuideLineActionName = "action_tool_guide_line";
+    static constexpr auto kToolWallActionName = "action_tool_wall";
+    static constexpr auto kHintLabelName = "hint_label";
 
 protected:
     // Ruft den `CloseGuard`; sagt er „nein", wird das Ereignis abgelehnt und
@@ -75,6 +99,9 @@ protected:
 
 private:
     CloseGuard close_guard_;
+    // Die Hinweis-Zeile. Qt-Eltern-Ownership (Statusleiste); der Zeiger dient
+    // nur dem Setzen des Textes.
+    QLabel* hint_label_{nullptr};
 };
 
 }  // namespace bcad::adapters::ui::view

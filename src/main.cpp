@@ -41,6 +41,7 @@
 #include "adapters/persistence/sqlite_project_repository.h"
 #include "adapters/plugin/plugin_host.h"
 #include "adapters/ui/command/edit_drawing_guide_line_sink.h"
+#include "adapters/ui/command/edit_structure_wall_sink.h"
 #include "adapters/ui/command/plan_view_plan_source.h"
 #include "adapters/ui/command/project_menu_handler.h"
 #include "adapters/ui/command/view_model_mesh_source.h"
@@ -362,6 +363,32 @@ void newProjectWithTitleReset(
     }
 }
 
+// slice-058: die Hinweis-TEXTE der Wand-Senke. Sie liegen hier, weil die
+// Texte zum Composition-Root gehoeren (benannte Grenze des Fenster-Adapters,
+// wie die Dialog-Meldungen) — nicht in der Senke und nicht im Fenster.
+// Leerer Text = kein Hinweis (die Wand ist der Beleg, ADR-0021 E5).
+QString wallHintText(bcad::adapters::ui::command::WallDrawOutcome outcome) {
+    using Outcome = bcad::adapters::ui::command::WallDrawOutcome;
+    switch (outcome) {
+        case Outcome::RejectedNoWall:
+            return QStringLiteral("Keine Wand angelegt.");
+        case Outcome::Failed:
+            return QStringLiteral("Wand nicht angelegt — Modell unveraendert.");
+        case Outcome::Created:
+            break;
+    }
+    return {};
+}
+
+// slice-058: das Fenster meldet nur die Werkzeug-Wahl; WAS sie bedeutet, weiss
+// der Root (das Fenster kennt den Canvas nicht — ADR-0019 Option A).
+bcad::adapters::ui::view::MainWindow::ToolActions makeToolActions(
+    bcad::adapters::ui::view::CanvasWidget* canvas) {
+    using Mode = bcad::adapters::ui::view::CanvasWidget::ToolMode;
+    return {[canvas]() { canvas->setToolMode(Mode::GuideLine); },
+            [canvas]() { canvas->setToolMode(Mode::Wall); }};
+}
+
 bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
     bcad::adapters::ui::command::ProjectMenuHandler& handler) {
     // Ein unvollstaendig aufgeloestes Ziel ist kein Fehler, aber der Benutzer
@@ -571,10 +598,30 @@ int main(int argc, char** argv) {
     // neu gesetzt werden (slice-047b, s. u.).
     bcad::adapters::ui::command::EditDrawingGuideLineSink guide_sink(
         service, active_storey, canvas_layer);
+
+    // slice-058 (ADR-0021 E5/E10): die ZWEITE Senke — Bauteil-Schreibpfad plus
+    // Fehler-Barriere. Sie meldet ihren Ausgang als Wert; die TEXTE liegen hier
+    // (benannte Grenze des Fenster-Adapters, wie die Dialog-Meldungen).
+    // Das Fenster existiert erst weiter unten — derselbe nachgereichte Zeiger
+    // wie beim CloseGuard-Dialog-Eltern (slice-052a).
+    bcad::adapters::ui::view::MainWindow* hint_window = nullptr;
+    bcad::adapters::ui::command::EditStructureWallSink wall_sink(
+        service, active_storey,
+        [&hint_window](bcad::adapters::ui::command::WallDrawOutcome outcome) {
+            if (hint_window != nullptr) {
+                hint_window->showHint(wallHintText(outcome));
+            }
+        });
+
     auto* canvas = new bcad::adapters::ui::view::CanvasWidget(
         [&plan_source]() { return plan_source.planView(); },
         [&guide_sink](model::Point2D a, model::Point2D b) {
             return guide_sink.addGuideLine(a, b);
+        },
+        [&wall_sink](model::Point2D a, model::Point2D b) {
+            // Rückgabe verworfen: den Ausgang meldet die Senke selbst — der
+            // Canvas soll ihn nicht kennen (slice-058 §2.3).
+            wall_sink.addWall(a, b);
         },
         static_cast<int>(active_storey));
     service.subscribe(*canvas);
@@ -609,8 +656,14 @@ int main(int argc, char** argv) {
             [canvas](model::StoreyId storey) {
                 canvas->setActiveStorey(static_cast<int>(storey));
             },
-            [&guide_sink](model::StoreyId storey, model::LayerId layer) {
+            [&guide_sink, &wall_sink](model::StoreyId storey,
+                                      model::LayerId layer) {
                 guide_sink.setTarget(storey, layer);
+                // slice-058: das Wand-Ziel folgt demselben Geschoss. Ohne den
+                // Nachzug würfe `addWall` nach jedem Projekt-Laden (unbekannte
+                // Geschoss-Id) — die Barriere fänge es, aber der Benutzer
+                // bekäme statt einer Wand einen Hinweis.
+                wall_sink.setTarget(storey);
             },
         });
 
@@ -627,10 +680,12 @@ int main(int argc, char** argv) {
     QWidget* close_dialog_parent = nullptr;
     bcad::adapters::ui::view::MainWindow window(
         tabs, makeFileActions(project_handler),
+        makeToolActions(canvas),
         [&close_dialog_parent, &project_handler]() {
             return mayDiscardSession(close_dialog_parent, project_handler);
         });
     close_dialog_parent = &window;
+    hint_window = &window;  // ab jetzt haben die Senken-Hinweise einen Adressaten
     window.resize(1280, 800);
     window.setWindowTitle(QStringLiteral("b-cad"));
 

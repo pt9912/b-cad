@@ -22,6 +22,7 @@
 #include "adapters/persistence/sqlite_project_repository.h"
 #include "adapters/ui/command/view_model_mesh_source.h"
 #include "adapters/ui/command/edit_drawing_guide_line_sink.h"
+#include "adapters/ui/command/edit_structure_wall_sink.h"
 #include "adapters/ui/view/canvas_widget.h"
 #include "adapters/ui/view/viewer_scene.h"
 #include "hexagon/model/layer.h"
@@ -164,10 +165,17 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, CanvasAndSinkFollowLoadedIds) {
     const auto stale_storey = target.building().storeys.front().id;
     bcad::adapters::ui::command::EditDrawingGuideLineSink sink(
         target, stale_storey, model::LayerId{});
+    // slice-058: die Wand-Senke haengt am DEMSELBEN veralteten Geschoss — ohne
+    // Neu-Aufloesung wuerfe `addWall` nach jedem Laden (unbekannte Geschoss-Id).
+    bcad::adapters::ui::command::EditStructureWallSink wall_sink(
+        target, stale_storey, {});  // NICHT const: setTarget zieht das Ziel nach
     bcad::adapters::ui::view::CanvasWidget canvas(
         [&target]() { return target.planView(); },
         [&sink](model::Point2D a, model::Point2D b) {
             return sink.addGuideLine(a, b);
+        },
+        [&wall_sink](model::Point2D a, model::Point2D b) {
+            wall_sink.addWall(a, b);
         },
         static_cast<int>(stale_storey));
 
@@ -180,7 +188,12 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, CanvasAndSinkFollowLoadedIds) {
         [&canvas](model::StoreyId s) {
             canvas.setActiveStorey(static_cast<int>(s));
         },
-        [&sink](model::StoreyId s, model::LayerId l) { sink.setTarget(s, l); },
+        [&sink, &wall_sink](model::StoreyId s, model::LayerId l) {
+            sink.setTarget(s, l);
+            // slice-058: dieselbe Senken-Zeile wie in `main.cpp` — das Wand-Ziel
+            // folgt demselben Geschoss.
+            wall_sink.setTarget(s);
+        },
     };
     const auto resolution = services::openProject(target, repository, path, sinks);
 
@@ -202,6 +215,16 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, CanvasAndSinkFollowLoadedIds) {
     ASSERT_EQ(target.building().storeys.size(), 2U);
     EXPECT_EQ(target.building().walls.size(), 1U);
     EXPECT_EQ(target.building().walls.front().storey_id, saved_storey);
+
+    // slice-058: … und die WAND wird auf dem geladenen Stand angenommen. Ohne
+    // den Ziel-Nachzug wuerfe `addWall` (unbekannte Geschoss-Id); die Barriere
+    // faenge es, aber der Benutzer bekaeme statt einer Wand einen Hinweis.
+    const auto drawn_wall = wall_sink.addWall(model::Point2D{0.0, 0.0},
+                                              model::Point2D{2000.0, 0.0});
+    ASSERT_TRUE(drawn_wall.has_value())
+        << "ohne Neu-Aufloesung wuerde addWall auf der veralteten Id werfen";
+    ASSERT_EQ(target.building().walls.size(), 2U);
+    EXPECT_EQ(target.building().walls.back().storey_id, loaded_storey);
 
     // Grenze, ehrlich benannt: `CanvasWidget` veroeffentlicht sein aktives
     // Geschoss nicht — `setActiveStorey` ist hier nur auf "nimmt den Wert

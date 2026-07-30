@@ -410,4 +410,93 @@ ist nicht vorgesehen: die Regel lautet 0 HIGH, nicht „bis nichts mehr kommt".
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Vollzogen 2026-07-29.** `make gates` grün, **387 Tests** (371 vor dem Slice, **+16** neu),
+Zeilen-Coverage 92,4 %. Zusätzlich außerhalb des Aggregats: `make io-smoke` grün und
+`make acc-002-beleg` grün (9 Wand-Netze gerendert) — nötig, weil dieser Slice die Verdrahtung im
+Composition-Root ändert. **Das erzeugte Beleg-BILD ist bewusst nicht committet:**
+`docs/plan/planning/done/acc-002-beleg.png` gehört zur dokumentierten Abnahme-Runde von
+[`slice-012`](../done-archive/slice-012-eckenschluss-wal006-teil.md); der Lauf hier belegt, dass das Target **funktioniert**,
+und ersetzt keinen Abnahme-Nachweis des Projektinhabers. Kein Kern-/Persistenz-/Export-/Schema-Diff — am
+`git diff --stat` über `src/hexagon`, `src/adapters/io`, `src/adapters/persistence`, `spec/`,
+`data-model.yaml`, `schema.sql` belegt: **leer**.
+
+### Die Orakel-Zeilen, je mit EINZELN gemessener roter Gegenprobe
+
+Jede Sonde mutierte **genau eine** Stelle, lief durch `make test` und wurde zurückgenommen. Eine
+Sonde, die zwei Zeilen gleichzeitig kippt, belegt keine von beiden — deshalb steht bei jeder Zeile,
+**was** gefallen ist.
+
+| Zeile | Sonde (Mutation) | gefallen |
+|---|---|---|
+| §4-1 | Default auf `Wall` gestellt | `ADR_0021_E1_DefaultIstHilfslinie` + **zwei Bestands-Orakel** (Hilfslinien-Zug, Fang-Anzeige) |
+| §4-2 | Modus ignoriert (immer Hilfslinie) | `LH_FA_WAL_001_HappyPath_ImWandModusEntstehtEineWand` + 5 weitere Wand-Zeilen |
+| §4-3a | Fang im **Press**-Pfad übersprungen | `LH_FA_DRW_001_FangGiltAnBeidenEndenDesWandZugs`, `LH_FA_WAL_006_ZweiZuegeTeilen…` |
+| §4-3b | Fang im **Release**-Pfad übersprungen | dieselben zwei — **beide Enden einzeln belegt** |
+| §4-4 | (dieselbe Sonde wie §4-3, wie der Plan sie vorschreibt) | `LH_FA_WAL_006_ZweiZuegeTeilenDenGefangenenPunktExakt` |
+| §4-5 | Ablehnung wird nicht gemeldet | `WallSink.LH_FA_WAL_001_Boundary_EntarteterZugMeldetKeineWand` |
+| §4-5a | Anzeige-Aufruf entfernt | `MainWindow.ADR_0021_E5_HinweisAnzeigeTraegtDenGemeldetenText` |
+| §4-6a | Escape-Abbruch entfernt | `ADR_0021_E12_EscapeBrichtDieGesteAb` |
+| §4-6b | Fokusverlust-Abbruch entfernt | `ADR_0021_E12_FokusverlustBrichtDieGesteAb` |
+| §4-7 | `try`/`catch` der Barriere entfernt | **drei** Senken-Zeilen (der Wurf entweicht) |
+| §4-8 (Produktion) | `fitted_ = false` aus `onModelChanged` entfernt | `ADR_0021_E6_NeuEinrahmenKommtAusDerMeldekette` |
+| §4-8 (Anmeldung) | `subscribe` im Test entfernt | dieselbe Zeile — **die vom Plan vorgeschriebene Gegenprobe** |
+| §4-8a | Zeichnen der Wand-Segmente unterdrückt | `LH_FA_WAL_001_HappyPath_WandErscheintSofortImGrundriss` |
+| §4-9a | Auslösung der Wand-Aktion entfernt | `ADR_0021_E1_WerkzeugAktionenSindAusloesbarUndMarkiert` |
+| §4-9b | Exklusiv-Markierung entfernt | dieselbe Zeile — **beide Konjunkte einzeln** |
+| §4-10 | 3D-Szene sieht `WallAdded` nicht | `LH_FA_D3_002_DieGesteErreichtDieDreiDSicht` (+ das Bestands-Netz) |
+
+**§4-11/§4-12 sind Netz, nicht Beleg:** die Hilfslinien-Orakel liefen unverändert grün (Zeile 11);
+Persistenz/Export prüfen `make io-smoke` und die Runden-Orakel (Zeile 12) — der Slice hat dort
+**keinen** eigenen Sensor gebaut, und das war die benannte Entscheidung.
+
+**Zwei Zeilen teilen eine Sonde, und das steht hier statt es zu verschweigen:** §4-3 und §4-4 fallen
+beide auf »Fang übersprungen« — so schreibt der Plan es vor. §4-4 prüft dennoch etwas Eigenes (die
+**Gleichheit über zwei Züge**, aus zwei verschiedenen Richtungen mit verschiedenen Pixel-Versätzen
+angefahren); dafür gibt es aber keine Mutation, die nur sie kippt.
+
+### Was der Vollzug gegenüber dem Plan geändert hat
+
+1. **Die Barriere fängt `...`, nicht `const std::exception&`.** Der Plan sagte „fängt dessen Würfe";
+   die Zusage lautet aber „**kein** Wurf verlässt den Ereignis-Pfad". Eine Barriere, die nur die
+   dokumentierten Typen fängt, ist keine — und der Typ trägt hier ohnehin keine Information, weil
+   beide Wurf-Quellen denselben Ausgang bekommen (§2.3).
+2. **Der Wand-Zug des Canvas gibt nichts zurück** (`std::function<void(Point2D, Point2D)>`). Das ist
+   §2.3 in der Signatur: der Canvas **kann** den Ausgang nicht kennen, statt ihn nur nicht zu nutzen.
+3. **`setFocusPolicy(Qt::StrongFocus)` ist Teil der Zusage, nicht Beiwerk** — dieselbe Klasse wie
+   `setMouseTracking` in slice-055: ohne Fokus stellt Qt **keine** Tasten-Ereignisse zu, der
+   Escape-Abbruch wäre im Produkt tot, während ein Test, der `QKeyEvent` direkt zustellt, grün bliebe.
+4. **Ein Modus-Wechsel bricht eine laufende Geste ab.** Stand nicht im Plan; ohne die Regel entstünde
+   aus einem als Hilfslinie begonnenen Zug eine Wand.
+5. **`test_project_open_handler.cpp` mitgezogen** (nicht im Plan): dort liegt der Beleg, dass die
+   **produktiven** Senken nach einem Projekt-Laden nachgezogen werden. Ohne die Wand-Senke in dieser
+   Kette würfe `addWall` nach **jedem** Laden — die Barriere fänge es, aber der Benutzer bekäme statt
+   einer Wand einen Hinweis. Jetzt belegt der Test, dass die Wand auf dem geladenen Stand entsteht.
+6. **Das Handbuch brauchte mehr als vier Stellen** (der Plan nannte vier, die DoD verlangte zu
+   **suchen**): §1 „Heute möglich" · §1 „noch NICHT möglich" (präzisiert **und** um zwei ehrliche
+   Grenzen ergänzt: kein Entfernen/Rückgängig, keine nachträgliche Parameter-Änderung) · **§2.2**
+   (Werkzeug-Menü **und** Hinweis-Zeile — die Oberflächen-Beschreibung kannte beides nicht) ·
+   **§2.3** (Werkzeug wählen, Zug abbrechen) · §3-Kopf · §3-Wege-Liste Punkt 4 · §3-Hinweis-Block ·
+   4.1-Tabelle · 4.2 (Titel + neuer Unterabschnitt) · FAQ. Handbuch **1.6**.
+
+### Reichweite und benannte Grenzen
+
+- **Der Composition-Root bleibt orakel-los** (§4-9): `src/main.cpp` ist in kein Testbinary gelinkt.
+  Geprüft ist der **Fenster-Vertrag**, nicht die produktive Verdrahtung Aktion → `setToolMode`.
+  Bekannte Klasse, keine neue Lücke — und `make io-smoke`/`make acc-002-beleg` belegen, dass der
+  geänderte Root **läuft**.
+- **Sensor-los bleibt** ein Selbst-Refresh, der nur `update()` ruft, **ohne** neu einzurahmen. Das ist
+  nicht der Fall, vor dem [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E6 warnt (dort: doppeltes
+  Neu-Einrahmen), und es steht hier, weil die Zusage nur so weit deckt, wie sie messen kann.
+- **Lastenheft und Spezifikation: am Artefakt geprüft, nicht pauschal verneint.** [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md)
+  hatte geliefert; nachgesehen wurde diesmal konkret, ob die §6-Vertragszeile („Selbst-Refresh ohne
+  `op`") mit E6 unvollständig geblieben ist — sie ist es **nicht**: der 056-Block schreibt den
+  **zweigeteilten** Refresh aus (Zeichen-Daten: Selbst-Refresh; Bauteile: nur die Meldung), und die
+  Architektur-Tabellenzeile trägt dieselbe Zweiteilung. **Kein Spec-Diff nötig** — diesmal belegt.
+
+### Wellen-Stand
+
+Der Abschluss-Trigger von **welle-6-interaktiv-planen** ist **zur Hälfte** erfüllt: eine Wand ist im
+2D-Canvas **zeichenbar**, ohne Kommandozeile. Die zweite Hälfte („**parametrisch änderbar**") ist
+[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md). Davor steht dort das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des ganzen Bauteil-Strangs — **einschlägig**, anders als bei [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md).

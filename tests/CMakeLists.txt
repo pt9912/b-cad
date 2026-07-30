@@ -44,6 +44,7 @@ add_executable(bcad_adapter_tests
     adapters/test_viewer_widget.cpp
     adapters/test_canvas_widget.cpp    # slice-043: 2D-Canvas-Interaktions-AK (ADR-0019, Xvfb) + slice-048b: Zug MIT Fang
     adapters/test_snap.cpp             # slice-048b: Fang-Auswahl-Semantik (LH-FA-DRW-001) — OHNE Qt-Fixture
+    adapters/test_wall_sink.cpp        # slice-058: Wand-Senke = Fehler-Barriere + Ausgangs-Feststellung (ADR-0021 E5/E10)
     adapters/test_main_window.cpp      # slice-053: Fenster-Adapter — Menue-Ausloesung + Schliess-Veto (Xvfb)
     adapters/test_project_menu_handler.cpp  # slice-053: Handler ruft den Port UND reicht die Senken durch
     adapters/test_ifc_spf_reader.cpp   # slice-019b Commit i: SPF-Codec (isoliert)
