@@ -1,5 +1,69 @@
 # Status
 
+## 2026-07-29 — Tagesabschluss: drei Slices geliefert, die Welle bleibt zu
+
+**Stand:** alles committet auf `main`, Arbeitsbaum sauber, `make gates` grün (414 Tests, Coverage
+92,0 %, docs-check 0 Befunde / 291 Dateien). `in-progress/` trägt **keinen** Slice — der Ruhe-Marker
+steht.
+
+### Was heute fertig wurde
+
+| Slice | Ergebnis |
+|---|---|
+| [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) | **Wände zeichnen** — vier [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe (2/1/2 → 0 HIGH), 15 rote Gegenproben |
+| [`slice-059a`](../done/slice-059a-wand-auswaehlen.md) | **Wand auswählen** — zwei Läufe, im ersten **geteilt**, 15 Gegenproben |
+| [`slice-059b`](../done/slice-059b-wand-parameter-aendern.md) | **Stärke/Höhe ändern** — eigener Lauf (0 HIGH), 13 Gegenproben |
+
+**Der Abschluss-Trigger von welle-6 ist damit erfüllt** — eine Wand ist im 2D-Canvas zeichenbar
+**und** parametrisch änderbar, ohne Kommandozeile. **Die Welle ist trotzdem NICHT geschlossen.**
+
+### ▶ Wo es morgen weitergeht — genau eine Stelle
+
+Das [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+([`Report`](../../../reviews/2026-07-29-mr-009-bauteil-strang.md)) hat **2 HIGH** gefunden und die
+Closure **blockiert**:
+
+- **HIGH-1** — eine nach Lastenheft **zulässige** Stärken-Änderung zerstört eine Wand, die der
+  Benutzer **nicht angefasst hat** (selbstschneidender Footprint ⇒ offener Körper; selbst
+  nachgemessen: 12 → 8 Dreiecke an der fremden Wand). **Fix: [`slice-060`](../open/slice-060-eckenschluss-kollaps-kriterium.md).**
+- **HIGH-2** — die Boundary-Zeile „ungleiche Wandhöhen" ist nicht umgesetzt; volumen-neutral und
+  damit für jedes Bestands-Orakel unsichtbar. **Auf Entscheidung des Projektinhabers vertagt:
+  [`slice-061`](../open/slice-061-eckenschluss-ungleiche-hoehen.md).**
+
+**Nächster Schritt: der DRITTE [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
+für [`slice-060`](../open/slice-060-eckenschluss-kollaps-kriterium.md).** Sein Auftrag steht am Ende
+von §11a des Plans: hält die neue Lastenheft-Zeile, was die **lokale** Bauart liefert · ist die
+richtungsfreie Kandidaten-Ordnung auch bei **exakter Gleichheit** der Längsversätze richtungsfrei ·
+erzwingen die drei Fixturen von §4-4a wirklich K2, K3 und K4?
+
+### Offen für den Projektinhaber
+
+- **Die Vertagung von HIGH-2 ist eine benannte Abweichung von
+  [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)**,
+  die „HIGHs blockieren die Closure" **ohne** Vertagungs-Klausel schreibt — anders als
+  [MR-020](../../../../harness/conventions.md#mr-020--adr-folgepflicht-sichtbarkeit-closure-disziplin).
+  Sie ist heute nur in den zwei Slice-Dateien verankert; slice-060 trägt eine DoD-Zeile, die sie in
+  **Roadmap und Wellen-Ergebnis** schreibt. **Ohne diesen Nachzug liest sie sich nach der Closure
+  wie erledigt.**
+- Die zwei alten Regel-Kandidaten (Orakel-Zeile nennt die **Komponente** · Konsequenzen-Blöcke
+  gelesener ADRs) stehen unverändert.
+
+### Was der Tag über das Vorgehen gezeigt hat
+
+1. **Ein Instrument, das anderswo trug, trägt nicht überall — sechsmal in diesem Strang.** Pull-Zähler,
+   Tinten-Sonde am Fenster, Tinten-Sonde für die Hervorhebung, Netz-**Anzahl** statt Netz-Inhalt,
+   `effectiveUpdates()` bei wirkungsloser Setzung, Divergenz-Sonde ohne Kanten-Manifold. **Die Frage
+   ist nie „welches Instrument habe ich?", sondern „welche Größe ändert sich beim Fehler?"**
+2. **Wer die Bauart umdreht, muss jede daran hängende Zeile neu prüfen** (slice-060, Lauf 2): ich
+   hatte die Belege der **alten** Bauart mitgenommen — eine Gegenprobe, die nicht mehr erzeugbar war,
+   und einen Lastenheft-Plural, der vom symmetrischen Vorbild stammte.
+3. **Eine grüne Gegenprobe ist zuerst ein Verdacht gegen die Sonde**, dann gegen das Orakel
+   (slice-059a: die Press-Sonde war falsch gebaut).
+4. **`git checkout` zum Zurücknehmen einer Sonde löscht uncommittete Arbeit mit.** Sonden werden durch
+   **Zurückschreiben des gemerkten Inhalts** zurückgenommen.
+5. **Parallel messende Reviewer brauchen getrennte Arbeitsbäume** — zwei Läufe teilten sich heute
+   einen und sahen die Sonden des jeweils anderen.
+
 ## 2026-07-29 — slice-059b geschlossen: der Wellen-Trigger ist erfüllt
 
 `make gates` **EXIT=0** (docs-check **0 Befunde / 286 Dateien** · a-check 0 · arch-check ok ·
