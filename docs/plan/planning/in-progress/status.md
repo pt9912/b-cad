@@ -17,7 +17,7 @@ konnte: meine Begründung gegen den Split lautete, eine Auswahl ohne Eigenschaft
 „keinen benutzer-sichtbaren Nutzen — man merkt es nur im Test", **während im selben Dokument eine
 Orakel-Zeile stand, die das Gegenteil zusagte** („die Auswahl ist auf der Fläche erkennbar").
 Beides kann nicht stimmen. Geteilt in 059a (Auswahl, geliefert) und
-[`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) (Parameter, startbar).
+[`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) (Parameter, startbar).
 
 ### Drei Läufe, drei verschiedene Fehlerklassen
 
@@ -49,7 +49,7 @@ Beides kann nicht stimmen. Geteilt in 059a (Auswahl, geliefert) und
 
 ### ▶ Nächster Schritt
 
-**[`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)** — Wand parametrisch ändern.
+**[`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md)** — Wand parametrisch ändern.
 **Startbar** (eigener [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf, 0 HIGH). Danach ist der Wellen-Trigger erfüllt; davor steht dort
 das [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
 des Bauteil-Strangs, dann die **welle-6-Closure** in den drei Handgriffen, die 059b §9 benennt.

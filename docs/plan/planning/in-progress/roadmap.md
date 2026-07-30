@@ -40,7 +40,10 @@ machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nic
 ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
 wellen-bindend und verlängert sie nicht.
 
-Keine offenen Slices.
+**In Arbeit:** [`slice-059b`](slice-059b-wand-parameter-aendern.md) — Wand parametrisch ändern.
+**An diesem Slice hängt der Abschluss-Trigger**; danach folgen das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
+und die Welle-Closure.
 
 ## Nächste Wellen
 

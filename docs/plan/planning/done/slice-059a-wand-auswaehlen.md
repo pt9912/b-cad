@@ -12,10 +12,10 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 **Status:** done (2026-07-29). Zwei
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
 mit zwei verschiedenen Reviewern; der zweite meldet **0 HIGH**, damit greift die vorab festgelegte
-Abbruchregel. Einarbeitungen in §11 (Lauf 1, samt Teilung) und §11a (Lauf 2). Die Parameter-Hälfte ist [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md).
+Abbruchregel. Einarbeitungen in §11 (Lauf 1, samt Teilung) und §11a (Lauf 2). Die Parameter-Hälfte ist [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md).
 
 **Welle:** welle-6-interaktiv-planen. **Der Abschluss-Trigger hängt an
-[`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)**, nicht hier — dieser Slice liefert dessen
+[`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md)**, nicht hier — dieser Slice liefert dessen
 Voraussetzung und ist **für sich** abnehmbar: der Benutzer wählt eine Wand und **sieht**, welche.
 
 **Setzt voraus:** [`slice-057`](../done/slice-057-lese-naht-bauteil-identitaet.md) (Bauteil-Identität
@@ -54,7 +54,7 @@ den Schwellwert (Lehre slice-053: ein Default-Argument versteckt die Kalibrierun
 **Warum die Geschoss-Beschränkung nicht optional ist:** das Demo-Modell legt in EG und OG **dieselben
 vier Außenwände** an. Ohne Beschränkung träfe ein Klick auf eine sichtbare OG-Außenwand
 **deterministisch** die unsichtbare des EG — angezeigt **und** (in
-[`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)) geändert würde die falsche. **Ein
+[`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md)) geändert würde die falsche. **Ein
 reproduzierbar falscher Treffer ist schlimmer als ein zufälliger**, weil er zuverlässig am Benutzer
 vorbeigeht.
 
@@ -138,7 +138,7 @@ schreibt.
 
 ## 3. Bewusst NICHT Teil
 
-- **Parameter anzeigen und ändern** — das ist [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md).
+- **Parameter anzeigen und ändern** — das ist [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md).
 - **Mehrfach-Auswahl, Bereichs-Geste.** E3: höchstens **eine** Wand; benannter Re-Eval.
 - **Gemeinsame Auswahl 2D↔3D, Selektion im Viewport.** E3: zieht den
   [ADR-0009](../../adr/0009-gui-framework-qt6.md)-Re-Eval (AIS/V3d, **Supersedes**-ADR).
@@ -159,7 +159,7 @@ schreibt.
 | 6 | **Die Auswahl fällt bei Modell-Ersetzung** — **auch wenn** der neue Stand eine Wand mit **derselben Id** trägt | `CanvasWidget` + Dienst: `replaceBuilding` mit einem Stand, der die gewählte Wand-Id **in einem Geschoss trägt, dessen Id das Widget aktiv hält**. **Beide Konjunkte sind nötig, gemessen:** gleiche Wand-Id + **fremde** Geschoss-Id ⇒ 0 Vorkommen in der Sicht, „Neu"-Gestalt (Geschoss ohne Wände) ⇒ 0 — in beiden Fällen verwirft das **Netz** (c) die Auswahl, und die Gegenprobe bliebe grün. **Der naheliegende Fixture-Griff „den Anlegen-Pfad nachbilden" ist genau der nicht-diskriminierende** | `ModelReplaced`-Behandlung entfernt ⇒ die Auswahl überlebt ⇒ rot. **Die Fixture ist der Punkt:** mit einem Stand **ohne** diese Id wäre die Zeile auch ohne die Behandlung grün (das Netz griffe), und die eigentliche Fehlerklasse bliebe unbelegt |
 | 7 | **Die Auswahl fällt bei `setActiveStorey`** — geprüft ist der **Widget-Vertrag**; der benutzer-seitige Auslöser ist heute der Öffnen-/Anlegen-Pfad (§2.2 b) | `CanvasWidget` | Behandlung entfernt ⇒ rot. **Bauvorschrift, ohne die die Gegenprobe mehrdeutig ist:** `setActiveStorey` verwirft **unbedingt**, nicht über die Sichtbarkeits-Prüfung — sonst räumte das Netz (c) die Auswahl ohnehin ab (die Wand liegt in genau **einem** Geschoss), und die Zeile bliebe grün, ohne zu belegen, was sie behauptet. **Anders als bei §4-6 ist das per Fixture NICHT heilbar** |
 | 8 | **Die Auswahl ist auf der Fläche erkennbar** | **Tinten-Sonde am Canvas** (offscreen). **Zwei Vorbedingungen, beide zu PRÜFEN** (§2.3): (a) `snapPreview()` ist an **beiden** Messpunkten **leer** — sonst misst die Zeile den Fang-Marker (gemessen +56 px); (b) die Abbildung ist unverändert (Zoom **und** Modell-Ecke) | Hervorhebung entfernt ⇒ Tinte unverändert ⇒ rot. **Bauvorschrift, ohne die die Zeile nicht gilt:** die Hervorhebung fügt **Fläche** hinzu (breiterer Stift/Marker) — eine reine **Umfärbung** ist von dieser Sonde per Konstruktion unsichtbar und damit **keine** zulässige Umsetzung |
-| 9 | **Die Auswahl ist display-frei lesbar und wird gemeldet** — `selection()` liefert genau die getroffene Id (`nullopt` sonst); ein injiziertes `SelectionChanged`-Callable meldet **jeden** Wechsel, **auch das Fallen** | `CanvasWidget` + Zähl-Callable | Meldung nur bei Treffer, nicht beim Fallen ⇒ rot. **Die Naht ist die Voraussetzung von [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)** — ohne sie hätte der Eigenschaften-Bereich kein Subjekt |
+| 9 | **Die Auswahl ist display-frei lesbar und wird gemeldet** — `selection()` liefert genau die getroffene Id (`nullopt` sonst); ein injiziertes `SelectionChanged`-Callable meldet **jeden** Wechsel, **auch das Fallen** | `CanvasWidget` + Zähl-Callable | Meldung nur bei Treffer, nicht beim Fallen ⇒ rot. **Die Naht ist die Voraussetzung von [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md)** — ohne sie hätte der Eigenschaften-Bereich kein Subjekt |
 | 9a | **Der Auswahl-Modus ist bedienbar und sichtbar** — die dritte Aktion ist auffindbar, sie ruft ihr injiziertes Callable, und die **Markierung springt auf sie um** (die Gruppe bleibt exklusiv) | `MainWindow` (Aktions-Surrogat, Bauform [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) §4-9) | Auslösung entfernt ⇒ rot; Exklusivität entfernt ⇒ rot. **Reichweite:** geprüft wird der **Fenster-Vertrag**, nicht die produktive Verdrahtung — die liegt im Composition-Root und ist per Konstruktion orakel-los. **Ohne diese Zeile hätte die einzige Fenster-Zusage dieses Slice keine Diskriminierung** |
 | 10 | **Der Zeichen-Pfad bleibt unverändert** — Hilfslinie, Wand, Fang, Anzeige, Abbruch, Hinweise | Bestands-Orakel | (Regressions-Netz) |
 
@@ -184,7 +184,7 @@ den Tag, an dem ein Entfernen entsteht) und **so benannt**.
       die Gruppe bleibt **exklusiv**. Orakel §4-9a.
 - [ ] **`src/main.cpp`**: Verdrahtung der Auswahl-Aktion. Das `SelectionChanged`-Callable bleibt in
       diesem Slice **ohne Empfänger** außer dem Test — das ist die Naht, die
-      [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) besetzt, und es steht hier, statt später
+      [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) besetzt, und es steht hier, statt später
       als Lücke entdeckt zu werden (R4).
 - [ ] **Tests**: neuer `tests/adapters/`-Test der Treffer-Prüfung (§4-1..4, **ohne** Qt-Fixture) ·
       `test_canvas_widget.cpp` (§4-5..9) · `test_main_window.cpp` (§4-9a).
@@ -228,7 +228,7 @@ den Tag, an dem ein Entfernen entsteht) und **so benannt**.
 | `docs/reviews/`-Report | neu | das [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) vor dem Start |
 
 **Nicht berührt** (`spec/**`: die Prüf-DoD-Zeile „am Artefakt nachsehen, ob etwas fehlt" ist
-**vollständig** nach [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) gewandert — für den Umfang
+**vollständig** nach [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) gewandert — für den Umfang
 **dieser** Hälfte hat der zweite Plan-Lauf selbst nachgesehen und **Vollständigkeit festgestellt**;
 die Spezifikation trägt Treffer-Prüfung und Lebensdauer, geliefert von
 [`slice-056`](../done/slice-056-wand-im-canvas-adr-ak.md)): `src/hexagon/**`, `src/adapters/io/**`,
@@ -239,7 +239,7 @@ die Spezifikation trägt Treffer-Prüfung und Lebensdauer, geliefert von
 
 - **R1 — der symptomlose Fehler dieses Slice.** Der Geschoss-Skopus (§2.1) fällt nicht auf: die
   falsche Wand würde gewählt, ohne Wurf und ohne Ablehnung — und in
-  [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) **geändert**. Sein Orakel (§4-3) ist nur so
+  [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) **geändert**. Sein Orakel (§4-3) ist nur so
   gut wie seine Fixture: **das aktive Geschoss muss das zweite sein**.
 - **R2 — die Tinten-Sonde misst den falschen Zeichen-Vorgang** (§2.3). Zwei Vorbedingungen, beide zu
   prüfen; und die Hervorhebung ist an eine **Bauvorschrift** gebunden (Fläche hinzufügen). Wer sie
@@ -252,21 +252,21 @@ die Spezifikation trägt Treffer-Prüfung und Lebensdauer, geliefert von
   konsumiert. Eine Naht ohne Produktions-Konsumenten ist die Klasse, vor der
   [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E14 warnt („ein Surrogat ohne
   Produktions-Konsumenten bliebe grün, während im Produkt nichts zu sehen ist") — hier ist sie
-  **gewollt und terminiert**: [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) besetzt sie, und
+  **gewollt und terminiert**: [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) besetzt sie, und
   §4-8 belegt unabhängig davon, dass im Produkt etwas zu sehen ist.
 
 ## 8. Trigger
 
 - [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) §Konsequenzen, Folgepflicht
   „Auswahl-/Änderungs-Slice" — **erste Hälfte**; die Zeile im [ADR-Index](../../adr/README.md) wird
-  erst mit [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) auf erfüllt gesetzt.
+  erst mit [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) auf erfüllt gesetzt.
 
 ## 9. Closure-Trigger
 
 - §4-1 bis §4-9 grün + **je einzeln** diskriminierend belegt; §4-10 als Netz grün; `make gates`,
   `make io-smoke` und `make acc-002-beleg` grün; kein Kern-/Schema-/Export-Diff belegt; Handbuch
   nachgezogen; Closure-Notiz. **Die Welle bleibt offen** — sie schließt nach
-  [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md).
+  [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md).
 
 ## 10. Sub-Area-Modus-Begründung
 
@@ -285,7 +285,7 @@ die Spezifikation trägt Treffer-Prüfung und Lebensdauer, geliefert von
 Report: [`2026-07-29-slice-059-plan.md`](../../../reviews/2026-07-29-slice-059-plan.md) —
 **1 HIGH / 6 MEDIUM / 5 LOW / 4 INFO + 21 Negativbefunde, „nicht startbar"**. Unabhängiger
 Reviewer ≠ Plan-Autor. **Der Lauf hat den Slice geteilt**; diese Datei ist die erste Hälfte, die
-zweite ist [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md).
+zweite ist [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md).
 
 | # | Behandlung (soweit diese Hälfte betroffen) |
 |---|---|
@@ -294,7 +294,7 @@ zweite ist [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md).
 | **MEDIUM-5** (§2.2 (b) beruft sich auf einen „Geschoss-Wechsel", den die Oberfläche **nicht** hat: `setActiveStorey` hat genau **eine** produktive Aufrufstelle) | §2.2 (b) und §4-7 sagen jetzt, was geprüft wird (**Widget-Vertrag**) und was der benutzer-seitige Auslöser heute ist (der Öffnen-Pfad) — dieselbe Erreichbarkeits-Ehrlichkeit wie bei (c). |
 | **MEDIUM-6** (der Schnitt ist zu groß; die Nicht-Teilungs-Begründung **widerspricht der eigenen Zeile §4-13**) | **Geteilt.** Die Begründung „man merkt es nur im Test" war durch die eigene Orakel-Zeile widerlegt: die Auswahl ist **auf der Fläche erkennbar**, also ist diese Hälfte abnehmbar. |
 | **LOW-5 (b)** (Press oder Release entscheidet den Treffer? Der Plan sagte „**dem** Klick") | **Entschieden: Loslassen** (§2.1) — dieselbe Stelle wie bei den zwei Bestands-Gesten. |
-| **LOW-5 (c)** ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden) fehlt im Front-Matter, obwohl die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Zeile darauf zielt) | In dieser Hälfte gegenstandslos ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) hängt an [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)); dort behandelt. |
+| **LOW-5 (c)** ([LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden) fehlt im Front-Matter, obwohl die [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Zeile darauf zielt) | In dieser Hälfte gegenstandslos ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) hängt an [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md)); dort behandelt. |
 
 **Positiv bestätigt (21 Negativbefunde), für diese Hälfte relevant:** §2.2 ist in **beiden** Teilen
 **gemessen** richtig — `replaceBuilding` meldet genau eine `ModelReplaced`, auch ohne Geschosse und
@@ -324,7 +324,7 @@ Bauvorschrift ist exakt richtig gefasst: probeweise **Umfärbung** ⇒ `633 → 
 | **LOW-1** (die zwei deckungsgleichen Achsen brauchen **verschiedene** Wand-Ids — beim Bau von Hand entsteht Deckungsgleichheit durch Kopieren des Literals **samt `origin`-Id**) | Als Konjunkt (b) in §4-3. |
 | **LOW-2** (der Konjunkt „entschieden beim **Loslassen**" hat keine eigene Gegenprobe: bei einem Klick ist Press == Release) | §4-5 verlangt jetzt einen Zug mit **verschiedenen** Ausgängen an beiden Enden. |
 | **LOW-3** („Behandlung entfernt ⇒ rot" ist bei §4-7 mehrdeutig und **nicht per Fixture heilbar**) | **Bauvorschrift in der Zeile:** `setActiveStorey` verwirft **unbedingt**, nicht über die Sichtbarkeits-Prüfung. |
-| **LOW-4** (§6 verweist auf eine DoD-Prüfzeile, die vollständig nach [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) gewandert ist) | §6 sagt es jetzt — und der Reviewer hat für den Umfang **dieser** Hälfte selbst nachgesehen: Lastenheft und Spezifikation decken ihn **vollständig**. |
+| **LOW-4** (§6 verweist auf eine DoD-Prüfzeile, die vollständig nach [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) gewandert ist) | §6 sagt es jetzt — und der Reviewer hat für den Umfang **dieser** Hälfte selbst nachgesehen: Lastenheft und Spezifikation decken ihn **vollständig**. |
 
 **Positiv bestätigt (20 Negativbefunde):** die **Teilung ist sauber** — alle 17 Orakel-Zeilen und 16
 DoD-Positionen des ungeteilten Stands haben eine Heimat, und diese Hälfte trägt **nichts Fremdes**;
@@ -393,7 +393,7 @@ im Quelltext-Kommentar daneben, statt als stille Annahme.
    sondern die Typisierung, die der Plan an anderer Stelle selbst verlangt.
 2. **Die Melde-Naht meldet Wechsel, nicht Klicks.** Ein zweiter Klick auf dieselbe Wand erzeugt
    **keine** zweite Meldung — sonst bekäme der Eigenschaften-Bereich aus
-   [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) eine Aktualisierung ohne Anlass. Die
+   [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) eine Aktualisierung ohne Anlass. Die
    Zeile §4-9 prüft das ausdrücklich mit.
 3. **Der Treffer nutzt die UNGEFANGENE Position.** Der Zeichen-Pfad quantisiert auf Fang-Punkte;
    Auswählen darf das nicht — gewählt wird, worauf gezeigt wurde, nicht die Wand am nächsten
@@ -418,7 +418,7 @@ rekonstruierbar, aber das war Glück und keine Eigenschaft des Vorgehens.
   produktive Verdrahtung Aktion → `setToolMode`. `make io-smoke` und `make acc-002-beleg` belegen,
   dass der geänderte Root **läuft**.
 - **Die Melde-Naht hat in diesem Slice keinen Produktions-Konsumenten** (R4) — sie ist die Naht, die
-  [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) besetzt. Dass im Produkt trotzdem
+  [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) besetzt. Dass im Produkt trotzdem
   etwas zu sehen ist, belegt §4-8 unabhängig davon.
 - **Regel (c) der Lebensdauer bleibt ohne Orakel** und ist gebaut: „die gewählte Wand verschwindet
   aus der Sicht" ist ohne Entfernen-Pfad **strukturell nicht erreichbar**. Netz für den Tag, an dem
@@ -432,7 +432,7 @@ rekonstruierbar, aber das war Glück und keine Eigenschaft des Vorgehens.
 ### Wellen-Stand
 
 Der Abschluss-Trigger von **welle-6** ist **noch nicht** erfüllt — er verlangt „zeichenbar **und
-parametrisch änderbar**". Es fehlt [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md),
+parametrisch änderbar**". Es fehlt [`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md),
 und davor steht dort das
 [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
 des Bauteil-Strangs.
