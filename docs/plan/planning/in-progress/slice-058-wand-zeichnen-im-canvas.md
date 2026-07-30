@@ -96,7 +96,7 @@ die Aussage ohnehin dieselbe: nichts entstanden, Modell unverändert.
 ## 3. Bewusst NICHT Teil
 
 - **Selektion, Eigenschaften-Bereich, Parameter ändern** — das ist
-  [`slice-059`](slice-059-wand-auswaehlen-und-aendern.md).
+  [`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md).
 - **Mehrpunktiger Wandzug.** [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E2 entscheidet **ein
   Segment je Geste**; die Teilumfang-Klausel steht bereits im Lastenheft.
 - **Entfernen und Rückgängigmachen.** E12: der **Gesten-Abbruch** ist dabei, das **Löschen** nicht —
@@ -251,7 +251,7 @@ fehlt" — geprüft und vollständig befunden; ändert sich das im Vollzug, gewi
 **[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
 gehört NICHT in diesen Slice** (vier Läufe haben es angemerkt, deshalb steht es hier): das
 geometrielastige Code-Review hängt an der **Welle-Closure** und deckt den ganzen Bauteil-Strang ab —
-verortet in [`slice-059`](slice-059-wand-auswaehlen-und-aendern.md). Dieser Slice führt es nicht,
+verortet in [`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md). Dieser Slice führt es nicht,
 und das ist eine Entscheidung, kein Vergessen.
 
 ## 8. Trigger
@@ -265,7 +265,7 @@ und das ist eine Entscheidung, kein Vergessen.
   grün; `make gates`, `make io-smoke` und
   `make acc-002-beleg` grün; kein Kern-/Schema-/Export-Diff belegt; Handbuch und ADR-Index
   nachgezogen; Closure-Notiz. **Der Wellen-Trigger ist damit zur Hälfte erfüllt** — die zweite Hälfte
-  ist [`slice-059`](slice-059-wand-auswaehlen-und-aendern.md).
+  ist [`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md).
 
 ## 10. Sub-Area-Modus-Begründung
 
@@ -389,7 +389,7 @@ Rückverweise mitgezogen, und hat die **Entrauschung** etwas Tragendes mitgenomm
 | **LOW-2** (beide Orakel-Zählungen stale) | **vierzehn** Zeilen, **zwölf** mit eigenem Sensor. |
 | **LOW-3** (die Produktions-DoD-Zeile der Senke buchte nur §4-7, obwohl §4-5 dort ebenfalls festgestellt wird) | **§4-5 und §4-7.** Dieselbe Zuordnung war für die Test-Zeile bereits gelöst — die Produktions-Zeile war übrig geblieben. |
 | **LOW-4** (die Tinten-Zahl `993` ist ohne Nennung des Segments nicht nachprüfbar; der Reviewer misst für sein Segment `905`, für die Geste `904`) | **Beide Segmente stehen jetzt dabei**, und die Zeile sagt ausdrücklich: **Sollwert ist die Richtung, nicht die Zahl.** |
-| **INFO-3** ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) fehlt im Plan — **vierte** Nennung über vier Läufe) | **Ausdrücklich verortet** statt ein fünftes Mal übergangen: es hängt an der Welle-Closure und steht in [`slice-059`](slice-059-wand-auswaehlen-und-aendern.md). |
+| **INFO-3** ([MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure) fehlt im Plan — **vierte** Nennung über vier Läufe) | **Ausdrücklich verortet** statt ein fünftes Mal übergangen: es hängt an der Welle-Closure und steht in [`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md). |
 
 **Positiv bestätigt (18 Negativbefunde):** Zeile 8 ist an der genannten Naht **diskriminierend**
 (fünf eigene Messläufe des Reviewers) · Zeile 8a ebenfalls — die Gegenprobe wurde **emuliert**
