@@ -90,6 +90,17 @@ MainWindow::MainWindow(QWidget* central, FileActions actions, ToolActions tools,
                          });
     }
 
+    QAction* select_tool = tool_menu->addAction(QStringLiteral("&Auswahl"));
+    select_tool->setObjectName(QString::fromLatin1(kToolSelectActionName));
+    select_tool->setCheckable(true);
+    tool_group->addAction(select_tool);
+    if (tools.select_pick) {
+        QObject::connect(select_tool, &QAction::triggered, this,
+                         [handler = std::move(tools.select_pick)]() {
+                             handler();
+                         });
+    }
+
     // slice-058 (ADR-0021 E5): die Hinweis-Zeile. Statusleiste = nicht-modal,
     // dauerhaft sichtbar, unterbricht den Zeichenfluss nicht. Ein `QLabel`
     // statt `showMessage`, damit der Text eine LESBARE Eigenschaft ist —

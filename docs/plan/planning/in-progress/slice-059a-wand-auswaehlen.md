@@ -336,4 +336,103 @@ eingearbeitet; sie betreffen **Fixture-Vorbedingungen und eine fehlende Zeile**,
 
 ## 12. Closure-Notiz
 
-_(bei Ausführung auszufüllen)_
+**Vollzogen 2026-07-29.** `make gates` grün, **399 Tests** (387 vor dem Slice, **+12** neu),
+Zeilen-Coverage 92,2 %; `make io-smoke` grün, `make acc-002-beleg` grün (9 Wand-Netze; **das Bild
+ist bewusst nicht committet** — es gehört zur Abnahme-Runde von
+[`slice-012`](../done-archive/slice-012-eckenschluss-wal006-teil.md)). Kein
+Kern-/Persistenz-/Export-/Schema-Diff und **`.a-check.yml` byte-unberührt**: `a-check` = 0 Befunde,
+**keine neue Kante** — die Treffer-Prüfung lebt in `view/` und nutzt nur `model`.
+
+### Die Orakel-Zeilen, je mit EINZELN gemessener roter Gegenprobe
+
+| Zeile | Sonde (Mutation) | gefallen |
+|---|---|---|
+| §4-1 | Endpunkt- statt Segment-Abstand | `AbstandZumSegmentNichtZumEndpunkt` + **9 weitere** (der Klick auf die Achsenmitte trägt den ganzen Auswahl-Strang) |
+| §4-2 | `WallAxis`-Filter entfernt | `HilfslinienSindNichtWaehlbar` |
+| §4-3 | Geschoss-Filter entfernt | `NurDasDargestellteGeschoss` |
+| §4-4 | Reihenfolge- statt Distanz-Auswahl | `DieNaechstgelegeneGewinnt` |
+| §4-4a | Tie-Break umgedreht (`<=` statt `<`) | `TieBreakZuerstBesuchterGewinnt` |
+| §4-5 (a) | Auswahl-Modus ignoriert | `NurImAuswahlModusWirdGewaehlt` + 5 |
+| §4-5 (b) | auch im Zeichen-Modus wird gewählt | `NurImAuswahlModusWirdGewaehlt` + **9 Bestands-Orakel** |
+| §4-5 (c) | Treffer **verschoben** ans Drücken | `DerTrefferEntscheidetBeimLoslassen` |
+| §4-6 | `ModelReplaced`-Behandlung entfernt | `AuswahlFaelltBeiModellErsetzung` |
+| §4-7 | Auswahl-Behandlung in `setActiveStorey` **ganz** entfernt | `AuswahlFaelltBeimGeschossWechsel` |
+| §4-8 (a) | Hervorhebung entfernt | `AuswahlIstAufDerFlaecheErkennbar` |
+| §4-8 (b) | Hervorhebung nur **umgefärbt** | dieselbe Zeile — **die Bauvorschrift ist damit belegt** |
+| §4-9 | das Fallen wird nicht gemeldet | `JederWechselWirdGemeldetAuchDasFallen` |
+| §4-9a (a) | Auslösung der Auswahl-Aktion entfernt | `AuswahlWerkzeugIstAusloesbarUndMarkiert` |
+| §4-9a (b) | Exklusiv-Markierung entfernt | dieselbe Zeile + die slice-058-Werkzeug-Zeile |
+
+**§4-10 ist Netz, nicht Beleg:** die Zeichen-Orakel (Hilfslinie, Wand, Fang, Anzeige, Abbruch,
+Hinweise) liefen unverändert grün — sichtbar auch daran, dass die Sonde §4-5 (b) **neun** von ihnen
+fallen ließ.
+
+### Zwei Sonden kamen zuerst GRÜN zurück — und die zwei Gründe sind verschieden
+
+**Die erste war meine eigene Nachlässigkeit, nicht ein schwaches Orakel.** Ich hatte die
+Press-Sonde so gebaut, dass sie das Auswählen ans Drücken **zusätzlich** hängt, statt es dorthin zu
+**verschieben** — das Loslassen überschrieb es, und das Ergebnis war identisch. Richtig verschoben
+fällt die Zeile sofort. **Eine grüne Gegenprobe ist zuerst ein Verdacht gegen die Sonde, dann gegen
+das Orakel** — in dieser Reihenfolge, sonst schwächt man ein Orakel, das trägt.
+
+**Die zweite ist eine echte, benannte Grenze.** Die Sonde, die in `setActiveStorey` nur den
+**Mechanismus** tauscht (unbedingtes Verwerfen ⇄ über das Sichtbarkeits-Netz), bleibt in **beiden**
+Armen grün — genau wie es der zweite Plan-Lauf (LOW-3) vorhergesagt hat und **anders als bei §4-6
+nicht per Fixture heilbar**: eine Wand liegt in genau **einem** Geschoss, nach dem Wechsel ist sie
+also nie mehr sichtbar. **Was §4-7 belegt, ist die ZUSAGE** („nach dem Wechsel ist nichts gewählt") —
+belegt durch die Sonde, die die Behandlung **ganz** entfernt. **Was es nicht belegt, ist der
+Mechanismus.** Der unbedingte Weg steht im Code, weil er sagt, was gemeint ist, und die Grenze steht
+im Quelltext-Kommentar daneben, statt als stille Annahme.
+
+### Was der Vollzug gegenüber dem Plan geändert hat
+
+1. **Das Geschoss kommt als starke `StoreyId` in die Treffer-Prüfung**, nicht als `int`. Der
+   Lint-Gate hat zwei benachbarte, vertauschbare Zahlen-Parameter (`double` Schwellwert, `int`
+   Geschoss) beanstandet — und er hat recht: es ist **dieselbe** Begründung, mit der der Plan die
+   **Rückgabe** als starke Id festlegt. Sie gilt für Eingaben genauso. **Keine Gate-Lockerung**,
+   sondern die Typisierung, die der Plan an anderer Stelle selbst verlangt.
+2. **Die Melde-Naht meldet Wechsel, nicht Klicks.** Ein zweiter Klick auf dieselbe Wand erzeugt
+   **keine** zweite Meldung — sonst bekäme der Eigenschaften-Bereich aus
+   [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) eine Aktualisierung ohne Anlass. Die
+   Zeile §4-9 prüft das ausdrücklich mit.
+3. **Der Treffer nutzt die UNGEFANGENE Position.** Der Zeichen-Pfad quantisiert auf Fang-Punkte;
+   Auswählen darf das nicht — gewählt wird, worauf gezeigt wurde, nicht die Wand am nächsten
+   Endpunkt.
+4. **Das Handbuch brauchte sieben Stellen** (§1 „Heute möglich" · §1 „noch NICHT möglich" · §2.2 ·
+   §2.3 · 4.1-Tabelle · neuer 4.2-Unterabschnitt · FAQ). Die in Version 1.6 gesetzte Grenze „eine
+   gezeichnete Wand auswählen **und** ihre Stärke oder Höhe ändern" ist **halb** aufgehoben — sie
+   wurde **präzisiert**, nicht gestrichen: auswählen ja, ändern noch nicht.
+
+### Ein Vorfall, der in die Lehre gehört
+
+Beim Zurücknehmen einer Sonde habe ich `git checkout -- canvas_widget.cpp` benutzt — und damit die
+**noch nicht committete Implementierung** derselben Datei mitgelöscht. Die Sonden-Skripte machen es
+richtig (Datei-Inhalt merken, danach zurückschreiben); der Fehler passierte im **manuellen** Lauf
+daneben. **Solange die Implementierung uncommittet ist, nimmt man eine Sonde durch Zurückschreiben
+des gemerkten Inhalts zurück, nicht über `git checkout`.** Der Verlust war vollständig
+rekonstruierbar, aber das war Glück und keine Eigenschaft des Vorgehens.
+
+### Reichweite und benannte Grenzen
+
+- **Der Composition-Root bleibt orakel-los** (§4-9a): geprüft ist der Fenster-Vertrag, nicht die
+  produktive Verdrahtung Aktion → `setToolMode`. `make io-smoke` und `make acc-002-beleg` belegen,
+  dass der geänderte Root **läuft**.
+- **Die Melde-Naht hat in diesem Slice keinen Produktions-Konsumenten** (R4) — sie ist die Naht, die
+  [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) besetzt. Dass im Produkt trotzdem
+  etwas zu sehen ist, belegt §4-8 unabhängig davon.
+- **Regel (c) der Lebensdauer bleibt ohne Orakel** und ist gebaut: „die gewählte Wand verschwindet
+  aus der Sicht" ist ohne Entfernen-Pfad **strukturell nicht erreichbar**. Netz für den Tag, an dem
+  ein Entfernen entsteht — so benannt, nicht als Deckung gebucht.
+- **Lastenheft und Spezifikation: am Artefakt geprüft.** Für den Umfang dieser Hälfte hat das der
+  zweite Plan-Lauf getan und **Vollständigkeit festgestellt**; die abnahmebindende Zeile
+  [LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)
+  „Boundary (Auswahl)" gehört zur **Parameter**-Hälfte, weil sie über den Eigenschaften-Bereich
+  spricht.
+
+### Wellen-Stand
+
+Der Abschluss-Trigger von **welle-6** ist **noch nicht** erfüllt — er verlangt „zeichenbar **und
+parametrisch änderbar**". Es fehlt [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md),
+und davor steht dort das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des Bauteil-Strangs.

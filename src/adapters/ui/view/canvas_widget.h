@@ -9,6 +9,7 @@
 #include "adapters/ui/view/view_transform.h"
 #include "hexagon/model/guide_line.h"  // GuideLineId
 #include "hexagon/model/plan_view.h"
+#include "hexagon/model/wall.h"  // WallId
 #include "hexagon/model/point2d.h"
 #include "hexagon/ports/driven/model_changed_port.h"
 
@@ -73,13 +74,20 @@ public:
     using WallDraw =
         std::function<void(hexagon::model::Point2D, hexagon::model::Point2D)>;
 
-    enum class ToolMode { GuideLine, Wall };
+    // Auswahl-Meldung (slice-059a): **jeder** Wechsel, auch das Fallen
+    // (`nullopt`). Der Empfänger ist der Composition-Root, der daraus den
+    // Eigenschaften-Bereich speist (slice-059b) — port-frei wie alles andere.
+    using SelectionChanged =
+        std::function<void(std::optional<hexagon::model::WallId>)>;
+
+    enum class ToolMode { GuideLine, Wall, Select };
 
     // **Kein Default für `draw_wall`:** ein vergessenes Callable wäre ein
     // Wand-Modus, der still nichts tut. Muster `DrawingTargetSinks` (slice-053):
     // Vergessen ist ein Compile-Fehler.
     CanvasWidget(PlanPull pull, GuideLineDraw draw, WallDraw draw_wall,
-                 int active_storey_id, QWidget* parent = nullptr);
+                 SelectionChanged on_selection_changed, int active_storey_id,
+                 QWidget* parent = nullptr);
 
     // Werkzeug-Modus setzen/lesen (ADR-0021 E1/E14). Ein Modus-Wechsel bricht
     // eine laufende Geste ab — sonst entstünde aus einem Zug, der als Hilfslinie
@@ -96,6 +104,13 @@ public:
     // ADR-0008-Callback: `op`-Mutation → neu einrahmen + Repaint einplanen.
     void onModelChanged(
         const hexagon::ports::driven::ModelChange& change) override;
+
+    // Die aktuell gewählte Wand, oder `nullopt` (ADR-0021 E3/E14, slice-059a).
+    // **Reiner Widget-Zustand:** kein Modell-Datum, kein Schema-Feld, keine
+    // Persistenz — und die display-freie Naht, an der die Auswahl-AK hängt.
+    std::optional<hexagon::model::WallId> selection() const {
+        return selection_;
+    }
 
     // Der aktuell angezeigte Fang-Kandidat in Modell-mm, oder `nullopt`.
     // Display-freie Testnaht der Anzeige-AK (Muster `screenToModel`, ADR-0019
@@ -145,6 +160,17 @@ private:
     // gehaltene Position keinem bekannten Zeiger-Pixel mehr entspricht.
     void invalidateSnapPreview();
 
+    // Setzt die Auswahl und **meldet jeden Wechsel** — auch das Fallen. Plant
+    // bei Änderung einen Repaint ein (die Hervorhebung muss verschwinden).
+    void setSelection(std::optional<hexagon::model::WallId> next);
+
+    // Netz (c) der Lebensdauer-Regeln (ADR-0021 E17): kommt die gewählte Wand
+    // in der Sicht des **aktiven** Geschosses nicht mehr vor, fällt sie.
+    // **Heute strukturell nicht erreichbar** — es gibt kein `removeWall`, und
+    // jede Modell-Ersetzung fällt schon unter Regel (a). Gebaut für den Tag, an
+    // dem ein Entfernen-Pfad entsteht.
+    void dropSelectionIfGone();
+
     // Bricht eine laufende Geste ab: **keine** Mutation, nur der Zug-Zustand
     // fällt und die in-Arbeit-Linie verschwindet (ADR-0021 E12). Ohne laufende
     // Geste ein No-op — auch das ist Teil der Zusage („es entsteht keine Wand").
@@ -153,6 +179,7 @@ private:
     PlanPull pull_;
     GuideLineDraw draw_;
     WallDraw draw_wall_;
+    SelectionChanged on_selection_changed_;
     ToolMode tool_mode_{ToolMode::GuideLine};  // E1: Default bleibt Hilfslinie
     int active_storey_id_{};
     ViewTransform transform_{};
@@ -164,6 +191,20 @@ private:
     // Transformations-Änderung (Zoom/Resize) mitten im Zug; die committete
     // Hilfslinie nutzt IHN, nicht die Neu-Abbildung des alten Pixels (MR-009-LOW-2).
     hexagon::model::Point2D drag_start_mm_{};
+    // Die gewählte Wand (slice-059a). **Drei Regeln bestimmen ihre Lebensdauer**
+    // (ADR-0021 E17), und keine ersetzt die andere:
+    //   (a) **Modell-Ersetzung** — `onModelChanged` mit `op == ModelReplaced`
+    //       verwirft **ausdrücklich**. Ohne diese Regel bezeichnete eine
+    //       überlebende Id im geladenen Stand mit hoher Wahrscheinlichkeit eine
+    //       ANDERE, existierende Wand (der Id-Zähler wird beim Laden auf das
+    //       Maximum des geladenen Projekts gesetzt) — und `setWallThickness`
+    //       wirft dabei NICHT: die Änderung träfe still das Falsche.
+    //   (b) **Geschoss-Wechsel** — `setActiveStorey` verwirft **unbedingt**,
+    //       nicht über die Sichtbarkeits-Prüfung: sonst belegte eine Gegenprobe
+    //       nicht, was sie behauptet (die Wand liegt in genau einem Geschoss,
+    //       das Netz räumte sie ohnehin ab).
+    //   (c) **Verschwinden aus der Sicht** — Netz, s. `dropSelectionIfGone`.
+    std::optional<hexagon::model::WallId> selection_{};
     // Der angezeigte Fang-Kandidat in Modell-mm (slice-055). Bewusst in mm und
     // nicht in Pixeln: er ist derselbe Wert, der beim Klick übergeben würde.
     // Der Preis ist die Invalidierung bei jeder Transformations-Änderung.

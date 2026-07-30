@@ -304,4 +304,43 @@ TEST(MainWindow, ADR_0021_E5_HinweisAnzeigeTraegtDenGemeldetenText) {
     EXPECT_TRUE(hint->text().isEmpty());
 }
 
+// --- slice-059a, §4-9a: die dritte Werkzeug-Aktion ------------------------
+//
+// Reichweite wie bei slice-058 §4-9: geprueft wird der FENSTER-VERTRAG, nicht
+// die produktive Verdrahtung Aktion -> CanvasWidget::setToolMode — die liegt im
+// Composition-Root und ist per Konstruktion orakel-los.
+TEST(MainWindow, ADR_0021_E3_AuswahlWerkzeugIstAusloesbarUndMarkiert) {
+    const QtFixture qt;
+    int guide_line_calls = 0;
+    int wall_calls = 0;
+    int select_calls = 0;
+    MainWindow window(nullptr, {},
+                      {[&guide_line_calls]() { ++guide_line_calls; },
+                       [&wall_calls]() { ++wall_calls; },
+                       [&select_calls]() { ++select_calls; }},
+                      {});
+
+    QAction* guide_line = actionNamed(window, MainWindow::kToolGuideLineActionName);
+    QAction* wall = actionNamed(window, MainWindow::kToolWallActionName);
+    QAction* select = actionNamed(window, MainWindow::kToolSelectActionName);
+    ASSERT_NE(select, nullptr) << "die Auswahl-Aktion muss auffindbar sein";
+    EXPECT_FALSE(select->isChecked()) << "Default bleibt Hilfslinie";
+
+    select->trigger();
+    EXPECT_EQ(select_calls, 1);
+    EXPECT_EQ(wall_calls, 0) << "die Aktionen sind nicht vertauscht";
+    EXPECT_EQ(guide_line_calls, 0);
+
+    // Die Markierung springt um, und die Gruppe bleibt EXKLUSIV: genau ein
+    // Werkzeug ist aktiv. Zwei markierte Werkzeuge waeren eine Luege ueber den
+    // Zustand des Canvas.
+    EXPECT_TRUE(select->isChecked());
+    EXPECT_FALSE(guide_line->isChecked());
+    EXPECT_FALSE(wall->isChecked());
+
+    wall->trigger();
+    EXPECT_TRUE(wall->isChecked());
+    EXPECT_FALSE(select->isChecked());
+}
+
 }  // namespace

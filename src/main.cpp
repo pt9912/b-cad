@@ -386,7 +386,8 @@ bcad::adapters::ui::view::MainWindow::ToolActions makeToolActions(
     bcad::adapters::ui::view::CanvasWidget* canvas) {
     using Mode = bcad::adapters::ui::view::CanvasWidget::ToolMode;
     return {[canvas]() { canvas->setToolMode(Mode::GuideLine); },
-            [canvas]() { canvas->setToolMode(Mode::Wall); }};
+            [canvas]() { canvas->setToolMode(Mode::Wall); },
+            [canvas]() { canvas->setToolMode(Mode::Select); }};
 }
 
 bcad::adapters::ui::view::MainWindow::FileActions makeFileActions(
@@ -623,6 +624,12 @@ int main(int argc, char** argv) {
             // Canvas soll ihn nicht kennen (slice-058 §2.3).
             wall_sink.addWall(a, b);
         },
+        // slice-059a: die Auswahl-Meldung. In DIESEM Slice hat sie noch keinen
+        // Empfänger — sie ist die Naht, die slice-059b besetzt (der
+        // Eigenschaften-Bereich). Sie steht hier, statt später als Lücke
+        // entdeckt zu werden; dass im Produkt etwas zu sehen ist, belegt
+        // unabhängig davon die Hervorhebung auf der Fläche.
+        [](std::optional<model::WallId>) {},
         static_cast<int>(active_storey));
     service.subscribe(*canvas);
 

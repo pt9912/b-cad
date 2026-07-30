@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- slice-059a — **Wand im 2D-Canvas auswählen** ([ADR-0021](docs/plan/adr/0021-wand-im-2d-canvas.md)
+  E3/E14/E16/E17). Drittes Werkzeug **Auswahl**: ein Klick auf eine Wand-Achse wählt **genau eine**
+  Wand des **angezeigten** Geschosses, und sie wird im Grundriss **hervorgehoben**.
+  **Die Treffer-Prüfung ist der Spiegel des Fangs — mit drei Unterschieden, die zählen:** Abstand zur
+  ganzen **Achse** statt zu ihren Endpunkten (man klickt auf die Mitte einer Wand, nicht auf ihre
+  Ecke) · **nur das dargestellte Geschoss** · **nur Wand-Achsen**, keine Hilfslinien.
+  **Warum die Geschoss-Grenze nicht optional ist:** in vielen Gebäuden — auch im mitgelieferten
+  Beispiel — liegen die Außenwände mehrerer Geschosse genau übereinander. Ohne sie träfe ein Klick
+  **deterministisch** die unsichtbare Wand des anderen Geschosses; ein reproduzierbar falscher
+  Treffer ist schlimmer als ein zufälliger, weil er zuverlässig am Benutzer vorbeigeht.
+  **Die Auswahl fällt, sobald ihr Bezug fallen könnte** — bei Modell-Ersetzung (Öffnen/Anlegen) und
+  bei Geschoss-Wechsel. Auch das ist kein Detail: der Id-Zähler wird beim Laden auf das Maximum des
+  geladenen Projekts gesetzt, eine überlebende Auswahl bezeichnete danach mit hoher
+  Wahrscheinlichkeit eine **andere, existierende** Wand — und keine Fehlermeldung hätte das gemerkt.
+  **Noch nicht dabei:** Stärke und Höhe der gewählten Wand ändern (folgt in slice-059b).
+  **Kein** Kern-, Persistenz-, Export- oder Schema-Diff; `.a-check.yml` byte-unberührt.
 - slice-058 — **Wände im 2D-Canvas zeichnen** ([LH-FA-WAL-001](spec/lastenheft.md#lh-fa-wal-001--wand-zeichnen),
   [ADR-0021](docs/plan/adr/0021-wand-im-2d-canvas.md) E1/E2/E5/E6/E7/E8/E9/E10/E12/E14). **Das erste
   Bauteil, das in der Oberfläche entsteht.** Menü **Werkzeug** → **Hilfslinie** (Voreinstellung) oder

@@ -23,12 +23,15 @@
 #include "adapters/ui/view/canvas_widget.h"
 #include "adapters/ui/view/view_transform.h"
 #include "adapters/ui/view/viewer_scene.h"
+#include "hexagon/model/building.h"
+#include "hexagon/model/constants.h"
 #include "hexagon/model/plan_view.h"
 #include "hexagon/model/point2d.h"
 #include "hexagon/model/segment.h"
 #include "hexagon/services/structure_edit_service.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace {
@@ -106,6 +109,9 @@ TEST(CanvasWidgetInteraction, LH_FA_DRW_005_MausZugErzeugtHilfslinie) {
         // das ist die Gegenprobe zu §4-1 aus der anderen Richtung.
         [](model::Point2D, model::Point2D) {
             FAIL() << "im Default-Modus darf der Wand-Pfad nicht laufen";
+        },
+        [](std::optional<model::WallId>) {
+            FAIL() << "ohne Auswahl-Modus darf keine Auswahl gemeldet werden";
         },
         static_cast<int>(eg));
     service.subscribe(canvas);
@@ -265,6 +271,8 @@ struct CanvasFixture {
     // slice-058: die gemeldeten Wand-Ausgaenge. Der Canvas sieht sie nicht —
     // die Senke meldet sie (ADR-0021 E5); hier stehen sie als Surrogat.
     std::vector<command::WallDrawOutcome> outcomes;
+    // slice-059a: JEDER gemeldete Auswahl-Wechsel, auch das Fallen (nullopt).
+    std::vector<std::optional<model::WallId>> selections;
 
     void build() {
         storey = service.building().storeys.front().id;
@@ -289,6 +297,9 @@ struct CanvasFixture {
             },
             [this](model::Point2D a, model::Point2D b) {
                 wall_sink->addWall(a, b);  // Rueckgabe verworfen wie im Produkt
+            },
+            [this](std::optional<model::WallId> id) {
+                selections.push_back(id);  // JEDER Wechsel, auch das Fallen
             },
             static_cast<int>(storey));
         canvas->resize(400, 300);
@@ -855,6 +866,224 @@ TEST(CanvasWallTool, LH_FA_D3_002_DieGesteErreichtDieDreiDSicht) {
     EXPECT_EQ(scene.wallMeshes().size(), meshes_before + 1U)
         << "die 3D-Szene muss der ueber die GESTE erzeugten Wand folgen";
     fx.service.unsubscribe(scene);
+}
+
+// ---------------------------------------------------------------------------
+// slice-059a (ADR-0021 E3/E14/E16/E17): die Auswahl.
+// ---------------------------------------------------------------------------
+
+// Bildschirmposition auf der MITTE einer Wand-Achse, ausserhalb der Fang-Naehe
+// jedes Endpunkts. Die Fixture-Waende laufen (0,0)->(4000,0) und
+// (4000,0)->(4000,3000); die Mitte der ersten ist von beiden Endpunkten rund
+// 180 px entfernt, also weit ausserhalb der 12-px-Fang-Naehe (§4-8 (a)).
+QPoint axisMidpoint(const CanvasFixture& fx) {
+    return fx.screenOf({2000.0, 0.0});
+}
+
+// §4-5: der Zug im Auswahl-Modus waehlt — und NUR dort.
+TEST(CanvasSelection, ADR_0021_E3_NurImAuswahlModusWirdGewaehlt) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    const QPoint on_axis = axisMidpoint(fx);
+
+    // (a) Im Default-Modus (Hilfslinie) waehlt derselbe Klick NICHTS.
+    fx.sendPress(on_axis);
+    fx.sendRelease(on_axis);
+    EXPECT_FALSE(fx.canvas->selection().has_value());
+
+    // (b) Im Wand-Modus ebenso wenig.
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Wall);
+    fx.sendPress(on_axis);
+    fx.sendRelease(on_axis);
+    EXPECT_FALSE(fx.canvas->selection().has_value());
+
+    // (c) Im Auswahl-Modus trifft er — und legt NICHTS an.
+    const int walls_before = wallsIn(fx.service, fx.storey);
+    const std::size_t guides_before = fx.service.building().guide_lines.size();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Select);
+    fx.sendPress(on_axis);
+    fx.sendRelease(on_axis);
+    ASSERT_TRUE(fx.canvas->selection().has_value());
+    EXPECT_EQ(wallsIn(fx.service, fx.storey), walls_before)
+        << "Auswaehlen ist keine Mutation";
+    EXPECT_EQ(fx.service.building().guide_lines.size(), guides_before);
+}
+
+// §4-5, zweiter Konjunkt: der Treffer wird beim LOSLASSEN bestimmt.
+// Diskriminierend nur mit einem Zug, dessen Enden VERSCHIEDENE Ausgaenge haben
+// — bei einem Klick (Press == Release) ist "beim Druecken entschieden" nicht
+// von "beim Loslassen entschieden" unterscheidbar.
+TEST(CanvasSelection, ADR_0021_E3_DerTrefferEntscheidetBeimLoslassen) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Select);
+    const QPoint on_axis = axisMidpoint(fx);
+    const QPoint off_axis = on_axis + QPoint(0, -40);  // weit neben der Achse
+
+    // Zug NEBEN der Achse begonnen, AUF ihr losgelassen ⇒ Treffer.
+    fx.sendPress(off_axis);
+    fx.sendRelease(on_axis);
+    EXPECT_TRUE(fx.canvas->selection().has_value())
+        << "das Loslassen entscheidet, nicht das Druecken";
+
+    // Umgekehrt: AUF der Achse begonnen, NEBEN ihr losgelassen ⇒ kein Treffer.
+    fx.sendPress(on_axis);
+    fx.sendRelease(off_axis);
+    EXPECT_FALSE(fx.canvas->selection().has_value());
+}
+
+// §4-6: die Auswahl faellt bei Modell-Ersetzung — AUCH wenn der neue Stand
+// eine Wand mit derselben Id traegt.
+//
+// Die Fixture ist der Punkt (Plan §4-6, im zweiten Plan-Lauf gemessen): der
+// neue Stand muss die gewaehlte Wand-Id **in einem Geschoss tragen, dessen Id
+// das Widget aktiv haelt**. Mit einer fremden Geschoss-Id oder der
+// "Neu"-Gestalt (Geschoss ohne Waende) raeumte das NETZ (c) die Auswahl ab,
+// und die Gegenprobe bliebe gruen.
+TEST(CanvasSelection, ADR_0021_E17_AuswahlFaelltBeiModellErsetzung) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.subscribeCanvas();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Select);
+    fx.sendPress(axisMidpoint(fx));
+    fx.sendRelease(axisMidpoint(fx));
+    ASSERT_TRUE(fx.canvas->selection().has_value());
+    const model::WallId chosen = *fx.canvas->selection();
+
+    // Ein ERSETZTER Stand, der dieselbe Wand-Id im aktiven Geschoss traegt.
+    model::Building replacement;
+    replacement.storeys.push_back({fx.storey, 2500.0});
+    model::Wall same_id;
+    same_id.id = chosen;
+    same_id.storey_id = fx.storey;
+    same_id.start = {0.0, 0.0};
+    same_id.end = {4000.0, 0.0};
+    same_id.thickness_mm = model::kDefaultWallThicknessMm;
+    same_id.height_mm = 2500.0;
+    replacement.walls.push_back(same_id);
+    fx.service.replaceBuilding(replacement);
+
+    EXPECT_FALSE(fx.canvas->selection().has_value())
+        << "eine Identitaet ohne ihren Bezugsrahmen ist bedeutungslos — auch "
+           "wenn sie im neuen Stand zufaellig existiert";
+    // Vorbedingung der Zeile: die Id ist im neuen Stand WIRKLICH vorhanden,
+    // das Netz (c) haette also NICHT gegriffen.
+    ASSERT_EQ(fx.service.building().walls.size(), 1U);
+    EXPECT_EQ(fx.service.building().walls.front().id, chosen);
+    EXPECT_EQ(fx.service.building().walls.front().storey_id, fx.storey);
+    fx.unsubscribeCanvas();
+}
+
+// §4-7: die Auswahl faellt bei setActiveStorey (Widget-Vertrag).
+TEST(CanvasSelection, ADR_0021_E17_AuswahlFaelltBeimGeschossWechsel) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Select);
+    fx.sendPress(axisMidpoint(fx));
+    fx.sendRelease(axisMidpoint(fx));
+    ASSERT_TRUE(fx.canvas->selection().has_value());
+
+    fx.canvas->setActiveStorey(static_cast<int>(fx.storey) + 1);
+    EXPECT_FALSE(fx.canvas->selection().has_value());
+}
+
+// §4-8: die Auswahl ist auf der Flaeche erkennbar.
+//
+// ZWEI Vorbedingungen, beide GEPRUEFT statt angenommen (Plan §2.3):
+//   (a) snapPreview() ist an BEIDEN Messpunkten leer — sonst misst die Zeile
+//       den Fang-Marker (im ersten Plan-Lauf gemessen: +56 px OHNE jede
+//       Hervorhebung);
+//   (b) die Abbildung ist unveraendert (Zoom UND Modell-Ecke).
+// Die Bauvorschrift dazu steht im Paint-Pfad: die Hervorhebung fuegt FLAECHE
+// hinzu (breiterer Stift) — eine reine Umfaerbung waere fuer diese Sonde
+// unsichtbar (gemessen: 633 -> 633).
+TEST(CanvasSelection, ADR_0021_E14_AuswahlIstAufDerFlaecheErkennbar) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Select);
+
+    const double zoom_before = fx.canvas->transform().zoom;
+    const QPoint corner_before = fx.screenOf({0.0, 0.0});
+    const int ink_before = inkPixels(*fx.canvas);
+    ASSERT_FALSE(fx.canvas->snapPreview().has_value())
+        << "Vorbedingung (a): am ERSTEN Messpunkt darf kein Fang-Marker stehen";
+
+    const QPoint on_axis = axisMidpoint(fx);
+    fx.sendPress(on_axis);
+    fx.sendRelease(on_axis);
+    ASSERT_TRUE(fx.canvas->selection().has_value());
+    ASSERT_FALSE(fx.canvas->snapPreview().has_value())
+        << "Vorbedingung (a): auch am ZWEITEN Messpunkt nicht — sonst misst "
+           "die Zeile den Marker statt der Hervorhebung";
+
+    const int ink_after = inkPixels(*fx.canvas);
+    ASSERT_DOUBLE_EQ(fx.canvas->transform().zoom, zoom_before)
+        << "Vorbedingung (b): die Abbildung muss stillstehen";
+    ASSERT_EQ(fx.screenOf({0.0, 0.0}), corner_before);
+    EXPECT_GT(ink_after, ink_before)
+        << "die gewaehlte Achse muss FLAECHE hinzufuegen — eine reine "
+           "Umfaerbung waere fuer diese Sonde unsichtbar";
+}
+
+// §4-9: die Auswahl ist display-frei lesbar UND wird gemeldet — jeder Wechsel,
+// auch das Fallen. Ohne die Melde-Naht haette der Eigenschaften-Bereich aus
+// slice-059b kein Subjekt.
+TEST(CanvasSelection, ADR_0021_E14_JederWechselWirdGemeldetAuchDasFallen) {
+    int argc = makeArgc();
+    char arg0[] = "bcad_adapter_tests";
+    char* argv[] = {static_cast<char*>(arg0), nullptr};
+    QApplication app(argc, static_cast<char**>(argv));
+
+    CanvasFixture fx;
+    fx.build();
+    fx.canvas->setToolMode(view::CanvasWidget::ToolMode::Select);
+    const QPoint on_axis = axisMidpoint(fx);
+    const QPoint off_axis = on_axis + QPoint(0, -40);
+
+    fx.sendPress(on_axis);
+    fx.sendRelease(on_axis);
+    ASSERT_EQ(fx.selections.size(), 1U);
+    ASSERT_TRUE(fx.selections.back().has_value());
+    EXPECT_EQ(*fx.selections.back(), *fx.canvas->selection());
+
+    // Derselbe Treffer noch einmal: KEIN Wechsel, also keine zweite Meldung.
+    fx.sendPress(on_axis);
+    fx.sendRelease(on_axis);
+    EXPECT_EQ(fx.selections.size(), 1U) << "gemeldet werden Wechsel, nicht Klicks";
+
+    // Klick ins Leere ⇒ die Auswahl FAELLT, und das wird gemeldet.
+    fx.sendPress(off_axis);
+    fx.sendRelease(off_axis);
+    ASSERT_EQ(fx.selections.size(), 2U);
+    EXPECT_FALSE(fx.selections.back().has_value())
+        << "auch das Fallen ist ein Wechsel — sonst zeigte der "
+           "Eigenschaften-Bereich die Werte einer nicht mehr gewaehlten Wand";
+    EXPECT_FALSE(fx.canvas->selection().has_value());
 }
 
 }  // namespace

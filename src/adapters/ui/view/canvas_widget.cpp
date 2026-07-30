@@ -15,17 +15,20 @@
 #include <QResizeEvent>
 #include <QWheelEvent>
 
+#include "adapters/ui/view/pick.h"
 #include "adapters/ui/view/snap.h"
 
 namespace bcad::adapters::ui::view {
 
 CanvasWidget::CanvasWidget(PlanPull pull, GuideLineDraw draw,
-                           WallDraw draw_wall, int active_storey_id,
-                           QWidget* parent)
+                           WallDraw draw_wall,
+                           SelectionChanged on_selection_changed,
+                           int active_storey_id, QWidget* parent)
     : QWidget(parent),
       pull_(std::move(pull)),
       draw_(std::move(draw)),
       draw_wall_(std::move(draw_wall)),
+      on_selection_changed_(std::move(on_selection_changed)),
       active_storey_id_(active_storey_id) {
     // Ohne Maus-Verfolgung stellt Qt OHNE gedrückte Taste kein Move-Ereignis zu
     // — die Fang-Anzeige (slice-055) wäre im Produkt tot, während ein Test, der
@@ -53,6 +56,15 @@ void CanvasWidget::setToolMode(ToolMode mode) {
 void CanvasWidget::setActiveStorey(int active_storey_id) {
     active_storey_id_ = active_storey_id;
     invalidateSnapPreview();
+    // Lebensdauer-Regel (b), ADR-0021 E17: die Auswahl fällt **unbedingt** —
+    // nicht über `dropSelectionIfGone`. Der Unterschied ist nicht Geschmack: das
+    // Netz (c) räumte sie hier ohnehin ab (eine Wand liegt in genau einem
+    // Geschoss). **Grenze, gemessen:** die Orakel-Zeile §4-7 belegt deshalb die
+    // ZUSAGE („nach dem Wechsel ist nichts gewählt"), nicht diesen Mechanismus —
+    // eine Sonde, die nur unbedingt ⇄ über-das-Netz tauscht, bleibt in **beiden**
+    // Armen grün. Der unbedingte Weg steht hier, weil er das sagt, was gemeint
+    // ist, nicht weil ein Test ihn erzwingt.
+    setSelection(std::nullopt);
     // Derselbe Pfad wie im Notify-Callback: neu einrahmen + Repaint einplanen
     // (`update()` ist queued), damit der Wechsel ohne weitere Modell-Meldung
     // sichtbar wird.
@@ -61,10 +73,20 @@ void CanvasWidget::setActiveStorey(int active_storey_id) {
 }
 
 void CanvasWidget::onModelChanged(
-    const hexagon::ports::driven::ModelChange& /*change*/) {
+    const hexagon::ports::driven::ModelChange& change) {
     // `op`-Mutation (Wände etc.) → neu einrahmen und Repaint einplanen
     // (`update()` ist queued — kein synchrones Rendern im Mutationspfad).
     invalidateSnapPreview();
+    if (change.op == hexagon::ports::driven::ModelChangeOp::ModelReplaced) {
+        // Lebensdauer-Regel (a), ADR-0021 E17: der Bezugsrahmen ist ersetzt,
+        // also ist die Identität bedeutungslos — **ausdrücklich und ohne
+        // Heuristik**. Ein Netz-Check „kommt sie noch vor?" genügt hier NICHT:
+        // ein geladenes Projekt trägt dichte eigene Ids, die Prüfung sagte oft
+        // „ja", und die Fehler-Barriere schweigt bei einer gültigen fremden Id.
+        setSelection(std::nullopt);
+    } else {
+        dropSelectionIfGone();  // Netz (c)
+    }
     fitted_ = false;
     update();
 }
@@ -94,6 +116,22 @@ void CanvasWidget::paintEvent(QPaintEvent* /*event*/) {
             continue;
         }
         for (const hexagon::model::PlanSegment& s : sp.segments) {
+            // Hervorhebung der Auswahl (ADR-0021 E3/E14, slice-059a): ein
+            // **breiterer** Stift, keine bloße Umfärbung. Das ist eine
+            // Bauvorschrift, keine Gestaltungsfrage: die Tinten-Sonde der AK
+            // zählt Nicht-Weiß, nicht Farbe — eine gleich breite Linie in
+            // anderer Farbe erzeugte NULL zusätzliche Pixel, und die Zusage
+            // „auf der Fläche erkennbar" hätte keinen Sensor. **Gemessen, in
+            // beide Richtungen:** Umfärbung ⇒ 633 → 633 (die Zeile wäre rot bei
+            // korrekter Implementierung), breiterer Stift ⇒ 633 → 1359.
+            const bool selected =
+                selection_.has_value() && s.origin.has_value() &&
+                s.origin->kind == hexagon::model::PlanSegmentKind::WallAxis &&
+                static_cast<hexagon::model::WallId>(s.origin->id) ==
+                    *selection_;
+            constexpr int kSelectedPenPx = 4;
+            painter.setPen(selected ? QPen(Qt::black, kSelectedPenPx)
+                                    : QPen(Qt::black, 1));
             painter.drawLine(transform_.modelToScreen({s.x1_mm, s.y1_mm}),
                              transform_.modelToScreen({s.x2_mm, s.y2_mm}));
         }
@@ -145,6 +183,40 @@ void CanvasWidget::invalidateSnapPreview() {
     }
     snap_preview_.reset();
     update();
+}
+
+void CanvasWidget::setSelection(
+    std::optional<hexagon::model::WallId> next) {
+    if (next == selection_) {
+        return;  // kein Wechsel: keine Meldung, kein Repaint
+    }
+    selection_ = next;
+    if (on_selection_changed_) {
+        on_selection_changed_(selection_);  // AUCH das Fallen wird gemeldet
+    }
+    update();  // die Hervorhebung erscheint bzw. verschwindet
+}
+
+void CanvasWidget::dropSelectionIfGone() {
+    if (!selection_.has_value()) {
+        return;
+    }
+    const hexagon::model::PlanView plan = pull_();
+    for (const hexagon::model::StoreyPlan& storey : plan.storeys) {
+        if (storey.storey_id != active_storey_id_) {
+            continue;
+        }
+        for (const hexagon::model::PlanSegment& segment : storey.segments) {
+            if (segment.origin.has_value() &&
+                segment.origin->kind ==
+                    hexagon::model::PlanSegmentKind::WallAxis &&
+                static_cast<hexagon::model::WallId>(segment.origin->id) ==
+                    *selection_) {
+                return;  // noch sichtbar
+            }
+        }
+    }
+    setSelection(std::nullopt);
 }
 
 void CanvasWidget::leaveEvent(QEvent* event) {
@@ -230,7 +302,15 @@ void CanvasWidget::mouseReleaseEvent(QMouseEvent* event) {
     //
     // **Der Modus entscheidet, was aus dem Zug entsteht** (E1) — die Geste
     // bleibt dieselbe.
-    if (tool_mode_ == ToolMode::Wall) {
+    if (tool_mode_ == ToolMode::Select) {
+        // Der Treffer wird beim LOSLASSEN bestimmt — dieselbe Stelle, an der
+        // die zwei Zeichen-Gesten ihr Ergebnis festlegen. Die **ungefangene**
+        // Position ist die richtige: gewählt wird, worauf gezeigt wurde, nicht
+        // der nächste Endpunkt.
+        setSelection(pickWall(
+            pull_(), transform_, event->pos(), kPickThresholdPx,
+            static_cast<hexagon::model::StoreyId>(active_storey_id_)));
+    } else if (tool_mode_ == ToolMode::Wall) {
         if (draw_wall_) {
             draw_wall_(start, end);
         }

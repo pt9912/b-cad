@@ -1,7 +1,7 @@
 # Benutzerhandbuch: b-cad
 
 Software-Version: 0.1.0
-Handbuch-Version: 1.6
+Handbuch-Version: 1.7
 Stand: 2026-07-28
 
 ---
@@ -30,6 +30,8 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
 - **Wände** im Grundriss zeichnen — Werkzeug **Wand** wählen und ziehen; die Wand
   erscheint sofort in 2D **und** 3D, rastet auf vorhandene Eckpunkte ein und
   überlebt Speichern/Öffnen und Export,
+- eine gezeichnete **Wand auswählen** — Werkzeug **Auswahl** wählen und auf die
+  Achse klicken; die gewählte Wand wird im Grundriss **hervorgehoben**,
 - **Hilfslinien** im Grundriss zeichnen — mit **Einrasten** auf vorhandene
   Eckpunkte, **sichtbar markiert, bevor Sie klicken**,
 - in Formate **exportieren** (IFC/DXF/STEP/STL/PDF/PNG),
@@ -47,8 +49,10 @@ Der oben genannte Zweck ist das **Ziel** des Produkts. Version 0.1.0 ist ein
   machen**. Ein begonnener Zug lässt sich abbrechen (Escape), eine **fertige** Wand
   bleibt. Ungesicherte Änderungen sind durch die Rückfrage geschützt
   (Abschnitt 4.3).
-- eine gezeichnete Wand **auswählen** und ihre Stärke oder Höhe ändern — sie
-  entsteht mit den Standardwerten. Das folgt im nächsten Ausbauschritt.
+- die **Stärke oder Höhe** einer Wand ändern — sie entsteht mit den
+  Standardwerten. **Auswählen** können Sie sie inzwischen (siehe oben); was noch
+  fehlt, ist der Bereich, in dem sich die Werte ändern lassen. Das folgt im
+  nächsten Ausbauschritt.
 
 Wie ein Gebäude heute überhaupt in b-cad kommt, beschreibt **Abschnitt 3**.
 
@@ -110,9 +114,9 @@ Das Fenster hat oben zwei Reiter:
 Sie wechseln die Ansicht durch Klick auf den jeweiligen Reiter.
 
 In der **Menüleiste** liegen zwei Menüs: **Datei** (Abschnitt 4.3) und
-**Werkzeug** — dort wählen Sie, was ein Zug im Reiter **2D** erzeugt:
-**Hilfslinie** (Voreinstellung) oder **Wand**. Das gewählte Werkzeug ist im Menü
-**markiert**.
+**Werkzeug** — dort wählen Sie, was ein Zug im Reiter **2D** bewirkt:
+**Hilfslinie** (Voreinstellung), **Wand** oder **Auswahl**. Das gewählte Werkzeug
+ist im Menü **markiert**, und es ist immer genau eines aktiv.
 
 Am **unteren Fensterrand** liegt eine **Hinweis-Zeile**. Dort erscheint ein kurzer
 Text, wenn eine Eingabe **nicht** zum gewünschten Ergebnis geführt hat — sie
@@ -122,8 +126,11 @@ unterbricht Ihre Arbeit nicht und muss nicht weggeklickt werden.
 
 - **Ansicht wechseln:** Reiter **3D** oder **2D** anklicken.
 - **3D drehen:** Im Reiter **3D** mit der Maus ziehen.
-- **Werkzeug wählen:** Menü **Werkzeug** → **Hilfslinie** (Voreinstellung) oder
-  **Wand**. Der Zug ist derselbe — das Werkzeug entscheidet, was entsteht.
+- **Werkzeug wählen:** Menü **Werkzeug** → **Hilfslinie** (Voreinstellung),
+  **Wand** oder **Auswahl**. Der Zug ist derselbe — das Werkzeug entscheidet, was
+  er bewirkt.
+- **Wand auswählen:** Werkzeug **Auswahl**, dann auf eine Wand-Achse klicken
+  (siehe Abschnitt 4.2).
 - **Hilfslinie oder Wand zeichnen:** Im Reiter **2D** mit gedrückter linker
   Maustaste ziehen (siehe Abschnitt 4.2). Nah an einem vorhandenen Eckpunkt
   **rastet** der Punkt exakt auf ihn ein.
@@ -180,6 +187,7 @@ maßstäblichen Grundriss (2D). Beide Ansichten stammen aus **einem** Modell.
 |---|---|
 | Modell ansehen (3D/2D) | Oberfläche (Abschnitt 3) |
 | **Wand zeichnen** (Werkzeug **Wand**, mit Einrasten) | Oberfläche, Reiter 2D (4.2) |
+| **Wand auswählen** (Werkzeug **Auswahl**) | Oberfläche, Reiter 2D (4.2) |
 | Hilfslinie zeichnen (Einrasten mit sichtbarer Markierung) | Oberfläche, Reiter 2D (4.2) |
 | Neues Projekt anlegen | Oberfläche, Menü **Datei → Neu** (4.3) |
 | Projekt speichern / öffnen | Oberfläche, Menü **Datei** (4.3) |
@@ -271,6 +279,35 @@ Bildschirmpunkt trägt bei normaler Ansicht rund zwei Zentimeter.
 - **Stärke und Höhe** übernimmt b-cad aus den Standardwerten (die Höhe ist die
   Geschosshöhe); sie lassen sich in dieser Version **nachträglich nicht** ändern.
 - Die Wand entsteht immer im **angezeigten** Geschoss.
+
+#### Eine Wand auswählen
+
+**Ziel:** Eine vorhandene Wand benennen — die Voraussetzung dafür, sie später zu
+ändern.
+
+**Vorgehen:**
+
+1. Wählen Sie **Werkzeug → Auswahl**.
+2. Klicken Sie im Reiter **2D** auf die **Achse** einer Wand.
+
+**Ergebnis:** Die getroffene Wand wird **hervorgehoben** dargestellt (dickere
+Linie). Ein Klick ins Leere hebt die Auswahl wieder auf.
+
+**Hinweise:**
+- **Genau eine** Wand ist ausgewählt, nie mehrere. Liegen zwei Achsen dicht
+  beieinander, gewinnt die **nächstgelegene**.
+- **Getroffen wird die ganze Achse**, nicht nur ihre Endpunkte — Sie können also
+  auf die Mitte einer Wand klicken.
+- **Nur Wände des angezeigten Geschosses** sind auswählbar. Das ist Absicht: in
+  vielen Gebäuden liegen die Außenwände mehrerer Geschosse genau übereinander,
+  und Sie sollen das treffen, was Sie **sehen**.
+- **Hilfslinien sind nicht auswählbar** — sie sind Zeichenhilfen, keine Bauteile.
+- **Die Auswahl fällt**, sobald sie ihren Bezug verlieren könnte: beim Öffnen
+  oder Anlegen eines Projekts und bei einem Wechsel des angezeigten Geschosses.
+  Das ist Absicht — eine Auswahl, die einen Projekt-Wechsel überlebt, zeigte
+  danach womöglich auf eine **andere** Wand.
+- **Was die Auswahl heute noch nicht kann:** die Stärke oder Höhe der gewählten
+  Wand ändern. Der Bereich dafür folgt im nächsten Ausbauschritt.
 
 ### 4.3 Ein Projekt speichern und öffnen (Menü **Datei**)
 
@@ -535,6 +572,13 @@ zu geschlossenen Ecken verbindbar. Was noch **nicht** geht: die Wand wieder
 **entfernen**, ihre Stärke/Höhe **nachträglich ändern** und andere Bauteile
 (Räume, Türen, Fenster, Treppen, Dächer) interaktiv anlegen.
 
+**Kann ich eine gezeichnete Wand wieder ändern?**
+Noch nicht. Sie können sie seit Handbuch-Version 1.7 **auswählen** (Werkzeug
+**Auswahl**, Abschnitt 4.2) und sehen sie dann hervorgehoben — der
+Eigenschaften-Bereich, in dem sich Stärke und Höhe ändern lassen, folgt im
+nächsten Ausbauschritt. Entfernen oder rückgängig machen lässt sich eine fertige
+Wand in dieser Version ebenfalls nicht.
+
 **Wie speichere/öffne ich über ein Menü?**
 Über das Menü **Datei** in der Oberfläche: **Speichern**, **Speichern unter…**
 und **Öffnen…** (Abschnitt 4.3). **Speichern** schreibt ohne erneute
@@ -598,6 +642,7 @@ Achten Sie beim Weitergeben importierter Fremd-Dateien auf deren Lizenzbedingung
 | Handbuch-Version | Software-Version | Stand | Änderung |
 |---|---|---|---|
 | 1.0 | 0.1.0 | 2026-07-24 | Erstfassung: Start, Ansichten, Hilfslinie, Export/Speichern/Öffnen/Import über die Kommandozeile, Fehlerbehebung. |
+| 1.7 | 0.1.0 | 2026-07-29 | **Wand auswählen** aufgenommen: drittes Werkzeug **Auswahl** in Menü und Bedienung (§2.2/§2.3), neuer Unterabschnitt „Eine Wand auswählen" in 4.2 samt der fünf benannten Eigenschaften — **genau eine** Wand, **ganze Achse** statt Endpunkte, **nur das angezeigte Geschoss** (mit dem Grund: übereinanderliegende Außenwände), **Hilfslinien nicht auswählbar**, und die **Lebensdauer** der Auswahl (sie fällt beim Öffnen/Anlegen und beim Geschoss-Wechsel — eine Auswahl, die das überlebte, zeigte danach womöglich auf eine andere Wand). §1 „Heute möglich" und die 4.1-Tabelle nachgezogen; die in 1.6 gesetzte Grenze „eine gezeichnete Wand auswählen und ihre Stärke/Höhe ändern" ist **halb aufgehoben und dadurch präzisiert** — auswählen ja, ändern noch nicht —, ebenso die FAQ. |
 | 1.6 | 0.1.0 | 2026-07-29 | **Wände zeichnen** aufgenommen — das erste Bauteil, das in der Oberfläche selbst entsteht: neues **Werkzeug**-Menü (Hilfslinie/Wand, Voreinstellung Hilfslinie), neue **Hinweis-Zeile** am unteren Fensterrand, neuer Unterabschnitt „Eine Wand zeichnen" in 4.2 (samt Eckenschluss über das Einrasten und der Begründung, warum es ohne Einrasten praktisch nicht gelingt) und die vier benannten Grenzen: **eine** Wand je Zug, **kein** Entfernen/Rückgängig, **keine** nachträgliche Änderung von Stärke/Höhe, Zeichnen nur im angezeigten Geschoss. §1 ist **präzisiert statt gestrichen** („ein Gebäude **vollständig** selbst planen" — Wände ja, übrige Bauteile nein), ebenso §2.2/§2.3, der Kopf von §3, der §3-Hinweis, die 4.1-Aufgaben-Tabelle und die FAQ-Antwort „Kann ich in der Oberfläche Wände zeichnen?", die bis hierher **verneinte**. |
 | 1.5 | 0.1.0 | 2026-07-28 | **Anzeige des Fang-Ziels** aufgenommen: eine Markierung zeigt **vor dem Klick**, auf welchen Eckpunkt eingerastet würde — für Anfang **und** Ende, auch während des Ziehens. Damit ist die in 1.4 benannte Grenze „Eine Anzeige, **worauf** gerade eingerastet wird, gibt es in dieser Version noch nicht" **aufgehoben und ersetzt**; zugleich ist der bisher nur als Einschränkung beschriebene Geschoss-übergreifende Fang jetzt als **Nutzen** formuliert (die Markierung macht sichtbar, was sonst als Sprung erschien). Neu benannt: die Markierung verschwindet beim Verlassen der Zeichenfläche und bei Ansichts-Änderungen und kehrt mit der nächsten Mausbewegung zurück — **am Einrasten selbst ändert das nichts**. §1 „Heute möglich" und die 4.1-Aufgaben-Tabelle nachgezogen. |
 | 1.4 | 0.1.0 | 2026-07-28 | **Einrasten (Fangen)** beim Zeichnen von Hilfslinien aufgenommen: neuer Absatz in 4.2 (Anfang **wie** Ende rasten exakt auf Endpunkte von Wandachsen und Hilfslinien ein; der gefangene Wert überlebt Speichern/Öffnen und Export unverändert) samt der vier benannten Grenzen — freies Zeichnen außerhalb von rund 12 Bildschirmpunkten, Entartung durch beidseitiges Einrasten, keine Fangbarkeit auf ausgeblendeten Ebenen, **keine Anzeige** des Fang-Ziels und Fangen über **alle** Geschosse. §1 „Heute möglich", §2.3 und die 4.1-Aufgaben-Tabelle nachgezogen; der frühere Satz „In dieser Version wird **frei** gezeichnet; Fangen … sind noch nicht enthalten" ist damit überholt und ersetzt. |

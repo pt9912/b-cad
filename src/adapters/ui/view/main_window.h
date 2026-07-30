@@ -63,6 +63,7 @@ public:
     struct ToolActions {
         std::function<void()> select_guide_line;
         std::function<void()> select_wall;
+        std::function<void()> select_pick;  // slice-059a: Auswahl-Werkzeug
     };
 
     // `central` wird dem Fenster übergeben (Qt-Ownership via
@@ -90,6 +91,7 @@ public:
     static constexpr auto kSaveAsActionName = "action_save_as";
     static constexpr auto kToolGuideLineActionName = "action_tool_guide_line";
     static constexpr auto kToolWallActionName = "action_tool_wall";
+    static constexpr auto kToolSelectActionName = "action_tool_select";
     static constexpr auto kHintLabelName = "hint_label";
 
 protected:

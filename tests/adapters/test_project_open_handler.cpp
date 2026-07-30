@@ -177,6 +177,7 @@ TEST(ProjectOpenHandler_LH_FA_BLD_003, CanvasAndSinkFollowLoadedIds) {
         [&wall_sink](model::Point2D a, model::Point2D b) {
             wall_sink.addWall(a, b);
         },
+        [](std::optional<model::WallId>) {},
         static_cast<int>(stale_storey));
 
     // Die **echten** Senken des Composition-Root (main.cpp verdrahtet dieselben
