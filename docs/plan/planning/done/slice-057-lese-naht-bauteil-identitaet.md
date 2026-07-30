@@ -15,7 +15,7 @@ Scope-Reservierung + ADR-Bezug, [MR-020](../../../../harness/conventions.md) §3
 vor dem Start.**
 
 **Welle:** welle-6-interaktiv-planen. **Vorgelagert, ohne UI-Anteil** — Voraussetzung für
-[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md);
+[`slice-059a`](../open/slice-059a-wand-auswaehlen.md);
 [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) kommt **ohne** ihn aus. **Nicht
 trigger-bindend**, aber trigger-**ermöglichend**.
 
@@ -76,7 +76,7 @@ sie aus**, statt sie zu unterstellen.
 ## 3. Bewusst NICHT Teil
 
 - **Jede Zeile UI.** Kein Werkzeug-Modus, kein Picking, kein Panel — das sind
-  [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md)/[`059`](../open/slice-059-wand-auswaehlen-und-aendern.md).
+  [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md)/[`059`](../open/slice-059a-wand-auswaehlen.md).
 - **Herkunft für andere Bauteile** (Türen, Fenster, Treppen, Dächer, Decken) — die Projektion trägt
   heute nur Wand-Achsen und Hilfslinien; mehr zu beschriften wäre Vorrat ohne Konsumenten.
 - **Weitere Parameter** (Wandtyp, Material) — [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E13
@@ -84,7 +84,7 @@ sie aus**, statt sie zu unterstellen.
 
 **Zum Ausschluss-Kriterium „Vorrat ohne Konsumenten"** (Lauf-1-MEDIUM-5): es trifft die
 **Parameter-Abfrage** genauso — auch sie hat vor
-[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md) keinen Konsumenten. Sie ist trotzdem hier,
+[`slice-059a`](../open/slice-059a-wand-auswaehlen.md) keinen Konsumenten. Sie ist trotzdem hier,
 und zwar aus einem **anderen** Grund als „wird später gebraucht": die ADR verortet sie an **dieser**
 Naht (E15), und beide Änderungen an derselben Naht in **einem** Schnitt zu machen hält den
 Port-Vertrag in **einem** Review-Vorgang. **Weitere Herkunfts-Arten** wären dagegen Vorrat **ohne**
@@ -298,7 +298,7 @@ Bild betrifft und nicht nur eine Bedienfläche.**
 
 ### Was der Slice ermöglicht
 
-[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md) hat jetzt, was es braucht: eine
+[`slice-059a`](../open/slice-059a-wand-auswaehlen.md) hat jetzt, was es braucht: eine
 Treffer-Prüfung kann ein Bauteil **benennen**, und der Eigenschaften-Bereich kann seine Parameter
 **lesen**. [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) war und bleibt davon
 unabhängig.

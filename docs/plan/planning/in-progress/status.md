@@ -50,7 +50,7 @@ Beobachter-Anmeldung), weil die produktive Anmeldung im orakel-losen Composition
 
 ### ▶ Nächster Schritt
 
-**[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md)** — Wand auswählen und
+**[`slice-059a`](../open/slice-059a-wand-auswaehlen.md)** — Wand auswählen und
 parametrisch ändern. Existiert als **Skelett**: Detail-Schnitt und eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 stehen noch aus. Die zwei symptomlosen Fehler sind im Skelett schon benannt (Geschoss-Skopus der
