@@ -96,7 +96,7 @@ die Aussage ohnehin dieselbe: nichts entstanden, Modell unverändert.
 ## 3. Bewusst NICHT Teil
 
 - **Selektion, Eigenschaften-Bereich, Parameter ändern** — das ist
-  [`slice-059a`](../open/slice-059a-wand-auswaehlen.md) (Auswahl) bzw.
+  [`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md) (Auswahl) bzw.
   [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) (Parameter).
 - **Mehrpunktiger Wandzug.** [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E2 entscheidet **ein
   Segment je Geste**; die Teilumfang-Klausel steht bereits im Lastenheft.
@@ -266,7 +266,7 @@ und das ist eine Entscheidung, kein Vergessen.
   grün; `make gates`, `make io-smoke` und
   `make acc-002-beleg` grün; kein Kern-/Schema-/Export-Diff belegt; Handbuch und ADR-Index
   nachgezogen; Closure-Notiz. **Der Wellen-Trigger ist damit zur Hälfte erfüllt** — die zweite Hälfte
-  sind [`slice-059a`](../open/slice-059a-wand-auswaehlen.md) (Auswahl) und [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)
+  sind [`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md) (Auswahl) und [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)
   (Parameter — dort hängt der Trigger).
 
 ## 10. Sub-Area-Modus-Begründung
@@ -499,7 +499,7 @@ angefahren); dafür gibt es aber keine Mutation, die nur sie kippt.
 
 Der Abschluss-Trigger von **welle-6-interaktiv-planen** ist **zur Hälfte** erfüllt: eine Wand ist im
 2D-Canvas **zeichenbar**, ohne Kommandozeile. Die zweite Hälfte („**parametrisch änderbar**") ist
-[`slice-059a`](../open/slice-059a-wand-auswaehlen.md) (Auswahl) und [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)
+[`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md) (Auswahl) und [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)
 (Parameter). Davor steht dort das
 [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
 des ganzen Bauteil-Strangs — **einschlägig**, anders als bei [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md).

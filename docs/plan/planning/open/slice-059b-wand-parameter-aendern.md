@@ -12,13 +12,13 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 **Status:** open — **STARTBAR** (2026-07-29). Entstanden aus der Teilung von slice-059 (§11) und
 danach **eigenständig** geprüft: der eigene
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
-meldet **0 HIGH** (§11a). Die Auswahl-Hälfte ist [`slice-059a`](slice-059a-wand-auswaehlen.md).
+meldet **0 HIGH** (§11a). Die Auswahl-Hälfte ist [`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md).
 
 **Welle:** welle-6-interaktiv-planen — **hier hängt der Abschluss-Trigger.** Mit diesem Slice ist er
 erfüllt: „eine Wand ist im 2D-Canvas zeichenbar **und parametrisch änderbar**, ohne Kommandozeile."
 **Danach ist die Welle zu schließen, nicht weiterzufüllen.**
 
-**Setzt voraus:** [`slice-059a`](slice-059a-wand-auswaehlen.md) (Auswahl + Melde-Naht — ohne sie hat
+**Setzt voraus:** [`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md) (Auswahl + Melde-Naht — ohne sie hat
 der Eigenschaften-Bereich kein Subjekt) und [`slice-057`](../done/slice-057-lese-naht-bauteil-identitaet.md)
 (die schmale Parameter-Abfrage `wallParams`).
 
@@ -164,13 +164,13 @@ Netzes der geänderten Wand) — das ist die zu beobachtende Größe, und sie st
 
 > **Dieselbe Klasse zum fünften Mal in diesem Strang:** ein Instrument, das anderswo getragen hat,
 > trägt hier nicht. Erst der Pull-Zähler, dann die Tinten-Sonde am Fenster, dann die Tinten-Sonde für
-> die Hervorhebung ([`slice-059a`](slice-059a-wand-auswaehlen.md) §2.3) — jetzt der Netz-Zähler.
+> die Hervorhebung ([`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md) §2.3) — jetzt der Netz-Zähler.
 > **Die Frage ist nie „welches Instrument habe ich?", sondern „welche Größe ändert sich beim
 > Fehler?"**
 
 ## 3. Bewusst NICHT Teil
 
-- **Die Auswahl selbst** — das ist [`slice-059a`](slice-059a-wand-auswaehlen.md).
+- **Die Auswahl selbst** — das ist [`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md).
 - **Wandtyp und Material.** E13: [LH-FA-WAL-007](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen)
   ist reine Outline ohne AK; beides interaktiv zu bedienen hieße, **fremde Anforderungen in einem
   UI-Strang auf AK-Niveau zu schärfen**.
@@ -197,7 +197,7 @@ Netzes der geänderten Wand) — das ist die zu beobachtende Größe, und sie st
 | 9 | **Höhe gilt gleichlautend** ([LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren)) — Happy, Klemmung (499 ⇒ 500), Ablehnung; **eigene** Zeile mit **eigenem** Senken-Test | Senken-Test **und** `MainWindow`-Surrogat (wie §4-3, 5, 7) | Höhen-Weg auf den Stärke-Mutator verdrahtet ⇒ rot (die Verwechslung wäre sonst still, weil beide `ParamResult` liefern) |
 | 10 | **Kein Wurf verlässt den Ereignis-Pfad** — bei **veralteter** Wand-Id gibt es einen **Hinweis**, keine Ausnahme (`setWallThickness` wirft bei unbekannter Id) | **`ui/command/`-Parameter-Senke** (dort liegt die Barriere und dort liegt der Test) | `try`/`catch` entfernt ⇒ rot |
 | 13 | **Die Anzeige-Form ist von der Senken-Umwandlung lesbar** — der Rundlauf schließt: was das Feld zeigt, nimmt die Senke **ohne Ablehnung** wieder an (§2.2-Schließbedingung) | `MainWindow`-Surrogat + Senken-Test: Feld-Inhalt nach einer Übernahme **unverändert** erneut abschicken | Anzeige mit Komma/Einheit/Tausender-Trenner ⇒ die unveränderte Eingabe wird **abgelehnt** ⇒ rot. **Ohne diese Zeile hätte das Produkt einen Fehler, den kein anderes Orakel sieht:** Enter auf einem nie geänderten Feld ergäbe eine Ablehnung |
-| 11 | **Der Zeichen- und Auswahl-Pfad bleibt unverändert** | Bestands-Orakel (inkl. [`slice-059a`](slice-059a-wand-auswaehlen.md)) | (Regressions-Netz) |
+| 11 | **Der Zeichen- und Auswahl-Pfad bleibt unverändert** | Bestands-Orakel (inkl. [`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md)) | (Regressions-Netz) |
 | 12 | **Die geänderte Stärke überlebt Speichern/Laden und Export** | **Bestands-Netz** (`make io-smoke`, Persistenz-Runden-Orakel): eine über den Bereich geänderte Wand ist dieselbe wie eine über den Dienst geänderte, und §4-3 belegt, dass die Bedienung den Dienst erreicht | (Netz — **kein** eigener Sensor, benannte Entscheidung) |
 
 **Elf Zeilen tragen einen eigenen Sensor** (1–10 und 13), zwei sind **Netz** (11, 12).
@@ -219,7 +219,7 @@ der Zahlen (§2.1).
       `(Ausgang, übernommener Wert)`, keinen fertigen Text** (§2.3): das Fenster setzt den Hinweis
       zusammen **und** schreibt den Wert ins Feld zurück. Orakel §4-1, 2, 5 (Fenster-Hälfte), 6, 13.
 - [ ] **`src/main.cpp`**: Verdrahtung — Auswahl-Meldung (aus
-      [`slice-059a`](slice-059a-wand-auswaehlen.md)) → Lese-Quelle → Anzeige; Feld → Senke → **Ausgang
+      [`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md)) → Lese-Quelle → Anzeige; Feld → Senke → **Ausgang
       als Wert** ans Fenster. **Der Root reicht Werte durch, er setzt hier keine Texte zusammen**
       (§2.3 — anders als in [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md), und aus
       einem benannten Grund).
@@ -367,7 +367,7 @@ LOW-Positionen):
 Report: [`2026-07-29-slice-059b-plan.md`](../../../reviews/2026-07-29-slice-059b-plan.md) —
 **0 HIGH / 3 MEDIUM / 6 LOW / 4 INFO + 17 Negativbefunde, „STARTBAR"**. Unabhängiger Reviewer,
 verschieden von Autor und den Reviewern des ungeteilten Plans und von
-[`slice-059a`](slice-059a-wand-auswaehlen.md).
+[`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md).
 
 **Die neue Entscheidung trägt** — beide Begründungszweige am Artefakt bestätigt (`src/main.cpp` ist
 in keinem Testziel; das Fenster wäre eine zweite Ausgangs-Autorität), und die Gegenprobe von §4-8 ist

@@ -578,7 +578,7 @@ Frage-Überschriften kann diese Bauart nicht zeigen, ein ausformulierter Entsche
 ### Was der Slice bewusst nicht liefert
 
 **Keine Zeile Produktions-Code.** Der Trigger der Welle ist **nicht** erfüllt — er wird es mit
-[`slice-059a`](../open/slice-059a-wand-auswaehlen.md). Die drei Folge-Pläne liegen als
+[`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md). Die drei Folge-Pläne liegen als
 Skelett in `open/` ([MR-020](../../../../harness/conventions.md) §3); jeder trägt die Stellen, an
 denen er still falsch werden kann.
 
