@@ -40,10 +40,12 @@ machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nic
 ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
 wellen-bindend und verlängert sie nicht.
 
-**In Arbeit:** [`slice-059b`](slice-059b-wand-parameter-aendern.md) — Wand parametrisch ändern.
-**An diesem Slice hängt der Abschluss-Trigger**; danach folgen das
-[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)
-und die Welle-Closure.
+**Der Abschluss-Trigger ist erfüllt** (slice-059a + slice-059b, 2026-07-29): eine Wand ist im
+2D-Canvas **zeichenbar und parametrisch änderbar**, ohne Kommandozeile. **Vor der Closure steht das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des Bauteil-Strangs** — HIGHs blockieren sie.
+
+Keine offenen Slices.
 
 ## Nächste Wellen
 

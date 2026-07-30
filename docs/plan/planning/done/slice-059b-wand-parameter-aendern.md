@@ -1,7 +1,7 @@
 ---
 id: slice-059b
 titel: Wand parametrisch ändern — Eigenschaften-Bereich, Klemmung, Ablehnung; der Abschluss-Trigger ([LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren)/003)
-status: open
+status: done
 welle: welle-6-interaktiv-planen
 lastenheft_refs: [[LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren), [LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren), [LH-FA-WAL-006](../../../../spec/lastenheft.md#lh-fa-wal-006--wand-verbinden), [LH-FA-WAL-007](../../../../spec/lastenheft.md#lh-fa-wal-007--wandtyp-wählen), [LH-FA-D3-002](../../../../spec/lastenheft.md#lh-fa-d3-002--echtzeitaktualisierung), [LH-FA-UI-001](../../../../spec/lastenheft.md#modul-benutzeroberfläche-ui)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 059b: Wand parametrisch ändern
 
-**Status:** open — **STARTBAR** (2026-07-29). Entstanden aus der Teilung von slice-059 (§11) und
+**Status:** done (2026-07-29). Entstanden aus der Teilung von slice-059 (§11) und
 danach **eigenständig** geprüft: der eigene
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf
 meldet **0 HIGH** (§11a). Die Auswahl-Hälfte ist [`slice-059a`](../done/slice-059a-wand-auswaehlen.md).

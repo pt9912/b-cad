@@ -1,5 +1,60 @@
 # Status
 
+## 2026-07-29 — slice-059b geschlossen: der Wellen-Trigger ist erfüllt
+
+`make gates` **EXIT=0** (docs-check **0 Befunde / 286 Dateien** · a-check 0 · arch-check ok ·
+**414/414** Tests · Coverage 92,0 %), dazu `make io-smoke` ok und `make acc-002-beleg` ok.
+`in-progress/` trägt **keinen** Slice mehr — der Ruhe-Sentinel steht.
+
+**[`slice-059b`](../done/slice-059b-wand-parameter-aendern.md) done** (`f86e3e5` Move → `88a0172`
+Implementierung → Closure). Eigenschaften-Bereich unter der Zeichenfläche: **Stärke und Höhe** der
+gewählten Wand sind änderbar, die 3D-Ansicht folgt, Klemmung und Ablehnung sind sichtbar.
+**Benutzerhandbuch 1.8.**
+
+### ▶ Der Abschluss-Trigger von welle-6 ist erfüllt — und die Welle ist NICHT geschlossen
+
+„Eine Wand ist im 2D-Canvas **zeichenbar und parametrisch änderbar**, ohne Kommandozeile." Das ist
+seit heute wahr. **Vor der Closure steht genau eine Sache:** das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des Bauteil-Strangs — Eckenschluss, Nachbar-Rebuild und Raum-Neuerkennung **im interaktiven Pfad**.
+[ADR-0021](../../adr/0021-wand-im-2d-canvas.md) stellt seine Einschlägigkeit ausdrücklich fest
+(anders als [ADR-0018](../../adr/0018-drw-2d-zeichen-daten.md), wo es n/a war), **HIGHs blockieren
+die Closure**, und der Auftrag ist unabhängig zu vergeben.
+
+Danach die drei Handgriffe: Closure-Datei `welle-6-results.md`, Meilenstein-Status **M6** in der
+Roadmap-Tabelle (heute `offen`), Welle-Block. **Schließen, sobald der Trigger erfüllt ist, nicht,
+wenn die Arbeit ausgeht** — die Lehre der welle-5-Closure, die 24 Tage überlief.
+
+### Drei Entscheidungen, die diesen Slice tragen
+
+1. **Textfelder statt Zahlen-Drehfeldern.** Ein Drehfeld mit dem Modell-Bereich hätte die Eingabe
+   **selbst** geklemmt — dann erreichte eine 49 den Kern nie, und zwei abnahmebindende Kriterien
+   (Klemmung sichtbar, Ablehnung sichtbar) wären **unerreichbar statt prüfbar** gewesen. Genau das
+   Dritte, das [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E8 verbietet: die AK-Zeile stehen
+   lassen und nichts dazu bauen.
+2. **Die Senke nimmt den Text.** Eine nicht-numerische Eingabe erreicht den Kern **nie**, muss also
+   in der Oberfläche entschieden werden — im Composition-Root wäre das orakel-los, im Fenster
+   entstünde eine zweite Ausgangs-Autorität.
+3. **Das Fenster bekommt `(Ausgang, Wert)`, keinen fertigen Text.** Der abnahmebindende Konjunkt ist
+   die **Nennung des Werts**; käme der Satz fertig aus dem Root, wäre die Stelle, an der der Wert in
+   den Text gelangt, per Konstruktion orakel-los.
+
+### Die lohnendste Orakel-Zeile des ganzen Strangs
+
+**§4-13, der Anzeige-Rundlauf:** was das Feld zeigt, muss die Senke unverändert wieder annehmen.
+Beide Gegenproben — Anzeige mit Einheit, Anzeige mit Komma — lassen **vier** Fenster-Zeilen fallen.
+Ohne sie hätte das Produkt einen Fehler gehabt, den **kein anderes Orakel sieht**: Enter auf einem
+nie geänderten Feld ergäbe eine **Ablehnung**. Der Befund stammt aus dem Plan-Review und war beim
+Schreiben des Plans nicht offensichtlich — er ist das beste Argument dafür, dass die Läufe ihren
+Preis wert sind.
+
+### Nebenbei: eine Dopplung ist gefallen
+
+Der Lint-Gate stoppte bei kognitiver Komplexität 33 in `main`. Statt zwei Helfer *anzuhängen*, sind
+die **zwei Zeichen-für-Zeichen identischen Import-Blöcke** (IFC/DXF) zu `runImportIfRequested`
+gefaltet — Muster des direkt darüberstehenden `runExportIfRequested`. `make io-smoke` belegt beide
+Importe danach unverändert. **Ein Gate, das eine echte Dopplung findet, ist kein Hindernis.**
+
 ## 2026-07-29 — slice-059a geschlossen: die Wand ist auswählbar
 
 `make gates` **EXIT=0** (docs-check **0 Befunde / 286 Dateien** · a-check 0 · arch-check ok ·
@@ -17,7 +72,7 @@ konnte: meine Begründung gegen den Split lautete, eine Auswahl ohne Eigenschaft
 „keinen benutzer-sichtbaren Nutzen — man merkt es nur im Test", **während im selben Dokument eine
 Orakel-Zeile stand, die das Gegenteil zusagte** („die Auswahl ist auf der Fläche erkennbar").
 Beides kann nicht stimmen. Geteilt in 059a (Auswahl, geliefert) und
-[`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md) (Parameter, startbar).
+[`slice-059b`](../done/slice-059b-wand-parameter-aendern.md) (Parameter, startbar).
 
 ### Drei Läufe, drei verschiedene Fehlerklassen
 
@@ -49,7 +104,7 @@ Beides kann nicht stimmen. Geteilt in 059a (Auswahl, geliefert) und
 
 ### ▶ Nächster Schritt
 
-**[`slice-059b`](../in-progress/slice-059b-wand-parameter-aendern.md)** — Wand parametrisch ändern.
+**[`slice-059b`](../done/slice-059b-wand-parameter-aendern.md)** — Wand parametrisch ändern.
 **Startbar** (eigener [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf, 0 HIGH). Danach ist der Wellen-Trigger erfüllt; davor steht dort
 das [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
 des Bauteil-Strangs, dann die **welle-6-Closure** in den drei Handgriffen, die 059b §9 benennt.
