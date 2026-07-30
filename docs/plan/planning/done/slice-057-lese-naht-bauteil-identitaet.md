@@ -16,7 +16,7 @@ vor dem Start.**
 
 **Welle:** welle-6-interaktiv-planen. **Vorgelagert, ohne UI-Anteil** — Voraussetzung für
 [`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md);
-[`slice-058`](../in-progress/slice-058-wand-zeichnen-im-canvas.md) kommt **ohne** ihn aus. **Nicht
+[`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) kommt **ohne** ihn aus. **Nicht
 trigger-bindend**, aber trigger-**ermöglichend**.
 
 **Autor:** Dietmar Burkard (AI-Harness-Lauf). **Datum:** 2026-07-28.
@@ -76,7 +76,7 @@ sie aus**, statt sie zu unterstellen.
 ## 3. Bewusst NICHT Teil
 
 - **Jede Zeile UI.** Kein Werkzeug-Modus, kein Picking, kein Panel — das sind
-  [`slice-058`](../in-progress/slice-058-wand-zeichnen-im-canvas.md)/[`059`](../open/slice-059-wand-auswaehlen-und-aendern.md).
+  [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md)/[`059`](../open/slice-059-wand-auswaehlen-und-aendern.md).
 - **Herkunft für andere Bauteile** (Türen, Fenster, Treppen, Dächer, Decken) — die Projektion trägt
   heute nur Wand-Achsen und Hilfslinien; mehr zu beschriften wäre Vorrat ohne Konsumenten.
 - **Weitere Parameter** (Wandtyp, Material) — [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E13
@@ -300,5 +300,5 @@ Bild betrifft und nicht nur eine Bedienfläche.**
 
 [`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md) hat jetzt, was es braucht: eine
 Treffer-Prüfung kann ein Bauteil **benennen**, und der Eigenschaften-Bereich kann seine Parameter
-**lesen**. [`slice-058`](../in-progress/slice-058-wand-zeichnen-im-canvas.md) war und bleibt davon
+**lesen**. [`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) war und bleibt davon
 unabhängig.

@@ -1,5 +1,63 @@
 # Status
 
+## 2026-07-29 — slice-058 geschlossen: die erste Wand entsteht in der Oberfläche
+
+`make gates` **EXIT=0** (docs-check **0 Befunde / 282 Dateien** · a-check 0 · arch-check ok ·
+**387/387** Tests · Coverage 92,4 %), dazu `make io-smoke` ok und `make acc-002-beleg` ok.
+`in-progress/` trägt **keinen** Slice mehr — der Ruhe-Sentinel steht.
+
+**[`slice-058`](../done/slice-058-wand-zeichnen-im-canvas.md) done** (`88e5e18` Move →
+`4e0b8d0` Implementierung → Closure). Menü **Werkzeug** → **Wand**, Links-Zug im Reiter 2D: es
+entsteht eine **Wand**, sofort in 2D und 3D, mit Fang an **beiden** Enden — damit ist der
+**Eckenschluss** interaktiv erreichbar. **Benutzerhandbuch 1.6.** Der Abschluss-Trigger von
+welle-6 ist damit **zur Hälfte** erfüllt.
+
+### Vier Plan-Läufe, und der vierte fand meinen eigenen Aufräum-Fehler
+
+Die Läufe brauchten 2 → 1 → 2 → **0** HIGH. Der vierte Lauf prüfte gezielt, ob die **Entrauschung**
+des Plans etwas Tragendes mitgenommen hatte — und ja: genau **eine** Klammer, die eine
+**Vorbedingung** trug (»der Modell-Wechsel muss die Bounding-Box vergrößern«). Ohne sie hätte Orakel
+8 nichts gemessen, und die Nachbarzeile 8a schreibt im **selben** Testfile die **gegenteilige**
+Vorbedingung vor. **Aufräumen ist eine Änderung; wer kürzt, prüft die Rückverweise.**
+
+### Was der Vollzug am Plan korrigiert hat
+
+1. **Die Barriere fängt `...`, nicht `const std::exception&`.** Der Plan sagte „fängt dessen Würfe";
+   die **Zusage** lautet „kein Wurf verlässt den Ereignis-Pfad". Eine Barriere, die nur die
+   dokumentierten Typen fängt, ist keine — und der Typ trägt hier keine Information, weil beide
+   Wurf-Quellen denselben benutzer-sichtbaren Ausgang haben.
+2. **Der Wand-Callable des Canvas gibt nichts zurück.** §2.3 sagt „die Senke stellt den Ausgang
+   fest" — in der **Signatur** kann der Canvas ihn dann nicht einmal kennen. Eine Entscheidung, die
+   im Typ steht, kann man nicht im Vollzug vergessen.
+3. **Das Handbuch brauchte zehn Stellen, nicht die geplanten vier.** §2.2 (die
+   Oberflächen-Beschreibung) kannte weder das Werkzeug-Menü noch die Hinweis-Zeile — beides ist neu
+   im Fenster. Die DoD verlangte zu **suchen** statt aufzuzählen; genau daran lag der Unterschied.
+4. **`test_project_open_handler.cpp` mitgezogen** (nicht im Plan): dort liegt der Beleg, dass die
+   **produktiven** Senken nach einem Projekt-Laden nachgezogen werden. Ohne die Wand-Senke in dieser
+   Kette würfe `addWall` nach **jedem** Laden — die Barriere fänge es, aber der Benutzer bekäme statt
+   einer Wand einen Hinweis.
+5. **`make acc-002-beleg` überschreibt ein Abnahme-Artefakt.** Das Target schreibt
+   `docs/plan/planning/done/acc-002-beleg.png` — ein Bild aus der dokumentierten Abnahme-Runde von
+   slice-012. Der Lauf belegt, dass das Target **funktioniert**; das Bild ist **zurückgesetzt**, denn
+   ein Abnahme-Nachweis des Projektinhabers wird nicht nebenbei ersetzt.
+
+### 15 Gegenproben, einzeln gemessen
+
+Je Orakel-Zeile **eine** Mutation, die genau sie kippt (Tabelle in der Closure-Notiz). Zwei
+Ausnahmen stehen dort ausgeschrieben: §4-3 und §4-4 teilen die Sonde »Fang übersprungen« — so
+schreibt der Plan es vor —, und §4-8 hat **zwei** Sonden (eine in der Produktion, eine an der
+Beobachter-Anmeldung), weil die produktive Anmeldung im orakel-losen Composition-Root liegt.
+
+### ▶ Nächster Schritt
+
+**[`slice-059`](../open/slice-059-wand-auswaehlen-und-aendern.md)** — Wand auswählen und
+parametrisch ändern. Existiert als **Skelett**: Detail-Schnitt und eigenes
+[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
+stehen noch aus. Die zwei symptomlosen Fehler sind im Skelett schon benannt (Geschoss-Skopus der
+Treffer-Prüfung · Lebensdauer der Auswahl). Danach ist der **Wellen-Trigger erfüllt**; davor steht das
+[MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des Bauteil-Strangs, dann die **welle-6-Closure** (M6).
+
 ## 2026-07-28 — slice-048b geschlossen: der Canvas rastet ein
 
 `make gates` **EXIT=0** (docs-check **0 Befunde / 263 Dateien** · a-check 0 · arch-check ok ·

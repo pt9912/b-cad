@@ -40,10 +40,7 @@ machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nic
 ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
 wellen-bindend und verlängert sie nicht.
 
-**In Arbeit:** [`slice-058`](slice-058-wand-zeichnen-im-canvas.md) — Wand zeichnen im 2D-Canvas
-([ADR-0021](../../adr/0021-wand-im-2d-canvas.md), erste Hälfte des Abschluss-Triggers); startbar nach
-vier [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufen
-(0 HIGH im vierten).
+Keine offenen Slices.
 
 ## Nächste Wellen
 
