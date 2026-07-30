@@ -1,5 +1,59 @@
 # Status
 
+## 2026-07-29 — slice-059a geschlossen: die Wand ist auswählbar
+
+`make gates` **EXIT=0** (docs-check **0 Befunde / 286 Dateien** · a-check 0 · arch-check ok ·
+**399/399** Tests · Coverage 92,2 %), dazu `make io-smoke` ok und `make acc-002-beleg` ok.
+`in-progress/` trägt **keinen** Slice mehr — der Ruhe-Sentinel steht.
+
+**[`slice-059a`](../done/slice-059a-wand-auswaehlen.md) done** (`74eece2` Move → `df3888d`
+Implementierung → Closure). Werkzeug **Auswahl**, Klick auf eine Wand-Achse: genau **eine** Wand des
+**angezeigten** Geschosses, im Grundriss **hervorgehoben**. **Benutzerhandbuch 1.7.**
+
+### Der Slice wurde geteilt, und zwar von meiner eigenen Orakel-Zeile widerlegt
+
+Der erste Plan-Lauf empfahl die Teilung von slice-059 mit einem Argument, das ich nicht entkräften
+konnte: meine Begründung gegen den Split lautete, eine Auswahl ohne Eigenschaften-Bereich habe
+„keinen benutzer-sichtbaren Nutzen — man merkt es nur im Test", **während im selben Dokument eine
+Orakel-Zeile stand, die das Gegenteil zusagte** („die Auswahl ist auf der Fläche erkennbar").
+Beides kann nicht stimmen. Geteilt in 059a (Auswahl, geliefert) und
+[`slice-059b`](../open/slice-059b-wand-parameter-aendern.md) (Parameter, startbar).
+
+### Drei Läufe, drei verschiedene Fehlerklassen
+
+1. **Lauf 1 (ungeteilt), HIGH:** die Tinten-Sonde für die Hervorhebung war nicht diskriminierend —
+   allein der Fang-Marker hebt die Tinte um 56 px, **ohne** dass eine Hervorhebung existiert. Der
+   strukturelle Schutz aus slice-058 („jede `op`-Meldung löscht den Marker") fällt hier weg, und
+   zwar **aus derselben Tatsache**, mit der ich die Vorbedingung für erfüllt erklärt hatte:
+   Auswählen ist keine Mutation. Aus dem richtigen Faktum die halbe Folgerung.
+2. **Lauf 2 (059a):** die Fixture von §4-6 war **eine Bedingung zu kurz**, und der naheliegende
+   Griff — „den Anlegen-Pfad nachbilden", den mein eigener §2.2 nennt — ist gemessen **genau der
+   nicht-diskriminierende**. Dazu: die von [ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E3 **entschiedene** Tie-Break-Regel hatte im
+   ganzen Plan keine Zeile, und §4-3 hing an ihr, ohne sie zu prüfen.
+3. **Im Vollzug:** zwei Gegenproben kamen zuerst **grün** zurück — die eine, weil **die Sonde**
+   falsch gebaut war (ans Drücken *addiert* statt *verschoben*), die andere, weil die Zeile
+   tatsächlich nur die **Zusage** belegt und nicht den **Mechanismus**. **Eine grüne Gegenprobe ist
+   zuerst ein Verdacht gegen die Sonde, dann gegen das Orakel** — in dieser Reihenfolge, sonst
+   schwächt man ein Orakel, das trägt.
+
+### Zwei Vorfälle, die in die Werkzeug-Lehre gehören
+
+- **`git checkout` beim Zurücknehmen einer Sonde hat die noch nicht committete Implementierung
+  mitgelöscht.** Die Sonden-Skripte machen es richtig (Inhalt merken, zurückschreiben); der Fehler
+  passierte im manuellen Lauf daneben. Solange die Implementierung uncommittet ist, nimmt man eine
+  Sonde durch **Zurückschreiben** zurück, nicht über `git checkout`. Der Verlust war vollständig
+  rekonstruierbar — das war Glück, keine Eigenschaft des Vorgehens.
+- **Zwei parallele Reviewer teilen sich den Arbeitsbaum.** Der 059a-Lauf fand während seines
+  `make test` eine fremde Sonde des 059b-Laufs. Es ist gutgegangen, hätte aber eine Messung
+  verfälschen können. **Messende Reviewer parallel ⇒ getrennte Arbeitsbäume.**
+
+### ▶ Nächster Schritt
+
+**[`slice-059b`](../open/slice-059b-wand-parameter-aendern.md)** — Wand parametrisch ändern.
+**Startbar** (eigener [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Lauf, 0 HIGH). Danach ist der Wellen-Trigger erfüllt; davor steht dort
+das [MR-009](../../../../harness/conventions.md#mr-009--geometrielastiges-code-review-vor-welle-closure)-Code-Review
+des Bauteil-Strangs, dann die **welle-6-Closure** in den drei Handgriffen, die 059b §9 benennt.
+
 ## 2026-07-29 — slice-058 geschlossen: die erste Wand entsteht in der Oberfläche
 
 `make gates` **EXIT=0** (docs-check **0 Befunde / 282 Dateien** · a-check 0 · arch-check ok ·
@@ -50,7 +104,7 @@ Beobachter-Anmeldung), weil die produktive Anmeldung im orakel-losen Composition
 
 ### ▶ Nächster Schritt
 
-**[`slice-059a`](../in-progress/slice-059a-wand-auswaehlen.md)** — Wand auswählen und
+**[`slice-059a`](../done/slice-059a-wand-auswaehlen.md)** — Wand auswählen und
 parametrisch ändern. Existiert als **Skelett**: Detail-Schnitt und eigenes
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)
 stehen noch aus. Die zwei symptomlosen Fehler sind im Skelett schon benannt (Geschoss-Skopus der

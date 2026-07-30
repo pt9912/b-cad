@@ -40,9 +40,7 @@ machte. **Diese Welle ist zu schließen, sobald der Trigger erfüllt ist — nic
 ausgeht.** Was daneben läuft (harness-steering, Alt-Bestand), ist ausdrücklich **nicht**
 wellen-bindend und verlängert sie nicht.
 
-**In Arbeit:** [`slice-059a`](slice-059a-wand-auswaehlen.md) — Wand auswählen (Treffer-Prüfung,
-Lebensdauer, sichtbare Hervorhebung); startbar nach zwei
-[MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufen.
+Keine offenen Slices.
 
 ## Nächste Wellen
 

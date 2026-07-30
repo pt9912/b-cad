@@ -1,7 +1,7 @@
 ---
 id: slice-059a
 titel: Wand auswählen — Treffer-Prüfung, Lebensdauer, sichtbare Hervorhebung ([ADR-0021](../../adr/0021-wand-im-2d-canvas.md) E3/E16/E17)
-status: open
+status: done
 welle: welle-6-interaktiv-planen
 lastenheft_refs: [[LH-FA-WAL-002](../../../../spec/lastenheft.md#lh-fa-wal-002--wandstärke-definieren), [LH-FA-WAL-003](../../../../spec/lastenheft.md#lh-fa-wal-003--wandhöhe-definieren)]
 adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../../adr/0008-aenderungs-benachrichtigung.md), [ADR-0009](../../adr/0009-gui-framework-qt6.md), [ADR-0010](../../adr/0010-headless-gl-xvfb.md), [ADR-0019](../../adr/0019-drw-2d-canvas.md), [ADR-0021](../../adr/0021-wand-im-2d-canvas.md)]
@@ -9,7 +9,7 @@ adr_refs: [[ADR-0001](../../adr/0001-hexagonale-architektur.md), [ADR-0008](../.
 
 # Slice 059a: Wand auswählen
 
-**Status:** open — **STARTBAR** (2026-07-29). Zwei
+**Status:** done (2026-07-29). Zwei
 [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start)-Läufe
 mit zwei verschiedenen Reviewern; der zweite meldet **0 HIGH**, damit greift die vorab festgelegte
 Abbruchregel. Einarbeitungen in §11 (Lauf 1, samt Teilung) und §11a (Lauf 2). Die Parameter-Hälfte ist [`slice-059b`](../open/slice-059b-wand-parameter-aendern.md).
