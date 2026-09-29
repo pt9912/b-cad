@@ -1,6 +1,6 @@
 # Roadmap — b-cad
 
-**Status:** Aktiv. **Letzte Änderung:** 2026-07-23.
+**Status:** Aktiv. **Letzte Änderung:** 2026-09-29.
 
 **Format-Regel:** Reihenfolge von **Wellen**, keine Reihenfolge von
 Terminen. Daten sind Schätzungen, korrigierbar. Die Roadmap entstand im
@@ -49,12 +49,34 @@ Keine offenen Slices.
 
 ## Nächste Wellen
 
-Keine Folge-Welle benannt — die nächste Welle nach M6 ist eine
-**Planungs-Entscheidung** (kein Automatismus). Benannte Kandidaten-Themen aus
-den Re-Eval-Trägern der welle-3/-4/-5-Closures: Format-Reichtum (IFC-/DXF-
-Bibliothek, PDF-Fit-to-Page/Bemaßung), Wandtyp-Bibliothek (`wall_type`-
-Template-Fallback), Observability (`TracingPort`-Anbindung), Drittanbieter-
-Attribution (slice-006 in `open/`).
+**Welle-ID:** welle-7-regelwerk-migration (Quergewerk `harness-steering`, nicht
+meilenstein-bindend)
+**Zeitraum:** ab 2026-09-29
+**Welle-Ziel:** Migration der adoptierten Baseline *ai-harness-course* von
+v1.3.0 (Template-Set 2026-06) auf **v6.13.0**. Auslöser: die in
+`AGENTS.md`/`harness/README.md`/`harness/conventions.md` referenzierte
+`agents-regelwerk.md` ist im Kurs-Repo entfernt worden (Raw-URL **404**), und
+das Regelwerk ist seit v6.x ein **self-contained Baseline-Bundle**
+(`regelwerk/` + `templates/` parallel), das nach `.harness/baseline/<tag>/`
+vendored wird — der Release-Text selbst beschreibt das Adopter-Verfahren.
+**Abschluss-Trigger (beobachtbar):** `make gates` grün **inklusive** des neuen
+`baseline-verify`-Schritts; `grep agents-regelwerk` über die normativen
+Dokumente → 0 Treffer; und der Baseline-Bump-Eintrag
+([MR-024](../../../../harness/conventions.md)) trägt die vollständige
+Freshness-Audit-Tabelle (24 MR-Einträge klassifiziert).
+**Slices:** [`slice-062`](../open/slice-062-baseline-vendor-v6-13-0.md)
+(vendoren + fetch/verify) ·
+[`slice-063`](../open/slice-063-freshness-audit-mr-024.md) (Freshness-Audit +
+MR-024 + Tag-Pin) ·
+[`slice-064`](../open/slice-064-pointer-artefakte-v6-13-0.md)
+(Pointer-Artefakte + Arbeitskonfiguration).
+
+Danach Kandidaten-Themen aus den Re-Eval-Trägern der welle-3/-4/-5-Closures
+(nächste Produkt-Welle nach M6 ist weiterhin eine **Planungs-Entscheidung**,
+kein Automatismus): Format-Reichtum (IFC-/DXF-Bibliothek,
+PDF-Fit-to-Page/Bemaßung), Wandtyp-Bibliothek (`wall_type`-Template-Fallback),
+Observability (`TracingPort`-Anbindung), Drittanbieter-Attribution (slice-006
+in `open/`).
 
 
 ## Meilensteine
@@ -79,9 +101,11 @@ flowchart LR
     W4[welle-4-austausch<br/>done 2026-07-01]
     W5[welle-5-erweiterung<br/>done 2026-07-27]
     W6[welle-6-interaktiv-planen<br/>aktiv seit 2026-07-27]
+    W7[welle-7-regelwerk-migration<br/>Quergewerk ab 2026-09-29]
 
     W1 --> W1V
     W1 --> W2 --> W3 --> W4 --> W5 --> W6
+    W6 --> W7
 ```
 
 ## Abgeschlossene Wellen
@@ -117,3 +141,4 @@ flowchart LR
 | 2026-07-05 | **Quergewerk slice-036 eingeschoben (Planning-Lifecycle-Gate, `harness-steering`):** das d-check-Modul **`planning`** macht eine **neue** Lifecycle-Invariante computational — der Ruhe-Sentinel im `## Aktuelle Welle`-Block steht **genau dann**, wenn kein `slice-*` in `in-progress/` liegt (`planning-drift`). **Hermetisch → erster über den Fahrplan adoptierter `make gates`-Member** (ins `.d-check.yml`-`modules:`-Set, **nicht** CI-only wie commits/vcs). Ruhe-Marker-Toggle reitet im `git mv`-Commit ([§2.8](../../../../AGENTS.md) gewahrt, dort referenziert); [MR-017](../../../../harness/conventions.md) (**kein ADR:** Verschärfung, [§2.6](../../../../AGENTS.md) n/a). **welle-5-Scope unberührt.**                                                                                                                                                                                         | Dritter Modul-Gewinner (`commits`/`vcs`/`planning`) — Fahrplan komplett bis auf `tracked`/`--trace`. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH / 2 MED** (M1 §2.8-Transient-Kopplung, M2 Toggle-Auffindbarkeit) + 3 LOW eingearbeitet. Evidence-first: Baseline 0, volle Wahrheitstafel.                                                   |
 | 2026-07-05 | **Quergewerk slice-037 eingeschoben (Fresh-Clone-Gate, `harness-steering`):** das d-check-Modul **`tracked`** macht eine **neue** Referenz-Integritäts-Regel computational — jedes auflösbare, existierende Link-/Bild-Ziel ist im **git-Index getrackt** (`target-untracked`; untrackte Ziele fehlen auf jedem frischen Klon). **Range-frei → zweiter Fahrplan-`make gates`-Member** (ins `.d-check.yml`-`modules:`-Set; **erster `.git`-lesender** Member; CI-vakuum-grün → Wert nur lokal). [MR-018](../../../../harness/conventions.md) (**kein ADR:** Verschärfung, [§2.6](../../../../AGENTS.md) n/a). **welle-5-Scope unberührt.**                                                                                                                                                                                                                                                                         | Vierter/letzter Gate-Gewinner — Fahrplan bis auf `--trace` (Report) komplett. [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **0 HIGH / 1 MED** (Kriterium range-frei statt git-frei; CI-Vakuität = Rechtfertigung) + 3 LOW. Evidence-first: Baseline 0, Positiv `target-untracked`, kein Doppelbefund.                                                  |
 | 2026-07-05 | **Quergewerk slice-038 eingeschoben (`--trace`-Report + Fahrplan-Abschluss, `harness-steering`):** leichter Doku-Slice (**kein Gate**) — `make doc-trace` als **advisory Report** eingeordnet (Live-Korpus-Teilausschnitt; die gemessenen 44 „WAISEN" sind **suffix-blind**, **nicht** Freeze-Folge — `--trace` kennt nur `slice-\d{3}`, b-cads Buchstaben-Sub-Slices sind unsichtbar); **`--require-complete` verschoben** auf den Vollständigkeits-Meilenstein (Voll-Spec, nicht verworfen). [MR-019](../../../../harness/conventions.md). **Fahrplan abgeschlossen** (033–037 Gates live + `--trace`-Report).                                                                                                                                                                                                                                                                                                  | [MR-006](../../../../harness/conventions.md#mr-006--unabhängiges-plan-review-vor-implementierungs-start) **1 HIGH behoben** (Ursache falsch: Freeze → Suffix-Blindheit, reproduziert widerlegt) + 2 MED/4 LOW. Nutzer-Korrektur: `--require-complete` = Meilenstein-Schalter (nicht verworfen).                                                                                                                    |
+| 2026-09-29 | **Neue Welle `welle-7-regelwerk-migration` benannt (Quergewerk `harness-steering`, nicht meilenstein-bindend), drei Slices geschnitten: 062 (Baseline-Bundle vendoren + fetch/verify) · 063 (Freshness-Audit + Baseline-Bump-Eintrag + Tag-Pin) · 064 (Pointer-Artefakte + Arbeitskonfiguration).** Aktuelle Welle bleibt welle-6. | Die bislang referenzierte `agents-regelwerk.md` liefert **404** (tote Referenzen in `AGENTS.md`, `harness/README.md`, `harness/conventions.md`); das Regelwerk v6.13.0 ist ein self-contained Baseline-Bundle (`regelwerk/` + `templates/`) für `.harness/baseline/<tag>/`. Projektinhaber-Entscheid 2026-09-29: Umstellung **mit** Freshness-Audit, **jetzt vendoren** (u-boot-Muster, Blaupause [ADR-0004](../../adr/0004-toolchain-dependency-pinning.md)), als eigene Welle — welle-6 soll durch die MR-009-HIGHs nicht zusätzlich beladen werden. |
