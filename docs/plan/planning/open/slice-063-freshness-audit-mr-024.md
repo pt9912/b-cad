@@ -46,7 +46,7 @@ tote Raw-URL in §Adoptierte Konventions-Quellen ist ersetzt.
 |---|---|---|
 | `harness/conventions.md` §Baseline | ändern | **Stand: `v6.13.0`** (VERSION, kein Datum — sonst findet ein Versions-Sensor keine Version und bricht fail-closed ab), Zusatz „Kurs-Welle 153 · 2026-09-28" (aus `regelwerk/README.md` Stand-Zeile), Vendor-Pfad `.harness/baseline/v6.13.0/`, Datum der Adoption 2026-09-29 mit Erstadoption-Verweis (2026-06-08) |
 | `harness/conventions.md` §Adoptierte Konventions-Quellen | ändern | tote `agents-regelwerk.md`-Raw-URL **ersetzen** durch: gepinnte Release-ZIP-URL (`…/releases/download/v6.13.0/lab-regelwerk.zip`) als externe Nennung + den vendored Pfad als Lesequelle (Inline-Code); Derivat-Hinweis (bei Konflikt gilt das Lehrmaterial) bleibt |
-| `harness/conventions.md` Adaptions-Block: Eintrag [MR-024](../../../../harness/conventions.md) | neu (append-only) | `MR-024 — Baseline-Bump v1.3.0 → v6.13.0 (vendored)` mit: Datum, Geltungsbereich (gesamtes Repo), Adaption (Bump + künftige Bump-Prozedur), **Audit-Tabelle 24 Zeilen** (je Ausgang + knappe Begründung), Begründung, Auflösungs-Trigger (nächster Bump) |
+| `harness/conventions.md` Adaptions-Block: Eintrag [MR-024](../../../../harness/conventions.md) | neu (append-only) | Titel »Baseline-Bump v1.3.0 → v6.13.0 (vendored)«; Inhalt: Datum, Geltungsbereich (gesamtes Repo), Adaption (Bump + künftige Bump-Prozedur), **Audit-Tabelle 24 Zeilen** (je Ausgang + knappe Begründung), Begründung, Auflösungs-Trigger (nächster Bump) |
 | `CHANGELOG.md` | ändern | [Unreleased]-Eintrag (Regelwerk-Migration, Audit-Ergebnis-Zusammenfassung) |
 
 **Audit-Methodik** (pro MR-Eintrag): betreffende Regelwerks-Abschnitte in
