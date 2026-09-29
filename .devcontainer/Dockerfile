@@ -24,10 +24,21 @@ ENV DEBIAN_FRONTEND=noninteractive
 # ca-certificates aus dem Live-Archiv (kein Toolchain-Paket -> Versions-
 # Drift hier unkritisch), dann archive + security auf den Snapshot pinnen.
 ARG APT_SNAPSHOT=20260601T000000Z
+# apt-mark hold: die Live-Bootstrap-Installation (https-Voraussetzung,
+# s. u.) upgradet sonst die installierten SSL-Pakete auf die Live-Version
+# (gemessen 2026-09-29: libssl3t64/openssl-provider-legacy 3.5.5-1ubuntu3
+# -> 3.5.5-1ubuntu3.5, »resolute-updates«) — und der APT-3.x-Solver
+# verweigert danach die Rückstellung auf die Snapshot-Exakt-Pins
+# (»… is not selected for install«, auch mit --allow-downgrades und
+# expliziter Paket-Nennung). Der Hold hält die Pakete auf der
+# Base-/Snapshot-Version; die Live-Versionen werden nie berührt. Kein
+# Pin-Sprung; Digest + Timestamp bleiben unverändert.
 RUN apt-get update \
+ && apt-mark hold libssl3t64 openssl-provider-legacy \
  && apt-get install -y --no-install-recommends ca-certificates \
  && sed -i -E "s#https?://(archive|security)\.ubuntu\.com/ubuntu/#https://snapshot.ubuntu.com/ubuntu/${APT_SNAPSHOT}/#" \
         /etc/apt/sources.list.d/ubuntu.sources \
+ && apt-mark unhold libssl3t64 openssl-provider-legacy \
  && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
